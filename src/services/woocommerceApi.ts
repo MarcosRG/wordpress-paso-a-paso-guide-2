@@ -189,9 +189,11 @@ export const wooCommerceApi = {
     }
   },
 
-  // Crear una orden en WooCommerce
+  // Criar uma ordem em WooCommerce
   async createOrder(orderData: any) {
     try {
+      console.log("Creating WooCommerce order with data:", orderData);
+
       const response = await fetch(`${WOOCOMMERCE_API_BASE}/orders`, {
         method: "POST",
         headers: apiHeaders,
@@ -199,12 +201,39 @@ export const wooCommerceApi = {
       });
 
       if (!response.ok) {
-        throw new Error(`Error creating order: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error("WooCommerce order creation failed:", errorText);
+        throw new Error(
+          `Error creating order: ${response.statusText} - ${errorText}`,
+        );
+      }
+
+      const order = await response.json();
+      console.log("WooCommerce order created successfully:", order);
+      return order;
+    } catch (error) {
+      console.error("Error creating order:", error);
+      throw error;
+    }
+  },
+
+  // Get categories from WooCommerce
+  async getCategories() {
+    try {
+      const response = await fetch(
+        `${WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
+        {
+          headers: apiHeaders,
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error fetching categories: ${response.statusText}`);
       }
 
       return await response.json();
     } catch (error) {
-      console.error("Error creating order:", error);
+      console.error("Error fetching categories:", error);
       throw error;
     }
   },
