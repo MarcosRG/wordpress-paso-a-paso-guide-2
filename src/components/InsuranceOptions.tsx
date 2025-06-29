@@ -122,6 +122,7 @@ export const InsuranceOptions = ({
   const [selectedInsurance, setSelectedInsurance] = useState<
     "free" | "premium"
   >("free");
+  const { language, t } = useLanguage();
 
   const handleInsuranceSelect = (insuranceId: "free" | "premium") => {
     setSelectedInsurance(insuranceId);
@@ -131,7 +132,7 @@ export const InsuranceOptions = ({
         ...reservation,
         insurance: {
           id: insurance.id,
-          name: insurance.name,
+          name: insurance.name[language],
           price: insurance.price,
         },
       });
@@ -140,7 +141,7 @@ export const InsuranceOptions = ({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Opciones de Seguro</h2>
+      <h2 className="text-2xl font-bold mb-6">{t("insuranceOptions")}</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {INSURANCE_OPTIONS.map((option) => {
@@ -151,25 +152,25 @@ export const InsuranceOptions = ({
             <Card
               key={option.id}
               className={`cursor-pointer transition-all hover:shadow-lg ${
-                isSelected ? "ring-2 ring-blue-500 bg-blue-50" : ""
+                isSelected ? "ring-2 ring-red-500 bg-red-50" : ""
               }`}
               onClick={() => handleInsuranceSelect(option.id)}
             >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Icon className="h-8 w-8 text-blue-600" />
+                    <Icon className="h-8 w-8 text-red-600" />
                     <div>
                       <CardTitle className="flex items-center gap-2">
-                        {option.name}
+                        {option.name[language]}
                         {option.price === 0 && (
-                          <Badge variant="secondary">GRATIS</Badge>
+                          <Badge variant="secondary">{t("free")}</Badge>
                         )}
                       </CardTitle>
-                      <div className="text-lg font-bold text-blue-600 mt-1">
+                      <div className="text-lg font-bold text-red-600 mt-1">
                         {option.price === 0
-                          ? "Incluido"
-                          : `+€${option.price}/día`}
+                          ? t("included")
+                          : `+€${option.price}/${t("day")}`}
                       </div>
                     </div>
                   </div>
@@ -182,41 +183,26 @@ export const InsuranceOptions = ({
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Info className="h-4 w-4 mr-1" />
-                        Más info
+                        {t("moreInfo")}
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                          <Icon className="h-6 w-6 text-blue-600" />
-                          {option.name}
+                          <Icon className="h-6 w-6 text-red-600" />
+                          {option.name[language]}
                         </DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
-                        <p className="text-gray-600">{option.description}</p>
-
-                        <div>
-                          <h4 className="font-semibold mb-2">
-                            Cobertura incluida:
-                          </h4>
-                          <ul className="space-y-1">
-                            {option.coverage.map((item, index) => (
-                              <li
-                                key={index}
-                                className="flex items-center gap-2 text-sm"
-                              >
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
+                        <div className="whitespace-pre-line text-sm text-gray-700">
+                          {option.detailedInfo[language]}
                         </div>
 
                         <div className="pt-4 border-t">
-                          <div className="text-lg font-bold text-blue-600">
+                          <div className="text-lg font-bold text-red-600">
                             {option.price === 0
-                              ? "Incluido sin costo"
-                              : `€${option.price} por día`}
+                              ? t("included")
+                              : `€${option.price} ${language === "pt" ? "por dia" : "per day"}`}
                           </div>
                         </div>
                       </div>
@@ -226,21 +212,22 @@ export const InsuranceOptions = ({
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 text-sm mb-3">
-                  {option.description}
+                  {option.description[language]}
                 </p>
                 <div className="space-y-1">
-                  {option.coverage.slice(0, 2).map((item, index) => (
+                  {option.coverage[language].slice(0, 2).map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 text-xs text-gray-500"
+                      className="flex items-start gap-2 text-xs text-gray-500"
                     >
-                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                      {item}
+                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                      <span>{item}</span>
                     </div>
                   ))}
-                  {option.coverage.length > 2 && (
-                    <div className="text-xs text-blue-600">
-                      +{option.coverage.length - 2} beneficios más
+                  {option.coverage[language].length > 2 && (
+                    <div className="text-xs text-red-600">
+                      +{option.coverage[language].length - 2}{" "}
+                      {language === "pt" ? "benefícios mais" : "more benefits"}
                     </div>
                   )}
                 </div>
@@ -255,11 +242,11 @@ export const InsuranceOptions = ({
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-green-600" />
             <span className="font-medium">
-              Seguro seleccionado: {reservation.insurance.name}
+              {t("selectedInsurance")}: {reservation.insurance.name}
             </span>
             {reservation.insurance.price > 0 && (
               <Badge variant="outline">
-                +€{reservation.insurance.price}/día
+                +€{reservation.insurance.price}/{t("day")}
               </Badge>
             )}
           </div>
