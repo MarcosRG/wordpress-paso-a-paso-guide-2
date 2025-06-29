@@ -158,81 +158,13 @@ export const BikeSelection = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBikes.map((bike) => (
-          <Card key={bike.id} className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
-              {/* Imagen de la bicicleta */}
-              <div className="mb-4">
-                <img
-                  src={bike.image}
-                  alt={bike.name}
-                  className="w-full h-48 object-cover rounded-lg"
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder.svg";
-                  }}
-                />
-              </div>
-
-              <div className="text-center mb-4">
-                <h3 className="font-semibold text-lg">{bike.name}</h3>
-                <div className="text-xl font-bold text-blue-600">
-                  €{bike.pricePerDay}/{t("days").slice(0, -1)}
-                </div>
-              </div>
-
-              {/* Selector de Tamaños */}
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm text-center">
-                  {t("availableSizes")}:
-                </h4>
-                {(["S", "M", "L", "XL"] as const).map((size) => {
-                  const quantity = getQuantityForBikeAndSize(bike.id, size);
-                  const availableForSize = Math.floor(bike.available / 4);
-
-                  return (
-                    <div
-                      key={size}
-                      className="flex items-center justify-between p-2 border rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium w-6">{size}</span>
-                        <span className="text-xs text-gray-500">
-                          ({availableForSize}{" "}
-                          {availableForSize === 1
-                            ? t("available")
-                            : t("availables")}
-                          )
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateBikeQuantity(bike, size, -1)}
-                          disabled={quantity === 0}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-8 text-center font-medium text-sm">
-                          {quantity}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateBikeQuantity(bike, size, 1)}
-                          disabled={quantity >= availableForSize}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          <BikeCard
+            key={bike.id}
+            bike={bike}
+            getQuantityForBikeAndSize={getQuantityForBikeAndSize}
+            updateBikeQuantity={updateBikeQuantity}
+            totalDays={reservation.totalDays}
+          />
         ))}
       </div>
 
