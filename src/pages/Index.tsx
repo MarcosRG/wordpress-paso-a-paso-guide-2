@@ -240,7 +240,7 @@ const Index = () => {
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 1}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 border-black text-black hover:bg-gray-100"
           >
             <ArrowLeft size={16} />
             {t("previous")}
@@ -250,14 +250,14 @@ const Index = () => {
             <Button
               onClick={handleNext}
               disabled={!canProceed()}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
             >
               {t("next")}
               <ArrowRight size={16} />
             </Button>
           ) : (
             <Button
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white"
               onClick={handleConfirmReservation}
               disabled={isCreatingOrder}
             >
