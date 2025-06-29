@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { BikeSelection } from '@/components/BikeSelection';
 import { DateTimeSelection } from '@/components/DateTimeSelection';
+import { InsuranceOptions } from '@/components/InsuranceOptions';
+import { PurchaseForm, CustomerData } from '@/components/PurchaseForm';
 import { ReservationSummary } from '@/components/ReservationSummary';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,6 +35,11 @@ export interface ReservationData {
   endTime: string;
   totalHours: number;
   totalPrice: number;
+  insurance?: {
+    id: 'free' | 'premium';
+    name: string;
+    price: number;
+  };
 }
 
 const Index = () => {
@@ -50,8 +57,18 @@ const Index = () => {
     totalPrice: 0
   });
 
+  const [customerData, setCustomerData] = useState<CustomerData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    postalCode: ''
+  });
+
   const handleNext = () => {
-    if (currentStep < 3) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -68,6 +85,10 @@ const Index = () => {
         return reservation.selectedBikes.length > 0;
       case 2:
         return reservation.startDate && reservation.endDate;
+      case 3:
+        return reservation.insurance !== undefined;
+      case 4:
+        return customerData.firstName && customerData.lastName && customerData.email && customerData.phone;
       default:
         return true;
     }
@@ -79,31 +100,20 @@ const Index = () => {
     try {
       console.log('Iniciando creación de pedido...', reservation);
       
-      // Crear el pedido en WooCommerce
-      const order = await orderService.createReservationOrder(reservation);
+      const order = await orderService.createReservationOrder(reservation, customerData);
       
       toast({
         title: "¡Reserva Creada Exitosamente!",
         description: `Tu pedido #${order.id} ha sido creado. Serás redirigido al pago.`,
       });
       
-      // En una implementación completa, aquí redirigirías al checkout de WooCommerce
-      // window.location.href = `https://bikesultoursgest.com/checkout/?order-pay=${order.id}&key=${order.order_key}`;
-      
-      // Por ahora, mostramos un mensaje
+      // Aquí se redirigiría al checkout de WooCommerce
       alert(`¡Reserva confirmada! 
       
 Número de pedido: #${order.id}
 Total: €${reservation.totalPrice}
 
-En una implementación completa, serías redirigido al sistema de pago de WooCommerce.
-
-Detalles del pedido:
-- ${reservation.selectedBikes.length} tipo(s) de bicicleta seleccionada(s)
-- Total de ${reservation.selectedBikes.reduce((sum, bike) => sum + bike.quantity, 0)} bicicleta(s)
-- Fecha: ${reservation.startDate?.toLocaleDateString('es-ES')}
-- Horario: ${reservation.startTime} - ${reservation.endTime}
-- Duración: ${reservation.totalHours} hora(s)`);
+En una implementación completa, serías redirigido al sistema de pago de WooCommerce.`);
       
     } catch (error) {
       console.error('Error al crear la reserva:', error);
@@ -118,28 +128,36 @@ Detalles del pedido:
     }
   };
 
+  const getStepTitle = (step: number) => {
+    switch (step) {
+      case 1: return 'Seleccionar Bicicletas';
+      case 2: return 'Fecha y Hora';
+      case 3: return 'Opciones de Seguro';
+      case 4: return 'Datos de Contacto';
+      case 5: return 'Confirmar Reserva';
+      default: return '';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Sistema de Reserva de Bicicletas
+            Alquiler de Bicicletas
           </h1>
           <p className="text-lg text-gray-600">
-            Selecciona múltiples bicicletas para tu aventura
-          </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Conectado a WooCommerce - Gestión de inventario con Atum Multi-Inventory
+            Reserva fácil y rápida para tu próxima aventura
           </p>
         </div>
 
         {/* Progress Indicator */}
         <div className="flex justify-center mb-8">
-          <div className="flex items-center space-x-4">
-            {[1, 2, 3].map((step) => (
+          <div className="flex items-center space-x-2">
+            {[1, 2, 3, 4, 5].map((step) => (
               <div key={step} className="flex items-center">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                     step <= currentStep
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-200 text-gray-500'
@@ -147,13 +165,11 @@ Detalles del pedido:
                 >
                   {step}
                 </div>
-                <div className="ml-2 text-sm font-medium">
-                  {step === 1 && 'Seleccionar Bicicletas'}
-                  {step === 2 && 'Fecha y Hora'}
-                  {step === 3 && 'Confirmar Reserva'}
+                <div className="ml-2 text-xs font-medium hidden sm:block">
+                  {getStepTitle(step)}
                 </div>
-                {step < 3 && (
-                  <div className="ml-4 w-8 h-0.5 bg-gray-300"></div>
+                {step < 5 && (
+                  <div className="ml-2 mr-2 w-4 h-0.5 bg-gray-300"></div>
                 )}
               </div>
             ))}
@@ -176,6 +192,20 @@ Detalles del pedido:
           )}
           
           {currentStep === 3 && (
+            <InsuranceOptions
+              reservation={reservation}
+              setReservation={setReservation}
+            />
+          )}
+          
+          {currentStep === 4 && (
+            <PurchaseForm
+              customerData={customerData}
+              onCustomerDataChange={setCustomerData}
+            />
+          )}
+          
+          {currentStep === 5 && (
             <ReservationSummary
               reservation={reservation}
             />
@@ -194,7 +224,7 @@ Detalles del pedido:
             Anterior
           </Button>
           
-          {currentStep < 3 ? (
+          {currentStep < 5 ? (
             <Button
               onClick={handleNext}
               disabled={!canProceed()}

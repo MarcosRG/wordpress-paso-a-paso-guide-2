@@ -2,12 +2,12 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SelectedBike, ReservationData } from '@/pages/Index';
 import { useWooCommerceBikes } from '@/hooks/useWooCommerceBikes';
-import { Bike as BikeIcon, Plus, Minus, Trash2, AlertCircle } from 'lucide-react';
+import { CategoryFilter } from './CategoryFilter';
+import { Bike as BikeIcon, Plus, Minus, AlertCircle } from 'lucide-react';
 
 interface BikeSelectionProps {
   reservation: ReservationData;
@@ -15,55 +15,57 @@ interface BikeSelectionProps {
 }
 
 export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProps) => {
-  const [selectedSize, setSelectedSize] = useState<'S' | 'M' | 'L' | 'XL'>('M');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const { data: bikes, isLoading, error } = useWooCommerceBikes();
 
-  const addBike = (bike: any) => {
-    const existingBike = reservation.selectedBikes.find(
-      (b) => b.id === bike.id && b.size === selectedSize
-    );
+  // Obtener categorías únicas
+  const categories = bikes ? [...new Set(bikes.map(bike => bike.type))] : [];
+  
+  // Filtrar bicicletas por categoría
+  const filteredBikes = bikes ? bikes.filter(bike => 
+    selectedCategory === 'all' || bike.type === selectedCategory
+  ) : [];
 
-    if (existingBike) {
-      if (existingBike.quantity < bike.available) {
-        const updatedBikes = reservation.selectedBikes.map((b) =>
-          b.id === bike.id && b.size === selectedSize
-            ? { ...b, quantity: b.quantity + 1 }
-            : b
-        );
+  const getQuantityForBikeAndSize = (bikeId: string, size: string) => {
+    const selectedBike = reservation.selectedBikes.find(
+      b => b.id === bikeId && b.size === size
+    );
+    return selectedBike?.quantity || 0;
+  };
+
+  const updateBikeQuantity = (bike: any, size: 'S' | 'M' | 'L' | 'XL', change: number) => {
+    const currentQuantity = getQuantityForBikeAndSize(bike.id, size);
+    const newQuantity = currentQuantity + change;
+
+    if (newQuantity <= 0) {
+      // Remover la bicicleta
+      const updatedBikes = reservation.selectedBikes.filter(
+        b => !(b.id === bike.id && b.size === size)
+      );
+      setReservation({ ...reservation, selectedBikes: updatedBikes });
+    } else if (newQuantity <= bike.available) {
+      const existingBikeIndex = reservation.selectedBikes.findIndex(
+        b => b.id === bike.id && b.size === size
+      );
+
+      if (existingBikeIndex >= 0) {
+        // Actualizar cantidad existente
+        const updatedBikes = [...reservation.selectedBikes];
+        updatedBikes[existingBikeIndex].quantity = newQuantity;
         setReservation({ ...reservation, selectedBikes: updatedBikes });
+      } else {
+        // Agregar nueva bicicleta
+        const newSelectedBike: SelectedBike = {
+          ...bike,
+          quantity: newQuantity,
+          size: size
+        };
+        setReservation({
+          ...reservation,
+          selectedBikes: [...reservation.selectedBikes, newSelectedBike]
+        });
       }
-    } else {
-      const newSelectedBike: SelectedBike = {
-        ...bike,
-        quantity: 1,
-        size: selectedSize
-      };
-      setReservation({
-        ...reservation,
-        selectedBikes: [...reservation.selectedBikes, newSelectedBike]
-      });
     }
-  };
-
-  const updateQuantity = (bikeId: string, size: string, change: number) => {
-    const updatedBikes = reservation.selectedBikes
-      .map((bike) => {
-        if (bike.id === bikeId && bike.size === size) {
-          const newQuantity = bike.quantity + change;
-          return newQuantity > 0 ? { ...bike, quantity: newQuantity } : null;
-        }
-        return bike;
-      })
-      .filter(Boolean) as SelectedBike[];
-
-    setReservation({ ...reservation, selectedBikes: updatedBikes });
-  };
-
-  const removeBike = (bikeId: string, size: string) => {
-    const updatedBikes = reservation.selectedBikes.filter(
-      (bike) => !(bike.id === bikeId && bike.size === size)
-    );
-    setReservation({ ...reservation, selectedBikes: updatedBikes });
   };
 
   const getBikeTypeColor = (type: string) => {
@@ -80,14 +82,15 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">Cargando Bicicletas...</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i}>
               <CardHeader>
                 <Skeleton className="h-6 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
               </CardHeader>
               <CardContent>
+                <Skeleton className="h-32 w-full mb-4" />
                 <Skeleton className="h-4 w-full mb-2" />
                 <Skeleton className="h-10 w-full" />
               </CardContent>
@@ -104,7 +107,7 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
         <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
         <h2 className="text-xl font-semibold mb-2">Error al cargar las bicicletas</h2>
         <p className="text-gray-600 mb-4">
-          No se pudieron cargar las bicicletas desde WooCommerce. Por favor, verifica la conexión.
+          No se pudieron cargar las bicicletas desde WooCommerce.
         </p>
         <Button onClick={() => window.location.reload()}>
           Reintentar
@@ -118,9 +121,6 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
       <div className="text-center py-8">
         <BikeIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <h2 className="text-xl font-semibold mb-2">No hay bicicletas disponibles</h2>
-        <p className="text-gray-600">
-          No se encontraron bicicletas en tu tienda de WooCommerce.
-        </p>
       </div>
     );
   }
@@ -129,143 +129,115 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
     <div>
       <h2 className="text-2xl font-bold mb-6">Selecciona tus Bicicletas</h2>
       
-      {/* Size Selector */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium mb-2">
-          Talla por defecto para agregar:
-        </label>
-        <Select value={selectedSize} onValueChange={(value: 'S' | 'M' | 'L' | 'XL') => setSelectedSize(value)}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="S">S</SelectItem>
-            <SelectItem value="M">M</SelectItem>
-            <SelectItem value="L">L</SelectItem>
-            <SelectItem value="XL">XL</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <CategoryFilter
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+      />
 
-      {/* Available Bikes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
-        {bikes.map((bike) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredBikes.map((bike) => (
           <Card key={bike.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <BikeIcon size={20} />
-                    {bike.name}
-                  </CardTitle>
+                  <CardTitle className="text-lg">{bike.name}</CardTitle>
                   <Badge className={getBikeTypeColor(bike.type)}>
                     {bike.type.toUpperCase()}
                   </Badge>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-blue-600">
-                    ${bike.pricePerHour}/h
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {bike.available} disponibles
+                  <div className="text-xl font-bold text-blue-600">
+                    €{bike.pricePerHour}/h
                   </div>
                 </div>
               </div>
             </CardHeader>
+            
             <CardContent>
               <div className="mb-4">
                 <img 
                   src={bike.image} 
                   alt={bike.name}
-                  className="w-full h-48 object-cover rounded-lg"
+                  className="w-full h-32 object-cover rounded-lg"
                   onError={(e) => {
                     e.currentTarget.src = '/placeholder.svg';
                   }}
                 />
               </div>
-              <p className="text-gray-600 mb-4">{bike.description}</p>
-              <Button
-                onClick={() => addBike(bike)}
-                disabled={bike.available === 0}
-                className="w-full"
-              >
-                <Plus size={16} className="mr-2" />
-                Agregar (Talla {selectedSize})
-              </Button>
+              
+              <p className="text-gray-600 text-sm mb-4 line-clamp-2">{bike.description}</p>
+              
+              {/* Selector de Tamaños */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm">Tamaños disponibles:</h4>
+                {(['S', 'M', 'L', 'XL'] as const).map((size) => {
+                  const quantity = getQuantityForBikeAndSize(bike.id, size);
+                  const availableForSize = Math.floor(bike.available / 4); // Simulamos disponibilidad por tamaño
+                  
+                  return (
+                    <div key={size} className="flex items-center justify-between p-2 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium">{size}</span>
+                        <span className="text-xs text-gray-500">
+                          ({availableForSize} disponible{availableForSize !== 1 ? 's' : ''})
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateBikeQuantity(bike, size, -1)}
+                          disabled={quantity === 0}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-8 text-center font-medium text-sm">
+                          {quantity}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateBikeQuantity(bike, size, 1)}
+                          disabled={quantity >= availableForSize}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Selected Bikes */}
+      {/* Resumen de selección */}
       {reservation.selectedBikes.length > 0 && (
-        <div>
-          <h3 className="text-xl font-semibold mb-4">Bicicletas Seleccionadas</h3>
-          <div className="space-y-3">
+        <div className="mt-8 p-6 bg-blue-50 rounded-lg">
+          <h3 className="text-lg font-semibold mb-4">Resumen de tu selección</h3>
+          <div className="space-y-2">
             {reservation.selectedBikes.map((bike, index) => (
-              <Card key={`${bike.id}-${bike.size}-${index}`} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <BikeIcon size={24} />
-                    <div>
-                      <h4 className="font-semibold">{bike.name}</h4>
-                      <div className="flex items-center gap-2">
-                        <Badge className={getBikeTypeColor(bike.type)}>
-                          {bike.type.toUpperCase()}
-                        </Badge>
-                        <Badge variant="outline">Talla {bike.size}</Badge>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-semibold">${bike.pricePerHour}/h</div>
-                      <div className="text-sm text-gray-500">
-                        ${bike.pricePerHour * bike.quantity}/h total
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateQuantity(bike.id, bike.size, -1)}
-                      >
-                        <Minus size={14} />
-                      </Button>
-                      <span className="w-8 text-center font-semibold">
-                        {bike.quantity}
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateQuantity(bike.id, bike.size, 1)}
-                        disabled={bike.quantity >= bike.available}
-                      >
-                        <Plus size={14} />
-                      </Button>
-                    </div>
-                    
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => removeBike(bike.id, bike.size)}
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
+              <div key={`${bike.id}-${bike.size}-${index}`} className="flex justify-between items-center">
+                <span className="text-sm">
+                  {bike.name} (Talla {bike.size}) × {bike.quantity}
+                </span>
+                <span className="font-medium">
+                  €{bike.pricePerHour * bike.quantity}/h
+                </span>
+              </div>
             ))}
           </div>
-          
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-            <div className="text-lg font-semibold">
-              Total de bicicletas: {reservation.selectedBikes.reduce((sum, bike) => sum + bike.quantity, 0)}
-            </div>
-            <div className="text-lg font-semibold text-blue-600">
-              Precio por hora: ${reservation.selectedBikes.reduce((sum, bike) => sum + (bike.pricePerHour * bike.quantity), 0)}
+          <div className="border-t pt-3 mt-3">
+            <div className="flex justify-between items-center font-bold">
+              <span>Total por hora:</span>
+              <span className="text-blue-600">
+                €{reservation.selectedBikes.reduce((sum, bike) => sum + (bike.pricePerHour * bike.quantity), 0)}
+              </span>
             </div>
           </div>
         </div>

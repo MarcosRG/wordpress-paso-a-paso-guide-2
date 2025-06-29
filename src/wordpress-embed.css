@@ -1,0 +1,64 @@
+
+/* Estilos para hacer la app embebible en WordPress */
+
+/* Reset de estilos para evitar conflictos con el tema de WordPress */
+.bike-rental-app {
+  all: initial;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+.bike-rental-app * {
+  box-sizing: border-box;
+}
+
+/* Contenedor principal responsivo */
+.bike-rental-app {
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Asegurar que no herede estilos del tema WordPress */
+.bike-rental-app h1,
+.bike-rental-app h2,
+.bike-rental-app h3,
+.bike-rental-app h4,
+.bike-rental-app h5,
+.bike-rental-app h6 {
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.bike-rental-app p {
+  margin: 0 0 1rem 0;
+}
+
+.bike-rental-app button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.bike-rental-app input {
+  font-family: inherit;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .bike-rental-app {
+    padding: 0.5rem;
+  }
+  
+  .bike-rental-app .grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Evitar conflictos con z-index de WordPress */
+.bike-rental-app .dialog-overlay,
+.bike-rental-app .popover-content {
+  z-index: 999999 !important;
+}
