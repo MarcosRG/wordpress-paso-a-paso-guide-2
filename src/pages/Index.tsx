@@ -6,6 +6,8 @@ import { ReservationSummary } from '@/components/ReservationSummary';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { orderService } from '@/services/orderService';
+import { useToast } from '@/hooks/use-toast';
 
 export interface Bike {
   id: string;
@@ -15,6 +17,7 @@ export interface Bike {
   available: number;
   image: string;
   description: string;
+  wooCommerceData?: any;
 }
 
 export interface SelectedBike extends Bike {
@@ -34,6 +37,9 @@ export interface ReservationData {
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const { toast } = useToast();
+  
   const [reservation, setReservation] = useState<ReservationData>({
     selectedBikes: [],
     startDate: null,
@@ -67,6 +73,51 @@ const Index = () => {
     }
   };
 
+  const handleConfirmReservation = async () => {
+    setIsCreatingOrder(true);
+    
+    try {
+      console.log('Iniciando creación de pedido...', reservation);
+      
+      // Crear el pedido en WooCommerce
+      const order = await orderService.createReservationOrder(reservation);
+      
+      toast({
+        title: "¡Reserva Creada Exitosamente!",
+        description: `Tu pedido #${order.id} ha sido creado. Serás redirigido al pago.`,
+      });
+      
+      // En una implementación completa, aquí redirigirías al checkout de WooCommerce
+      // window.location.href = `https://bikesultoursgest.com/checkout/?order-pay=${order.id}&key=${order.order_key}`;
+      
+      // Por ahora, mostramos un mensaje
+      alert(`¡Reserva confirmada! 
+      
+Número de pedido: #${order.id}
+Total: €${reservation.totalPrice}
+
+En una implementación completa, serías redirigido al sistema de pago de WooCommerce.
+
+Detalles del pedido:
+- ${reservation.selectedBikes.length} tipo(s) de bicicleta seleccionada(s)
+- Total de ${reservation.selectedBikes.reduce((sum, bike) => sum + bike.quantity, 0)} bicicleta(s)
+- Fecha: ${reservation.startDate?.toLocaleDateString('es-ES')}
+- Horario: ${reservation.startTime} - ${reservation.endTime}
+- Duración: ${reservation.totalHours} hora(s)`);
+      
+    } catch (error) {
+      console.error('Error al crear la reserva:', error);
+      
+      toast({
+        title: "Error al crear la reserva",
+        description: "Hubo un problema al procesar tu reserva. Por favor, inténtalo nuevamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingOrder(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
       <div className="max-w-6xl mx-auto">
@@ -76,6 +127,9 @@ const Index = () => {
           </h1>
           <p className="text-lg text-gray-600">
             Selecciona múltiples bicicletas para tu aventura
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Conectado a WooCommerce - Gestión de inventario con Atum Multi-Inventory
           </p>
         </div>
 
@@ -152,9 +206,10 @@ const Index = () => {
           ) : (
             <Button
               className="bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => alert('¡Reserva confirmada! En una implementación real, aquí se procesaría el pago.')}
+              onClick={handleConfirmReservation}
+              disabled={isCreatingOrder}
             >
-              Confirmar Reserva
+              {isCreatingOrder ? 'Procesando...' : 'Confirmar Reserva'}
             </Button>
           )}
         </div>

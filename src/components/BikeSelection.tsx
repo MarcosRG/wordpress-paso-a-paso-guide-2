@@ -4,47 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Bike, SelectedBike, ReservationData } from '@/pages/Index';
-import { Bike as BikeIcon, Plus, Minus, Trash2 } from 'lucide-react';
-
-const availableBikes: Bike[] = [
-  {
-    id: '1',
-    name: 'Mountain Explorer',
-    type: 'mountain',
-    pricePerHour: 15,
-    available: 8,
-    image: '/placeholder.svg',
-    description: 'Perfecta para senderos y montañas'
-  },
-  {
-    id: '2',
-    name: 'City Cruiser',
-    type: 'hybrid',
-    pricePerHour: 12,
-    available: 12,
-    image: '/placeholder.svg',
-    description: 'Ideal para paseos por la ciudad'
-  },
-  {
-    id: '3',
-    name: 'Speed Racer',
-    type: 'road',
-    pricePerHour: 18,
-    available: 6,
-    image: '/placeholder.svg',
-    description: 'Para los amantes de la velocidad'
-  },
-  {
-    id: '4',
-    name: 'Electric Power',
-    type: 'electric',
-    pricePerHour: 25,
-    available: 4,
-    image: '/placeholder.svg',
-    description: 'Asistencia eléctrica para mayor comodidad'
-  }
-];
+import { Skeleton } from '@/components/ui/skeleton';
+import { SelectedBike, ReservationData } from '@/pages/Index';
+import { useWooCommerceBikes } from '@/hooks/useWooCommerceBikes';
+import { Bike as BikeIcon, Plus, Minus, Trash2, AlertCircle } from 'lucide-react';
 
 interface BikeSelectionProps {
   reservation: ReservationData;
@@ -53,8 +16,9 @@ interface BikeSelectionProps {
 
 export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProps) => {
   const [selectedSize, setSelectedSize] = useState<'S' | 'M' | 'L' | 'XL'>('M');
+  const { data: bikes, isLoading, error } = useWooCommerceBikes();
 
-  const addBike = (bike: Bike) => {
+  const addBike = (bike: any) => {
     const existingBike = reservation.selectedBikes.find(
       (b) => b.id === bike.id && b.size === selectedSize
     );
@@ -112,6 +76,55 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
     }
   };
 
+  if (isLoading) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Cargando Bicicletas...</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-10 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-semibold mb-2">Error al cargar las bicicletas</h2>
+        <p className="text-gray-600 mb-4">
+          No se pudieron cargar las bicicletas desde WooCommerce. Por favor, verifica la conexión.
+        </p>
+        <Button onClick={() => window.location.reload()}>
+          Reintentar
+        </Button>
+      </div>
+    );
+  }
+
+  if (!bikes || bikes.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <BikeIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+        <h2 className="text-xl font-semibold mb-2">No hay bicicletas disponibles</h2>
+        <p className="text-gray-600">
+          No se encontraron bicicletas en tu tienda de WooCommerce.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Selecciona tus Bicicletas</h2>
@@ -136,7 +149,7 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
 
       {/* Available Bikes */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
-        {availableBikes.map((bike) => (
+        {bikes.map((bike) => (
           <Card key={bike.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -160,6 +173,16 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
               </div>
             </CardHeader>
             <CardContent>
+              <div className="mb-4">
+                <img 
+                  src={bike.image} 
+                  alt={bike.name}
+                  className="w-full h-48 object-cover rounded-lg"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                />
+              </div>
               <p className="text-gray-600 mb-4">{bike.description}</p>
               <Button
                 onClick={() => addBike(bike)}
