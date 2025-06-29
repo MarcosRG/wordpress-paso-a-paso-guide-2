@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { wooCommerceApi, WooCommerceProduct, WooCommerceVariation } from '@/services/woocommerceApi';
 import { Bike } from '@/pages/Index';
@@ -56,7 +55,7 @@ export const useWooCommerceBikes = () => {
       return bikes;
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
-    cacheTime: 10 * 60 * 1000, // 10 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos (previously cacheTime)
   });
 };
 
