@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,23 +10,30 @@ import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <div className="bike-rental-app">
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
-  </div>
-);
+const App = () => {
+  // Check if running in WordPress iframe
+  const isWordPressEmbed = window.location !== window.parent.location;
+
+  return (
+    <div
+      className={`bike-rental-app ${isWordPressEmbed ? "wordpress-embed" : ""}`}
+    >
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </LanguageProvider>
+      </QueryClientProvider>
+    </div>
+  );
+};
 
 export default App;
