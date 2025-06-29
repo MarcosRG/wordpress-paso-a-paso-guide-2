@@ -45,16 +45,20 @@ export const orderService = {
             value: reservation.startDate?.toLocaleDateString('es-ES') || ''
           },
           {
-            key: 'Hora de inicio',
-            value: reservation.startTime
+            key: 'Fecha de fin',
+            value: reservation.endDate?.toLocaleDateString('es-ES') || ''
           },
           {
-            key: 'Hora de fin',
-            value: reservation.endTime
+            key: 'Hora de recogida',
+            value: reservation.pickupTime
           },
           {
-            key: 'Total de horas',
-            value: reservation.totalHours.toString()
+            key: 'Hora de devolución',
+            value: reservation.returnTime
+          },
+          {
+            key: 'Total de días',
+            value: reservation.totalDays.toString()
           },
           {
             key: 'Tipo de reserva',
@@ -78,16 +82,20 @@ export const orderService = {
             value: reservation.startDate?.toISOString() || ''
           },
           {
-            key: 'rental_start_time',
-            value: reservation.startTime
+            key: 'rental_end_date',
+            value: reservation.endDate?.toISOString() || ''
           },
           {
-            key: 'rental_end_time',
-            value: reservation.endTime
+            key: 'rental_pickup_time',
+            value: reservation.pickupTime
           },
           {
-            key: 'total_rental_hours',
-            value: reservation.totalHours.toString()
+            key: 'rental_return_time',
+            value: reservation.returnTime
+          },
+          {
+            key: 'total_rental_days',
+            value: reservation.totalDays.toString()
           },
           {
             key: 'total_bikes',

@@ -3,12 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ReservationData } from '@/pages/Index';
 import { Bike, CalendarDays, Clock, CreditCard, Users } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ReservationSummaryProps {
   reservation: ReservationData;
 }
 
 export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => {
+  const { t } = useLanguage();
+  
   const getBikeTypeColor = (type: string) => {
     switch (type) {
       case 'mountain': return 'bg-green-100 text-green-800';
@@ -49,9 +52,9 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold">${bike.pricePerHour}/h</div>
+                    <div className="font-semibold">€{bike.pricePerDay}/día</div>
                     <div className="text-sm text-gray-500">
-                      ${bike.pricePerHour * bike.quantity}/h total
+                      €{bike.pricePerDay * bike.quantity}/día total
                     </div>
                   </div>
                 </div>
@@ -73,9 +76,14 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
               <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
                 <CalendarDays size={20} className="text-blue-600" />
                 <div>
-                  <div className="font-semibold">Fecha</div>
+                  <div className="font-semibold">Fechas</div>
                   <div className="text-gray-600">
                     {reservation.startDate?.toLocaleDateString('es-ES', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })} - {reservation.endDate?.toLocaleDateString('es-ES', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
@@ -88,12 +96,12 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
               <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                 <Clock size={20} className="text-green-600" />
                 <div>
-                  <div className="font-semibold">Horario</div>
+                  <div className="font-semibold">Horarios</div>
                   <div className="text-gray-600">
-                    {reservation.startTime} - {reservation.endTime}
+                    Recogida: {reservation.pickupTime} | Devolución: {reservation.returnTime}
                   </div>
                   <div className="text-sm text-gray-500">
-                    ({reservation.totalHours} hora{reservation.totalHours > 1 ? 's' : ''})
+                    ({reservation.totalDays} día{reservation.totalDays > 1 ? 's' : ''})
                   </div>
                 </div>
               </div>
@@ -126,7 +134,7 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
                   {bike.name} (Talla {bike.size}) x{bike.quantity}
                 </div>
                 <div>
-                  ${bike.pricePerHour * bike.quantity} × {reservation.totalHours}h = ${bike.pricePerHour * bike.quantity * reservation.totalHours}
+                  €{bike.pricePerDay * bike.quantity} × {reservation.totalDays} días = €{bike.pricePerDay * bike.quantity * reservation.totalDays}
                 </div>
               </div>
             ))}
@@ -134,7 +142,7 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
             <div className="border-t pt-3 mt-3">
               <div className="flex justify-between items-center text-lg font-semibold">
                 <div>Total a Pagar:</div>
-                <div className="text-2xl text-blue-600">${reservation.totalPrice}</div>
+                <div className="text-2xl text-blue-600">€{reservation.totalPrice}</div>
               </div>
             </div>
           </div>
@@ -148,10 +156,10 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
         </CardHeader>
         <CardContent>
           <ul className="space-y-2 text-yellow-700">
-            <li>• Por favor, llega 15 minutos antes de tu hora de reserva</li>
+            <li>• Por favor, llega 15 minutos antes de tu hora de recogida</li>
             <li>• Se requiere identificación válida para retirar las bicicletas</li>
             <li>• Incluye casco y kit básico de reparación</li>
-            <li>• Cancilaciones gratuitas hasta 24 horas antes</li>
+            <li>• Cancelaciones gratuitas hasta 24 horas antes</li>
             <li>• En caso de lluvia, se puede reprogramar sin costo</li>
           </ul>
         </CardContent>
