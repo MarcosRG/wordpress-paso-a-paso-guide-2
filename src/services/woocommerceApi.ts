@@ -70,6 +70,80 @@ const apiHeaders = {
   "Content-Type": "application/json",
 };
 
+// Utility function to extract day-based pricing from product meta data
+export const extractDayBasedPricing = (
+  product: WooCommerceProduct,
+): PriceRange[] => {
+  // Look for day-based pricing in meta_data
+  const pricingMeta = product.meta_data?.find(
+    (meta) => meta.key === "_day_pricing" || meta.key === "day_pricing",
+  );
+
+  if (pricingMeta && pricingMeta.value) {
+    try {
+      // Expected format: [{"minDays": 1, "maxDays": 3, "pricePerDay": 60}, ...]
+      return JSON.parse(pricingMeta.value);
+    } catch (e) {
+      console.warn("Error parsing day-based pricing:", e);
+    }
+  }
+
+  // Fallback: create default pricing based on regular price
+  const basePrice = parseFloat(product.regular_price || product.price || "0");
+  return [{ minDays: 1, maxDays: 999, pricePerDay: basePrice }];
+};
+
+// Function to get price for specific number of days
+export const getPriceForDays = (
+  priceRanges: PriceRange[],
+  days: number,
+): number => {
+  const range = priceRanges.find(
+    (range) => days >= range.minDays && days <= range.maxDays,
+  );
+
+  return range
+    ? range.pricePerDay
+    : priceRanges[priceRanges.length - 1]?.pricePerDay || 0;
+};
+
+// Function to check product availability based on ATUM inventory
+export const checkAtumAvailability = async (
+  productId: number,
+  variationId?: number,
+): Promise<number> => {
+  try {
+    const endpoint = variationId
+      ? `${WOOCOMMERCE_API_BASE}/products/${productId}/variations/${variationId}`
+      : `${WOOCOMMERCE_API_BASE}/products/${productId}`;
+
+    const response = await fetch(endpoint, { headers: apiHeaders });
+
+    if (!response.ok) {
+      throw new Error(`Error checking availability: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Check for ATUM inventory data in meta_data
+    const atumStock = data.meta_data?.find(
+      (meta: any) =>
+        meta.key === "_atum_stock_quantity" ||
+        meta.key === "atum_stock_quantity",
+    );
+
+    if (atumStock) {
+      return parseInt(atumStock.value) || 0;
+    }
+
+    // Fallback to regular WooCommerce stock
+    return data.stock_quantity || 0;
+  } catch (error) {
+    console.error("Error checking ATUM availability:", error);
+    return 0;
+  }
+};
+
 export const wooCommerceApi = {
   // Obtener todos los productos (bicicletas)
   async getProducts(): Promise<WooCommerceProduct[]> {
