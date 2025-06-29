@@ -1,16 +1,15 @@
-
-import { useState } from 'react';
-import { BikeSelection } from '@/components/BikeSelection';
-import { DateTimeSelection } from '@/components/DateTimeSelection';
-import { InsuranceOptions } from '@/components/InsuranceOptions';
-import { PurchaseForm, CustomerData } from '@/components/PurchaseForm';
-import { ReservationSummary } from '@/components/ReservationSummary';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { orderService } from '@/services/orderService';
-import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useState } from "react";
+import { BikeSelection } from "@/components/BikeSelection";
+import { DateTimeSelection } from "@/components/DateTimeSelection";
+import { InsuranceOptions } from "@/components/InsuranceOptions";
+import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
+import { ReservationSummary } from "@/components/ReservationSummary";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { orderService } from "@/services/orderService";
+import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface Bike {
   id: string;
@@ -25,7 +24,7 @@ export interface Bike {
 
 export interface SelectedBike extends Bike {
   quantity: number;
-  size: 'S' | 'M' | 'L' | 'XL';
+  size: "S" | "M" | "L" | "XL";
 }
 
 export interface ReservationData {
@@ -37,7 +36,7 @@ export interface ReservationData {
   totalDays: number;
   totalPrice: number;
   insurance?: {
-    id: 'free' | 'premium';
+    id: "free" | "premium";
     name: string;
     price: number;
   };
@@ -48,25 +47,25 @@ const Index = () => {
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
-  
+
   const [reservation, setReservation] = useState<ReservationData>({
     selectedBikes: [],
     startDate: null,
     endDate: null,
-    pickupTime: '09:00',
-    returnTime: '17:00',
+    pickupTime: "09:00",
+    returnTime: "17:00",
     totalDays: 0,
-    totalPrice: 0
+    totalPrice: 0,
   });
 
   const [customerData, setCustomerData] = useState<CustomerData>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    postalCode: ''
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    postalCode: "",
   });
 
   const handleNext = () => {
@@ -90,7 +89,12 @@ const Index = () => {
       case 3:
         return reservation.insurance !== undefined;
       case 4:
-        return customerData.firstName && customerData.lastName && customerData.email && customerData.phone;
+        return (
+          customerData.firstName &&
+          customerData.lastName &&
+          customerData.email &&
+          customerData.phone
+        );
       default:
         return true;
     }
@@ -98,30 +102,43 @@ const Index = () => {
 
   const handleConfirmReservation = async () => {
     setIsCreatingOrder(true);
-    
-    try {
-      console.log('Iniciando criação do pedido...', reservation);
-      
-      const order = await orderService.createReservationOrder(reservation, customerData);
-      
-      toast({
-        title: "Reserva Criada com Sucesso!",
-        description: `Seu pedido #${order.id} foi criado. Você será redirecionado para o pagamento.`,
-      });
-      
-      alert(`Reserva confirmada! 
-      
-Número do pedido: #${order.id}
-Total: €${reservation.totalPrice}
 
-Em uma implementação completa, você seria redirecionado para o sistema de pagamento do WooCommerce.`);
-      
+    try {
+      console.log("Iniciando criação do pedido...", reservation);
+
+      const order = await orderService.createReservationOrder(
+        reservation,
+        customerData,
+      );
+
+      toast({
+        title: t("processing"),
+        description: `${t("confirm")} #${order.id}. ${t("proceedToCheckout")}`,
+      });
+
+      // Redirect to WooCommerce checkout
+      const checkoutUrl = `https://bikesultoursgest.com/checkout/?order-pay=${order.id}&key=${order.order_key || ""}`;
+
+      // Store order data for later use
+      localStorage.setItem(
+        "bikesul_order",
+        JSON.stringify({
+          orderId: order.id,
+          orderKey: order.order_key,
+          reservation,
+          customerData,
+        }),
+      );
+
+      // Redirect to WooCommerce checkout
+      window.location.href = checkoutUrl;
     } catch (error) {
-      console.error('Erro ao criar a reserva:', error);
-      
+      console.error("Erro ao criar a reserva:", error);
+
       toast({
         title: "Erro ao criar a reserva",
-        description: "Houve um problema ao processar sua reserva. Por favor, tente novamente.",
+        description:
+          "Houve um problema ao processar sua reserva. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -131,12 +148,18 @@ Em uma implementação completa, você seria redirecionado para o sistema de pag
 
   const getStepTitle = (step: number) => {
     switch (step) {
-      case 1: return t('selectBikes');
-      case 2: return t('dateTime');
-      case 3: return t('insurance');
-      case 4: return t('contactData');
-      case 5: return t('confirmReservation');
-      default: return '';
+      case 1:
+        return t("selectBikes");
+      case 2:
+        return t("dateTime");
+      case 3:
+        return t("insurance");
+      case 4:
+        return t("contactData");
+      case 5:
+        return t("confirmReservation");
+      default:
+        return "";
     }
   };
 
@@ -145,11 +168,9 @@ Em uma implementação completa, você seria redirecionado para o sistema de pag
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            {t('bikeRental')}
+            {t("bikeRental")}
           </h1>
-          <p className="text-lg text-gray-600">
-            {t('subtitle')}
-          </p>
+          <p className="text-lg text-gray-600">{t("subtitle")}</p>
         </div>
 
         {/* Progress Indicator */}
@@ -160,8 +181,8 @@ Em uma implementação completa, você seria redirecionado para o sistema de pag
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                     step <= currentStep
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-500'
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-500"
                   }`}
                 >
                   {step}
@@ -184,32 +205,30 @@ Em uma implementação completa, você seria redirecionado para o sistema de pag
               setReservation={setReservation}
             />
           )}
-          
+
           {currentStep === 2 && (
             <DateTimeSelection
               reservation={reservation}
               setReservation={setReservation}
             />
           )}
-          
+
           {currentStep === 3 && (
             <InsuranceOptions
               reservation={reservation}
               setReservation={setReservation}
             />
           )}
-          
+
           {currentStep === 4 && (
             <PurchaseForm
               customerData={customerData}
               onCustomerDataChange={setCustomerData}
             />
           )}
-          
+
           {currentStep === 5 && (
-            <ReservationSummary
-              reservation={reservation}
-            />
+            <ReservationSummary reservation={reservation} />
           )}
         </Card>
 
@@ -222,16 +241,16 @@ Em uma implementação completa, você seria redirecionado para o sistema de pag
             className="flex items-center gap-2"
           >
             <ArrowLeft size={16} />
-            {t('previous')}
+            {t("previous")}
           </Button>
-          
+
           {currentStep < 5 ? (
             <Button
               onClick={handleNext}
               disabled={!canProceed()}
               className="flex items-center gap-2"
             >
-              {t('next')}
+              {t("next")}
               <ArrowRight size={16} />
             </Button>
           ) : (
@@ -240,7 +259,7 @@ Em uma implementação completa, você seria redirecionado para o sistema de pag
               onClick={handleConfirmReservation}
               disabled={isCreatingOrder}
             >
-              {isCreatingOrder ? t('processing') : t('confirm')}
+              {isCreatingOrder ? t("processing") : t("confirm")}
             </Button>
           )}
         </div>
