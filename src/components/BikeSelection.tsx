@@ -1,13 +1,13 @@
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SelectedBike, ReservationData } from '@/pages/Index';
-import { useWooCommerceBikes } from '@/hooks/useWooCommerceBikes';
+import { useWooCommerceBikes, useWooCommerceCategories } from '@/hooks/useWooCommerceBikes';
 import { CategoryFilter } from './CategoryFilter';
-import { Bike as BikeIcon, Plus, Minus, AlertCircle } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Bike as BikeIcon, Plus, Minus, AlertCircle, Globe } from 'lucide-react';
 
 interface BikeSelectionProps {
   reservation: ReservationData;
@@ -17,13 +17,12 @@ interface BikeSelectionProps {
 export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const { data: bikes, isLoading, error } = useWooCommerceBikes();
+  const { data: categories = [] } = useWooCommerceCategories();
+  const { language, setLanguage, t } = useLanguage();
 
-  // Obtener categorías únicas
-  const categories = bikes ? [...new Set(bikes.map(bike => bike.type))] : [];
-  
   // Filtrar bicicletas por categoría
   const filteredBikes = bikes ? bikes.filter(bike => 
-    selectedCategory === 'all' || bike.type === selectedCategory
+    selectedCategory === 'all' || bike.type === selectedCategory.toLowerCase()
   ) : [];
 
   const getQuantityForBikeAndSize = (bikeId: string, size: string) => {
@@ -68,31 +67,16 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
     }
   };
 
-  const getBikeTypeColor = (type: string) => {
-    switch (type) {
-      case 'mountain': return 'bg-green-100 text-green-800';
-      case 'road': return 'bg-blue-100 text-blue-800';
-      case 'hybrid': return 'bg-purple-100 text-purple-800';
-      case 'electric': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   if (isLoading) {
     return (
       <div>
-        <h2 className="text-2xl font-bold mb-6">Cargando Bicicletas...</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('selectBikes')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardHeader>
-              <CardContent>
+              <CardContent className="p-4">
                 <Skeleton className="h-32 w-full mb-4" />
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-20 w-full" />
               </CardContent>
             </Card>
           ))}
@@ -106,9 +90,6 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
       <div className="text-center py-8">
         <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
         <h2 className="text-xl font-semibold mb-2">Error al cargar las bicicletas</h2>
-        <p className="text-gray-600 mb-4">
-          No se pudieron cargar las bicicletas desde WooCommerce.
-        </p>
         <Button onClick={() => window.location.reload()}>
           Reintentar
         </Button>
@@ -127,7 +108,27 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Selecciona tus Bicicletas</h2>
+      {/* Header con selector de idioma */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">{t('selectBikes')}</h2>
+        <div className="flex items-center gap-2">
+          <Globe className="h-4 w-4" />
+          <Button
+            variant={language === 'pt' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setLanguage('pt')}
+          >
+            PT
+          </Button>
+          <Button
+            variant={language === 'en' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setLanguage('en')}
+          >
+            EN
+          </Button>
+        </div>
+      </div>
       
       <CategoryFilter
         categories={categories}
@@ -138,49 +139,39 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBikes.map((bike) => (
           <Card key={bike.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">{bike.name}</CardTitle>
-                  <Badge className={getBikeTypeColor(bike.type)}>
-                    {bike.type.toUpperCase()}
-                  </Badge>
-                </div>
-                <div className="text-right">
-                  <div className="text-xl font-bold text-blue-600">
-                    €{bike.pricePerHour}/h
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent>
+            <CardContent className="p-4">
+              {/* Imagen de la bicicleta */}
               <div className="mb-4">
                 <img 
                   src={bike.image} 
                   alt={bike.name}
-                  className="w-full h-32 object-cover rounded-lg"
+                  className="w-full h-48 object-cover rounded-lg"
                   onError={(e) => {
                     e.currentTarget.src = '/placeholder.svg';
                   }}
                 />
               </div>
               
-              <p className="text-gray-600 text-sm mb-4 line-clamp-2">{bike.description}</p>
+              <div className="text-center mb-4">
+                <h3 className="font-semibold text-lg">{bike.name}</h3>
+                <div className="text-xl font-bold text-blue-600">
+                  €{bike.pricePerDay}/{t('days').slice(0, -1)}
+                </div>
+              </div>
               
               {/* Selector de Tamaños */}
-              <div className="space-y-3">
-                <h4 className="font-medium text-sm">Tamaños disponibles:</h4>
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm text-center">{t('availableSizes')}:</h4>
                 {(['S', 'M', 'L', 'XL'] as const).map((size) => {
                   const quantity = getQuantityForBikeAndSize(bike.id, size);
-                  const availableForSize = Math.floor(bike.available / 4); // Simulamos disponibilidad por tamaño
+                  const availableForSize = Math.floor(bike.available / 4);
                   
                   return (
                     <div key={size} className="flex items-center justify-between p-2 border rounded-lg">
                       <div className="flex items-center gap-3">
-                        <span className="font-medium">{size}</span>
+                        <span className="font-medium w-6">{size}</span>
                         <span className="text-xs text-gray-500">
-                          ({availableForSize} disponible{availableForSize !== 1 ? 's' : ''})
+                          ({availableForSize} {availableForSize === 1 ? t('available') : t('availables')})
                         </span>
                       </div>
                       
@@ -219,24 +210,24 @@ export const BikeSelection = ({ reservation, setReservation }: BikeSelectionProp
       {/* Resumen de selección */}
       {reservation.selectedBikes.length > 0 && (
         <div className="mt-8 p-6 bg-blue-50 rounded-lg">
-          <h3 className="text-lg font-semibold mb-4">Resumen de tu selección</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('selectionSummary')}</h3>
           <div className="space-y-2">
             {reservation.selectedBikes.map((bike, index) => (
               <div key={`${bike.id}-${bike.size}-${index}`} className="flex justify-between items-center">
                 <span className="text-sm">
-                  {bike.name} (Talla {bike.size}) × {bike.quantity}
+                  {bike.name} ({bike.size}) × {bike.quantity}
                 </span>
                 <span className="font-medium">
-                  €{bike.pricePerHour * bike.quantity}/h
+                  €{bike.pricePerDay * bike.quantity}/{t('days').slice(0, -1)}
                 </span>
               </div>
             ))}
           </div>
           <div className="border-t pt-3 mt-3">
             <div className="flex justify-between items-center font-bold">
-              <span>Total por hora:</span>
+              <span>{t('totalPerDay')}:</span>
               <span className="text-blue-600">
-                €{reservation.selectedBikes.reduce((sum, bike) => sum + (bike.pricePerHour * bike.quantity), 0)}
+                €{reservation.selectedBikes.reduce((sum, bike) => sum + (bike.pricePerDay * bike.quantity), 0)}
               </span>
             </div>
           </div>

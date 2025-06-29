@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { wooCommerceApi, WooCommerceProduct, WooCommerceVariation } from '@/services/woocommerceApi';
 import { Bike } from '@/pages/Index';
@@ -24,26 +25,17 @@ export const useWooCommerceBikes = () => {
             ? parseFloat(variations[0].price || variations[0].regular_price || '0')
             : parseFloat(product.price || product.regular_price || '0');
           
-          // Determinar el tipo de bicicleta basado en categorías o nombre
-          let bikeType: 'mountain' | 'road' | 'hybrid' | 'electric' = 'hybrid';
-          const productName = product.name.toLowerCase();
-          
-          if (productName.includes('mountain') || productName.includes('montaña')) {
-            bikeType = 'mountain';
-          } else if (productName.includes('road') || productName.includes('ruta') || productName.includes('carretera')) {
-            bikeType = 'road';
-          } else if (productName.includes('electric') || productName.includes('eléctrica') || productName.includes('electrica')) {
-            bikeType = 'electric';
-          }
+          // Obtener categoría principal del producto
+          const primaryCategory = product.categories.length > 0 ? product.categories[0].name : 'general';
           
           return {
             id: product.id.toString(),
             name: product.name,
-            type: bikeType,
-            pricePerHour: basePrice,
+            type: primaryCategory.toLowerCase(),
+            pricePerDay: basePrice, // Cambiado de pricePerHour a pricePerDay
             available: totalStock,
             image: product.images.length > 0 ? product.images[0].src : '/placeholder.svg',
-            description: product.short_description || product.description || 'Bicicleta disponible para alquiler',
+            description: product.short_description || product.description || '',
             wooCommerceData: {
               product,
               variations
@@ -56,6 +48,26 @@ export const useWooCommerceBikes = () => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos (previously cacheTime)
+  });
+};
+
+// Hook para obtener categorías únicas
+export const useWooCommerceCategories = () => {
+  return useQuery({
+    queryKey: ['woocommerce-categories'],
+    queryFn: async (): Promise<string[]> => {
+      const products = await wooCommerceApi.getProducts();
+      const categories = new Set<string>();
+      
+      products.forEach(product => {
+        product.categories.forEach(category => {
+          categories.add(category.name);
+        });
+      });
+      
+      return Array.from(categories);
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutos
   });
 };
 

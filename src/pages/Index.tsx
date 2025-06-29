@@ -10,12 +10,13 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { orderService } from '@/services/orderService';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface Bike {
   id: string;
   name: string;
-  type: 'mountain' | 'road' | 'hybrid' | 'electric';
-  pricePerHour: number;
+  type: string;
+  pricePerDay: number;
   available: number;
   image: string;
   description: string;
@@ -31,9 +32,9 @@ export interface ReservationData {
   selectedBikes: SelectedBike[];
   startDate: Date | null;
   endDate: Date | null;
-  startTime: string;
-  endTime: string;
-  totalHours: number;
+  pickupTime: string;
+  returnTime: string;
+  totalDays: number;
   totalPrice: number;
   insurance?: {
     id: 'free' | 'premium';
@@ -46,14 +47,15 @@ const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
   
   const [reservation, setReservation] = useState<ReservationData>({
     selectedBikes: [],
     startDate: null,
     endDate: null,
-    startTime: '09:00',
-    endTime: '17:00',
-    totalHours: 0,
+    pickupTime: '09:00',
+    returnTime: '17:00',
+    totalDays: 0,
     totalPrice: 0
   });
 
@@ -68,7 +70,7 @@ const Index = () => {
   });
 
   const handleNext = () => {
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -98,29 +100,28 @@ const Index = () => {
     setIsCreatingOrder(true);
     
     try {
-      console.log('Iniciando creación de pedido...', reservation);
+      console.log('Iniciando criação do pedido...', reservation);
       
       const order = await orderService.createReservationOrder(reservation, customerData);
       
       toast({
-        title: "¡Reserva Creada Exitosamente!",
-        description: `Tu pedido #${order.id} ha sido creado. Serás redirigido al pago.`,
+        title: "Reserva Criada com Sucesso!",
+        description: `Seu pedido #${order.id} foi criado. Você será redirecionado para o pagamento.`,
       });
       
-      // Aquí se redirigiría al checkout de WooCommerce
-      alert(`¡Reserva confirmada! 
+      alert(`Reserva confirmada! 
       
-Número de pedido: #${order.id}
+Número do pedido: #${order.id}
 Total: €${reservation.totalPrice}
 
-En una implementación completa, serías redirigido al sistema de pago de WooCommerce.`);
+Em uma implementação completa, você seria redirecionado para o sistema de pagamento do WooCommerce.`);
       
     } catch (error) {
-      console.error('Error al crear la reserva:', error);
+      console.error('Erro ao criar a reserva:', error);
       
       toast({
-        title: "Error al crear la reserva",
-        description: "Hubo un problema al procesar tu reserva. Por favor, inténtalo nuevamente.",
+        title: "Erro ao criar a reserva",
+        description: "Houve um problema ao processar sua reserva. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -130,11 +131,11 @@ En una implementación completa, serías redirigido al sistema de pago de WooCom
 
   const getStepTitle = (step: number) => {
     switch (step) {
-      case 1: return 'Seleccionar Bicicletas';
-      case 2: return 'Fecha y Hora';
-      case 3: return 'Opciones de Seguro';
-      case 4: return 'Datos de Contacto';
-      case 5: return 'Confirmar Reserva';
+      case 1: return t('selectBikes');
+      case 2: return t('dateTime');
+      case 3: return t('insurance');
+      case 4: return t('contactData');
+      case 5: return t('confirmReservation');
       default: return '';
     }
   };
@@ -144,10 +145,10 @@ En una implementación completa, serías redirigido al sistema de pago de WooCom
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Alquiler de Bicicletas
+            {t('bikeRental')}
           </h1>
           <p className="text-lg text-gray-600">
-            Reserva fácil y rápida para tu próxima aventura
+            {t('subtitle')}
           </p>
         </div>
 
@@ -221,7 +222,7 @@ En una implementación completa, serías redirigido al sistema de pago de WooCom
             className="flex items-center gap-2"
           >
             <ArrowLeft size={16} />
-            Anterior
+            {t('previous')}
           </Button>
           
           {currentStep < 5 ? (
@@ -230,7 +231,7 @@ En una implementación completa, serías redirigido al sistema de pago de WooCom
               disabled={!canProceed()}
               className="flex items-center gap-2"
             >
-              Siguiente
+              {t('next')}
               <ArrowRight size={16} />
             </Button>
           ) : (
@@ -239,7 +240,7 @@ En una implementación completa, serías redirigido al sistema de pago de WooCom
               onClick={handleConfirmReservation}
               disabled={isCreatingOrder}
             >
-              {isCreatingOrder ? 'Procesando...' : 'Confirmar Reserva'}
+              {isCreatingOrder ? t('processing') : t('confirm')}
             </Button>
           )}
         </div>

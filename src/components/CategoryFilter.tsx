@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CategoryFilterProps {
   categories: string[];
@@ -9,16 +9,18 @@ interface CategoryFilterProps {
 }
 
 export const CategoryFilter = ({ categories, selectedCategory, onCategoryChange }: CategoryFilterProps) => {
+  const { t } = useLanguage();
+  
   return (
     <div className="mb-6">
-      <h3 className="text-lg font-semibold mb-3">Filtrar por categoría</h3>
+      <h3 className="text-lg font-semibold mb-3">{t('filterByCategory')}</h3>
       <div className="flex flex-wrap gap-2">
         <Button
           variant={selectedCategory === 'all' ? 'default' : 'outline'}
           onClick={() => onCategoryChange('all')}
           size="sm"
         >
-          Todas
+          {t('all')}
         </Button>
         {categories.map((category) => (
           <Button
@@ -27,7 +29,7 @@ export const CategoryFilter = ({ categories, selectedCategory, onCategoryChange 
             onClick={() => onCategoryChange(category)}
             size="sm"
           >
-            {category.charAt(0).toUpperCase() + category.slice(1)}
+            {category}
           </Button>
         ))}
       </div>

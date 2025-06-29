@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { ReservationData } from '@/pages/Index';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { CalendarDays, Clock } from 'lucide-react';
 
 interface DateTimeSelectionProps {
@@ -13,104 +13,115 @@ interface DateTimeSelectionProps {
 }
 
 export const DateTimeSelection = ({ reservation, setReservation }: DateTimeSelectionProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(reservation.startDate || undefined);
+  const [startDate, setStartDate] = useState<Date | undefined>(reservation.startDate || undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(reservation.endDate || undefined);
+  const { t } = useLanguage();
 
-  const timeSlots = [
-    '08:00', '09:00', '10:00', '11:00', '12:00', '13:00',
-    '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
+  const businessHours = [
+    '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'
   ];
 
-  const calculateTotalHours = (startTime: string, endTime: string) => {
-    const start = parseInt(startTime.split(':')[0]);
-    const end = parseInt(endTime.split(':')[0]);
-    return Math.max(1, end - start);
+  const calculateTotalDays = (start: Date | null, end: Date | null) => {
+    if (!start || !end) return 0;
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(1, diffDays);
   };
 
-  const calculateTotalPrice = (hours: number) => {
-    const pricePerHour = reservation.selectedBikes.reduce(
-      (sum, bike) => sum + (bike.pricePerHour * bike.quantity), 0
+  const calculateTotalPrice = (days: number) => {
+    const pricePerDay = reservation.selectedBikes.reduce(
+      (sum, bike) => sum + (bike.pricePerDay * bike.quantity), 0
     );
-    return pricePerHour * hours;
+    return pricePerDay * days;
   };
 
   useEffect(() => {
-    const hours = calculateTotalHours(reservation.startTime, reservation.endTime);
-    const price = calculateTotalPrice(hours);
+    const days = calculateTotalDays(startDate || null, endDate || null);
+    const price = calculateTotalPrice(days);
     
     setReservation({
       ...reservation,
-      startDate: selectedDate || null,
-      endDate: selectedDate || null,
-      totalHours: hours,
+      startDate: startDate || null,
+      endDate: endDate || null,
+      totalDays: days,
       totalPrice: price
     });
-  }, [selectedDate, reservation.startTime, reservation.endTime]);
+  }, [startDate, endDate, reservation.selectedBikes]);
 
-  const handleTimeChange = (type: 'start' | 'end', time: string) => {
-    const updatedReservation = {
-      ...reservation,
-      [type === 'start' ? 'startTime' : 'endTime']: time
-    };
-    
-    const hours = calculateTotalHours(
-      type === 'start' ? time : reservation.startTime,
-      type === 'end' ? time : reservation.endTime
-    );
-    const price = calculateTotalPrice(hours);
-    
+  const handleTimeChange = (type: 'pickup' | 'return', time: string) => {
     setReservation({
-      ...updatedReservation,
-      totalHours: hours,
-      totalPrice: price
+      ...reservation,
+      [type === 'pickup' ? 'pickupTime' : 'returnTime']: time
     });
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Selecciona Fecha y Horario</h2>
+      <h2 className="text-2xl font-bold mb-6">{t('dateTime')}</h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Calendar */}
+        {/* Calendar for Start Date */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CalendarDays size={20} />
-              Selecciona la Fecha
+              {t('startDate')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Calendar
               mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
+              selected={startDate}
+              onSelect={setStartDate}
               disabled={(date) => date < new Date()}
               className="rounded-md border"
             />
           </CardContent>
         </Card>
 
-        {/* Time Selection */}
+        {/* Calendar for End Date */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarDays size={20} />
+              {t('endDate')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Calendar
+              mode="single"
+              selected={endDate}
+              onSelect={setEndDate}
+              disabled={(date) => date < new Date() || (startDate && date <= startDate)}
+              className="rounded-md border"
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Business Hours Selection */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock size={20} />
-              Horario de Alquiler
+              {t('pickupTime')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Hora de Inicio:
+                {t('pickupTime')}:
               </label>
               <Select 
-                value={reservation.startTime} 
-                onValueChange={(time) => handleTimeChange('start', time)}
+                value={reservation.pickupTime} 
+                onValueChange={(time) => handleTimeChange('pickup', time)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {timeSlots.slice(0, -1).map((time) => (
+                  {businessHours.map((time) => (
                     <SelectItem key={time} value={time}>
                       {time}
                     </SelectItem>
@@ -118,22 +129,33 @@ export const DateTimeSelection = ({ reservation, setReservation }: DateTimeSelec
                 </SelectContent>
               </Select>
             </div>
+            <div className="text-xs text-gray-500">
+              {t('pickupHours')}
+            </div>
+          </CardContent>
+        </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock size={20} />
+              {t('returnTime')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Hora de Fin:
+                {t('returnTime')}:
               </label>
               <Select 
-                value={reservation.endTime} 
-                onValueChange={(time) => handleTimeChange('end', time)}
+                value={reservation.returnTime} 
+                onValueChange={(time) => handleTimeChange('return', time)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {timeSlots
-                    .filter(time => parseInt(time.split(':')[0]) > parseInt(reservation.startTime.split(':')[0]))
-                    .map((time) => (
+                  {businessHours.map((time) => (
                     <SelectItem key={time} value={time}>
                       {time}
                     </SelectItem>
@@ -141,30 +163,38 @@ export const DateTimeSelection = ({ reservation, setReservation }: DateTimeSelec
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Duration Summary */}
-            <div className="p-4 bg-green-50 rounded-lg">
-              <h4 className="font-semibold mb-2">Resumen del Tiempo:</h4>
-              <div className="space-y-1">
-                <div>Duración: {reservation.totalHours} hora(s)</div>
-                <div>Fecha: {selectedDate?.toLocaleDateString('es-ES') || 'No seleccionada'}</div>
-                <div>Horario: {reservation.startTime} - {reservation.endTime}</div>
-              </div>
-            </div>
-
-            {/* Price Summary */}
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-semibold mb-2">Resumen de Precios:</h4>
-              <div className="space-y-1">
-                <div>Precio por hora: ${reservation.selectedBikes.reduce((sum, bike) => sum + (bike.pricePerHour * bike.quantity), 0)}</div>
-                <div className="text-xl font-bold text-blue-600">
-                  Total: ${reservation.totalPrice}
-                </div>
-              </div>
+            <div className="text-xs text-gray-500">
+              {t('pickupHours')}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Summary */}
+      {startDate && endDate && (
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="p-4 bg-green-50 rounded-lg">
+            <h4 className="font-semibold mb-2">{t('rentalPeriod')}:</h4>
+            <div className="space-y-1 text-sm">
+              <div>{t('duration')}: {reservation.totalDays || 0} {t('days')}</div>
+              <div>{t('startDate')}: {startDate?.toLocaleDateString()}</div>
+              <div>{t('endDate')}: {endDate?.toLocaleDateString()}</div>
+              <div>{t('pickupTime')}: {reservation.pickupTime}</div>
+              <div>{t('returnTime')}: {reservation.returnTime}</div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-semibold mb-2">Resumo de Preços:</h4>
+            <div className="space-y-1 text-sm">
+              <div>Preço por dia: €{reservation.selectedBikes.reduce((sum, bike) => sum + (bike.pricePerDay * bike.quantity), 0)}</div>
+              <div className="text-xl font-bold text-blue-600">
+                Total: €{reservation.totalPrice || 0}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
