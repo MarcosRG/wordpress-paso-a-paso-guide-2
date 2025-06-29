@@ -164,13 +164,13 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
+    <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+          <h1 className="text-4xl font-bold text-black mb-2">
             {t("bikeRental")}
           </h1>
-          <p className="text-lg text-gray-600">{t("subtitle")}</p>
+          <p className="text-lg text-gray-700">{t("subtitle")}</p>
         </div>
 
         {/* Progress Indicator */}
@@ -181,7 +181,7 @@ const Index = () => {
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                     step <= currentStep
-                      ? "bg-blue-600 text-white"
+                      ? "bg-red-600 text-white"
                       : "bg-gray-200 text-gray-500"
                   }`}
                 >
@@ -191,7 +191,9 @@ const Index = () => {
                   {getStepTitle(step)}
                 </div>
                 {step < 5 && (
-                  <div className="ml-2 mr-2 w-4 h-0.5 bg-gray-300"></div>
+                  <div
+                    className={`ml-2 mr-2 w-4 h-0.5 ${step < currentStep ? "bg-red-600" : "bg-gray-300"}`}
+                  ></div>
                 )}
               </div>
             ))}
