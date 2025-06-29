@@ -170,34 +170,59 @@ export const BikeSelection = ({
 
       {/* Resumen de selección */}
       {reservation.selectedBikes.length > 0 && (
-        <div className="mt-8 p-6 bg-blue-50 rounded-lg">
+        <div className="mt-8 p-6 bg-red-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-4">
             {t("selectionSummary")}
           </h3>
           <div className="space-y-2">
-            {reservation.selectedBikes.map((bike, index) => (
-              <div
-                key={`${bike.id}-${bike.size}-${index}`}
-                className="flex justify-between items-center"
-              >
-                <span className="text-sm">
-                  {bike.name} ({bike.size}) × {bike.quantity}
-                </span>
-                <span className="font-medium">
-                  €{bike.pricePerDay * bike.quantity}/{t("days").slice(0, -1)}
-                </span>
-              </div>
-            ))}
+            {reservation.selectedBikes.map((bike, index) => {
+              const priceRanges = bike.wooCommerceData?.product
+                ? extractDayBasedPricing(bike.wooCommerceData.product)
+                : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
+
+              const currentPrice =
+                reservation.totalDays > 0
+                  ? getPriceForDays(priceRanges, reservation.totalDays)
+                  : bike.pricePerDay;
+
+              return (
+                <div
+                  key={`${bike.id}-${bike.size}-${index}`}
+                  className="flex justify-between items-center"
+                >
+                  <span className="text-sm">
+                    {bike.name} ({bike.size}) × {bike.quantity}
+                  </span>
+                  <span className="font-medium">
+                    €{currentPrice * bike.quantity}/{t("day")}
+                  </span>
+                </div>
+              );
+            })}
           </div>
           <div className="border-t pt-3 mt-3">
             <div className="flex justify-between items-center font-bold">
               <span>{t("totalPerDay")}:</span>
-              <span className="text-blue-600">
+              <span className="text-red-600">
                 €
-                {reservation.selectedBikes.reduce(
-                  (sum, bike) => sum + bike.pricePerDay * bike.quantity,
-                  0,
-                )}
+                {reservation.selectedBikes.reduce((sum, bike) => {
+                  const priceRanges = bike.wooCommerceData?.product
+                    ? extractDayBasedPricing(bike.wooCommerceData.product)
+                    : [
+                        {
+                          minDays: 1,
+                          maxDays: 999,
+                          pricePerDay: bike.pricePerDay,
+                        },
+                      ];
+
+                  const currentPrice =
+                    reservation.totalDays > 0
+                      ? getPriceForDays(priceRanges, reservation.totalDays)
+                      : bike.pricePerDay;
+
+                  return sum + currentPrice * bike.quantity;
+                }, 0)}
               </span>
             </div>
           </div>
