@@ -159,7 +159,33 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [language, setLanguage] = useState<"pt" | "en">("pt");
+  const [language, setLanguage] = useState<"pt" | "en">(() => {
+    // Check URL params first
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get("lang");
+    if (langParam === "pt" || langParam === "en") {
+      return langParam;
+    }
+
+    // Check localStorage
+    const savedLang = localStorage.getItem("bikesul_language");
+    if (savedLang === "pt" || savedLang === "en") {
+      return savedLang;
+    }
+
+    // Default to Portuguese
+    return "pt";
+  });
+
+  const setLanguageWithPersistence = (lang: "pt" | "en") => {
+    setLanguage(lang);
+    localStorage.setItem("bikesul_language", lang);
+
+    // Update URL parameter without reload
+    const url = new URL(window.location.href);
+    url.searchParams.set("lang", lang);
+    window.history.replaceState({}, "", url.toString());
+  };
 
   const t = (key: string): string => {
     return (
@@ -168,7 +194,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider
+      value={{ language, setLanguage: setLanguageWithPersistence, t }}
+    >
       {children}
     </LanguageContext.Provider>
   );
