@@ -202,14 +202,14 @@ const Index = () => {
 
         <Card className="p-6 mb-6">
           {currentStep === 1 && (
-            <BikeSelection
+            <DateTimeSelection
               reservation={reservation}
               setReservation={setReservation}
             />
           )}
 
           {currentStep === 2 && (
-            <DateTimeSelection
+            <BikeSelection
               reservation={reservation}
               setReservation={setReservation}
             />
