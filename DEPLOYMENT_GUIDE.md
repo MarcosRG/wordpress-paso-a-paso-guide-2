@@ -77,78 +77,149 @@ Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
 
 ## 2. Integración con WordPress via Shortcode
 
-### Paso 1: Añadir Función al functions.php
+### Método 1: Iframe (Recomendado - Más Seguro)
 
-Agregar este código al `functions.php` de tu tema activo:
+#### Paso 1: Añadir Función al functions.php
+
+Ir a **Apariencia > Editor de Temas > functions.php** y agregar:
 
 ```php
+// Shortcode para integrar Bikesul Rental App
 function bikesul_rental_shortcode($atts) {
-    // Extract shortcode attributes
+    // Parámetros del shortcode
     $atts = shortcode_atts(array(
-        'language' => 'pt',
-        'width' => '100%',
-        'height' => '800px'
+        'language' => 'pt',      // pt o en
+        'width' => '100%',       // ancho del iframe
+        'height' => '1200px'     // altura del iframe
     ), $atts, 'bikesul_rental');
 
-    // Enqueue scripts and styles
-    wp_enqueue_script(
-        'bikesul-rental-app',
-        'https://rental.bikesultoursgest.com/assets/index.js',
-        array(),
-        '1.0.0',
-        true
-    );
+    // URL de tu aplicación (cambiar por tu dominio)
+    $app_url = 'https://rental.bikesultoursgest.com'; // O tu URL de Netlify
 
-    wp_enqueue_style(
-        'bikesul-rental-app',
-        'https://rental.bikesultoursgest.com/assets/index.css',
-        array(),
-        '1.0.0'
-    );
-
-    // Return iframe embedding the app
-    return sprintf(
-        '<iframe src="https://rental.bikesultoursgest.com/?lang=%s"
-                width="%s"
-                height="%s"
-                frameborder="0"
-                style="border: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"
-                allowfullscreen>
-        </iframe>',
-        esc_attr($atts['language']),
+    // Construir iframe responsive
+    $iframe = sprintf(
+        '<div style="position: relative; width: %s; padding-bottom: 56.25%%; height: 0; overflow: hidden;">
+            <iframe src="%s/?lang=%s"
+                    style="position: absolute; top: 0; left: 0; width: 100%%; height: %s; border: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"
+                    allowfullscreen>
+            </iframe>
+        </div>',
         esc_attr($atts['width']),
+        esc_url($app_url),
+        esc_attr($atts['language']),
         esc_attr($atts['height'])
     );
+
+    return $iframe;
 }
 add_shortcode('bikesul_rental', 'bikesul_rental_shortcode');
 
-// Ensure WooCommerce integration
-function bikesul_handle_rental_redirect() {
-    if (isset($_GET['bikesul_order']) && is_user_logged_in()) {
-        $order_id = sanitize_text_field($_GET['bikesul_order']);
-        $order = wc_get_order($order_id);
-
-        if ($order && $order->get_customer_id() === get_current_user_id()) {
-            wp_redirect($order->get_checkout_payment_url());
-            exit;
+// CSS adicional para responsividad
+function bikesul_rental_styles() {
+    echo '<style>
+        .bikesul-rental-container {
+            max-width: 100%;
+            margin: 0 auto;
         }
-    }
+        @media (max-width: 768px) {
+            .bikesul-rental-container iframe {
+                height: 800px !important;
+            }
+        }
+    </style>';
 }
-add_action('init', 'bikesul_handle_rental_redirect');
+add_action('wp_head', 'bikesul_rental_styles');
 ```
 
-### Paso 2: Usar el Shortcode
+#### Paso 2: Crear Página para el Rental
 
-En cualquier página o post de WordPress, usar:
+1. **WordPress Admin > Páginas > Añadir Nueva**
+2. **Título**: "Alquiler de Bicicletas" o "Bike Rental"
+3. **Contenido**:
+
+```
+<div class="bikesul-rental-container">
+[bikesul_rental language="pt" height="1200px"]
+</div>
+```
+
+#### Paso 3: Opciones de Uso del Shortcode
+
+**Básico (Portugués):**
 
 ```
 [bikesul_rental]
 ```
 
-Con parámetros opcionales:
+**En Inglés:**
 
 ```
-[bikesul_rental language="en" width="100%" height="900px"]
+[bikesul_rental language="en"]
+```
+
+**Altura personalizada:**
+
+```
+[bikesul_rental height="1500px"]
+```
+
+**Combinado:**
+
+```
+[bikesul_rental language="en" height="1400px" width="100%"]
+```
+
+### Método 2: Integración Directa (Avanzado)
+
+Si quieres que la app se vea como parte integral del sitio:
+
+```php
+function bikesul_rental_direct_integration($atts) {
+    $atts = shortcode_atts(array(
+        'language' => 'pt'
+    ), $atts);
+
+    // Cargar CSS y JS de la app
+    wp_enqueue_style('bikesul-app-css', 'https://rental.bikesultoursgest.com/assets/index.css');
+    wp_enqueue_script('bikesul-app-js', 'https://rental.bikesultoursgest.com/assets/index.js', array(), '1.0', true);
+
+    // Container donde se cargará la app
+    return '<div id="bikesul-rental-app" data-lang="' . esc_attr($atts['language']) . '"></div>
+            <script>
+                // Configurar idioma desde el shortcode
+                if (window.bikesulApp) {
+                    window.bikesulApp.setLanguage("' . esc_attr($atts['language']) . '");
+                }
+            </script>';
+}
+add_shortcode('bikesul_rental_direct', 'bikesul_rental_direct_integration');
+```
+
+### Personalización del Estilo
+
+Para que la app se integre mejor con tu tema:
+
+```css
+/* Añadir al CSS personalizado del tema */
+.bikesul-rental-container {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  margin: 20px 0;
+}
+
+.bikesul-rental-container iframe {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bikesul-rental-container {
+    padding: 10px;
+    margin: 10px 0;
+  }
+}
 ```
 
 ## 3. Configuración de WooCommerce para Precios Variables
