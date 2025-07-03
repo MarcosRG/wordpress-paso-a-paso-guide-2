@@ -83,9 +83,9 @@ const Index = () => {
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return reservation.selectedBikes.length > 0;
-      case 2:
         return reservation.startDate && reservation.endDate;
+      case 2:
+        return reservation.selectedBikes.length > 0;
       case 3:
         return reservation.insurance !== undefined;
       case 4:
