@@ -149,9 +149,9 @@ const Index = () => {
   const getStepTitle = (step: number) => {
     switch (step) {
       case 1:
-        return t("selectBikes");
-      case 2:
         return t("dateTime");
+      case 2:
+        return t("selectBikes");
       case 3:
         return t("insurance");
       case 4:
