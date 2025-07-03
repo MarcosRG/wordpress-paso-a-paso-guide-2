@@ -239,21 +239,21 @@ const Index = () => {
           {currentStep === 1 && (
             <DateTimeSelection
               reservation={reservation}
-              setReservation={setReservation}
+              setReservation={updateReservation}
             />
           )}
 
           {currentStep === 2 && (
             <BikeSelection
               reservation={reservation}
-              setReservation={setReservation}
+              setReservation={updateReservation}
             />
           )}
 
           {currentStep === 3 && (
             <InsuranceOptions
               reservation={reservation}
-              setReservation={setReservation}
+              setReservation={updateReservation}
             />
           )}
 
