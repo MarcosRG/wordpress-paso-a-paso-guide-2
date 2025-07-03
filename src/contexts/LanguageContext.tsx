@@ -79,6 +79,22 @@ const translations = {
     day: "dia",
     from: "a partir de",
     to: "até",
+
+    // Summary
+    reservationSummary: "Resumo da Reserva",
+    selectedBikes: "Bicicletas Selecionadas",
+    bookingDetails: "Detalhes da Reserva",
+    dates: "Datas",
+    schedule: "Horários",
+    pickup: "Recolha",
+    return: "Devolução",
+    totalBikes: "Total de Bicicletas",
+    priceBreakdown: "Detalhamento de Preços",
+    totalToPay: "Total a Pagar",
+    importantInfo: "Informação Importante",
+    arriveEarly: "Por favor, chegue 15 minutos antes da sua hora de recolha",
+    idRequired: "É necessária identificação válida para levantar as bicicletas",
+    size: "Tamanho",
   },
   en: {
     // Navigation
