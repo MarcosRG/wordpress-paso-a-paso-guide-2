@@ -167,6 +167,22 @@ const translations = {
     day: "day",
     from: "from",
     to: "to",
+
+    // Summary
+    reservationSummary: "Reservation Summary",
+    selectedBikes: "Selected Bikes",
+    bookingDetails: "Booking Details",
+    dates: "Dates",
+    schedule: "Schedule",
+    pickup: "Pickup",
+    return: "Return",
+    totalBikes: "Total Bikes",
+    priceBreakdown: "Price Breakdown",
+    totalToPay: "Total to Pay",
+    importantInfo: "Important Information",
+    arriveEarly: "Please arrive 15 minutes before your pickup time",
+    idRequired: "Valid identification required to collect bikes",
+    size: "Size",
   },
 };
 
