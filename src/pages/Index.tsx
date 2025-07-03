@@ -43,6 +43,26 @@ export interface ReservationData {
   };
 }
 
+// Utility function to calculate total price including insurance
+const calculateTotalPrice = (reservation: ReservationData): number => {
+  const bikePrice =
+    reservation.selectedBikes.reduce((sum, bike) => {
+      return sum + bike.pricePerDay * bike.quantity;
+    }, 0) * reservation.totalDays;
+
+  const insurancePrice =
+    reservation.insurance && reservation.insurance.price > 0
+      ? reservation.insurance.price *
+        reservation.selectedBikes.reduce(
+          (sum, bike) => sum + bike.quantity,
+          0,
+        ) *
+        reservation.totalDays
+      : 0;
+
+  return bikePrice + insurancePrice;
+};
+
 const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
