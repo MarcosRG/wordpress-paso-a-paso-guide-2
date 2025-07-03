@@ -4,6 +4,7 @@ import { DateTimeSelection } from "@/components/DateTimeSelection";
 import { InsuranceOptions } from "@/components/InsuranceOptions";
 import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
