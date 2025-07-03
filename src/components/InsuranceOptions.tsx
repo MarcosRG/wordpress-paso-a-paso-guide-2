@@ -80,7 +80,7 @@ Basis coverage - Capital Insured:
       pt: "Seguro Premium Bikesul",
       en: "PREMIUM Bikesul Insurance",
     },
-    price: 20,
+    price: 5,
     description: {
       pt: "Cobertura completa para máxima tranquilidade",
       en: "Complete coverage for maximum peace of mind",
