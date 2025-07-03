@@ -79,6 +79,15 @@ const Index = () => {
     totalPrice: 0,
   });
 
+  // Update total price whenever reservation changes
+  const updateReservation = (newReservation: ReservationData) => {
+    const updatedReservation = {
+      ...newReservation,
+      totalPrice: calculateTotalPrice(newReservation),
+    };
+    setReservation(updatedReservation);
+  };
+
   const [customerData, setCustomerData] = useState<CustomerData>({
     firstName: "",
     lastName: "",
