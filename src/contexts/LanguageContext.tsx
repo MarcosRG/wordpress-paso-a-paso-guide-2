@@ -22,6 +22,7 @@ const translations = {
     estrada: "Estrada",
     gravel: "Gravel",
     touring: "Touring",
+    ebike: "E-bike",
     extras: "Extras",
     availableSizes: "Tamanhos disponíveis",
     available: "disponível",
