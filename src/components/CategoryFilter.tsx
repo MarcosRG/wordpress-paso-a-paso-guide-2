@@ -7,7 +7,14 @@ interface CategoryFilterProps {
   onCategoryChange: (category: string) => void;
 }
 
-const PREDEFINED_CATEGORIES = ["btt", "estrada", "gravel", "touring", "extras"];
+const PREDEFINED_CATEGORIES = [
+  "btt",
+  "estrada",
+  "gravel",
+  "touring",
+  "ebike",
+  "extras",
+];
 
 export const CategoryFilter = ({
   categories,
