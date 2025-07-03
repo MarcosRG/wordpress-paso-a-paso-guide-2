@@ -91,10 +91,11 @@ const translations = {
     // Bike Selection
     filterByCategory: "Filter by category",
     all: "All",
-    btt: "MTB",
+    btt: "BTT",
     estrada: "Road",
     gravel: "Gravel",
     touring: "Touring",
+    ebike: "E-bike",
     extras: "Extras",
     availableSizes: "Available sizes",
     available: "available",
