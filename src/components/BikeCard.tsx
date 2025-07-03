@@ -66,6 +66,26 @@ const BikeCard = ({
               e.currentTarget.src = "/placeholder.svg";
             }}
           />
+
+          {/* Size guide below image */}
+          <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+            <div className="font-medium text-center mb-1">
+              {t("availableSizes")}
+            </div>
+            <div className="grid grid-cols-4 gap-1 text-center">
+              {(["S", "M", "L", "XL"] as const).map((size) => {
+                const availableForSize = Math.floor(bike.available / 4);
+                return (
+                  <div key={size} className="flex flex-col">
+                    <span className="font-medium">{size}</span>
+                    <span className="text-xs text-gray-600">
+                      ({availableForSize})
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         <div className="text-center mb-4">
