@@ -9,7 +9,7 @@ Esta aplicación permite a los usuarios seleccionar múltiples bicicletas de dif
 ✅ Paso 1: Selección de fechas y horarios (9:00 a 17:00)
 ✅ Paso 2: Selección múltiple de bicicletas por tipo y talla
 ✅ Categorías: BTT, Estrada, Gravel, Touring, E-bike, Extras
-✅ Información de tallas debajo de cada foto de bicicleta
+��� Información de tallas debajo de cada foto de bicicleta
 ✅ Sistema de precios variables por rangos de días
 ✅ Integración con WooCommerce API
 ✅ Sistema de verificación de disponibilidad con gestión de fechas
@@ -18,7 +18,26 @@ Esta aplicación permite a los usuarios seleccionar múltiples bicicletas de dif
 ✅ Redirección automática al checkout de WooCommerce
 ✅ Diseño responsive con colores Bikesul (negro, blanco, rojo)
 
-## 1. Deployment en Subdominio
+## 1. Recomendaciones de Hosting
+
+### Opción 1: Netlify (Recomendado - Gratis)
+
+1. Crear cuenta en [netlify.com](https://netlify.com)
+2. Conectar repositorio GitHub o subir archivos
+3. Build automático: `npm run build`
+4. SSL automático y CDN global
+5. Subdominio personalizado: `rental.bikesultoursgest.netlify.app`
+
+### Opción 2: Vercel (Alternativa Gratuita)
+
+1. Crear cuenta en [vercel.com](https://vercel.com)
+2. Importar desde GitHub
+3. Deploy automático con cada push
+4. SSL y dominio personalizado incluido
+
+### Opción 3: Hosting Tradicional
+
+Si prefieres tu hosting actual:
 
 ### Paso 1: Build de la Aplicación
 
@@ -28,7 +47,7 @@ npm run build
 
 ### Paso 2: Configurar Subdominio
 
-1. Crear subdominio en tu panel de hosting (ej: `rental.bikesultoursgest.com`)
+1. Crear subdominio en cPanel (ej: `rental.bikesultoursgest.com`)
 2. Subir el contenido de la carpeta `dist/` al directorio del subdominio
 3. Configurar certificado SSL para el subdominio
 
