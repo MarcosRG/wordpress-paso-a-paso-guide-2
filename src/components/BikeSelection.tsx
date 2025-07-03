@@ -128,27 +128,7 @@ export const BikeSelection = ({
 
   return (
     <div>
-      {/* Header con selector de idioma */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
-        <div className="flex items-center gap-2">
-          <Globe className="h-4 w-4" />
-          <Button
-            variant={language === "pt" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setLanguage("pt")}
-          >
-            PT
-          </Button>
-          <Button
-            variant={language === "en" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setLanguage("en")}
-          >
-            EN
-          </Button>
-        </div>
-      </div>
+      <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
 
       <CategoryFilter
         categories={categories}
