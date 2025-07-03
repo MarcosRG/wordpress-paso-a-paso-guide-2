@@ -9,7 +9,7 @@ Esta aplicación permite a los usuarios seleccionar múltiples bicicletas de dif
 ✅ Paso 1: Selección de fechas y horarios (9:00 a 17:00)
 ✅ Paso 2: Selección múltiple de bicicletas por tipo y talla
 ✅ Categorías: BTT, Estrada, Gravel, Touring, E-bike, Extras
-��� Información de tallas debajo de cada foto de bicicleta
+✅ Información de tallas debajo de cada foto de bicicleta
 ✅ Sistema de precios variables por rangos de días
 ✅ Integración con WooCommerce API
 ✅ Sistema de verificación de disponibilidad con gestión de fechas
@@ -212,13 +212,150 @@ Para cada producto, configurar el campo `_day_pricing` con:
 2. Asignar número de serie único a cada variación
 3. Configurar stock individual (quantity = 1) para cada bicicleta
 
-## 5. Testing y Verificación
+## 5. Gestión de Disponibilidad de Bicicletas
+
+### Sistema de Reservas por Fechas
+
+La aplicación está diseñada para gestionar aproximadamente 350 bicicletas únicas. Cada bicicleta debe tener:
+
+1. **Producto WooCommerce Variable** por modelo de bicicleta
+2. **Variaciones** por cada bicicleta física individual
+3. **Meta fields** para fechas de reserva
+
+### Plugin Recomendado: WooCommerce Bookings
+
+#### Instalación:
+
+```bash
+# Instalar WooCommerce Bookings Pro
+# Descargar desde: https://woocommerce.com/products/woocommerce-bookings/
+```
+
+#### Configuración:
+
+1. **Producto Bookable**: Configurar cada bicicleta como "Bookable Product"
+2. **Calendario**: Gestión visual de disponibilidad
+3. **Duraciones**: Configurar alquiler por días
+4. **Pricing**: Precios variables por duración
+
+### Ejemplo de Flujo:
+
+1. **Cliente reserva**: Bicicleta ID #001 del 1-3 julio 2025
+2. **Sistema bloquea**: Bicicleta #001 no disponible 1-3 julio
+3. **Disponible nuevamente**: 4 julio 2025 en adelante
+
+### Configuración Meta Fields Personalizada:
+
+```php
+// Añadir al functions.php
+function add_booking_meta_fields() {
+    woocommerce_wp_text_input(array(
+        'id' => '_booking_start_date',
+        'label' => 'Fecha Inicio Reserva',
+        'desc_tip' => true,
+        'description' => 'Formato: YYYY-MM-DD'
+    ));
+
+    woocommerce_wp_text_input(array(
+        'id' => '_booking_end_date',
+        'label' => 'Fecha Fin Reserva',
+        'desc_tip' => true,
+        'description' => 'Formato: YYYY-MM-DD'
+    ));
+
+    woocommerce_wp_select(array(
+        'id' => '_booking_status',
+        'label' => 'Estado de Reserva',
+        'options' => array(
+            'available' => 'Disponible',
+            'booked' => 'Reservada',
+            'maintenance' => 'Mantenimiento'
+        )
+    ));
+}
+add_action('woocommerce_product_options_general_product_data', 'add_booking_meta_fields');
+
+// Guardar meta fields
+function save_booking_meta_fields($post_id) {
+    update_post_meta($post_id, '_booking_start_date', $_POST['_booking_start_date']);
+    update_post_meta($post_id, '_booking_end_date', $_POST['_booking_end_date']);
+    update_post_meta($post_id, '_booking_status', $_POST['_booking_status']);
+}
+add_action('woocommerce_process_product_meta', 'save_booking_meta_fields');
+
+// API endpoint personalizada para verificar disponibilidad
+function check_bike_availability() {
+    register_rest_route('bikesul/v1', '/check-availability', array(
+        'methods' => 'POST',
+        'callback' => 'bikesul_check_availability',
+        'permission_callback' => '__return_true'
+    ));
+}
+add_action('rest_api_init', 'check_bike_availability');
+
+function bikesul_check_availability($request) {
+    $bike_id = $request['bike_id'];
+    $start_date = $request['start_date'];
+    $end_date = $request['end_date'];
+
+    // Verificar si la bicicleta está disponible en esas fechas
+    $bookings = get_posts(array(
+        'post_type' => 'shop_order',
+        'meta_query' => array(
+            array(
+                'key' => '_bike_id',
+                'value' => $bike_id,
+                'compare' => '='
+            ),
+            array(
+                'key' => '_booking_start_date',
+                'value' => $end_date,
+                'compare' => '<='
+            ),
+            array(
+                'key' => '_booking_end_date',
+                'value' => $start_date,
+                'compare' => '>='
+            )
+        )
+    ));
+
+    return array(
+        'available' => empty($bookings),
+        'bike_id' => $bike_id,
+        'conflicts' => count($bookings)
+    );
+}
+```
+
+### Administración de Disponibilidad:
+
+1. **Dashboard WooCommerce**: Ver todas las reservas
+2. **Calendario Visual**: Plugin Bookings calendario
+3. **Estados de Bicicletas**:
+   - ✅ Disponible
+   - 🔒 Reservada
+   - 🔧 Mantenimiento
+   - ❌ Fuera de servicio
+
+### Proceso Automático:
+
+1. Cliente completa reserva
+2. Orden WooCommerce se crea con fechas
+3. Sistema marca bicicleta como "no disponible" para esas fechas
+4. Al final del período, bicicleta vuelve a estar disponible
+
+## 6. Testing y Verificación
 
 ### Checklist de Funcionalidades:
 
-- [ ] Selección múltiple de bicicletas funciona
+- [ ] Paso 1: Selección de fechas funciona
+- [ ] Paso 2: Selección múltiple de bicicletas funciona
+- [ ] Información de tallas aparece debajo de fotos
 - [ ] Precios cambian según días seleccionados
+- [ ] Seguro se calcula por bicicleta por día
 - [ ] Stock se actualiza correctamente
+- [ ] Disponibilidad por fechas funciona
 - [ ] Formulario de datos se completa
 - [ ] Redirección a checkout WooCommerce funciona
 - [ ] Datos se transfieren correctamente al checkout
@@ -227,7 +364,7 @@ Para cada producto, configurar el campo `_day_pricing` con:
 
 ### URLs de Testing:
 
-- Aplicación: `https://rental.bikesultoursgest.com`
+- Aplicación: `https://rental.bikesultoursgest.com` o `https://rental.netlify.app`
 - WordPress: `https://bikesultoursgest.com/rental-page`
 - API WooCommerce: `https://bikesultoursgest.com/wp-json/wc/v3/`
 
