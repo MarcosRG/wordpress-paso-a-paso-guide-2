@@ -202,6 +202,11 @@ const Index = () => {
         </div>
 
         <Card className="p-6 mb-6">
+          {/* Language selector for each step */}
+          <div className="flex justify-end mb-4">
+            <LanguageSelector />
+          </div>
+
           {currentStep === 1 && (
             <DateTimeSelection
               reservation={reservation}
