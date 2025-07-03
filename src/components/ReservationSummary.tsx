@@ -160,7 +160,7 @@ export const ReservationSummary = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard size={20} />
-            Desglose de Precios
+            {t("priceBreakdown")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -171,20 +171,33 @@ export const ReservationSummary = ({
                 className="flex justify-between items-center"
               >
                 <div>
-                  {bike.name} (Talla {bike.size}) x{bike.quantity}
+                  {bike.name} ({t("size")} {bike.size}) x{bike.quantity}
                 </div>
                 <div>
                   €{bike.pricePerDay * bike.quantity} × {reservation.totalDays}{" "}
-                  días = €
+                  {reservation.totalDays === 1 ? t("day") : t("days")} = €
                   {bike.pricePerDay * bike.quantity * reservation.totalDays}
                 </div>
               </div>
             ))}
 
+            {reservation.insurance && reservation.insurance.price > 0 && (
+              <div className="flex justify-between items-center">
+                <div>{reservation.insurance.name}</div>
+                <div>
+                  €{reservation.insurance.price} × {totalBikes} ×{" "}
+                  {reservation.totalDays} = €
+                  {reservation.insurance.price *
+                    totalBikes *
+                    reservation.totalDays}
+                </div>
+              </div>
+            )}
+
             <div className="border-t pt-3 mt-3">
               <div className="flex justify-between items-center text-lg font-semibold">
-                <div>Total a Pagar:</div>
-                <div className="text-2xl text-blue-600">
+                <div>{t("totalToPay")}:</div>
+                <div className="text-2xl text-red-600">
                   €{reservation.totalPrice}
                 </div>
               </div>
@@ -197,18 +210,13 @@ export const ReservationSummary = ({
       <Card className="mt-6 bg-yellow-50 border-yellow-200">
         <CardHeader>
           <CardTitle className="text-yellow-800">
-            Información Importante
+            {t("importantInfo")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-2 text-yellow-700">
-            <li>• Por favor, llega 15 minutos antes de tu hora de recogida</li>
-            <li>
-              • Se requiere identificación válida para retirar las bicicletas
-            </li>
-            <li>• Incluye casco y kit básico de reparación</li>
-            <li>• Cancelaciones gratuitas hasta 24 horas antes</li>
-            <li>• En caso de lluvia, se puede reprogramar sin costo</li>
+            <li>• {t("arriveEarly")}</li>
+            <li>• {t("idRequired")}</li>
           </ul>
         </CardContent>
       </Card>
