@@ -6,16 +6,17 @@ Esta aplicación permite a los usuarios seleccionar múltiples bicicletas de dif
 
 ## Features Implementadas
 
-✅ Selección múltiple de bicicletas por tipo y talla
-✅ Sistema de precios variables por rangos de días (1-3 días: €60, 4-5 días: €55, 6-9 días: €35, etc.)
-✅ Integración con WooCommerce API usando las credenciales proporcionadas
-✅ Sistema de verificación de disponibilidad con ATUM multi-inventory
-✅ Categorías: BTT, Estrada, Gravel, Touring, Extras
-✅ Opciones de seguro (Básico gratuito y Premium €20) con popups informativos
-✅ Soporte multiidioma (Portugués de Portugal e Inglés)
-✅ Selección de rango de fechas con horarios de 9:00 a 17:00
+✅ Paso 1: Selección de fechas y horarios (9:00 a 17:00)
+✅ Paso 2: Selección múltiple de bicicletas por tipo y talla
+✅ Categorías: BTT, Estrada, Gravel, Touring, E-bike, Extras
+✅ Información de tallas debajo de cada foto de bicicleta
+✅ Sistema de precios variables por rangos de días
+✅ Integración con WooCommerce API
+✅ Sistema de verificación de disponibilidad con gestión de fechas
+✅ Opciones de seguro (Básico gratuito y Premium €5 por bicicleta por día)
+✅ Soporte multiidioma (Portugués de Portugal e Inglês)
 ✅ Redirección automática al checkout de WooCommerce
-✅ Diseño responsive y accesible
+✅ Diseño responsive con colores Bikesul (negro, blanco, rojo)
 
 ## 1. Deployment en Subdominio
 
