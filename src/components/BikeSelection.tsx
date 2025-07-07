@@ -27,9 +27,23 @@ export const BikeSelection = ({
   setReservation,
 }: BikeSelectionProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const { data: bikes, isLoading, error } = useWooCommerceBikes();
-  const { data: categories = [] } = useWooCommerceCategories();
+  const queryClient = useQueryClient();
+  const {
+    data: bikes,
+    isLoading,
+    error,
+    refetch: refetchBikes,
+  } = useWooCommerceBikes();
+  const { data: categories = [], refetch: refetchCategories } =
+    useWooCommerceCategories();
   const { language, setLanguage, t } = useLanguage();
+
+  // Manual refresh function
+  const handleRefresh = async () => {
+    console.log("🔄 Refrescando datos manualmente...");
+    await Promise.all([refetchBikes(), refetchCategories()]);
+    console.log("✅ Datos refrescados");
+  };
 
   // Filtrar bicicletas por categoría usando los slugs de WooCommerce
   const filteredBikes = bikes
