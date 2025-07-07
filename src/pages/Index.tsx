@@ -5,7 +5,7 @@ import { InsuranceOptions } from "@/components/InsuranceOptions";
 import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
-import { ProductDiagnostics } from "@/components/ProductDiagnostics";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -200,17 +200,7 @@ const Index = () => {
           <p className="text-lg text-gray-700">{t("subtitle")}</p>
         </div>
 
-        {/* Diagnóstico de productos - temporal para debug */}
-        {process.env.NODE_ENV === "development" && (
-          <details className="mb-6">
-            <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
-              🔍 Debug: Diagnóstico de Productos (click para expandir)
-            </summary>
-            <div className="mt-2">
-              <ProductDiagnostics />
-            </div>
-          </details>
-        )}
+        {/* Diagnóstico removido temporalmente por errores CORS */}
 
         {/* Progress Indicator */}
         <div className="flex justify-center mb-8">

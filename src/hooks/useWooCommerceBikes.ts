@@ -14,7 +14,9 @@ export const useWooCommerceBikes = () => {
     queryKey: ["woocommerce-bikes"],
     queryFn: async (): Promise<Bike[]> => {
       try {
+        console.log("Iniciando carga de productos de WooCommerce...");
         const products = await wooCommerceApi.getProducts();
+        console.log(`✅ Productos cargados exitosamente: ${products.length}`);
 
         // Filtrar solo productos publicados con stock
         const validProducts = products.filter((product: WooCommerceProduct) => {
@@ -93,8 +95,13 @@ export const useWooCommerceBikes = () => {
           }),
         );
 
+        console.log(
+          `✅ Conversión completada: ${bikes.length} bicicletas disponibles`,
+        );
         return bikes;
       } catch (error) {
+        console.error("❌ Error al cargar productos de WooCommerce:", error);
+        console.log("🔄 Usando datos de prueba como fallback");
         // Si falla la conexión con WooCommerce, usar datos de prueba
         return mockBikes;
       }

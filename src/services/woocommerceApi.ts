@@ -172,7 +172,7 @@ export const wooCommerceApi = {
       const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
 
       const response = await fetch(
-        `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish&type=variable,simple`,
+        `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish`,
         {
           headers: {
             ...apiHeaders,
@@ -224,7 +224,7 @@ export const wooCommerceApi = {
       }
 
       const response = await fetch(
-        `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=${categoryId}&status=publish&type=variable,simple`,
+        `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=${categoryId}&status=publish`,
         {
           headers: apiHeaders,
         },
