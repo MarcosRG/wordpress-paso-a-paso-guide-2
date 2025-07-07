@@ -134,8 +134,6 @@ const Index = () => {
     setIsCreatingOrder(true);
 
     try {
-      console.log("Iniciando criação do pedido...", reservation);
-
       const order = await orderService.createReservationOrder(
         reservation,
         customerData,
@@ -163,8 +161,6 @@ const Index = () => {
       // Redirect to WooCommerce checkout
       window.location.href = checkoutUrl;
     } catch (error) {
-      console.error("Erro ao criar a reserva:", error);
-
       toast({
         title: "Erro ao criar a reserva",
         description:
