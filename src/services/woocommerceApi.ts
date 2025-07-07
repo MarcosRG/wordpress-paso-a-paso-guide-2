@@ -58,14 +58,15 @@ export interface WooCommerceVariation {
   };
 }
 
-const WOOCOMMERCE_API_BASE = "https://bikesultoursgest.com/wp-json/wc/v3";
+export const WOOCOMMERCE_API_BASE =
+  "https://bikesultoursgest.com/wp-json/wc/v3";
 const CONSUMER_KEY = "ck_3c1322f73584fa4ac2196385fd5982206c2bc49f";
 const CONSUMER_SECRET = "cs_e60358968a6a4bf3b6f425ec636acb9843a2f46d";
 
 // Crear las credenciales en base64 para la autenticación
 const auth = btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`);
 
-const apiHeaders = {
+export const apiHeaders = {
   Authorization: `Basic ${auth}`,
   "Content-Type": "application/json",
 };
