@@ -78,7 +78,7 @@ export const useWooCommerceBikes = () => {
   });
 };
 
-// Hook para obtener categorías únicas
+// Hook para obtener categorías únicas (subcategorías de ALUGUERES)
 export const useWooCommerceCategories = () => {
   return useQuery({
     queryKey: ["woocommerce-categories"],
@@ -90,22 +90,31 @@ export const useWooCommerceCategories = () => {
 
         products.forEach((product) => {
           product.categories.forEach((category) => {
-            categories.add(category.name);
+            // Excluir la categoría principal ALUGUERES, solo subcategorías
+            if (category.slug !== "alugueres") {
+              categories.add(category.slug);
+            }
           });
         });
 
-        console.log(
-          "Categorías obtenidas de WooCommerce:",
-          Array.from(categories),
-        );
-        return Array.from(categories);
+        const categoryArray = Array.from(categories);
+        console.log("Subcategorías obtenidas de WooCommerce:", categoryArray);
+        return categoryArray;
       } catch (error) {
         console.log(
-          "Error al obtener categorías de WooCommerce, usando categorías de prueba:",
+          "Error al obtener categorías de WooCommerce, usando categorías predefinidas:",
           error,
         );
-        // Si falla la conexión con WooCommerce, usar categorías de prueba
-        return mockCategories;
+        // Si falla la conexión con WooCommerce, usar categorías predefinidas
+        return [
+          "btt",
+          "e-bike",
+          "estrada",
+          "extras-alugueres",
+          "gravel-alugueres",
+          "junior-alugueres",
+          "touring-alugueres",
+        ];
       }
     },
     staleTime: 10 * 60 * 1000, // 10 minutos
