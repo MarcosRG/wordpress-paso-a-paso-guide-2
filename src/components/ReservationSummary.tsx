@@ -1,60 +1,82 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ReservationData } from '@/pages/Index';
-import { Bike, CalendarDays, Clock, CreditCard, Users } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ReservationData } from "@/pages/Index";
+import { Bike, CalendarDays, Clock, CreditCard, Users } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ReservationSummaryProps {
   reservation: ReservationData;
 }
 
-export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => {
-  const { t } = useLanguage();
-  
+export const ReservationSummary = ({
+  reservation,
+}: ReservationSummaryProps) => {
+  const { t, language } = useLanguage();
+
   const getBikeTypeColor = (type: string) => {
     switch (type) {
-      case 'mountain': return 'bg-green-100 text-green-800';
-      case 'road': return 'bg-blue-100 text-blue-800';
-      case 'hybrid': return 'bg-purple-100 text-purple-800';
-      case 'electric': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "btt":
+        return "bg-green-100 text-green-800";
+      case "e-bike":
+        return "bg-yellow-100 text-yellow-800";
+      case "estrada":
+        return "bg-blue-100 text-blue-800";
+      case "extras-alugueres":
+        return "bg-indigo-100 text-indigo-800";
+      case "gravel-alugueres":
+        return "bg-purple-100 text-purple-800";
+      case "junior-alugueres":
+        return "bg-pink-100 text-pink-800";
+      case "touring-alugueres":
+        return "bg-orange-100 text-orange-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const totalBikes = reservation.selectedBikes.reduce((sum, bike) => sum + bike.quantity, 0);
+  const totalBikes = reservation.selectedBikes.reduce(
+    (sum, bike) => sum + bike.quantity,
+    0,
+  );
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Resumen de tu Reserva</h2>
-      
+      <h2 className="text-2xl font-bold mb-6">{t("confirmReservation")}</h2>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Bikes Summary */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bike size={20} />
-              Bicicletas Seleccionadas ({totalBikes})
+              {t("selectedBikes")} ({totalBikes})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {reservation.selectedBikes.map((bike, index) => (
-                <div key={`${bike.id}-${bike.size}-${index}`} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={`${bike.id}-${bike.size}-${index}`}
+                  className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                >
                   <div>
                     <h4 className="font-semibold">{bike.name}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge className={getBikeTypeColor(bike.type)}>
-                        {bike.type.toUpperCase()}
+                        {t(bike.type)}
                       </Badge>
-                      <Badge variant="outline">Talla {bike.size}</Badge>
+                      <Badge variant="outline">
+                        {t("size")} {bike.size}
+                      </Badge>
                       <Badge variant="outline">x{bike.quantity}</Badge>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold">€{bike.pricePerDay}/día</div>
+                    <div className="font-semibold">
+                      €{bike.pricePerDay}/{t("day")}
+                    </div>
                     <div className="text-sm text-gray-500">
-                      €{bike.pricePerDay * bike.quantity}/día total
+                      €{bike.pricePerDay * bike.quantity}/{t("day")} total
                     </div>
                   </div>
                 </div>
@@ -68,7 +90,7 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CalendarDays size={20} />
-              Detalles de la Reserva
+              {t("bookingDetails")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -76,19 +98,27 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
               <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
                 <CalendarDays size={20} className="text-blue-600" />
                 <div>
-                  <div className="font-semibold">Fechas</div>
+                  <div className="font-semibold">{t("dates")}</div>
                   <div className="text-gray-600">
-                    {reservation.startDate?.toLocaleDateString('es-ES', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })} - {reservation.endDate?.toLocaleDateString('es-ES', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    {reservation.startDate?.toLocaleDateString(
+                      language === "pt" ? "pt-PT" : "en-GB",
+                      {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      },
+                    )}{" "}
+                    -{" "}
+                    {reservation.endDate?.toLocaleDateString(
+                      language === "pt" ? "pt-PT" : "en-GB",
+                      {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      },
+                    )}
                   </div>
                 </div>
               </div>
@@ -96,12 +126,14 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
               <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                 <Clock size={20} className="text-green-600" />
                 <div>
-                  <div className="font-semibold">Horarios</div>
+                  <div className="font-semibold">{t("schedule")}</div>
                   <div className="text-gray-600">
-                    Recogida: {reservation.pickupTime} | Devolución: {reservation.returnTime}
+                    {t("pickup")}: {reservation.pickupTime} | {t("return")}:{" "}
+                    {reservation.returnTime}
                   </div>
                   <div className="text-sm text-gray-500">
-                    ({reservation.totalDays} día{reservation.totalDays > 1 ? 's' : ''})
+                    ({reservation.totalDays}{" "}
+                    {reservation.totalDays === 1 ? t("day") : t("days")})
                   </div>
                 </div>
               </div>
@@ -109,8 +141,17 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
               <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
                 <Users size={20} className="text-purple-600" />
                 <div>
-                  <div className="font-semibold">Total de Bicicletas</div>
-                  <div className="text-gray-600">{totalBikes} bicicleta{totalBikes > 1 ? 's' : ''}</div>
+                  <div className="font-semibold">{t("totalBikes")}</div>
+                  <div className="text-gray-600">
+                    {totalBikes}{" "}
+                    {totalBikes === 1
+                      ? language === "pt"
+                        ? "bicicleta"
+                        : "bike"
+                      : language === "pt"
+                        ? "bicicletas"
+                        : "bikes"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -123,26 +164,46 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard size={20} />
-            Desglose de Precios
+            {t("priceBreakdown")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {reservation.selectedBikes.map((bike, index) => (
-              <div key={`${bike.id}-${bike.size}-${index}`} className="flex justify-between items-center">
+              <div
+                key={`${bike.id}-${bike.size}-${index}`}
+                className="flex justify-between items-center"
+              >
                 <div>
-                  {bike.name} (Talla {bike.size}) x{bike.quantity}
+                  {bike.name} ({t("size")} {bike.size}) x{bike.quantity}
                 </div>
                 <div>
-                  €{bike.pricePerDay * bike.quantity} × {reservation.totalDays} días = €{bike.pricePerDay * bike.quantity * reservation.totalDays}
+                  €{bike.pricePerDay * bike.quantity} × {reservation.totalDays}{" "}
+                  {reservation.totalDays === 1 ? t("day") : t("days")} = €
+                  {bike.pricePerDay * bike.quantity * reservation.totalDays}
                 </div>
               </div>
             ))}
-            
+
+            {reservation.insurance && reservation.insurance.price > 0 && (
+              <div className="flex justify-between items-center">
+                <div>{reservation.insurance.name}</div>
+                <div>
+                  €{reservation.insurance.price} × {totalBikes} ×{" "}
+                  {reservation.totalDays} = €
+                  {reservation.insurance.price *
+                    totalBikes *
+                    reservation.totalDays}
+                </div>
+              </div>
+            )}
+
             <div className="border-t pt-3 mt-3">
               <div className="flex justify-between items-center text-lg font-semibold">
-                <div>Total a Pagar:</div>
-                <div className="text-2xl text-blue-600">€{reservation.totalPrice}</div>
+                <div>{t("totalToPay")}:</div>
+                <div className="text-2xl text-red-600">
+                  €{reservation.totalPrice}
+                </div>
               </div>
             </div>
           </div>
@@ -152,15 +213,14 @@ export const ReservationSummary = ({ reservation }: ReservationSummaryProps) => 
       {/* Important Notes */}
       <Card className="mt-6 bg-yellow-50 border-yellow-200">
         <CardHeader>
-          <CardTitle className="text-yellow-800">Información Importante</CardTitle>
+          <CardTitle className="text-yellow-800">
+            {t("importantInfo")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-2 text-yellow-700">
-            <li>• Por favor, llega 15 minutos antes de tu hora de recogida</li>
-            <li>• Se requiere identificación válida para retirar las bicicletas</li>
-            <li>• Incluye casco y kit básico de reparación</li>
-            <li>• Cancelaciones gratuitas hasta 24 horas antes</li>
-            <li>• En caso de lluvia, se puede reprogramar sin costo</li>
+            <li>• {t("arriveEarly")}</li>
+            <li>• {t("idRequired")}</li>
           </ul>
         </CardContent>
       </Card>
