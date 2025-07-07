@@ -200,6 +200,9 @@ const Index = () => {
           <p className="text-lg text-gray-700">{t("subtitle")}</p>
         </div>
 
+        {/* Diagnóstico de productos - temporal para debug */}
+        <ProductDiagnostics />
+
         {/* Progress Indicator */}
         <div className="flex justify-center mb-8">
           <div className="flex items-center space-x-2">
