@@ -130,7 +130,7 @@ const BikeCard = ({
           <h4 className="font-medium text-sm text-center">
             {t("availableSizes")}:
           </h4>
-          {(["S", "M", "L", "XL"] as const).map((size) => {
+          {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
             const quantity = getQuantityForBikeAndSize(bike.id, size);
             const availableForSize = Math.floor(bike.available / 4);
 
