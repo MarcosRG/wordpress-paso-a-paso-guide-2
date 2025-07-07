@@ -56,7 +56,7 @@ export const BikeSelection = ({
 
   const updateBikeQuantity = (
     bike: any,
-    size: "S" | "M" | "L" | "XL",
+    size: "XS" | "S" | "M" | "L" | "XL",
     change: number,
   ) => {
     const currentQuantity = getQuantityForBikeAndSize(bike.id, size);
