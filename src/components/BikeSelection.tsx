@@ -40,63 +40,29 @@ export const BikeSelection = ({
 
   // Manual refresh function
   const handleRefresh = async () => {
-    console.log("🔄 Refrescando datos manualmente...");
     await Promise.all([refetchBikes(), refetchCategories()]);
-    console.log("✅ Datos refrescados");
   };
 
-  // Filtrar bicicletas por categoría usando los slugs de WooCommerce
+  // Filter bikes by category using WooCommerce slugs
   const filteredBikes = bikes
     ? bikes.filter((bike) => {
         if (selectedCategory === "all") return true;
 
-        // Debug logging
-        console.log(
-          "Filtering bike:",
-          bike.name,
-          "Selected category:",
-          selectedCategory,
-        );
-        console.log(
-          "Bike categories:",
-          bike.wooCommerceData?.product?.categories,
-        );
-        console.log("Bike type:", bike.type);
-
-        // Verificar si el producto tiene la categoría seleccionada
+        // Check if product has the selected category
         if (bike.wooCommerceData?.product?.categories) {
           const hasCategory = bike.wooCommerceData.product.categories.some(
-            (category) => {
-              console.log(
-                "Checking category slug:",
-                category.slug,
-                "against:",
-                selectedCategory,
-              );
-              return category.slug === selectedCategory;
-            },
+            (category) => category.slug === selectedCategory,
           );
 
           if (hasCategory) {
-            console.log("✅ Bike matches category:", bike.name);
             return true;
           }
         }
 
-        // Fallback al tipo de bicicleta
-        const typeMatch = bike.type === selectedCategory;
-        if (typeMatch) {
-          console.log("✅ Bike matches by type:", bike.name);
-        }
-
-        return typeMatch;
+        // Fallback to bike type
+        return bike.type === selectedCategory;
       })
     : [];
-
-  // Debug final filtering result
-  console.log(
-    "Filtered bikes count:",
-    filteredBikes.length,
     "for category:",
     selectedCategory,
   );
