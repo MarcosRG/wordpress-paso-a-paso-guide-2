@@ -101,6 +101,23 @@ export const BikeSelection = ({
     selectedCategory,
   );
 
+  // Debug info for current state
+  const debugInfo = {
+    totalBikes: bikes?.length || 0,
+    filteredBikes: filteredBikes.length,
+    selectedCategory,
+    categories: categories.length,
+    availableCategories: categories,
+    bikesWithCategories:
+      bikes?.map((bike) => ({
+        name: bike.name,
+        categories:
+          bike.wooCommerceData?.product?.categories?.map((cat) => cat.slug) ||
+          [],
+        type: bike.type,
+      })) || [],
+  };
+
   const getQuantityForBikeAndSize = (bikeId: string, size: string) => {
     const selectedBike = reservation.selectedBikes.find(
       (b) => b.id === bikeId && b.size === size,
