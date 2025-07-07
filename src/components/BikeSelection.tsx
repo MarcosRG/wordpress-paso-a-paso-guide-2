@@ -63,9 +63,6 @@ export const BikeSelection = ({
         return bike.type === selectedCategory;
       })
     : [];
-    "for category:",
-    selectedCategory,
-  );
 
   // Debug info for current state
   const debugInfo = {
