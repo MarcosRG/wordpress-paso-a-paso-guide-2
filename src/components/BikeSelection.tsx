@@ -64,23 +64,6 @@ export const BikeSelection = ({
       })
     : [];
 
-  // Debug info for current state
-  const debugInfo = {
-    totalBikes: bikes?.length || 0,
-    filteredBikes: filteredBikes.length,
-    selectedCategory,
-    categories: categories.length,
-    availableCategories: categories,
-    bikesWithCategories:
-      bikes?.map((bike) => ({
-        name: bike.name,
-        categories:
-          bike.wooCommerceData?.product?.categories?.map((cat) => cat.slug) ||
-          [],
-        type: bike.type,
-      })) || [],
-  };
-
   const getQuantityForBikeAndSize = (bikeId: string, size: string) => {
     const selectedBike = reservation.selectedBikes.find(
       (b) => b.id === bikeId && b.size === size,
@@ -187,71 +170,15 @@ export const BikeSelection = ({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => console.table(debugInfo)}
-            className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-          >
-            Debug Info
-          </Button>
-        </div>
-      </div>
-
-      {/* Debug Panel - Always visible for now */}
-      <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h4 className="font-medium text-blue-900 mb-2">
-          🔍 Debug Info - WPML Categories
-        </h4>
-        <div className="text-sm text-blue-800 space-y-1">
-          <div>
-            <strong>Total bikes:</strong> {debugInfo.totalBikes}
-          </div>
-          <div>
-            <strong>Filtered bikes:</strong> {debugInfo.filteredBikes}
-          </div>
-          <div>
-            <strong>Selected category:</strong> {debugInfo.selectedCategory}
-          </div>
-          <div>
-            <strong>Available categories:</strong>{" "}
-            {JSON.stringify(debugInfo.availableCategories)}
-          </div>
-          <div>
-            <strong>Categorías sin productos:</strong>{" "}
-            {debugInfo.availableCategories
-              .filter(
-                (cat) =>
-                  !debugInfo.bikesWithCategories.some((bike) =>
-                    bike.categories.includes(cat),
-                  ),
-              )
-              .join(", ") || "None"}
-          </div>
-          <details className="mt-2">
-            <summary className="cursor-pointer font-medium">
-              Ver productos y sus categorías
-            </summary>
-            <div className="mt-2 max-h-40 overflow-y-auto">
-              {debugInfo.bikesWithCategories.map((bike, index) => (
-                <div key={index} className="text-xs py-1">
-                  <strong>{bike.name}:</strong>{" "}
-                  {bike.categories.join(", ") || "Sin categorías"}
-                </div>
-              ))}
-            </div>
-          </details>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh
+        </Button>
       </div>
 
       <CategoryFilter
