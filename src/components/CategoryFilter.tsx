@@ -9,11 +9,12 @@ interface CategoryFilterProps {
 
 const PREDEFINED_CATEGORIES = [
   "btt",
+  "e-bike",
   "estrada",
-  "gravel",
-  "touring",
-  "ebike",
-  "extras",
+  "extras-alugueres",
+  "gravel-alugueres",
+  "junior-alugueres",
+  "touring-alugueres",
 ];
 
 export const CategoryFilter = ({
