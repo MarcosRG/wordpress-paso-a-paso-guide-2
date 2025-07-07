@@ -14,7 +14,6 @@ export const useWooCommerceBikes = () => {
     queryKey: ["woocommerce-bikes"],
     queryFn: async (): Promise<Bike[]> => {
       try {
-        console.log("Intentando obtener productos de WooCommerce...");
         const products = await wooCommerceApi.getProducts();
 
         // Convertir productos de WooCommerce a nuestro formato de Bike
@@ -64,13 +63,8 @@ export const useWooCommerceBikes = () => {
           }),
         );
 
-        console.log("Productos obtenidos de WooCommerce:", bikes);
         return bikes;
       } catch (error) {
-        console.log(
-          "Error al conectar con WooCommerce, usando datos de prueba:",
-          error,
-        );
         // Si falla la conexión con WooCommerce, usar datos de prueba
         return mockBikes;
       }
@@ -80,96 +74,23 @@ export const useWooCommerceBikes = () => {
   });
 };
 
-// Hook para obtener categorías únicas (subcategorías de ALUGUERES)
+// Hook to get ALUGUERES subcategories
 export const useWooCommerceCategories = () => {
   return useQuery({
     queryKey: ["woocommerce-categories"],
     queryFn: async (): Promise<string[]> => {
-      try {
-        console.log("🏷️ Intentando obtener categorías de WooCommerce...");
-
-        // Obtener todas las categorías disponibles
-        const response = await fetch(
-          `${WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
-          {
-            headers: apiHeaders,
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error(`Error fetching categories: ${response.statusText}`);
-        }
-
-        const allCategories = await response.json();
-        console.log("📋 Todas las categorías:", allCategories);
-
-        // Buscar la categoría padre ALUGUERES
-        const alugueresCategory = allCategories.find(
-          (cat) => cat.slug === "alugueres",
-        );
-
-        if (!alugueresCategory) {
-          console.warn(
-            "⚠️ Categoría ALUGUERES no encontrada, usando categorías predefinidas",
-          );
-          return [
-            "btt",
-            "e-bike",
-            "estrada",
-            "extras-alugueres",
-            "gravel-alugueres",
-            "junior-alugueres",
-            "touring-alugueres",
-          ];
-        }
-
-        // Obtener subcategorías de ALUGUERES
-        const subcategories = allCategories
-          .filter((cat) => cat.parent === alugueresCategory.id)
-          .map((cat) => cat.slug);
-
-        console.log(
-          "🎯 Subcategorías de ALUGUERES encontradas:",
-          subcategories,
-        );
-
-        // Si no hay subcategorías específicas, usar las de los productos
-        if (subcategories.length === 0) {
-          console.log(
-            "📦 No hay subcategorías específicas, extrayendo de productos...",
-          );
-          const products = await wooCommerceApi.getProducts();
-          const productCategories = new Set<string>();
-
-          products.forEach((product) => {
-            product.categories.forEach((category) => {
-              if (category.slug !== "alugueres") {
-                productCategories.add(category.slug);
-              }
-            });
-          });
-
-          const categoryArray = Array.from(productCategories);
-          console.log("🏷️ Categorías extraídas de productos:", categoryArray);
-          return categoryArray;
-        }
-
-        return subcategories;
-      } catch (error) {
-        console.log("❌ Error al obtener categorías de WooCommerce:", error);
-        // Si falla la conexión, usar categorías predefinidas
-        return [
-          "btt",
-          "e-bike",
-          "estrada",
-          "extras-alugueres",
-          "gravel-alugueres",
-          "junior-alugueres",
-          "touring-alugueres",
-        ];
-      }
+      // Return predefined subcategories from ALUGUERES
+      return [
+        "btt",
+        "e-bike",
+        "estrada",
+        "extras-alugueres",
+        "gravel-alugueres",
+        "junior-alugueres",
+        "touring-alugueres",
+      ];
     },
-    staleTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 };
 
