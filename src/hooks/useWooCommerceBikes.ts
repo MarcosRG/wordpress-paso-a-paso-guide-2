@@ -88,9 +88,9 @@ export const useWooCommerceCategories = () => {
 
         // Obtener todas las categorías disponibles
         const response = await fetch(
-          `${wooCommerceApi.WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
+          `${WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
           {
-            headers: wooCommerceApi.apiHeaders,
+            headers: apiHeaders,
           },
         );
 
@@ -134,7 +134,7 @@ export const useWooCommerceCategories = () => {
         // Si no hay subcategorías específicas, usar las de los productos
         if (subcategories.length === 0) {
           console.log(
-            "��� No hay subcategorías específicas, extrayendo de productos...",
+            "📦 No hay subcategorías específicas, extrayendo de productos...",
           );
           const products = await wooCommerceApi.getProducts();
           const productCategories = new Set<string>();
