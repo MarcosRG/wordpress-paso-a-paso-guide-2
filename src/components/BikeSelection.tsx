@@ -30,13 +30,21 @@ export const BikeSelection = ({
   const { data: categories = [] } = useWooCommerceCategories();
   const { language, setLanguage, t } = useLanguage();
 
-  // Filtrar bicicletas por categoría
+  // Filtrar bicicletas por categoría usando los slugs de WooCommerce
   const filteredBikes = bikes
-    ? bikes.filter(
-        (bike) =>
-          selectedCategory === "all" ||
-          bike.type === selectedCategory.toLowerCase(),
-      )
+    ? bikes.filter((bike) => {
+        if (selectedCategory === "all") return true;
+
+        // Verificar si el producto tiene la categoría seleccionada
+        if (bike.wooCommerceData?.product?.categories) {
+          return bike.wooCommerceData.product.categories.some(
+            (category) => category.slug === selectedCategory,
+          );
+        }
+
+        // Fallback al tipo de bicicleta
+        return bike.type === selectedCategory;
+      })
     : [];
 
   const getQuantityForBikeAndSize = (bikeId: string, size: string) => {
