@@ -201,7 +201,16 @@ const Index = () => {
         </div>
 
         {/* Diagnóstico de productos - temporal para debug */}
-        <ProductDiagnostics />
+        {process.env.NODE_ENV === "development" && (
+          <details className="mb-6">
+            <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
+              🔍 Debug: Diagnóstico de Productos (click para expandir)
+            </summary>
+            <div className="mt-2">
+              <ProductDiagnostics />
+            </div>
+          </details>
+        )}
 
         {/* Progress Indicator */}
         <div className="flex justify-center mb-8">
