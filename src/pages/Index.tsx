@@ -25,7 +25,7 @@ export interface Bike {
 
 export interface SelectedBike extends Bike {
   quantity: number;
-  size: "S" | "M" | "L" | "XL";
+  size: "XS" | "S" | "M" | "L" | "XL";
 }
 
 export interface ReservationData {
