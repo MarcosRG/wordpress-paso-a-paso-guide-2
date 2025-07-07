@@ -148,7 +148,30 @@ export const wooCommerceApi = {
   // Obtener todos los productos (bicicletas) de la categoría ALUGUERES
   async getProducts(): Promise<WooCommerceProduct[]> {
     try {
-      // Primero obtener la categoría principal ALUGUERES
+      console.log("🔍 Iniciando búsqueda de productos...");
+
+      // Primero obtener todas las categorías para debug
+      const allCategoriesResponse = await fetch(
+        `${WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
+        {
+          headers: apiHeaders,
+        },
+      );
+
+      if (allCategoriesResponse.ok) {
+        const allCategories = await allCategoriesResponse.json();
+        console.log(
+          "📋 Todas las categorías disponibles:",
+          allCategories.map((cat) => ({
+            id: cat.id,
+            name: cat.name,
+            slug: cat.slug,
+            parent: cat.parent,
+          })),
+        );
+      }
+
+      // Obtener la categoría principal ALUGUERES
       const categoriesResponse = await fetch(
         `${WOOCOMMERCE_API_BASE}/products/categories?slug=alugueres`,
         {
@@ -166,11 +189,29 @@ export const wooCommerceApi = {
       const alugueresCategory = categories[0];
 
       if (!alugueresCategory) {
-        console.warn("Categoría ALUGUERES no encontrada");
-        return [];
+        console.warn(
+          "⚠️ Categoría ALUGUERES no encontrada, obteniendo todos los productos...",
+        );
+        // Fallback: obtener todos los productos si no existe ALUGUERES
+        const response = await fetch(
+          `${WOOCOMMERCE_API_BASE}/products?per_page=100&type=variable`,
+          {
+            headers: apiHeaders,
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Error fetching all products: ${response.statusText}`,
+          );
+        }
+
+        return await response.json();
       }
 
-      // Obtener productos de la categoría ALUGUERES
+      console.log("🎯 Categoría ALUGUERES encontrada:", alugueresCategory);
+
+      // Obtener productos de la categoría ALUGUERES y sus subcategorías
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=${alugueresCategory.id}&type=variable`,
         {
@@ -183,11 +224,23 @@ export const wooCommerceApi = {
       }
 
       const products = await response.json();
-      console.log("Productos obtenidos de categoría ALUGUERES:", products);
+      console.log(
+        "📦 Productos obtenidos de categoría ALUGUERES:",
+        products.length,
+      );
+
+      // Debug cada producto y sus categorías
+      products.forEach((product) => {
+        console.log(`🚲 Producto: ${product.name}`);
+        console.log(
+          "  Categorías:",
+          product.categories.map((cat) => ({ name: cat.name, slug: cat.slug })),
+        );
+      });
 
       return products;
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("❌ Error fetching products:", error);
       throw error;
     }
   },
