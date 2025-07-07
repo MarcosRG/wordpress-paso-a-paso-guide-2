@@ -14,7 +14,7 @@ interface BikeCardProps {
   getQuantityForBikeAndSize: (bikeId: string, size: string) => number;
   updateBikeQuantity: (
     bike: Bike,
-    size: "S" | "M" | "L" | "XL",
+    size: "XS" | "S" | "M" | "L" | "XL",
     change: number,
   ) => void;
   totalDays: number;
