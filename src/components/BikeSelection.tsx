@@ -9,12 +9,13 @@ import {
 } from "@/hooks/useWooCommerceBikes";
 import { CategoryFilter } from "./CategoryFilter";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bike as BikeIcon, AlertCircle, Globe } from "lucide-react";
+import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
 import {
   getPriceForDays,
   extractDayBasedPricing,
 } from "@/services/woocommerceApi";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface BikeSelectionProps {
   reservation: ReservationData;
