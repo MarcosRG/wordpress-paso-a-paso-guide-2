@@ -71,6 +71,17 @@ export const apiHeaders = {
   "Content-Type": "application/json",
 };
 
+// Category mapping for ALUGUERES subcategories
+export const CATEGORY_MAP = {
+  btt: 253,
+  "e-bike": 257,
+  estrada: 254,
+  "extras-alugueres": 361,
+  "gravel-alugueres": 358,
+  "junior-alugueres": 360,
+  "touring-alugueres": 359,
+} as const;
+
 // Utility function to extract day-based pricing from product meta data
 export const extractDayBasedPricing = (
   product: WooCommerceProduct,
@@ -158,6 +169,39 @@ export const wooCommerceApi = {
 
       if (!response.ok) {
         throw new Error(`Error fetching products: ${response.statusText}`);
+      }
+
+      const products = await response.json();
+      return products;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get products by specific category
+  async getProductsByCategory(
+    categorySlug: string,
+  ): Promise<WooCommerceProduct[]> {
+    try {
+      const categoryId =
+        CATEGORY_MAP[categorySlug as keyof typeof CATEGORY_MAP];
+
+      if (!categoryId) {
+        // If category not found, return all products from ALUGUERES
+        return this.getProducts();
+      }
+
+      const response = await fetch(
+        `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=${categoryId}&type=variable`,
+        {
+          headers: apiHeaders,
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error fetching products by category: ${response.statusText}`,
+        );
       }
 
       const products = await response.json();
