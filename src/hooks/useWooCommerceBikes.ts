@@ -14,28 +14,60 @@ export const useWooCommerceBikes = () => {
     queryKey: ["woocommerce-bikes"],
     queryFn: async (): Promise<Bike[]> => {
       try {
+        console.log("Iniciando carga de productos de WooCommerce...");
         const products = await wooCommerceApi.getProducts();
+        console.log(`✅ Productos cargados exitosamente: ${products.length}`);
+
+        // Filtrar solo productos publicados con stock
+        const validProducts = products.filter((product: WooCommerceProduct) => {
+          return (
+            product.status === "publish" &&
+            (product.stock_status === "instock" || product.stock_quantity > 0)
+          );
+        });
+
+        console.log(
+          `Productos válidos después del filtro: ${validProducts.length} de ${products.length}`,
+        );
 
         // Convertir productos de WooCommerce a nuestro formato de Bike
         const bikes: Bike[] = await Promise.all(
-          products.map(async (product: WooCommerceProduct) => {
-            // Obtener variaciones del producto
-            const variations = await wooCommerceApi.getProductVariations(
-              product.id,
-            );
+          validProducts.map(async (product: WooCommerceProduct) => {
+            let totalStock = 0;
+            let basePrice = 0;
+            let variations: WooCommerceVariation[] = [];
 
-            // Calcular stock total de todas las variaciones
-            const totalStock = variations.reduce((sum, variation) => {
-              return sum + (variation.stock_quantity || 0);
-            }, 0);
+            if (product.type === "variable") {
+              // Obtener variaciones del producto variable
+              variations = await wooCommerceApi.getProductVariations(
+                product.id,
+              );
 
-            // Obtener el precio base (primera variación o precio del producto)
-            const basePrice =
-              variations.length > 0
+              // Calcular stock total de todas las variaciones
+              totalStock = variations.reduce((sum, variation) => {
+                return sum + (variation.stock_quantity || 0);
+              }, 0);
+
+              // Obtener el precio base (primera variación disponible)
+              const availableVariation = variations.find(
+                (v) => v.stock_quantity > 0,
+              );
+              basePrice = availableVariation
                 ? parseFloat(
-                    variations[0].price || variations[0].regular_price || "0",
+                    availableVariation.price ||
+                      availableVariation.regular_price ||
+                      "0",
                   )
-                : parseFloat(product.price || product.regular_price || "0");
+                : parseFloat(
+                    variations[0]?.price || variations[0]?.regular_price || "0",
+                  );
+            } else {
+              // Producto simple
+              totalStock = product.stock_quantity || 0;
+              basePrice = parseFloat(
+                product.price || product.regular_price || "0",
+              );
+            }
 
             // Obtener categoría principal del producto (excluyendo ALUGUERES)
             const subcategory = product.categories.find(
@@ -63,8 +95,13 @@ export const useWooCommerceBikes = () => {
           }),
         );
 
+        console.log(
+          `✅ Conversión completada: ${bikes.length} bicicletas disponibles`,
+        );
         return bikes;
       } catch (error) {
+        console.error("❌ Error al cargar productos de WooCommerce:", error);
+        console.log("🔄 Usando datos de prueba como fallback");
         // Si falla la conexión con WooCommerce, usar datos de prueba
         return mockBikes;
       }

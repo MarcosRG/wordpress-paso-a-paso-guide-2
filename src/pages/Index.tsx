@@ -5,6 +5,7 @@ import { InsuranceOptions } from "@/components/InsuranceOptions";
 import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -198,6 +199,8 @@ const Index = () => {
           </h1>
           <p className="text-lg text-gray-700">{t("subtitle")}</p>
         </div>
+
+        {/* Diagnóstico removido temporalmente por errores CORS */}
 
         {/* Progress Indicator */}
         <div className="flex justify-center mb-8">
