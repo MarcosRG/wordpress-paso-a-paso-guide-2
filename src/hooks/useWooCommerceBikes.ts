@@ -84,28 +84,78 @@ export const useWooCommerceCategories = () => {
     queryKey: ["woocommerce-categories"],
     queryFn: async (): Promise<string[]> => {
       try {
-        console.log("Intentando obtener categorías de WooCommerce...");
-        const products = await wooCommerceApi.getProducts();
-        const categories = new Set<string>();
+        console.log("🏷️ Intentando obtener categorías de WooCommerce...");
 
-        products.forEach((product) => {
-          product.categories.forEach((category) => {
-            // Excluir la categoría principal ALUGUERES, solo subcategorías
-            if (category.slug !== "alugueres") {
-              categories.add(category.slug);
-            }
-          });
-        });
-
-        const categoryArray = Array.from(categories);
-        console.log("Subcategorías obtenidas de WooCommerce:", categoryArray);
-        return categoryArray;
-      } catch (error) {
-        console.log(
-          "Error al obtener categorías de WooCommerce, usando categorías predefinidas:",
-          error,
+        // Obtener todas las categorías disponibles
+        const response = await fetch(
+          `${wooCommerceApi.WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
+          {
+            headers: wooCommerceApi.apiHeaders,
+          },
         );
-        // Si falla la conexión con WooCommerce, usar categorías predefinidas
+
+        if (!response.ok) {
+          throw new Error(`Error fetching categories: ${response.statusText}`);
+        }
+
+        const allCategories = await response.json();
+        console.log("📋 Todas las categorías:", allCategories);
+
+        // Buscar la categoría padre ALUGUERES
+        const alugueresCategory = allCategories.find(
+          (cat) => cat.slug === "alugueres",
+        );
+
+        if (!alugueresCategory) {
+          console.warn(
+            "⚠️ Categoría ALUGUERES no encontrada, usando categorías predefinidas",
+          );
+          return [
+            "btt",
+            "e-bike",
+            "estrada",
+            "extras-alugueres",
+            "gravel-alugueres",
+            "junior-alugueres",
+            "touring-alugueres",
+          ];
+        }
+
+        // Obtener subcategorías de ALUGUERES
+        const subcategories = allCategories
+          .filter((cat) => cat.parent === alugueresCategory.id)
+          .map((cat) => cat.slug);
+
+        console.log(
+          "🎯 Subcategorías de ALUGUERES encontradas:",
+          subcategories,
+        );
+
+        // Si no hay subcategorías específicas, usar las de los productos
+        if (subcategories.length === 0) {
+          console.log(
+            "��� No hay subcategorías específicas, extrayendo de productos...",
+          );
+          const products = await wooCommerceApi.getProducts();
+          const productCategories = new Set<string>();
+
+          products.forEach((product) => {
+            product.categories.forEach((category) => {
+              if (category.slug !== "alugueres") {
+                productCategories.add(category.slug);
+              }
+            });
+          });
+
+          const categoryArray = Array.from(productCategories);
+          console.log("🏷️ Categorías extraídas de productos:", categoryArray);
+          return categoryArray;
+        }
+
+        return subcategories;
+      } catch (error) {
+        console.log("❌ Error al obtener categorías de WooCommerce:", error);
+        // Si falla la conexión, usar categorías predefinidas
         return [
           "btt",
           "e-bike",
