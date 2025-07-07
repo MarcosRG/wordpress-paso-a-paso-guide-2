@@ -145,11 +145,34 @@ export const checkAtumAvailability = async (
 };
 
 export const wooCommerceApi = {
-  // Obtener todos los productos (bicicletas)
+  // Obtener todos los productos (bicicletas) de la categoría ALUGUERES
   async getProducts(): Promise<WooCommerceProduct[]> {
     try {
+      // Primero obtener la categoría principal ALUGUERES
+      const categoriesResponse = await fetch(
+        `${WOOCOMMERCE_API_BASE}/products/categories?slug=alugueres`,
+        {
+          headers: apiHeaders,
+        },
+      );
+
+      if (!categoriesResponse.ok) {
+        throw new Error(
+          `Error fetching categories: ${categoriesResponse.statusText}`,
+        );
+      }
+
+      const categories = await categoriesResponse.json();
+      const alugueresCategory = categories[0];
+
+      if (!alugueresCategory) {
+        console.warn("Categoría ALUGUERES no encontrada");
+        return [];
+      }
+
+      // Obtener productos de la categoría ALUGUERES
       const response = await fetch(
-        `${WOOCOMMERCE_API_BASE}/products?per_page=100&type=variable`,
+        `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=${alugueresCategory.id}&type=variable`,
         {
           headers: apiHeaders,
         },
@@ -159,7 +182,10 @@ export const wooCommerceApi = {
         throw new Error(`Error fetching products: ${response.statusText}`);
       }
 
-      return await response.json();
+      const products = await response.json();
+      console.log("Productos obtenidos de categoría ALUGUERES:", products);
+
+      return products;
     } catch (error) {
       console.error("Error fetching products:", error);
       throw error;
