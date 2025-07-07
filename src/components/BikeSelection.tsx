@@ -189,7 +189,18 @@ export const BikeSelection = ({
         <h2 className="text-xl font-semibold mb-2">
           Error al cargar las bicicletas
         </h2>
-        <Button onClick={() => window.location.reload()}>Reintentar</Button>
+        <div className="flex gap-2 justify-center">
+          <Button onClick={handleRefresh}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Reintentar
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => console.error("Error details:", error)}
+          >
+            Ver Error
+          </Button>
+        </div>
       </div>
     );
   }
