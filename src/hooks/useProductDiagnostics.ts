@@ -48,5 +48,7 @@ export const useProductDiagnostics = () => {
     },
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
+    retry: false, // No reintentar en caso de error CORS
+    enabled: process.env.NODE_ENV === "development", // Solo en desarrollo
   });
 };
