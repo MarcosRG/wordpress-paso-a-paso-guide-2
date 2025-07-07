@@ -72,8 +72,8 @@ const BikeCard = ({
             <div className="font-medium text-center mb-1">
               {t("availableSizes")}
             </div>
-            <div className="grid grid-cols-4 gap-1 text-center">
-              {(["S", "M", "L", "XL"] as const).map((size) => {
+            <div className="grid grid-cols-5 gap-1 text-center">
+              {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
                 const availableForSize = Math.floor(bike.available / 4);
                 return (
                   <div key={size} className="flex flex-col">
