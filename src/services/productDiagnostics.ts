@@ -24,16 +24,27 @@ export const productDiagnostics = {
   // Diagnosticar todos los productos de la categoría ALUGUERES
   async diagnoseAlugueresProducts(): Promise<ProductDiagnostic[]> {
     try {
+      // Verificar si estamos en un entorno que puede acceder a la API
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+
       // Obtener TODOS los productos de la categoría, sin filtros
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319`,
         {
-          headers: apiHeaders,
+          headers: {
+            ...apiHeaders,
+            Accept: "application/json",
+          },
+          signal: controller.signal,
+          mode: "cors",
         },
       );
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`Error fetching products: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const products = await response.json();
@@ -96,8 +107,38 @@ export const productDiagnostics = {
       return diagnostics;
     } catch (error) {
       console.error("Error al diagnosticar productos:", error);
+
+      // Si es un error de CORS o red, devolver diagnóstico simulado
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        console.warn(
+          "API de WooCommerce no accesible desde entorno de desarrollo. Usando datos simulados.",
+        );
+        return this.getMockDiagnostics();
+      }
+
       throw error;
     }
+  },
+
+  // Datos simulados para cuando la API no es accesible
+  getMockDiagnostics(): ProductDiagnostic[] {
+    return [
+      {
+        id: 1,
+        name: "Producto simulado - No se puede acceder a la API",
+        status: "publish",
+        type: "variable",
+        stock_status: "instock",
+        stock_quantity: 5,
+        categories: [{ id: 319, name: "ALUGUERES", slug: "alugueres" }],
+        published: true,
+        hasStock: true,
+        hasImages: false,
+        hasPrice: true,
+        isComplete: false,
+        issues: ["Error de CORS - API no accesible desde desarrollo"],
+      },
+    ];
   },
 
   // Obtener resumen del diagnóstico

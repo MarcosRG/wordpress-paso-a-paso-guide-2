@@ -168,15 +168,25 @@ export const wooCommerceApi = {
       // - status=publish: Solo productos publicados
       // - stock_status=instock: Solo productos en stock (opcional)
       // - type=variable,simple: Productos variables y simples
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
+
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish&type=variable,simple`,
         {
-          headers: apiHeaders,
+          headers: {
+            ...apiHeaders,
+            Accept: "application/json",
+          },
+          signal: controller.signal,
+          mode: "cors",
         },
       );
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`Error fetching products: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const products = await response.json();
@@ -188,6 +198,14 @@ export const wooCommerceApi = {
       return products;
     } catch (error) {
       console.error("Error al obtener productos:", error);
+
+      // Si es un error de red/CORS, proporcionar información útil
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        console.warn(
+          "No se puede conectar a la API de WooCommerce. Verificar CORS y conectividad.",
+        );
+      }
+
       throw error;
     }
   },

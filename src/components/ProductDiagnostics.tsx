@@ -20,10 +20,15 @@ export const ProductDiagnostics = () => {
 
   if (error) {
     return (
-      <Card className="mb-6 border-red-200">
+      <Card className="mb-6 border-yellow-200 bg-yellow-50">
         <CardContent className="p-6">
-          <p className="text-red-600">
-            Error al cargar diagnóstico: {error.message}
+          <p className="text-yellow-800">
+            <strong>Diagnóstico no disponible:</strong> {error.message}
+          </p>
+          <p className="text-sm text-yellow-600 mt-2">
+            Esto es normal en entornos de desarrollo debido a restricciones
+            CORS. La funcionalidad principal de productos debería funcionar
+            correctamente.
           </p>
         </CardContent>
       </Card>
