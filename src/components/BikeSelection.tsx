@@ -212,6 +212,10 @@ export const BikeSelection = ({
         <h2 className="text-xl font-semibold mb-2">
           No hay bicicletas disponibles
         </h2>
+        <Button onClick={handleRefresh} className="mt-4">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Intentar de nuevo
+        </Button>
       </div>
     );
   }
