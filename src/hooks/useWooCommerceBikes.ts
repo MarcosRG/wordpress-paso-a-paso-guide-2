@@ -40,20 +40,26 @@ export const useWooCommerceBikes = () => {
             let variations: WooCommerceVariation[] = [];
             let acfData: any = null;
 
-            // Try to get ACF data from WordPress API
+            // Try to get ACF data from WordPress API (non-blocking)
             try {
               acfData = await wooCommerceApi.getProductWithACF(product.id);
             } catch (error) {
-              console.warn(
-                `No se pudieron obtener datos ACF para producto ${product.id}`,
-              );
+              // Silently continue without ACF data - this is not critical
+              acfData = null;
             }
 
             if (product.type === "variable") {
               // Obtener variaciones del producto variable
-              variations = await wooCommerceApi.getProductVariations(
-                product.id,
-              );
+              try {
+                variations = await wooCommerceApi.getProductVariations(
+                  product.id,
+                );
+              } catch (error) {
+                console.warn(
+                  `Error al obtener variaciones para producto ${product.id}, continuando sin variaciones`,
+                );
+                variations = [];
+              }
 
               // Calcular stock total de todas las variaciones
               totalStock = variations.reduce((sum, variation) => {
