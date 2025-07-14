@@ -5,6 +5,8 @@ import {
   WooCommerceVariation,
   WOOCOMMERCE_API_BASE,
   apiHeaders,
+  extractACFPricing,
+  ACFPricing,
 } from "@/services/woocommerceApi";
 import { Bike } from "@/pages/Index";
 import { mockBikes, mockCategories } from "./useMockBikes";
@@ -36,6 +38,16 @@ export const useWooCommerceBikes = () => {
             let totalStock = 0;
             let basePrice = 0;
             let variations: WooCommerceVariation[] = [];
+            let acfData: any = null;
+
+            // Try to get ACF data from WordPress API
+            try {
+              acfData = await wooCommerceApi.getProductWithACF(product.id);
+            } catch (error) {
+              console.warn(
+                `No se pudieron obtener datos ACF para producto ${product.id}`,
+              );
+            }
 
             if (product.type === "variable") {
               // Obtener variaciones del producto variable
@@ -75,6 +87,15 @@ export const useWooCommerceBikes = () => {
             );
             const primaryCategory = subcategory ? subcategory.slug : "general";
 
+            // Merge ACF data into product if available
+            let enhancedProduct = product;
+            if (acfData && acfData.acf) {
+              enhancedProduct = {
+                ...product,
+                acf: acfData.acf,
+              };
+            }
+
             return {
               id: product.id.toString(),
               name: product.name,
@@ -88,8 +109,9 @@ export const useWooCommerceBikes = () => {
               description:
                 product.short_description || product.description || "",
               wooCommerceData: {
-                product,
+                product: enhancedProduct,
                 variations,
+                acfData,
               },
             };
           }),
