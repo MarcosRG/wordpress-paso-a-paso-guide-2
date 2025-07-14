@@ -4,6 +4,12 @@ export interface PriceRange {
   pricePerDay: number;
 }
 
+export interface ACFPricing {
+  precio_1_2: number;
+  precio_3_6: number;
+  precio_7_mais: number;
+}
+
 export interface WooCommerceProduct {
   id: number;
   name: string;
@@ -37,6 +43,7 @@ export interface WooCommerceProduct {
     key: string;
     value: any;
   }>;
+  acf?: ACFPricing;
 }
 
 export interface WooCommerceVariation {
@@ -84,11 +91,78 @@ export const CATEGORY_MAP = {
   alugueres: 319,
 } as const;
 
+// Function to calculate price based on ACF pricing structure
+export const calcularPrecioAlquiler = (
+  dias: number,
+  precios: ACFPricing,
+): number => {
+  if (dias <= 2) return dias * precios.precio_1_2;
+  if (dias <= 6) return dias * precios.precio_3_6;
+  return dias * precios.precio_7_mais;
+};
+
+// Function to extract ACF pricing from WordPress API
+export const extractACFPricing = (
+  product: WooCommerceProduct,
+): ACFPricing | null => {
+  // Check if product has ACF data directly
+  if (
+    product.acf &&
+    product.acf.precio_1_2 &&
+    product.acf.precio_3_6 &&
+    product.acf.precio_7_mais
+  ) {
+    return {
+      precio_1_2: parseFloat(product.acf.precio_1_2.toString()),
+      precio_3_6: parseFloat(product.acf.precio_3_6.toString()),
+      precio_7_mais: parseFloat(product.acf.precio_7_mais.toString()),
+    };
+  }
+
+  // Check in meta_data for ACF fields
+  const precio_1_2 = product.meta_data?.find(
+    (meta) => meta.key === "precio_1_2" || meta.key === "_precio_1_2",
+  );
+  const precio_3_6 = product.meta_data?.find(
+    (meta) => meta.key === "precio_3_6" || meta.key === "_precio_3_6",
+  );
+  const precio_7_mais = product.meta_data?.find(
+    (meta) => meta.key === "precio_7_mais" || meta.key === "_precio_7_mais",
+  );
+
+  if (precio_1_2 && precio_3_6 && precio_7_mais) {
+    return {
+      precio_1_2: parseFloat(precio_1_2.value.toString()),
+      precio_3_6: parseFloat(precio_3_6.value.toString()),
+      precio_7_mais: parseFloat(precio_7_mais.value.toString()),
+    };
+  }
+
+  return null;
+};
+
+// Convert ACF pricing to PriceRange format for compatibility
+export const convertACFToPriceRanges = (
+  acfPricing: ACFPricing,
+): PriceRange[] => {
+  return [
+    { minDays: 1, maxDays: 2, pricePerDay: acfPricing.precio_1_2 },
+    { minDays: 3, maxDays: 6, pricePerDay: acfPricing.precio_3_6 },
+    { minDays: 7, maxDays: 999, pricePerDay: acfPricing.precio_7_mais },
+  ];
+};
+
 // Utility function to extract day-based pricing from product meta data
 export const extractDayBasedPricing = (
   product: WooCommerceProduct,
 ): PriceRange[] => {
-  // Look for day-based pricing in meta_data
+  // First try to get ACF pricing
+  const acfPricing = extractACFPricing(product);
+  if (acfPricing) {
+    return convertACFToPriceRanges(acfPricing);
+  }
+
+  // Look for day-based pricing in meta_data (legacy format)
   const pricingMeta = product.meta_data?.find(
     (meta) => meta.key === "_day_pricing" || meta.key === "day_pricing",
   );
@@ -207,6 +281,35 @@ export const wooCommerceApi = {
       }
 
       throw error;
+    }
+  },
+
+  // Get product with ACF data using WordPress REST API
+  async getProductWithACF(productId: number): Promise<any> {
+    try {
+      const response = await fetch(
+        `https://bikesultoursgest.com/wp-json/wp/v2/product/${productId}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+          mode: "cors",
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error fetching ACF data: ${response.statusText}`);
+      }
+
+      const productData = await response.json();
+      console.log(`ACF data for product ${productId}:`, productData.acf);
+      return productData;
+    } catch (error) {
+      console.error(
+        `Error al obtener datos ACF para producto ${productId}:`,
+        error,
+      );
+      return null;
     }
   },
 
