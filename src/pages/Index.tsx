@@ -27,9 +27,9 @@ export interface Bike {
   image: string;
   description: string;
   wooCommerceData?: {
-    product: any;
-    variations?: any[];
-    acfData?: any;
+    product: Record<string, unknown>;
+    variations?: Record<string, unknown>[];
+    acfData?: Record<string, unknown>;
   };
 }
 
