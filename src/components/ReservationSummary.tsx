@@ -1,8 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ReservationData } from "@/pages/Index";
+import { ReservationData, SelectedBike } from "@/pages/Index";
 import { Bike, CalendarDays, Clock, CreditCard, Users } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  extractACFPricing,
+  calculateTotalPriceACF,
+} from "@/services/woocommerceApi";
 
 interface ReservationSummaryProps {
   reservation: ReservationData;
@@ -38,6 +42,25 @@ export const ReservationSummary = ({
     (sum, bike) => sum + bike.quantity,
     0,
   );
+
+  // Function to calculate individual bike price (same logic as in Index.tsx)
+  const calculateBikePrice = (
+    bike: SelectedBike,
+    totalDays: number,
+  ): number => {
+    // Try to use ACF pricing first
+    const acfPricing = bike.wooCommerceData?.product
+      ? extractACFPricing(bike.wooCommerceData.product)
+      : null;
+
+    if (acfPricing && totalDays > 0) {
+      // Use ACF pricing calculation
+      return calculateTotalPriceACF(totalDays, bike.quantity, acfPricing);
+    } else {
+      // Fallback to original calculation
+      return bike.pricePerDay * bike.quantity * totalDays;
+    }
+  };
 
   return (
     <div>
@@ -169,21 +192,47 @@ export const ReservationSummary = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {reservation.selectedBikes.map((bike, index) => (
-              <div
-                key={`${bike.id}-${bike.size}-${index}`}
-                className="flex justify-between items-center"
-              >
-                <div>
-                  {bike.name} ({t("size")} {bike.size}) x{bike.quantity}
+            {reservation.selectedBikes.map((bike, index) => {
+              const bikeTotal = calculateBikePrice(bike, reservation.totalDays);
+              const acfPricing = bike.wooCommerceData?.product
+                ? extractACFPricing(bike.wooCommerceData.product)
+                : null;
+
+              return (
+                <div
+                  key={`${bike.id}-${bike.size}-${index}`}
+                  className="flex justify-between items-center"
+                >
+                  <div>
+                    {bike.name} ({t("size")} {bike.size}) x{bike.quantity}
+                  </div>
+                  <div>
+                    {acfPricing ? (
+                      // Show ACF pricing details
+                      <span>
+                        €
+                        {(
+                          bikeTotal /
+                          reservation.totalDays /
+                          bike.quantity
+                        ).toFixed(2)}
+                        /día × {bike.quantity} × {reservation.totalDays}{" "}
+                        {reservation.totalDays === 1 ? t("day") : t("days")} = €
+                        {bikeTotal.toFixed(2)}
+                      </span>
+                    ) : (
+                      // Show regular pricing
+                      <span>
+                        €{bike.pricePerDay} × {bike.quantity} ×{" "}
+                        {reservation.totalDays}{" "}
+                        {reservation.totalDays === 1 ? t("day") : t("days")} = €
+                        {bikeTotal.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  €{bike.pricePerDay * bike.quantity} × {reservation.totalDays}{" "}
-                  {reservation.totalDays === 1 ? t("day") : t("days")} = €
-                  {bike.pricePerDay * bike.quantity * reservation.totalDays}
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
             {reservation.insurance && reservation.insurance.price > 0 && (
               <div className="flex justify-between items-center">
