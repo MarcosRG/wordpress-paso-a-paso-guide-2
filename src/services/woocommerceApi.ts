@@ -432,19 +432,14 @@ export const wooCommerceApi = {
     productId: number,
   ): Promise<WooCommerceVariation[]> {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 segundos timeout
-
+      // Simplified fetch without AbortController for individual products
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
         {
           headers: apiHeaders,
-          signal: controller.signal,
           mode: "cors",
         },
       );
-
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         // Si es 404, el producto no tiene variaciones
