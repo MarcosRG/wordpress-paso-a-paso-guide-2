@@ -32,7 +32,7 @@ export const useWooCommerceBikes = () => {
           `Productos válidos después del filtro: ${validProducts.length} de ${products.length}`,
         );
 
-                        // Convertir productos de WooCommerce a nuestro formato de Bike
+        // Convertir productos de WooCommerce a nuestro formato de Bike
         const bikes: Bike[] = [];
 
         // Process products sequentially to avoid overwhelming the API
@@ -53,10 +53,14 @@ export const useWooCommerceBikes = () => {
             if (product.type === "variable") {
               // Obtener variaciones del producto variable
               try {
-                variations = await wooCommerceApi.getProductVariations(product.id);
+                variations = await wooCommerceApi.getProductVariations(
+                  product.id,
+                );
                 if (!variations) variations = [];
               } catch (error) {
-                console.warn(`🔄 Fallback: Error al cargar variaciones para producto ${product.id}`);
+                console.warn(
+                  `🔄 Fallback: Error al cargar variaciones para producto ${product.id}`,
+                );
                 variations = [];
               }
 
@@ -111,7 +115,7 @@ export const useWooCommerceBikes = () => {
               };
             }
 
-            return {
+            const bike: Bike = {
               id: product.id.toString(),
               name: product.name,
               type: primaryCategory.toLowerCase(),
@@ -129,8 +133,13 @@ export const useWooCommerceBikes = () => {
                 acfData,
               },
             };
-          }),
-        );
+
+            bikes.push(bike);
+          } catch (error) {
+            console.warn(`⚠️ Error procesando producto ${product.id}:`, error);
+            // Continue with next product instead of failing completely
+          }
+        }
 
         console.log(
           `✅ Conversión completada: ${bikes.length} bicicletas disponibles`,
