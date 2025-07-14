@@ -45,8 +45,17 @@ export const useWooCommerceBikes = () => {
 
             if (product.type === "variable") {
               // Obtener variaciones del producto variable
-              variations =
-                (await wooCommerceApi.getProductVariations(product.id)) || [];
+              try {
+                variations = await wooCommerceApi.getProductVariations(
+                  product.id,
+                );
+                if (!variations) variations = [];
+              } catch (error) {
+                console.warn(
+                  `🔄 Fallback: Error al cargar variaciones para producto ${product.id}`,
+                );
+                variations = [];
+              }
 
               if (variations.length > 0) {
                 // Calcular stock total de todas las variaciones
