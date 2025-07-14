@@ -459,11 +459,7 @@ export const wooCommerceApi = {
       return variations;
     } catch (error) {
       if (error instanceof Error) {
-        if (error.name === "AbortError") {
-          console.warn(
-            `⏱️  Timeout (20s) al obtener variaciones para producto ${productId} - usando producto principal`,
-          );
-        } else if (error.message.includes("fetch")) {
+        if (error.message.includes("fetch")) {
           console.warn(
             `🌐 Error de red al obtener variaciones para producto ${productId} - usando producto principal`,
           );
