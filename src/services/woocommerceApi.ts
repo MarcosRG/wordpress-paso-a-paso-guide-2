@@ -215,6 +215,28 @@ export const calculateTotalPriceACF = (
   return days * quantity * pricePerDay;
 };
 
+// Utility function for retrying failed requests
+async function retryRequest<T>(
+  fn: () => Promise<T>,
+  retries: number = 2,
+): Promise<T | null> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === retries) {
+        // Last attempt failed, return null instead of throwing
+        return null;
+      }
+      // Wait a bit before retrying (exponential backoff)
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.pow(2, i) * 1000),
+      );
+    }
+  }
+  return null;
+}
+
 // Function to check product availability based on ATUM inventory
 export const checkAtumAvailability = async (
   productId: number,
