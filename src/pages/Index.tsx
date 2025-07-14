@@ -12,6 +12,11 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { orderService } from "@/services/orderService";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  extractACFPricing,
+  getPricePerDayFromACF,
+  calculateTotalPriceACF,
+} from "@/services/woocommerceApi";
 
 export interface Bike {
   id: string;
@@ -21,7 +26,11 @@ export interface Bike {
   available: number;
   image: string;
   description: string;
-  wooCommerceData?: any;
+  wooCommerceData?: {
+    product: Record<string, unknown>;
+    variations?: Record<string, unknown>[];
+    acfData?: Record<string, unknown>;
+  };
 }
 
 export interface SelectedBike extends Bike {
@@ -46,10 +55,23 @@ export interface ReservationData {
 
 // Utility function to calculate total price including insurance
 const calculateTotalPrice = (reservation: ReservationData): number => {
-  const bikePrice =
-    reservation.selectedBikes.reduce((sum, bike) => {
-      return sum + bike.pricePerDay * bike.quantity;
-    }, 0) * reservation.totalDays;
+  const bikePrice = reservation.selectedBikes.reduce((sum, bike) => {
+    // Try to use ACF pricing first
+    const acfPricing = bike.wooCommerceData?.product
+      ? extractACFPricing(bike.wooCommerceData.product)
+      : null;
+
+    if (acfPricing && reservation.totalDays > 0) {
+      // Use ACF pricing calculation
+      return (
+        sum +
+        calculateTotalPriceACF(reservation.totalDays, bike.quantity, acfPricing)
+      );
+    } else {
+      // Fallback to original calculation
+      return sum + bike.pricePerDay * bike.quantity * reservation.totalDays;
+    }
+  }, 0);
 
   const insurancePrice =
     reservation.insurance && reservation.insurance.price > 0

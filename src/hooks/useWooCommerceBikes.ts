@@ -5,6 +5,8 @@ import {
   WooCommerceVariation,
   WOOCOMMERCE_API_BASE,
   apiHeaders,
+  extractACFPricing,
+  ACFPricing,
 } from "@/services/woocommerceApi";
 import { Bike } from "@/pages/Index";
 import { mockBikes, mockCategories } from "./useMockBikes";
@@ -31,36 +33,65 @@ export const useWooCommerceBikes = () => {
         );
 
         // Convertir productos de WooCommerce a nuestro formato de Bike
-        const bikes: Bike[] = await Promise.all(
-          validProducts.map(async (product: WooCommerceProduct) => {
+        const bikes: Bike[] = [];
+
+        // Process products sequentially to avoid overwhelming the API
+        for (const product of validProducts) {
+          try {
             let totalStock = 0;
             let basePrice = 0;
             let variations: WooCommerceVariation[] = [];
+            let acfData: any = null;
+
+            // Try to get ACF data from WordPress API (non-blocking)
+            try {
+              acfData = await wooCommerceApi.getProductWithACF(product.id);
+            } catch (error) {
+              acfData = null; // Silently fail, ACF data is optional
+            }
 
             if (product.type === "variable") {
               // Obtener variaciones del producto variable
-              variations = await wooCommerceApi.getProductVariations(
-                product.id,
-              );
+              try {
+                variations = await wooCommerceApi.getProductVariations(
+                  product.id,
+                );
+                if (!variations) variations = [];
+              } catch (error) {
+                console.warn(
+                  `🔄 Fallback: Error al cargar variaciones para producto ${product.id}`,
+                );
+                variations = [];
+              }
 
-              // Calcular stock total de todas las variaciones
-              totalStock = variations.reduce((sum, variation) => {
-                return sum + (variation.stock_quantity || 0);
-              }, 0);
+              if (variations.length > 0) {
+                // Calcular stock total de todas las variaciones
+                totalStock = variations.reduce((sum, variation) => {
+                  return sum + (variation.stock_quantity || 0);
+                }, 0);
 
-              // Obtener el precio base (primera variación disponible)
-              const availableVariation = variations.find(
-                (v) => v.stock_quantity > 0,
-              );
-              basePrice = availableVariation
-                ? parseFloat(
-                    availableVariation.price ||
-                      availableVariation.regular_price ||
-                      "0",
-                  )
-                : parseFloat(
-                    variations[0]?.price || variations[0]?.regular_price || "0",
-                  );
+                // Obtener el precio base (primera variación disponible)
+                const availableVariation = variations.find(
+                  (v) => v.stock_quantity > 0,
+                );
+                basePrice = availableVariation
+                  ? parseFloat(
+                      availableVariation.price ||
+                        availableVariation.regular_price ||
+                        "0",
+                    )
+                  : parseFloat(
+                      variations[0]?.price ||
+                        variations[0]?.regular_price ||
+                        "0",
+                    );
+              } else {
+                // Fallback si no hay variaciones disponibles
+                totalStock = product.stock_quantity || 0;
+                basePrice = parseFloat(
+                  product.price || product.regular_price || "0",
+                );
+              }
             } else {
               // Producto simple
               totalStock = product.stock_quantity || 0;
@@ -75,7 +106,16 @@ export const useWooCommerceBikes = () => {
             );
             const primaryCategory = subcategory ? subcategory.slug : "general";
 
-            return {
+            // Merge ACF data into product if available
+            let enhancedProduct = product;
+            if (acfData && acfData.acf) {
+              enhancedProduct = {
+                ...product,
+                acf: acfData.acf,
+              };
+            }
+
+            const bike: Bike = {
               id: product.id.toString(),
               name: product.name,
               type: primaryCategory.toLowerCase(),
@@ -88,12 +128,18 @@ export const useWooCommerceBikes = () => {
               description:
                 product.short_description || product.description || "",
               wooCommerceData: {
-                product,
+                product: enhancedProduct,
                 variations,
+                acfData,
               },
             };
-          }),
-        );
+
+            bikes.push(bike);
+          } catch (error) {
+            console.warn(`⚠️ Error procesando producto ${product.id}:`, error);
+            // Continue with next product instead of failing completely
+          }
+        }
 
         console.log(
           `✅ Conversión completada: ${bikes.length} bicicletas disponibles`,

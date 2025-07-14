@@ -4,6 +4,12 @@ export interface PriceRange {
   pricePerDay: number;
 }
 
+export interface ACFPricing {
+  precio_1_2: number;
+  precio_3_6: number;
+  precio_7_mais: number;
+}
+
 export interface WooCommerceProduct {
   id: number;
   name: string;
@@ -35,8 +41,9 @@ export interface WooCommerceProduct {
   meta_data: Array<{
     id: number;
     key: string;
-    value: any;
+    value: unknown;
   }>;
+  acf?: ACFPricing;
 }
 
 export interface WooCommerceVariation {
@@ -84,11 +91,78 @@ export const CATEGORY_MAP = {
   alugueres: 319,
 } as const;
 
+// Function to calculate price based on ACF pricing structure
+export const calcularPrecioAlquiler = (
+  dias: number,
+  precios: ACFPricing,
+): number => {
+  if (dias <= 2) return dias * precios.precio_1_2;
+  if (dias <= 6) return dias * precios.precio_3_6;
+  return dias * precios.precio_7_mais;
+};
+
+// Function to extract ACF pricing from WordPress API
+export const extractACFPricing = (
+  product: WooCommerceProduct,
+): ACFPricing | null => {
+  // Check if product has ACF data directly
+  if (
+    product.acf &&
+    product.acf.precio_1_2 &&
+    product.acf.precio_3_6 &&
+    product.acf.precio_7_mais
+  ) {
+    return {
+      precio_1_2: parseFloat(product.acf.precio_1_2.toString()),
+      precio_3_6: parseFloat(product.acf.precio_3_6.toString()),
+      precio_7_mais: parseFloat(product.acf.precio_7_mais.toString()),
+    };
+  }
+
+  // Check in meta_data for ACF fields
+  const precio_1_2 = product.meta_data?.find(
+    (meta) => meta.key === "precio_1_2" || meta.key === "_precio_1_2",
+  );
+  const precio_3_6 = product.meta_data?.find(
+    (meta) => meta.key === "precio_3_6" || meta.key === "_precio_3_6",
+  );
+  const precio_7_mais = product.meta_data?.find(
+    (meta) => meta.key === "precio_7_mais" || meta.key === "_precio_7_mais",
+  );
+
+  if (precio_1_2 && precio_3_6 && precio_7_mais) {
+    return {
+      precio_1_2: parseFloat(precio_1_2.value.toString()),
+      precio_3_6: parseFloat(precio_3_6.value.toString()),
+      precio_7_mais: parseFloat(precio_7_mais.value.toString()),
+    };
+  }
+
+  return null;
+};
+
+// Convert ACF pricing to PriceRange format for compatibility
+export const convertACFToPriceRanges = (
+  acfPricing: ACFPricing,
+): PriceRange[] => {
+  return [
+    { minDays: 1, maxDays: 2, pricePerDay: acfPricing.precio_1_2 },
+    { minDays: 3, maxDays: 6, pricePerDay: acfPricing.precio_3_6 },
+    { minDays: 7, maxDays: 999, pricePerDay: acfPricing.precio_7_mais },
+  ];
+};
+
 // Utility function to extract day-based pricing from product meta data
 export const extractDayBasedPricing = (
   product: WooCommerceProduct,
 ): PriceRange[] => {
-  // Look for day-based pricing in meta_data
+  // First try to get ACF pricing
+  const acfPricing = extractACFPricing(product);
+  if (acfPricing) {
+    return convertACFToPriceRanges(acfPricing);
+  }
+
+  // Look for day-based pricing in meta_data (legacy format)
   const pricingMeta = product.meta_data?.find(
     (meta) => meta.key === "_day_pricing" || meta.key === "day_pricing",
   );
@@ -120,6 +194,48 @@ export const getPriceForDays = (
     ? range.pricePerDay
     : priceRanges[priceRanges.length - 1]?.pricePerDay || 0;
 };
+
+// Function to get price per day from ACF pricing based on number of days
+export const getPricePerDayFromACF = (
+  days: number,
+  acfPricing: ACFPricing,
+): number => {
+  if (days <= 2) return acfPricing.precio_1_2;
+  if (days <= 6) return acfPricing.precio_3_6;
+  return acfPricing.precio_7_mais;
+};
+
+// Function to calculate total price for rental period using ACF pricing
+export const calculateTotalPriceACF = (
+  days: number,
+  quantity: number,
+  acfPricing: ACFPricing,
+): number => {
+  const pricePerDay = getPricePerDayFromACF(days, acfPricing);
+  return days * quantity * pricePerDay;
+};
+
+// Utility function for retrying failed requests
+async function retryRequest<T>(
+  fn: () => Promise<T>,
+  retries: number = 2,
+): Promise<T | null> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === retries) {
+        // Last attempt failed, return null instead of throwing
+        return null;
+      }
+      // Wait a bit before retrying (exponential backoff)
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.pow(2, i) * 1000),
+      );
+    }
+  }
+  return null;
+}
 
 // Function to check product availability based on ATUM inventory
 export const checkAtumAvailability = async (
@@ -169,7 +285,7 @@ export const wooCommerceApi = {
       // - stock_status=instock: Solo productos en stock (opcional)
       // - type=variable,simple: Productos variables y simples
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
 
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish`,
@@ -207,6 +323,63 @@ export const wooCommerceApi = {
       }
 
       throw error;
+    }
+  },
+
+  // Get product with ACF data using WordPress REST API
+  async getProductWithACF(
+    productId: number,
+  ): Promise<Record<string, unknown> | null> {
+    try {
+      // Simplified fetch without AbortController for individual products
+      const response = await fetch(
+        `https://bikesultoursgest.com/wp-json/wp/v2/product/${productId}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+          mode: "cors",
+        },
+      );
+
+      if (!response.ok) {
+        // Si es 404, el producto no existe en WordPress, no es un error crítico
+        if (response.status === 404) {
+          console.warn(
+            `Producto ${productId} no encontrado en WordPress REST API`,
+          );
+          return null;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const productData = await response.json();
+
+      // Solo log si realmente hay datos ACF
+      if (productData.acf && Object.keys(productData.acf).length > 0) {
+        console.log(
+          `✅ ACF data encontrados para producto ${productId}:`,
+          productData.acf,
+        );
+      } else {
+        console.info(`ℹ️  Producto ${productId} sin datos ACF configurados`);
+      }
+
+      return productData;
+    } catch (error) {
+      // No loggear como error si es un timeout o network error común
+      if (error instanceof Error) {
+        if (error.message.includes("fetch")) {
+          console.warn(
+            `🌐 Error de red al obtener ACF para producto ${productId} - continuando sin ACF`,
+          );
+        } else {
+          console.warn(
+            `⚠️  Error ACF para producto ${productId}: ${error.message} - continuando sin ACF`,
+          );
+        }
+      }
+      return null;
     }
   },
 
@@ -255,20 +428,44 @@ export const wooCommerceApi = {
     productId: number,
   ): Promise<WooCommerceVariation[]> {
     try {
+      // Simplified fetch without AbortController for individual products
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
         {
           headers: apiHeaders,
+          mode: "cors",
         },
       );
 
       if (!response.ok) {
-        throw new Error(`Error fetching variations: ${response.statusText}`);
+        // Si es 404, el producto no tiene variaciones
+        if (response.status === 404) {
+          console.warn(
+            `Producto ${productId} no tiene variaciones disponibles`,
+          );
+          return [];
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.json();
+      const variations = await response.json();
+      console.log(
+        `✅ ${variations.length} variaciones obtenidas para producto ${productId}`,
+      );
+      return variations;
     } catch (error) {
-      throw error;
+      if (error instanceof Error) {
+        if (error.message.includes("fetch")) {
+          console.warn(
+            `🌐 Error de red al obtener variaciones para producto ${productId} - usando producto principal`,
+          );
+        } else {
+          console.warn(
+            `⚠️  Error variaciones para producto ${productId}: ${error.message} - usando producto principal`,
+          );
+        }
+      }
+      return []; // Retornar array vacío en lugar de tirar error
     }
   },
 

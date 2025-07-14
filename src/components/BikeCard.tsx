@@ -7,6 +7,9 @@ import {
   extractDayBasedPricing,
   getPriceForDays,
   PriceRange,
+  extractACFPricing,
+  ACFPricing,
+  getPricePerDayFromACF,
 } from "@/services/woocommerceApi";
 
 interface BikeCardProps {
@@ -28,17 +31,42 @@ const BikeCard = ({
 }: BikeCardProps) => {
   const { t } = useLanguage();
 
-  // Extract day-based pricing
+  // Extract ACF pricing first, then fallback to day-based pricing
+  const acfPricing: ACFPricing | null = bike.wooCommerceData?.product
+    ? extractACFPricing(bike.wooCommerceData.product)
+    : null;
+
   const priceRanges: PriceRange[] = bike.wooCommerceData?.product
     ? extractDayBasedPricing(bike.wooCommerceData.product)
     : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
 
   // Get current price based on rental duration
   const currentPrice =
-    totalDays > 0 ? getPriceForDays(priceRanges, totalDays) : bike.pricePerDay;
+    totalDays > 0
+      ? acfPricing
+        ? getPricePerDayFromACF(totalDays, acfPricing)
+        : getPriceForDays(priceRanges, totalDays)
+      : bike.pricePerDay;
 
   // Format price range display
   const formatPriceRange = () => {
+    if (acfPricing) {
+      // Use ACF pricing format
+      const prices = [
+        acfPricing.precio_1_2,
+        acfPricing.precio_3_6,
+        acfPricing.precio_7_mais,
+      ];
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+
+      if (minPrice === maxPrice) {
+        return `€${minPrice}/${t("day")}`;
+      }
+
+      return `€${minPrice}-€${maxPrice}/${t("day")}`;
+    }
+
     if (priceRanges.length === 1) {
       return `€${currentPrice}/${t("day")}`;
     }
@@ -102,25 +130,50 @@ const BikeCard = ({
         </div>
 
         {/* Pricing tiers display */}
-        {priceRanges.length > 1 && (
+        {(acfPricing || priceRanges.length > 1) && (
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
             <h4 className="text-xs font-medium text-gray-700 mb-2">
               {t("priceRange")}:
             </h4>
             <div className="space-y-1">
-              {priceRanges.map((range, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between text-xs text-gray-600"
-                >
-                  <span>
-                    {range.minDays}
-                    {range.maxDays < 999 ? `-${range.maxDays}` : "+"}{" "}
-                    {t("days")}
-                  </span>
-                  <span className="font-medium">€{range.pricePerDay}</span>
-                </div>
-              ))}
+              {acfPricing ? (
+                // Display ACF pricing format
+                <>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>1-2 {t("days")}</span>
+                    <span className="font-medium">
+                      €{acfPricing.precio_1_2}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>3-6 {t("days")}</span>
+                    <span className="font-medium">
+                      €{acfPricing.precio_3_6}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>7+ {t("days")}</span>
+                    <span className="font-medium">
+                      €{acfPricing.precio_7_mais}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                // Display legacy price ranges
+                priceRanges.map((range, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between text-xs text-gray-600"
+                  >
+                    <span>
+                      {range.minDays}
+                      {range.maxDays < 999 ? `-${range.maxDays}` : "+"}{" "}
+                      {t("days")}
+                    </span>
+                    <span className="font-medium">€{range.pricePerDay}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
