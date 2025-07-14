@@ -309,6 +309,9 @@ export const wooCommerceApi = {
     productId: number,
   ): Promise<Record<string, unknown> | null> {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
+
       const response = await fetch(
         `https://bikesultoursgest.com/wp-json/wp/v2/product/${productId}`,
         {
@@ -316,21 +319,51 @@ export const wooCommerceApi = {
             Accept: "application/json",
           },
           mode: "cors",
+          signal: controller.signal,
         },
       );
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`Error fetching ACF data: ${response.statusText}`);
+        // Si es 404, el producto no existe en WordPress, no es un error crítico
+        if (response.status === 404) {
+          console.warn(
+            `Producto ${productId} no encontrado en WordPress REST API`,
+          );
+          return null;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const productData = await response.json();
-      console.log(`ACF data for product ${productId}:`, productData.acf);
+
+      // Solo log si realmente hay datos ACF
+      if (productData.acf && Object.keys(productData.acf).length > 0) {
+        console.log(
+          `✅ ACF data encontrados para producto ${productId}:`,
+          productData.acf,
+        );
+      } else {
+        console.info(`ℹ️  Producto ${productId} sin datos ACF configurados`);
+      }
+
       return productData;
     } catch (error) {
-      console.error(
-        `Error al obtener datos ACF para producto ${productId}:`,
-        error,
-      );
+      // No loggear como error si es un timeout o network error común
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          console.warn(`⏱️  Timeout al obtener ACF para producto ${productId}`);
+        } else if (error.message.includes("fetch")) {
+          console.warn(
+            `🌐 Error de red al obtener ACF para producto ${productId}`,
+          );
+        } else {
+          console.warn(
+            `⚠️  Error ACF para producto ${productId}: ${error.message}`,
+          );
+        }
+      }
       return null;
     }
   },
