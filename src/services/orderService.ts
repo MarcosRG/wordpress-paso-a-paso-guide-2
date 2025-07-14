@@ -4,6 +4,7 @@ import {
   calculateTotalPriceACF,
 } from "./woocommerceApi";
 import { ReservationData, SelectedBike } from "@/pages/Index";
+import type { CustomerData } from "@/components/PurchaseForm";
 
 export interface OrderLineItem {
   product_id: number;
@@ -15,16 +16,6 @@ export interface OrderLineItem {
     key: string;
     value: string;
   }>;
-}
-
-export interface CustomerData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address?: string;
-  city?: string;
-  postalCode?: string;
 }
 
 export interface WooCommerceOrder {
