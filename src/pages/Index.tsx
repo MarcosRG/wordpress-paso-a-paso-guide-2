@@ -2,8 +2,7 @@ import { useState } from "react";
 import { BikeSelection } from "@/components/BikeSelection";
 import { DateTimeSelection } from "@/components/DateTimeSelection";
 import { InsuranceOptions } from "@/components/InsuranceOptions";
-import { PurchaseForm } from "@/components/PurchaseForm";
-import type { CustomerData } from "@/services/orderService";
+import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
 
