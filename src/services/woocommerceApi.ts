@@ -375,14 +375,16 @@ export const wooCommerceApi = {
       // No loggear como error si es un timeout o network error común
       if (error instanceof Error) {
         if (error.name === "AbortError") {
-          console.warn(`⏱️  Timeout al obtener ACF para producto ${productId}`);
+          console.warn(
+            `⏱️  Timeout (15s) al obtener ACF para producto ${productId} - continuando sin ACF`,
+          );
         } else if (error.message.includes("fetch")) {
           console.warn(
-            `🌐 Error de red al obtener ACF para producto ${productId}`,
+            `🌐 Error de red al obtener ACF para producto ${productId} - continuando sin ACF`,
           );
         } else {
           console.warn(
-            `⚠️  Error ACF para producto ${productId}: ${error.message}`,
+            `⚠️  Error ACF para producto ${productId}: ${error.message} - continuando sin ACF`,
           );
         }
       }
