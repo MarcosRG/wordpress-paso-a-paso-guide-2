@@ -331,9 +331,7 @@ export const wooCommerceApi = {
     productId: number,
   ): Promise<Record<string, unknown> | null> {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
-
+      // Simplified fetch without AbortController for individual products
       const response = await fetch(
         `https://bikesultoursgest.com/wp-json/wp/v2/product/${productId}`,
         {
@@ -341,11 +339,8 @@ export const wooCommerceApi = {
             Accept: "application/json",
           },
           mode: "cors",
-          signal: controller.signal,
         },
       );
-
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         // Si es 404, el producto no existe en WordPress, no es un error crítico
