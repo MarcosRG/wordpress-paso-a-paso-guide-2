@@ -61,24 +61,34 @@ export const useWooCommerceBikes = () => {
                 variations = [];
               }
 
-              // Calcular stock total de todas las variaciones
-              totalStock = variations.reduce((sum, variation) => {
-                return sum + (variation.stock_quantity || 0);
-              }, 0);
+              if (variations.length > 0) {
+                // Calcular stock total de todas las variaciones
+                totalStock = variations.reduce((sum, variation) => {
+                  return sum + (variation.stock_quantity || 0);
+                }, 0);
 
-              // Obtener el precio base (primera variación disponible)
-              const availableVariation = variations.find(
-                (v) => v.stock_quantity > 0,
-              );
-              basePrice = availableVariation
-                ? parseFloat(
-                    availableVariation.price ||
-                      availableVariation.regular_price ||
-                      "0",
-                  )
-                : parseFloat(
-                    variations[0]?.price || variations[0]?.regular_price || "0",
-                  );
+                // Obtener el precio base (primera variación disponible)
+                const availableVariation = variations.find(
+                  (v) => v.stock_quantity > 0,
+                );
+                basePrice = availableVariation
+                  ? parseFloat(
+                      availableVariation.price ||
+                        availableVariation.regular_price ||
+                        "0",
+                    )
+                  : parseFloat(
+                      variations[0]?.price ||
+                        variations[0]?.regular_price ||
+                        "0",
+                    );
+              } else {
+                // Fallback si no hay variaciones disponibles
+                totalStock = product.stock_quantity || 0;
+                basePrice = parseFloat(
+                  product.price || product.regular_price || "0",
+                );
+              }
             } else {
               // Producto simple
               totalStock = product.stock_quantity || 0;
