@@ -195,6 +195,26 @@ export const getPriceForDays = (
     : priceRanges[priceRanges.length - 1]?.pricePerDay || 0;
 };
 
+// Function to get price per day from ACF pricing based on number of days
+export const getPricePerDayFromACF = (
+  days: number,
+  acfPricing: ACFPricing,
+): number => {
+  if (days <= 2) return acfPricing.precio_1_2;
+  if (days <= 6) return acfPricing.precio_3_6;
+  return acfPricing.precio_7_mais;
+};
+
+// Function to calculate total price for rental period using ACF pricing
+export const calculateTotalPriceACF = (
+  days: number,
+  quantity: number,
+  acfPricing: ACFPricing,
+): number => {
+  const pricePerDay = getPricePerDayFromACF(days, acfPricing);
+  return days * quantity * pricePerDay;
+};
+
 // Function to check product availability based on ATUM inventory
 export const checkAtumAvailability = async (
   productId: number,
