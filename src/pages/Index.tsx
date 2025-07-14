@@ -26,7 +26,11 @@ export interface Bike {
   available: number;
   image: string;
   description: string;
-  wooCommerceData?: any;
+  wooCommerceData?: {
+    product: any;
+    variations?: any[];
+    acfData?: any;
+  };
 }
 
 export interface SelectedBike extends Bike {
