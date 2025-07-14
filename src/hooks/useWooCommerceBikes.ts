@@ -32,32 +32,34 @@ export const useWooCommerceBikes = () => {
           `Productos válidos después del filtro: ${validProducts.length} de ${products.length}`,
         );
 
-        // Convertir productos de WooCommerce a nuestro formato de Bike
-        const bikes: Bike[] = await Promise.all(
-          validProducts.map(async (product: WooCommerceProduct) => {
+                // Helper function to process products in batches to avoid overwhelming the API
+        const processBatch = async (products: WooCommerceProduct[]): Promise<Bike[]> => {
+          const bikes: Bike[] = [];
+
+          // Process products in batches of 5 to reduce concurrent requests
+          for (let i = 0; i < products.length; i += 5) {
+            const batch = products.slice(i, i + 5);
+            const batchResults = await Promise.all(
+              batch.map(async (product) => {
             let totalStock = 0;
             let basePrice = 0;
             let variations: WooCommerceVariation[] = [];
             let acfData: any = null;
 
-            // Try to get ACF data from WordPress API (non-blocking)
+                        // Try to get ACF data from WordPress API (non-blocking)
             try {
               acfData = await wooCommerceApi.getProductWithACF(product.id);
             } catch (error) {
               acfData = null; // Silently fail, ACF data is optional
             }
 
-            if (product.type === "variable") {
+                        if (product.type === "variable") {
               // Obtener variaciones del producto variable
               try {
-                variations = await wooCommerceApi.getProductVariations(
-                  product.id,
-                );
+                variations = await wooCommerceApi.getProductVariations(product.id);
                 if (!variations) variations = [];
               } catch (error) {
-                console.warn(
-                  `🔄 Fallback: Error al cargar variaciones para producto ${product.id}`,
-                );
+                console.warn(`🔄 Fallback: Error al cargar variaciones para producto ${product.id}`);
                 variations = [];
               }
 
