@@ -41,7 +41,11 @@ export const useWooCommerceBikes = () => {
             let acfData: any = null;
 
             // Try to get ACF data from WordPress API (non-blocking)
-            acfData = await wooCommerceApi.getProductWithACF(product.id);
+            try {
+              acfData = await wooCommerceApi.getProductWithACF(product.id);
+            } catch (error) {
+              acfData = null; // Silently fail, ACF data is optional
+            }
 
             if (product.type === "variable") {
               // Obtener variaciones del producto variable
