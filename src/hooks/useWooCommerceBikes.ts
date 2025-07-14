@@ -41,25 +41,12 @@ export const useWooCommerceBikes = () => {
             let acfData: any = null;
 
             // Try to get ACF data from WordPress API (non-blocking)
-            try {
-              acfData = await wooCommerceApi.getProductWithACF(product.id);
-            } catch (error) {
-              // Silently continue without ACF data - this is not critical
-              acfData = null;
-            }
+            acfData = await wooCommerceApi.getProductWithACF(product.id);
 
             if (product.type === "variable") {
               // Obtener variaciones del producto variable
-              try {
-                variations = await wooCommerceApi.getProductVariations(
-                  product.id,
-                );
-              } catch (error) {
-                console.warn(
-                  `Error al obtener variaciones para producto ${product.id}, continuando sin variaciones`,
-                );
-                variations = [];
-              }
+              variations =
+                (await wooCommerceApi.getProductVariations(product.id)) || [];
 
               if (variations.length > 0) {
                 // Calcular stock total de todas las variaciones
