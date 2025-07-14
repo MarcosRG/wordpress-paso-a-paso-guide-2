@@ -413,20 +413,53 @@ export const wooCommerceApi = {
     productId: number,
   ): Promise<WooCommerceVariation[]> {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
         {
           headers: apiHeaders,
+          signal: controller.signal,
+          mode: "cors",
         },
       );
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`Error fetching variations: ${response.statusText}`);
+        // Si es 404, el producto no tiene variaciones
+        if (response.status === 404) {
+          console.warn(
+            `Producto ${productId} no tiene variaciones disponibles`,
+          );
+          return [];
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.json();
+      const variations = await response.json();
+      console.log(
+        `✅ ${variations.length} variaciones obtenidas para producto ${productId}`,
+      );
+      return variations;
     } catch (error) {
-      throw error;
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          console.warn(
+            `⏱️  Timeout al obtener variaciones para producto ${productId}`,
+          );
+        } else if (error.message.includes("fetch")) {
+          console.warn(
+            `🌐 Error de red al obtener variaciones para producto ${productId}`,
+          );
+        } else {
+          console.warn(
+            `⚠️  Error variaciones para producto ${productId}: ${error.message}`,
+          );
+        }
+      }
+      return []; // Retornar array vacío en lugar de tirar error
     }
   },
 
