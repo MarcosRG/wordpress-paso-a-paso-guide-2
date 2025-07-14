@@ -41,7 +41,7 @@ export interface WooCommerceProduct {
   meta_data: Array<{
     id: number;
     key: string;
-    value: any;
+    value: unknown;
   }>;
   acf?: ACFPricing;
 }
@@ -305,7 +305,9 @@ export const wooCommerceApi = {
   },
 
   // Get product with ACF data using WordPress REST API
-  async getProductWithACF(productId: number): Promise<any> {
+  async getProductWithACF(
+    productId: number,
+  ): Promise<Record<string, unknown> | null> {
     try {
       const response = await fetch(
         `https://bikesultoursgest.com/wp-json/wp/v2/product/${productId}`,
