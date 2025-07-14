@@ -12,6 +12,11 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { orderService } from "@/services/orderService";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  extractACFPricing,
+  getPricePerDayFromACF,
+  calculateTotalPriceACF,
+} from "@/services/woocommerceApi";
 
 export interface Bike {
   id: string;
