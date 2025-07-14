@@ -285,7 +285,7 @@ export const wooCommerceApi = {
       // - stock_status=instock: Solo productos en stock (opcional)
       // - type=variable,simple: Productos variables y simples
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
 
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish`,
@@ -332,7 +332,7 @@ export const wooCommerceApi = {
   ): Promise<Record<string, unknown> | null> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
 
       const response = await fetch(
         `https://bikesultoursgest.com/wp-json/wp/v2/product/${productId}`,
@@ -436,7 +436,7 @@ export const wooCommerceApi = {
   ): Promise<WooCommerceVariation[]> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 segundos timeout
 
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
