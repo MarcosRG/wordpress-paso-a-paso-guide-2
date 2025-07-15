@@ -371,18 +371,18 @@ export const wooCommerceApi = {
 
       const products = await response.json();
 
-      // Log para debug - mostrar cuántos productos se obtuvieron
-      console.log(`Productos obtenidos de WooCommerce: ${products.length}`);
-      console.log("Headers de respuesta:", response.headers.get("X-WP-Total"));
+      // Debug log - show how many products were obtained
+      console.log(`Products obtained from WooCommerce: ${products.length}`);
+      console.log("Response headers:", response.headers.get("X-WP-Total"));
 
       return products;
     } catch (error) {
-      console.error("Error al obtener productos:", error);
+      console.error("Error getting products:", error);
 
-      // Si es un error de red/CORS, proporcionar información útil
+      // If it's a network/CORS error, provide useful information
       if (error instanceof TypeError && error.message.includes("fetch")) {
         console.warn(
-          "No se puede conectar a la API de WooCommerce. Verificar CORS y conectividad.",
+          "Cannot connect to WooCommerce API. Check CORS and connectivity.",
         );
       }
 
@@ -410,11 +410,9 @@ export const wooCommerceApi = {
       );
 
       if (!response.ok) {
-        // Si es 404, el producto no existe en WordPress, no es un error crítico
+        // If it's 404, the product doesn't exist in WordPress, not a critical error
         if (response.status === 404) {
-          console.warn(
-            `Producto ${productId} no encontrado en WordPress REST API`,
-          );
+          console.warn(`Product ${productId} not found in WordPress REST API`);
           return null;
         }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -422,14 +420,14 @@ export const wooCommerceApi = {
 
       const productData = await response.json();
 
-      // Solo log si realmente hay datos ACF
+      // Only log if there's actually ACF data
       if (productData.acf && Object.keys(productData.acf).length > 0) {
         console.log(
-          `✅ ACF data encontrados para producto ${productId}:`,
+          `✅ ACF data found for product ${productId}:`,
           productData.acf,
         );
       } else {
-        console.info(`ℹ️  Producto ${productId} sin datos ACF configurados`);
+        console.info(`ℹ️  Product ${productId} without ACF data configured`);
       }
 
       return productData;
@@ -438,11 +436,11 @@ export const wooCommerceApi = {
       if (error instanceof Error) {
         if (error.message.includes("fetch")) {
           console.warn(
-            `🌐 Error de red al obtener ACF para producto ${productId} - continuando sin ACF`,
+            `🌐 Network error getting ACF for product ${productId} - continuing without ACF`,
           );
         } else {
           console.warn(
-            `⚠️  Error ACF para producto ${productId}: ${error.message} - continuando sin ACF`,
+            `⚠️  ACF error for product ${productId}: ${error.message} - continuing without ACF`,
           );
         }
       }
@@ -478,12 +476,12 @@ export const wooCommerceApi = {
 
       const products = await response.json();
       console.log(
-        `Productos obtenidos para categoría ${categorySlug}: ${products.length}`,
+        `Products obtained for category ${categorySlug}: ${products.length}`,
       );
       return products;
     } catch (error) {
       console.error(
-        `Error al obtener productos de categoría ${categorySlug}:`,
+        `Error getting products from category ${categorySlug}:`,
         error,
       );
       throw error;
@@ -505,11 +503,9 @@ export const wooCommerceApi = {
       );
 
       if (!response.ok) {
-        // Si es 404, el producto no tiene variaciones
+        // If it's 404, the product has no variations
         if (response.status === 404) {
-          console.warn(
-            `Producto ${productId} no tiene variaciones disponibles`,
-          );
+          console.warn(`Product ${productId} has no variations available`);
           return [];
         }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -517,18 +513,18 @@ export const wooCommerceApi = {
 
       const variations = await response.json();
       console.log(
-        `✅ ${variations.length} variaciones obtenidas para producto ${productId}`,
+        `✅ ${variations.length} variations obtained for product ${productId}`,
       );
       return variations;
     } catch (error) {
       if (error instanceof Error) {
         if (error.message.includes("fetch")) {
           console.warn(
-            `🌐 Error de red al obtener variaciones para producto ${productId} - usando producto principal`,
+            `🌐 Network error getting variations for product ${productId} - using main product`,
           );
         } else {
           console.warn(
-            `⚠️  Error variaciones para producto ${productId}: ${error.message} - usando producto principal`,
+            `⚠️  Variations error for product ${productId}: ${error.message} - using main product`,
           );
         }
       }
