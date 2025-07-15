@@ -172,6 +172,20 @@ export const orderService = {
         last_name: customerInfo.lastName || "",
         email: customerInfo.email || "",
         phone: customerInfo.phone || "",
+        address_1: customerInfo.address || "",
+        city: customerInfo.city || "",
+        postcode: customerInfo.postalCode || "",
+        country: "PT", // Portugal por defecto
+      };
+
+      // También incluir información de envío
+      orderData.shipping = {
+        first_name: customerInfo.firstName || "",
+        last_name: customerInfo.lastName || "",
+        address_1: customerInfo.address || "",
+        city: customerInfo.city || "",
+        postcode: customerInfo.postalCode || "",
+        country: "PT", // Portugal por defecto
       };
     }
 
