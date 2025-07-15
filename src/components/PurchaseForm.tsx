@@ -53,23 +53,23 @@ export const PurchaseForm = ({
     switch (field) {
       case "email":
         if (sanitizedValue && !isValidEmail(sanitizedValue)) {
-          fieldError = "Formato de email inválido";
+          fieldError = t("invalidEmailFormat");
         }
         break;
       case "phone":
         if (sanitizedValue && !isValidPhone(sanitizedValue)) {
-          fieldError = "Formato de teléfono inválido";
+          fieldError = t("invalidPhoneFormat");
         }
         break;
       case "firstName":
       case "lastName":
         if (sanitizedValue && !isValidName(sanitizedValue)) {
-          fieldError = "Solo letras y espacios, máximo 50 caracteres";
+          fieldError = t("invalidNameFormat");
         }
         break;
       case "postalCode":
         if (sanitizedValue && !isValidPostalCode(sanitizedValue)) {
-          fieldError = "Código postal debe ser formato XXXX-XXX";
+          fieldError = t("invalidPostalCodeFormat");
         }
         break;
     }
