@@ -161,8 +161,14 @@ export const PurchaseForm = ({
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 placeholder="exemplo@email.com"
                 required
-                className="mt-1"
+                className={`mt-1 ${fieldErrors.email ? "border-red-500" : ""}`}
               />
+              {fieldErrors.email && (
+                <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                  <AlertCircle className="h-3 w-3" />
+                  {fieldErrors.email}
+                </div>
+              )}
             </div>
 
             <div>
@@ -177,8 +183,14 @@ export const PurchaseForm = ({
                 onChange={(e) => handleInputChange("phone", e.target.value)}
                 placeholder="+351 900 000 000"
                 required
-                className="mt-1"
+                className={`mt-1 ${fieldErrors.phone ? "border-red-500" : ""}`}
               />
+              {fieldErrors.phone && (
+                <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                  <AlertCircle className="h-3 w-3" />
+                  {fieldErrors.phone}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
