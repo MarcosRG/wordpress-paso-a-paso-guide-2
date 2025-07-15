@@ -96,6 +96,12 @@ const translations = {
     arriveEarly: "Por favor, chegue 15 minutos antes da sua hora de recolha",
     idRequired: "É necessária identificação válida para levantar as bicicletas",
     size: "Tamanho",
+
+    // Validation errors
+    invalidEmailFormat: "Formato de email inválido",
+    invalidPhoneFormat: "Formato de telefone inválido",
+    invalidNameFormat: "Apenas letras e espaços, máximo 50 caracteres",
+    invalidPostalCodeFormat: "Código postal deve ter formato XXXX-XXX",
   },
   en: {
     // Navigation
@@ -185,6 +191,12 @@ const translations = {
     arriveEarly: "Please arrive 15 minutes before your pickup time",
     idRequired: "Valid identification required to collect bikes",
     size: "Size",
+
+    // Validation errors
+    invalidEmailFormat: "Invalid email format",
+    invalidPhoneFormat: "Invalid phone format",
+    invalidNameFormat: "Only letters and spaces, maximum 50 characters",
+    invalidPostalCodeFormat: "Postal code must have format XXXX-XXX",
   },
 };
 
