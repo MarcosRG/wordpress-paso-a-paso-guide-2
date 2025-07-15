@@ -41,12 +41,57 @@ export const PurchaseForm = ({
   customerData,
 }: PurchaseFormProps) => {
   const { t } = useLanguage();
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (field: keyof CustomerData, value: string) => {
-    onCustomerDataChange({
+    // Sanitizar el input
+    const sanitizedValue = sanitizeString(value);
+
+    // Validación específica por campo
+    let fieldError = "";
+    switch (field) {
+      case "email":
+        if (sanitizedValue && !isValidEmail(sanitizedValue)) {
+          fieldError = "Formato de email inválido";
+        }
+        break;
+      case "phone":
+        if (sanitizedValue && !isValidPhone(sanitizedValue)) {
+          fieldError = "Formato de teléfono inválido";
+        }
+        break;
+      case "firstName":
+      case "lastName":
+        if (sanitizedValue && !isValidName(sanitizedValue)) {
+          fieldError = "Solo letras y espacios, máximo 50 caracteres";
+        }
+        break;
+      case "postalCode":
+        if (sanitizedValue && !isValidPostalCode(sanitizedValue)) {
+          fieldError = "Código postal debe ser formato XXXX-XXX";
+        }
+        break;
+    }
+
+    // Actualizar errores de campo
+    setFieldErrors((prev) => ({
+      ...prev,
+      [field]: fieldError,
+    }));
+
+    // Actualizar datos del cliente
+    const newCustomerData = {
       ...customerData,
-      [field]: value,
-    });
+      [field]: sanitizedValue,
+    };
+
+    // Validar todos los datos y actualizar errores generales
+    const validation = validateCustomerData(newCustomerData);
+    setValidationErrors(validation.errors);
+
+    // Notificar cambio con datos sanitizados
+    onCustomerDataChange(sanitizeCustomerData(newCustomerData));
   };
 
   return (
