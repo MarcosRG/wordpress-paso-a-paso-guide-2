@@ -11,6 +11,7 @@ import { CategoryFilter } from "./CategoryFilter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
+import SimpleBikeCard from "./SimpleBikeCard";
 import {
   getPriceForDays,
   extractDayBasedPricing,
