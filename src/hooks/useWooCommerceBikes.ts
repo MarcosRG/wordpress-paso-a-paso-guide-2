@@ -21,14 +21,6 @@ export const useWooCommerceBikes = () => {
         const products = await wooCommerceApi.getProducts();
         console.log(`✅ Productos cargados exitosamente: ${products.length}`);
 
-        // If we get an empty array, it might be due to an aborted request
-        if (products.length === 0) {
-          console.warn(
-            "⚠️ No products received, possibly due to aborted request. Using mock data.",
-          );
-          return mockBikes;
-        }
-
         // Filtrar solo productos publicados con stock
         const validProducts = products.filter((product: WooCommerceProduct) => {
           return (
@@ -173,12 +165,6 @@ export const useWooCommerceBikes = () => {
         );
         return bikes;
       } catch (error) {
-        // Handle specific abort errors differently
-        if (error instanceof Error && error.name === "AbortError") {
-          console.warn("⚠️ Request was aborted, retrying with mock data");
-          return mockBikes;
-        }
-
         console.error("❌ Error al cargar productos de WooCommerce:", error);
         console.log("🔄 Usando datos de prueba como fallback");
         // Si falla la conexión con WooCommerce, usar datos de prueba
