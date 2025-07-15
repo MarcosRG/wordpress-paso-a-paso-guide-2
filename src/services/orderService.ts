@@ -33,6 +33,18 @@ export interface WooCommerceOrder {
     last_name: string;
     email: string;
     phone: string;
+    address_1: string;
+    city: string;
+    postcode: string;
+    country: string;
+  };
+  shipping?: {
+    first_name: string;
+    last_name: string;
+    address_1: string;
+    city: string;
+    postcode: string;
+    country: string;
   };
   line_items: OrderLineItem[];
   meta_data: Array<{
