@@ -290,7 +290,7 @@ export const checkAtumAvailability = async (
 
     // Check for standard ATUM inventory data in meta_data
     const atumStock = data.meta_data?.find(
-      (meta: any) =>
+      (meta: { key: string; value: unknown }) =>
         meta.key === "_atum_stock_quantity" ||
         meta.key === "atum_stock_quantity" ||
         meta.key === "_atum_stock",
