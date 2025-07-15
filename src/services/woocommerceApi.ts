@@ -4,52 +4,6 @@ export interface PriceRange {
   pricePerDay: number;
 }
 
-export interface WooCommerceOrder {
-  status:
-    | "pending"
-    | "processing"
-    | "on-hold"
-    | "completed"
-    | "cancelled"
-    | "refunded"
-    | "failed";
-  currency: string;
-  customer_id?: number;
-  billing: {
-    first_name: string;
-    last_name: string;
-    address_1: string;
-    address_2?: string;
-    city: string;
-    state?: string;
-    postcode: string;
-    country: string;
-    email: string;
-    phone: string;
-  };
-  shipping: {
-    first_name: string;
-    last_name: string;
-    address_1: string;
-    address_2?: string;
-    city: string;
-    state?: string;
-    postcode: string;
-    country: string;
-  };
-  line_items: Array<{
-    product_id: number;
-    variation_id?: number;
-    quantity: number;
-    name: string;
-    price: number;
-  }>;
-  meta_data?: Array<{
-    key: string;
-    value: string | number | boolean;
-  }>;
-}
-
 export interface ACFPricing {
   precio_1_2: number;
   precio_3_6: number;
@@ -395,9 +349,7 @@ export const wooCommerceApi = {
       // - stock_status=instock: Solo productos en stock (opcional)
       // - type=variable,simple: Productos variables y simples
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort("Request timeout after 30 seconds");
-      }, 30000); // 30 segundos timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
 
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish`,
@@ -425,25 +377,15 @@ export const wooCommerceApi = {
 
       return products;
     } catch (error) {
-      // Handle AbortError specifically
-      if (error instanceof Error) {
-        if (error.name === "AbortError") {
-          console.warn(
-            "Request was aborted (timeout or component unmounted):",
-            error.message,
-          );
-          // Return empty array instead of throwing for abort errors
-          return [];
-        }
+      console.error("Error al obtener productos:", error);
 
-        if (error.message.includes("fetch")) {
-          console.warn(
-            "No se puede conectar a la API de WooCommerce. Verificar CORS y conectividad.",
-          );
-        }
+      // Si es un error de red/CORS, proporcionar información útil
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        console.warn(
+          "No se puede conectar a la API de WooCommerce. Verificar CORS y conectividad.",
+        );
       }
 
-      console.error("Error al obtener productos:", error);
       throw error;
     }
   },
@@ -596,36 +538,44 @@ export const wooCommerceApi = {
 
   // Create an order in WooCommerce
   async createOrder(orderData: WooCommerceOrder) {
-    const response = await fetch(`${WOOCOMMERCE_API_BASE}/orders`, {
-      method: "POST",
-      headers: apiHeaders,
-      body: JSON.stringify(orderData),
-    });
+    try {
+      const response = await fetch(`${WOOCOMMERCE_API_BASE}/orders`, {
+        method: "POST",
+        headers: apiHeaders,
+        body: JSON.stringify(orderData),
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Error creating order: ${response.statusText} - ${errorText}`,
-      );
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Error creating order: ${response.statusText} - ${errorText}`,
+        );
+      }
+
+      const order = await response.json();
+      return order;
+    } catch (error) {
+      throw error;
     }
-
-    const order = await response.json();
-    return order;
   },
 
   // Get categories from WooCommerce
   async getCategories() {
-    const response = await fetch(
-      `${WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
-      {
-        headers: apiHeaders,
-      },
-    );
+    try {
+      const response = await fetch(
+        `${WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
+        {
+          headers: apiHeaders,
+        },
+      );
 
-    if (!response.ok) {
-      throw new Error(`Error fetching categories: ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(`Error fetching categories: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
     }
-
-    return await response.json();
   },
 };
