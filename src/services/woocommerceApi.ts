@@ -4,6 +4,52 @@ export interface PriceRange {
   pricePerDay: number;
 }
 
+export interface WooCommerceOrder {
+  status:
+    | "pending"
+    | "processing"
+    | "on-hold"
+    | "completed"
+    | "cancelled"
+    | "refunded"
+    | "failed";
+  currency: string;
+  customer_id?: number;
+  billing: {
+    first_name: string;
+    last_name: string;
+    address_1: string;
+    address_2?: string;
+    city: string;
+    state?: string;
+    postcode: string;
+    country: string;
+    email: string;
+    phone: string;
+  };
+  shipping: {
+    first_name: string;
+    last_name: string;
+    address_1: string;
+    address_2?: string;
+    city: string;
+    state?: string;
+    postcode: string;
+    country: string;
+  };
+  line_items: Array<{
+    product_id: number;
+    variation_id?: number;
+    quantity: number;
+    name: string;
+    price: number;
+  }>;
+  meta_data?: Array<{
+    key: string;
+    value: string | number | boolean;
+  }>;
+}
+
 export interface ACFPricing {
   precio_1_2: number;
   precio_3_6: number;
