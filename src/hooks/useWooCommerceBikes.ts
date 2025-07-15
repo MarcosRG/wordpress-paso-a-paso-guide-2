@@ -42,7 +42,7 @@ export const useWooCommerceBikes = () => {
             let totalStock = 0;
             let basePrice = 0;
             let variations: WooCommerceVariation[] = [];
-            let acfData: any = null;
+            let acfData: Record<string, unknown> | null = null;
 
             // Try to get ACF data from WordPress API (non-blocking)
             try {
