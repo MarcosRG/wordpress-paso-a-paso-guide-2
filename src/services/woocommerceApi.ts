@@ -349,7 +349,9 @@ export const wooCommerceApi = {
       // - stock_status=instock: Solo productos en stock (opcional)
       // - type=variable,simple: Productos variables y simples
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
+      const timeoutId = setTimeout(() => {
+        controller.abort("Request timeout after 30 seconds");
+      }, 30000); // 30 segundos timeout
 
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish`,
