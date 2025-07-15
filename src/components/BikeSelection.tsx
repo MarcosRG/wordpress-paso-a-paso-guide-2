@@ -72,6 +72,14 @@ export const BikeSelection = ({
     return selectedBike?.quantity || 0;
   };
 
+  // Para productos simples (sin tamaños)
+  const getQuantityForBike = (bikeId: string) => {
+    const selectedBike = reservation.selectedBikes.find(
+      (b) => b.id === bikeId && b.size === "M", // Usar M como tamaño por defecto para productos simples
+    );
+    return selectedBike?.quantity || 0;
+  };
+
   const updateBikeQuantity = (
     bike: any,
     size: "XS" | "S" | "M" | "L" | "XL",
