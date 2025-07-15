@@ -194,7 +194,9 @@ const BikeCard = ({
           </h4>
           {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
             const quantity = getQuantityForBikeAndSize(bike.id, size);
-            const availableForSize = Math.floor(bike.available / 5);
+            // Usar stock real de ATUM si está disponible, sino usar estimación
+            const availableForSize =
+              atumStockBySize[size] ?? Math.floor(bike.available / 5);
 
             return (
               <div
@@ -206,6 +208,9 @@ const BikeCard = ({
                   <span className="text-xs text-gray-500">
                     ({availableForSize}{" "}
                     {availableForSize === 1 ? t("available") : t("availables")})
+                    {atumStockBySize[size] !== undefined && (
+                      <span className="text-green-600 font-medium"> ✓ATUM</span>
+                    )}
                   </span>
                 </div>
 
