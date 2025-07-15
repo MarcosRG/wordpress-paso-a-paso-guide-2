@@ -65,10 +65,22 @@ export interface WooCommerceVariation {
   };
 }
 
+// Configuración segura usando variables de entorno
 export const WOOCOMMERCE_API_BASE =
+  import.meta.env.VITE_WOOCOMMERCE_API_BASE ||
   "https://bikesultoursgest.com/wp-json/wc/v3";
-const CONSUMER_KEY = "ck_d702f875c82d5973562a62579cfa284db06e3a87";
-const CONSUMER_SECRET = "cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71";
+
+const CONSUMER_KEY =
+  import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY ||
+  "ck_d702f875c82d5973562a62579cfa284db06e3a87";
+const CONSUMER_SECRET =
+  import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET ||
+  "cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71";
+
+// Validar que las credenciales estén configuradas
+if (!CONSUMER_KEY || !CONSUMER_SECRET) {
+  console.error("❌ WooCommerce credentials not properly configured");
+}
 
 // Crear las credenciales en base64 para la autenticación
 const auth = btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`);
@@ -331,7 +343,7 @@ export const wooCommerceApi = {
     try {
       // Get products from ALUGUERES category (ID: 319) and all its subcategories
       // Parámetros necesarios para obtener todos los productos completos:
-      // - per_page=100: Máximo productos por página
+      // - per_page=100: Máximo productos por p��gina
       // - category=319: Categoría ALUGUERES
       // - status=publish: Solo productos publicados
       // - stock_status=instock: Solo productos en stock (opcional)
