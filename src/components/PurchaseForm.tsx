@@ -2,7 +2,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { User, Mail, Phone, MapPin, CreditCard } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  CreditCard,
+  AlertCircle,
+} from "lucide-react";
+import {
+  sanitizeString,
+  isValidEmail,
+  isValidPhone,
+  isValidName,
+  isValidPostalCode,
+  validateCustomerData,
+  sanitizeCustomerData,
+} from "@/utils/security";
+import { useState } from "react";
 
 export interface CustomerData {
   firstName: string;
