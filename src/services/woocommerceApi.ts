@@ -396,8 +396,11 @@ export const wooCommerceApi = {
   ): Promise<Record<string, unknown> | null> {
     try {
       // Simplified fetch without AbortController for individual products
+      const WORDPRESS_API_BASE =
+        import.meta.env.VITE_WORDPRESS_API_BASE ||
+        "https://bikesultoursgest.com/wp-json/wp/v2";
       const response = await fetch(
-        `https://bikesultoursgest.com/wp-json/wp/v2/product/${productId}`,
+        `${WORDPRESS_API_BASE}/product/${productId}`,
         {
           headers: {
             Accept: "application/json",
