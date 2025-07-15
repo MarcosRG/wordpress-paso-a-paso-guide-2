@@ -182,8 +182,10 @@ export const useWooCommerceBikes = () => {
         return mockBikes;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos (previously cacheTime)
+    staleTime: 2 * 60 * 1000, // 2 minutes - more frequent updates
+    gcTime: 15 * 60 * 1000, // 15 minutes cache
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    retry: 1, // Only retry once on failure
   });
 };
 
