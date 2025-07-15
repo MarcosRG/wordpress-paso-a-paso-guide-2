@@ -7,6 +7,7 @@ import {
   apiHeaders,
   extractACFPricing,
   ACFPricing,
+  checkAtumAvailability,
 } from "@/services/woocommerceApi";
 import { Bike } from "@/pages/Index";
 import { mockBikes, mockCategories } from "./useMockBikes";
@@ -41,7 +42,7 @@ export const useWooCommerceBikes = () => {
             let totalStock = 0;
             let basePrice = 0;
             let variations: WooCommerceVariation[] = [];
-            let acfData: any = null;
+            let acfData: Record<string, unknown> | null = null;
 
             // Try to get ACF data from WordPress API (non-blocking)
             try {
@@ -65,10 +66,24 @@ export const useWooCommerceBikes = () => {
               }
 
               if (variations.length > 0) {
-                // Calcular stock total de todas las variaciones
-                totalStock = variations.reduce((sum, variation) => {
-                  return sum + (variation.stock_quantity || 0);
-                }, 0);
+                // Calcular stock total usando ATUM cuando esté disponible
+                totalStock = 0;
+                for (const variation of variations) {
+                  const atumStock = await checkAtumAvailability(
+                    product.id,
+                    variation.id,
+                  );
+                  const regularStock = variation.stock_quantity || 0;
+
+                  // Usar ATUM stock si está disponible, sino usar stock regular
+                  const variationStock =
+                    atumStock > 0 ? atumStock : regularStock;
+                  totalStock += variationStock;
+
+                  console.log(
+                    `Producto ${product.id}, Variación ${variation.id}: ATUM=${atumStock}, Regular=${regularStock}, Usado=${variationStock}`,
+                  );
+                }
 
                 // Obtener el precio base (primera variación disponible)
                 const availableVariation = variations.find(
@@ -87,14 +102,18 @@ export const useWooCommerceBikes = () => {
                     );
               } else {
                 // Fallback si no hay variaciones disponibles
-                totalStock = product.stock_quantity || 0;
+                const atumStock = await checkAtumAvailability(product.id);
+                totalStock =
+                  atumStock > 0 ? atumStock : product.stock_quantity || 0;
                 basePrice = parseFloat(
                   product.price || product.regular_price || "0",
                 );
               }
             } else {
-              // Producto simple
-              totalStock = product.stock_quantity || 0;
+              // Producto simple - verificar ATUM stock
+              const atumStock = await checkAtumAvailability(product.id);
+              totalStock =
+                atumStock > 0 ? atumStock : product.stock_quantity || 0;
               basePrice = parseFloat(
                 product.price || product.regular_price || "0",
               );

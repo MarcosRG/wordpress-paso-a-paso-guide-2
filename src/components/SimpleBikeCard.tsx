@@ -11,32 +11,21 @@ import {
   ACFPricing,
   getPricePerDayFromACF,
 } from "@/services/woocommerceApi";
-import { useAtumStockBySize } from "@/hooks/useAtumStock";
 
-interface BikeCardProps {
+interface SimpleBikeCardProps {
   bike: Bike;
-  getQuantityForBikeAndSize: (bikeId: string, size: string) => number;
-  updateBikeQuantity: (
-    bike: Bike,
-    size: "XS" | "S" | "M" | "L" | "XL",
-    change: number,
-  ) => void;
+  getQuantityForBike: (bikeId: string) => number;
+  updateBikeQuantity: (bike: Bike, change: number) => void;
   totalDays: number;
 }
 
-const BikeCard = ({
+const SimpleBikeCard = ({
   bike,
-  getQuantityForBikeAndSize,
+  getQuantityForBike,
   updateBikeQuantity,
   totalDays,
-}: BikeCardProps) => {
+}: SimpleBikeCardProps) => {
   const { t } = useLanguage();
-
-  // Obtener stock real de ATUM por tamaño
-  const { data: atumStockBySize = {} } = useAtumStockBySize(
-    parseInt(bike.id),
-    bike.wooCommerceData?.product?.type === "variable",
-  );
 
   // Extract ACF pricing first, then fallback to day-based pricing
   const acfPricing: ACFPricing | null = bike.wooCommerceData?.product
@@ -88,6 +77,8 @@ const BikeCard = ({
     return `€${minPrice}-€${maxPrice}/${t("day")}`;
   };
 
+  const quantity = getQuantityForBike(bike.id);
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-4">
@@ -102,25 +93,11 @@ const BikeCard = ({
             }}
           />
 
-          {/* Size guide below image */}
-          <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
-            <div className="font-medium text-center mb-1">
-              {t("availableSizes")}
-            </div>
-            <div className="grid grid-cols-5 gap-1 text-center">
-              {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
-                // Usar stock real de ATUM si está disponible, sino usar estimación
-                const availableForSize =
-                  atumStockBySize[size] ?? Math.floor(bike.available / 5);
-                return (
-                  <div key={size} className="flex flex-col">
-                    <span className="font-medium">{size}</span>
-                    <span className="text-xs text-gray-600">
-                      ({availableForSize})
-                    </span>
-                  </div>
-                );
-              })}
+          {/* Stock info */}
+          <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-center">
+            <div className="font-medium text-gray-700">
+              {bike.available}{" "}
+              {bike.available === 1 ? t("available") : t("availables")}
             </div>
           </div>
         </div>
@@ -187,63 +164,39 @@ const BikeCard = ({
           </div>
         )}
 
-        {/* Selector de Tamaños */}
-        <div className="space-y-2">
-          <h4 className="font-medium text-sm text-center">
-            {t("availableSizes")}:
-          </h4>
-          {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
-            const quantity = getQuantityForBikeAndSize(bike.id, size);
-            // Usar stock real de ATUM si está disponible, sino usar estimación
-            const availableForSize =
-              atumStockBySize[size] ?? Math.floor(bike.available / 5);
+        {/* Quantity selector for simple products */}
+        <div className="flex items-center justify-center gap-4 p-3 border rounded-lg">
+          <div className="flex items-center gap-3">
+            <span className="font-medium text-sm">{t("quantity")}:</span>
+          </div>
 
-            return (
-              <div
-                key={size}
-                className="flex items-center justify-between p-2 border rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-medium w-6">{size}</span>
-                  <span className="text-xs text-gray-500">
-                    ({availableForSize}{" "}
-                    {availableForSize === 1 ? t("available") : t("availables")})
-                    {atumStockBySize[size] !== undefined && (
-                      <span className="text-green-600 font-medium"> ✓ATUM</span>
-                    )}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateBikeQuantity(bike, size, -1)}
-                    disabled={quantity === 0}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="w-8 text-center font-medium text-sm">
-                    {quantity}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateBikeQuantity(bike, size, 1)}
-                    disabled={quantity >= availableForSize}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => updateBikeQuantity(bike, -1)}
+              disabled={quantity === 0}
+              className="h-8 w-8 p-0"
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
+            <span className="w-8 text-center font-medium text-sm">
+              {quantity}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => updateBikeQuantity(bike, 1)}
+              disabled={quantity >= bike.available}
+              className="h-8 w-8 p-0"
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
   );
 };
 
-export default BikeCard;
+export default SimpleBikeCard;

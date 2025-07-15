@@ -167,9 +167,6 @@ const Index = () => {
         description: `${t("confirm")} #${order.id}. ${t("proceedToCheckout")}`,
       });
 
-      // Redirect to WooCommerce checkout
-      const checkoutUrl = `https://bikesultoursgest.com/checkout/?order-pay=${order.id}&key=${order.order_key || ""}`;
-
       // Store order data for later use
       localStorage.setItem(
         "bikesul_order",
@@ -178,11 +175,25 @@ const Index = () => {
           orderKey: order.order_key,
           reservation,
           customerData,
+          timestamp: new Date().toISOString(),
         }),
       );
 
-      // Redirect to WooCommerce checkout
-      window.location.href = checkoutUrl;
+      // Determinar la URL del checkout apropiada
+      let checkoutUrl = "";
+
+      if (order.order_key) {
+        // Si tenemos order_key, usar la URL de pago directo
+        checkoutUrl = `https://bikesultoursgest.com/checkout/order-pay/${order.id}/?pay_for_order=true&key=${order.order_key}`;
+      } else {
+        // Fallback: redirigir al checkout normal con el pedido pre-cargado
+        checkoutUrl = `https://bikesultoursgest.com/checkout/?order_id=${order.id}`;
+      }
+
+      // Dar un momento para que el toast se muestre antes de redireccionar
+      setTimeout(() => {
+        window.location.href = checkoutUrl;
+      }, 1500);
     } catch (error) {
       toast({
         title: "Erro ao criar a reserva",

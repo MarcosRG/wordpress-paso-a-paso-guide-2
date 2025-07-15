@@ -2,7 +2,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { User, Mail, Phone, MapPin, CreditCard } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  CreditCard,
+  AlertCircle,
+} from "lucide-react";
+import {
+  sanitizeString,
+  isValidEmail,
+  isValidPhone,
+  isValidName,
+  isValidPostalCode,
+  validateCustomerData,
+  sanitizeCustomerData,
+} from "@/utils/security";
+import { useState } from "react";
 
 export interface CustomerData {
   firstName: string;
@@ -24,12 +41,57 @@ export const PurchaseForm = ({
   customerData,
 }: PurchaseFormProps) => {
   const { t } = useLanguage();
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (field: keyof CustomerData, value: string) => {
-    onCustomerDataChange({
+    // Sanitizar el input
+    const sanitizedValue = sanitizeString(value);
+
+    // Validación específica por campo
+    let fieldError = "";
+    switch (field) {
+      case "email":
+        if (sanitizedValue && !isValidEmail(sanitizedValue)) {
+          fieldError = "Formato de email inválido";
+        }
+        break;
+      case "phone":
+        if (sanitizedValue && !isValidPhone(sanitizedValue)) {
+          fieldError = "Formato de teléfono inválido";
+        }
+        break;
+      case "firstName":
+      case "lastName":
+        if (sanitizedValue && !isValidName(sanitizedValue)) {
+          fieldError = "Solo letras y espacios, máximo 50 caracteres";
+        }
+        break;
+      case "postalCode":
+        if (sanitizedValue && !isValidPostalCode(sanitizedValue)) {
+          fieldError = "Código postal debe ser formato XXXX-XXX";
+        }
+        break;
+    }
+
+    // Actualizar errores de campo
+    setFieldErrors((prev) => ({
+      ...prev,
+      [field]: fieldError,
+    }));
+
+    // Actualizar datos del cliente
+    const newCustomerData = {
       ...customerData,
-      [field]: value,
-    });
+      [field]: sanitizedValue,
+    };
+
+    // Validar todos los datos y actualizar errores generales
+    const validation = validateCustomerData(newCustomerData);
+    setValidationErrors(validation.errors);
+
+    // Notificar cambio con datos sanitizados
+    onCustomerDataChange(sanitizeCustomerData(newCustomerData));
   };
 
   return (
@@ -57,8 +119,14 @@ export const PurchaseForm = ({
                   }
                   placeholder={t("firstName")}
                   required
-                  className="mt-1"
+                  className={`mt-1 ${fieldErrors.firstName ? "border-red-500" : ""}`}
                 />
+                {fieldErrors.firstName && (
+                  <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                    <AlertCircle className="h-3 w-3" />
+                    {fieldErrors.firstName}
+                  </div>
+                )}
               </div>
               <div>
                 <Label htmlFor="lastName">{t("lastName")} *</Label>
@@ -70,8 +138,14 @@ export const PurchaseForm = ({
                   }
                   placeholder={t("lastName")}
                   required
-                  className="mt-1"
+                  className={`mt-1 ${fieldErrors.lastName ? "border-red-500" : ""}`}
                 />
+                {fieldErrors.lastName && (
+                  <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                    <AlertCircle className="h-3 w-3" />
+                    {fieldErrors.lastName}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -87,8 +161,14 @@ export const PurchaseForm = ({
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 placeholder="exemplo@email.com"
                 required
-                className="mt-1"
+                className={`mt-1 ${fieldErrors.email ? "border-red-500" : ""}`}
               />
+              {fieldErrors.email && (
+                <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                  <AlertCircle className="h-3 w-3" />
+                  {fieldErrors.email}
+                </div>
+              )}
             </div>
 
             <div>
@@ -103,8 +183,14 @@ export const PurchaseForm = ({
                 onChange={(e) => handleInputChange("phone", e.target.value)}
                 placeholder="+351 900 000 000"
                 required
-                className="mt-1"
+                className={`mt-1 ${fieldErrors.phone ? "border-red-500" : ""}`}
               />
+              {fieldErrors.phone && (
+                <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                  <AlertCircle className="h-3 w-3" />
+                  {fieldErrors.phone}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -149,8 +235,14 @@ export const PurchaseForm = ({
                     handleInputChange("postalCode", e.target.value)
                   }
                   placeholder="0000-000"
-                  className="mt-1"
+                  className={`mt-1 ${fieldErrors.postalCode ? "border-red-500" : ""}`}
                 />
+                {fieldErrors.postalCode && (
+                  <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                    <AlertCircle className="h-3 w-3" />
+                    {fieldErrors.postalCode}
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>

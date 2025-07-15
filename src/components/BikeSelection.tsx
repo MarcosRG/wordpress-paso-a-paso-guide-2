@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SelectedBike, ReservationData } from "@/pages/Index";
+import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
 import {
   useWooCommerceBikes,
   useWooCommerceCategories,
@@ -11,6 +11,7 @@ import { CategoryFilter } from "./CategoryFilter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
+import SimpleBikeCard from "./SimpleBikeCard";
 import {
   getPriceForDays,
   extractDayBasedPricing,
@@ -71,8 +72,16 @@ export const BikeSelection = ({
     return selectedBike?.quantity || 0;
   };
 
+  // Para productos simples (sin tamaños)
+  const getQuantityForBike = (bikeId: string) => {
+    const selectedBike = reservation.selectedBikes.find(
+      (b) => b.id === bikeId && b.size === "M", // Usar M como tamaño por defecto para productos simples
+    );
+    return selectedBike?.quantity || 0;
+  };
+
   const updateBikeQuantity = (
-    bike: any,
+    bike: Bike,
     size: "XS" | "S" | "M" | "L" | "XL",
     change: number,
   ) => {
@@ -101,6 +110,42 @@ export const BikeSelection = ({
           ...bike,
           quantity: newQuantity,
           size: size,
+        };
+        setReservation({
+          ...reservation,
+          selectedBikes: [...reservation.selectedBikes, newSelectedBike],
+        });
+      }
+    }
+  };
+
+  // Para productos simples (sin tamaños)
+  const updateSimpleBikeQuantity = (bike: Bike, change: number) => {
+    const currentQuantity = getQuantityForBike(bike.id);
+    const newQuantity = currentQuantity + change;
+
+    if (newQuantity <= 0) {
+      // Remover la bicicleta
+      const updatedBikes = reservation.selectedBikes.filter(
+        (b) => !(b.id === bike.id && b.size === "M"),
+      );
+      setReservation({ ...reservation, selectedBikes: updatedBikes });
+    } else if (newQuantity <= bike.available) {
+      const existingBikeIndex = reservation.selectedBikes.findIndex(
+        (b) => b.id === bike.id && b.size === "M",
+      );
+
+      if (existingBikeIndex >= 0) {
+        // Actualizar cantidad existente
+        const updatedBikes = [...reservation.selectedBikes];
+        updatedBikes[existingBikeIndex].quantity = newQuantity;
+        setReservation({ ...reservation, selectedBikes: updatedBikes });
+      } else {
+        // Agregar nueva bicicleta (usar M como tamaño por defecto)
+        const newSelectedBike: SelectedBike = {
+          ...bike,
+          quantity: newQuantity,
+          size: "M" as "XS" | "S" | "M" | "L" | "XL",
         };
         setReservation({
           ...reservation,
@@ -188,15 +233,29 @@ export const BikeSelection = ({
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredBikes.map((bike) => (
-          <BikeCard
-            key={bike.id}
-            bike={bike}
-            getQuantityForBikeAndSize={getQuantityForBikeAndSize}
-            updateBikeQuantity={updateBikeQuantity}
-            totalDays={reservation.totalDays}
-          />
-        ))}
+        {filteredBikes.map((bike) => {
+          // Determinar si es un producto simple o variable
+          const isSimpleProduct =
+            bike.wooCommerceData?.product?.type === "simple";
+
+          return isSimpleProduct ? (
+            <SimpleBikeCard
+              key={bike.id}
+              bike={bike}
+              getQuantityForBike={getQuantityForBike}
+              updateBikeQuantity={updateSimpleBikeQuantity}
+              totalDays={reservation.totalDays}
+            />
+          ) : (
+            <BikeCard
+              key={bike.id}
+              bike={bike}
+              getQuantityForBikeAndSize={getQuantityForBikeAndSize}
+              updateBikeQuantity={updateBikeQuantity}
+              totalDays={reservation.totalDays}
+            />
+          );
+        })}
       </div>
 
       {/* Resumen de selección */}

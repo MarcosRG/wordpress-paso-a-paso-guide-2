@@ -65,10 +65,22 @@ export interface WooCommerceVariation {
   };
 }
 
+// Configuración segura usando variables de entorno
 export const WOOCOMMERCE_API_BASE =
+  import.meta.env.VITE_WOOCOMMERCE_API_BASE ||
   "https://bikesultoursgest.com/wp-json/wc/v3";
-const CONSUMER_KEY = "ck_d702f875c82d5973562a62579cfa284db06e3a87";
-const CONSUMER_SECRET = "cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71";
+
+const CONSUMER_KEY =
+  import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY ||
+  "ck_d702f875c82d5973562a62579cfa284db06e3a87";
+const CONSUMER_SECRET =
+  import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET ||
+  "cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71";
+
+// Validar que las credenciales estén configuradas
+if (!CONSUMER_KEY || !CONSUMER_SECRET) {
+  console.error("❌ WooCommerce credentials not properly configured");
+}
 
 // Crear las credenciales en base64 para la autenticación
 const auth = btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`);
@@ -255,20 +267,72 @@ export const checkAtumAvailability = async (
 
     const data = await response.json();
 
-    // Check for ATUM inventory data in meta_data
-    const atumStock = data.meta_data?.find(
+    // Check for ATUM Multi-Inventory data in meta_data
+    const atumMultiStock = data.meta_data?.find(
       (meta: any) =>
+        meta.key === "_atum_multi_inventory" ||
+        meta.key === "atum_multi_inventory" ||
+        meta.key === "_multi_inventory",
+    );
+
+    if (atumMultiStock && atumMultiStock.value) {
+      try {
+        const multiInventory =
+          typeof atumMultiStock.value === "string"
+            ? JSON.parse(atumMultiStock.value)
+            : atumMultiStock.value;
+
+        // If it's an object, get the total stock across all inventories
+        if (typeof multiInventory === "object" && multiInventory !== null) {
+          const totalStock = Object.values(multiInventory).reduce(
+            (sum: number, stock: unknown) => {
+              return sum + (parseInt(String(stock)) || 0);
+            },
+            0,
+          );
+
+          if (totalStock > 0) {
+            return totalStock;
+          }
+        }
+      } catch (e) {
+        console.warn(`Error parsing ATUM multi-inventory for ${productId}:`, e);
+      }
+    }
+
+    // Check for standard ATUM inventory data in meta_data
+    const atumStock = data.meta_data?.find(
+      (meta: { key: string; value: unknown }) =>
         meta.key === "_atum_stock_quantity" ||
-        meta.key === "atum_stock_quantity",
+        meta.key === "atum_stock_quantity" ||
+        meta.key === "_atum_stock",
     );
 
     if (atumStock) {
-      return parseInt(atumStock.value) || 0;
+      const stockValue = parseInt(atumStock.value) || 0;
+      if (stockValue > 0) {
+        return stockValue;
+      }
+    }
+
+    // Check for ATUM manage stock setting
+    const atumManageStock = data.meta_data?.find(
+      (meta: any) =>
+        meta.key === "_atum_manage_stock" || meta.key === "atum_manage_stock",
+    );
+
+    // If ATUM is managing stock but no specific stock value, use 0
+    if (atumManageStock && atumManageStock.value === "yes") {
+      return 0;
     }
 
     // Fallback to regular WooCommerce stock
     return data.stock_quantity || 0;
   } catch (error) {
+    console.warn(
+      `Error checking ATUM availability for product ${productId}:`,
+      error,
+    );
     return 0;
   }
 };
@@ -279,7 +343,7 @@ export const wooCommerceApi = {
     try {
       // Get products from ALUGUERES category (ID: 319) and all its subcategories
       // Parámetros necesarios para obtener todos los productos completos:
-      // - per_page=100: Máximo productos por página
+      // - per_page=100: Máximo productos por p��gina
       // - category=319: Categoría ALUGUERES
       // - status=publish: Solo productos publicados
       // - stock_status=instock: Solo productos en stock (opcional)
@@ -332,8 +396,11 @@ export const wooCommerceApi = {
   ): Promise<Record<string, unknown> | null> {
     try {
       // Simplified fetch without AbortController for individual products
+      const WORDPRESS_API_BASE =
+        import.meta.env.VITE_WORDPRESS_API_BASE ||
+        "https://bikesultoursgest.com/wp-json/wp/v2";
       const response = await fetch(
-        `https://bikesultoursgest.com/wp-json/wp/v2/product/${productId}`,
+        `${WORDPRESS_API_BASE}/product/${productId}`,
         {
           headers: {
             Accept: "application/json",
@@ -470,7 +537,7 @@ export const wooCommerceApi = {
   },
 
   // Create an order in WooCommerce
-  async createOrder(orderData: any) {
+  async createOrder(orderData: WooCommerceOrder) {
     try {
       const response = await fetch(`${WOOCOMMERCE_API_BASE}/orders`, {
         method: "POST",

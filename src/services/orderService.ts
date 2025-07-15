@@ -33,6 +33,18 @@ export interface WooCommerceOrder {
     last_name: string;
     email: string;
     phone: string;
+    address_1: string;
+    city: string;
+    postcode: string;
+    country: string;
+  };
+  shipping?: {
+    first_name: string;
+    last_name: string;
+    address_1: string;
+    city: string;
+    postcode: string;
+    country: string;
   };
   line_items: OrderLineItem[];
   meta_data: Array<{
@@ -160,6 +172,20 @@ export const orderService = {
         last_name: customerInfo.lastName || "",
         email: customerInfo.email || "",
         phone: customerInfo.phone || "",
+        address_1: customerInfo.address || "",
+        city: customerInfo.city || "",
+        postcode: customerInfo.postalCode || "",
+        country: "PT", // Portugal por defecto
+      };
+
+      // También incluir información de envío
+      orderData.shipping = {
+        first_name: customerInfo.firstName || "",
+        last_name: customerInfo.lastName || "",
+        address_1: customerInfo.address || "",
+        city: customerInfo.city || "",
+        postcode: customerInfo.postalCode || "",
+        country: "PT", // Portugal por defecto
       };
     }
 
