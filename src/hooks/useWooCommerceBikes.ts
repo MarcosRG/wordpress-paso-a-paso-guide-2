@@ -165,6 +165,12 @@ export const useWooCommerceBikes = () => {
         );
         return bikes;
       } catch (error) {
+        // Handle specific abort errors differently
+        if (error instanceof Error && error.name === "AbortError") {
+          console.warn("⚠️ Request was aborted, retrying with mock data");
+          return mockBikes;
+        }
+
         console.error("❌ Error al cargar productos de WooCommerce:", error);
         console.log("🔄 Usando datos de prueba como fallback");
         // Si falla la conexión con WooCommerce, usar datos de prueba
