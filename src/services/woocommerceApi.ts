@@ -550,25 +550,21 @@ export const wooCommerceApi = {
 
   // Create an order in WooCommerce
   async createOrder(orderData: WooCommerceOrder) {
-    try {
-      const response = await fetch(`${WOOCOMMERCE_API_BASE}/orders`, {
-        method: "POST",
-        headers: apiHeaders,
-        body: JSON.stringify(orderData),
-      });
+    const response = await fetch(`${WOOCOMMERCE_API_BASE}/orders`, {
+      method: "POST",
+      headers: apiHeaders,
+      body: JSON.stringify(orderData),
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Error creating order: ${response.statusText} - ${errorText}`,
-        );
-      }
-
-      const order = await response.json();
-      return order;
-    } catch (error) {
-      throw error;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Error creating order: ${response.statusText} - ${errorText}`,
+      );
     }
+
+    const order = await response.json();
+    return order;
   },
 
   // Get categories from WooCommerce
