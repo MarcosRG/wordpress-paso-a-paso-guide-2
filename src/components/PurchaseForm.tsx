@@ -235,8 +235,14 @@ export const PurchaseForm = ({
                     handleInputChange("postalCode", e.target.value)
                   }
                   placeholder="0000-000"
-                  className="mt-1"
+                  className={`mt-1 ${fieldErrors.postalCode ? "border-red-500" : ""}`}
                 />
+                {fieldErrors.postalCode && (
+                  <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                    <AlertCircle className="h-3 w-3" />
+                    {fieldErrors.postalCode}
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
