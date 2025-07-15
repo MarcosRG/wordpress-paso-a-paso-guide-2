@@ -138,8 +138,14 @@ export const PurchaseForm = ({
                   }
                   placeholder={t("lastName")}
                   required
-                  className="mt-1"
+                  className={`mt-1 ${fieldErrors.lastName ? "border-red-500" : ""}`}
                 />
+                {fieldErrors.lastName && (
+                  <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                    <AlertCircle className="h-3 w-3" />
+                    {fieldErrors.lastName}
+                  </div>
+                )}
               </div>
             </div>
 
