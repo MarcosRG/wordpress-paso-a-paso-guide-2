@@ -119,6 +119,42 @@ export const BikeSelection = ({
     }
   };
 
+  // Para productos simples (sin tamaños)
+  const updateSimpleBikeQuantity = (bike: any, change: number) => {
+    const currentQuantity = getQuantityForBike(bike.id);
+    const newQuantity = currentQuantity + change;
+
+    if (newQuantity <= 0) {
+      // Remover la bicicleta
+      const updatedBikes = reservation.selectedBikes.filter(
+        (b) => !(b.id === bike.id && b.size === "M"),
+      );
+      setReservation({ ...reservation, selectedBikes: updatedBikes });
+    } else if (newQuantity <= bike.available) {
+      const existingBikeIndex = reservation.selectedBikes.findIndex(
+        (b) => b.id === bike.id && b.size === "M",
+      );
+
+      if (existingBikeIndex >= 0) {
+        // Actualizar cantidad existente
+        const updatedBikes = [...reservation.selectedBikes];
+        updatedBikes[existingBikeIndex].quantity = newQuantity;
+        setReservation({ ...reservation, selectedBikes: updatedBikes });
+      } else {
+        // Agregar nueva bicicleta (usar M como tamaño por defecto)
+        const newSelectedBike: SelectedBike = {
+          ...bike,
+          quantity: newQuantity,
+          size: "M" as "XS" | "S" | "M" | "L" | "XL",
+        };
+        setReservation({
+          ...reservation,
+          selectedBikes: [...reservation.selectedBikes, newSelectedBike],
+        });
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div>
