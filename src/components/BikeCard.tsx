@@ -109,7 +109,9 @@ const BikeCard = ({
             </div>
             <div className="grid grid-cols-5 gap-1 text-center">
               {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
-                const availableForSize = Math.floor(bike.available / 5);
+                // Usar stock real de ATUM si está disponible, sino usar estimación
+                const availableForSize =
+                  atumStockBySize[size] ?? Math.floor(bike.available / 5);
                 return (
                   <div key={size} className="flex flex-col">
                     <span className="font-medium">{size}</span>
