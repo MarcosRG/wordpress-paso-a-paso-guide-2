@@ -233,15 +233,29 @@ export const BikeSelection = ({
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredBikes.map((bike) => (
-          <BikeCard
-            key={bike.id}
-            bike={bike}
-            getQuantityForBikeAndSize={getQuantityForBikeAndSize}
-            updateBikeQuantity={updateBikeQuantity}
-            totalDays={reservation.totalDays}
-          />
-        ))}
+        {filteredBikes.map((bike) => {
+          // Determinar si es un producto simple o variable
+          const isSimpleProduct =
+            bike.wooCommerceData?.product?.type === "simple";
+
+          return isSimpleProduct ? (
+            <SimpleBikeCard
+              key={bike.id}
+              bike={bike}
+              getQuantityForBike={getQuantityForBike}
+              updateBikeQuantity={updateSimpleBikeQuantity}
+              totalDays={reservation.totalDays}
+            />
+          ) : (
+            <BikeCard
+              key={bike.id}
+              bike={bike}
+              getQuantityForBikeAndSize={getQuantityForBikeAndSize}
+              updateBikeQuantity={updateBikeQuantity}
+              totalDays={reservation.totalDays}
+            />
+          );
+        })}
       </div>
 
       {/* Resumen de selección */}
