@@ -255,20 +255,72 @@ export const checkAtumAvailability = async (
 
     const data = await response.json();
 
-    // Check for ATUM inventory data in meta_data
+    // Check for ATUM Multi-Inventory data in meta_data
+    const atumMultiStock = data.meta_data?.find(
+      (meta: any) =>
+        meta.key === "_atum_multi_inventory" ||
+        meta.key === "atum_multi_inventory" ||
+        meta.key === "_multi_inventory",
+    );
+
+    if (atumMultiStock && atumMultiStock.value) {
+      try {
+        const multiInventory =
+          typeof atumMultiStock.value === "string"
+            ? JSON.parse(atumMultiStock.value)
+            : atumMultiStock.value;
+
+        // If it's an object, get the total stock across all inventories
+        if (typeof multiInventory === "object" && multiInventory !== null) {
+          const totalStock = Object.values(multiInventory).reduce(
+            (sum: number, stock: any) => {
+              return sum + (parseInt(stock) || 0);
+            },
+            0,
+          );
+
+          if (totalStock > 0) {
+            return totalStock;
+          }
+        }
+      } catch (e) {
+        console.warn(`Error parsing ATUM multi-inventory for ${productId}:`, e);
+      }
+    }
+
+    // Check for standard ATUM inventory data in meta_data
     const atumStock = data.meta_data?.find(
       (meta: any) =>
         meta.key === "_atum_stock_quantity" ||
-        meta.key === "atum_stock_quantity",
+        meta.key === "atum_stock_quantity" ||
+        meta.key === "_atum_stock",
     );
 
     if (atumStock) {
-      return parseInt(atumStock.value) || 0;
+      const stockValue = parseInt(atumStock.value) || 0;
+      if (stockValue > 0) {
+        return stockValue;
+      }
+    }
+
+    // Check for ATUM manage stock setting
+    const atumManageStock = data.meta_data?.find(
+      (meta: any) =>
+        meta.key === "_atum_manage_stock" || meta.key === "atum_manage_stock",
+    );
+
+    // If ATUM is managing stock but no specific stock value, use 0
+    if (atumManageStock && atumManageStock.value === "yes") {
+      return 0;
     }
 
     // Fallback to regular WooCommerce stock
     return data.stock_quantity || 0;
   } catch (error) {
+    console.warn(
+      `Error checking ATUM availability for product ${productId}:`,
+      error,
+    );
     return 0;
   }
 };
