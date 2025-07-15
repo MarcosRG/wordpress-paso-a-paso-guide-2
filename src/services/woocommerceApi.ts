@@ -273,8 +273,8 @@ export const checkAtumAvailability = async (
         // If it's an object, get the total stock across all inventories
         if (typeof multiInventory === "object" && multiInventory !== null) {
           const totalStock = Object.values(multiInventory).reduce(
-            (sum: number, stock: any) => {
-              return sum + (parseInt(stock) || 0);
+            (sum: number, stock: unknown) => {
+              return sum + (parseInt(String(stock)) || 0);
             },
             0,
           );
