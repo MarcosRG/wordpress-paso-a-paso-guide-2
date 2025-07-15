@@ -21,6 +21,14 @@ export const useWooCommerceBikes = () => {
         const products = await wooCommerceApi.getProducts();
         console.log(`✅ Productos cargados exitosamente: ${products.length}`);
 
+        // If we get an empty array, it might be due to an aborted request
+        if (products.length === 0) {
+          console.warn(
+            "⚠️ No products received, possibly due to aborted request. Using mock data.",
+          );
+          return mockBikes;
+        }
+
         // Filtrar solo productos publicados con stock
         const validProducts = products.filter((product: WooCommerceProduct) => {
           return (
