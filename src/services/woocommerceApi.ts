@@ -569,21 +569,17 @@ export const wooCommerceApi = {
 
   // Get categories from WooCommerce
   async getCategories() {
-    try {
-      const response = await fetch(
-        `${WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
-        {
-          headers: apiHeaders,
-        },
-      );
+    const response = await fetch(
+      `${WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
+      {
+        headers: apiHeaders,
+      },
+    );
 
-      if (!response.ok) {
-        throw new Error(`Error fetching categories: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
+    if (!response.ok) {
+      throw new Error(`Error fetching categories: ${response.statusText}`);
     }
+
+    return await response.json();
   },
 };
