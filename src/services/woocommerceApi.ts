@@ -379,15 +379,25 @@ export const wooCommerceApi = {
 
       return products;
     } catch (error) {
-      console.error("Error al obtener productos:", error);
+      // Handle AbortError specifically
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          console.warn(
+            "Request was aborted (timeout or component unmounted):",
+            error.message,
+          );
+          // Return empty array instead of throwing for abort errors
+          return [];
+        }
 
-      // Si es un error de red/CORS, proporcionar información útil
-      if (error instanceof TypeError && error.message.includes("fetch")) {
-        console.warn(
-          "No se puede conectar a la API de WooCommerce. Verificar CORS y conectividad.",
-        );
+        if (error.message.includes("fetch")) {
+          console.warn(
+            "No se puede conectar a la API de WooCommerce. Verificar CORS y conectividad.",
+          );
+        }
       }
 
+      console.error("Error al obtener productos:", error);
       throw error;
     }
   },
