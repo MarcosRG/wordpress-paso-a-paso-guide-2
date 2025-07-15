@@ -269,7 +269,7 @@ export const checkAtumAvailability = async (
 
     // Check for ATUM Multi-Inventory data in meta_data
     const atumMultiStock = data.meta_data?.find(
-      (meta: any) =>
+      (meta: { key: string; value: unknown }) =>
         meta.key === "_atum_multi_inventory" ||
         meta.key === "atum_multi_inventory" ||
         meta.key === "_multi_inventory",
@@ -317,7 +317,7 @@ export const checkAtumAvailability = async (
 
     // Check for ATUM manage stock setting
     const atumManageStock = data.meta_data?.find(
-      (meta: any) =>
+      (meta: { key: string; value: unknown }) =>
         meta.key === "_atum_manage_stock" || meta.key === "atum_manage_stock",
     );
 
@@ -440,7 +440,7 @@ export const wooCommerceApi = {
           );
         } else {
           console.warn(
-            `⚠️  ACF error for product ${productId}: ${error.message} - continuing without ACF`,
+            `���️  ACF error for product ${productId}: ${error.message} - continuing without ACF`,
           );
         }
       }
@@ -533,45 +533,37 @@ export const wooCommerceApi = {
   },
 
   // Create an order in WooCommerce
-  async createOrder(orderData: WooCommerceOrder) {
-    try {
-      const response = await fetch(`${WOOCOMMERCE_API_BASE}/orders`, {
-        method: "POST",
-        headers: apiHeaders,
-        body: JSON.stringify(orderData),
-      });
+  async createOrder(orderData: unknown) {
+    const response = await fetch(`${WOOCOMMERCE_API_BASE}/orders`, {
+      method: "POST",
+      headers: apiHeaders,
+      body: JSON.stringify(orderData),
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Error creating order: ${response.statusText} - ${errorText}`,
-        );
-      }
-
-      const order = await response.json();
-      return order;
-    } catch (error) {
-      throw error;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Error creating order: ${response.statusText} - ${errorText}`,
+      );
     }
+
+    const order = await response.json();
+    return order;
   },
 
   // Get categories from WooCommerce
   async getCategories() {
-    try {
-      const response = await fetch(
-        `${WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
-        {
-          headers: apiHeaders,
-        },
-      );
+    const response = await fetch(
+      `${WOOCOMMERCE_API_BASE}/products/categories?per_page=100`,
+      {
+        headers: apiHeaders,
+      },
+    );
 
-      if (!response.ok) {
-        throw new Error(`Error fetching categories: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
+    if (!response.ok) {
+      throw new Error(`Error fetching categories: ${response.statusText}`);
     }
+
+    return await response.json();
   },
 };
