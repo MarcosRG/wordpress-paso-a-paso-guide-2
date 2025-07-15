@@ -522,7 +522,7 @@ export const wooCommerceApi = {
   },
 
   // Create an order in WooCommerce
-  async createOrder(orderData: any) {
+  async createOrder(orderData: WooCommerceOrder) {
     try {
       const response = await fetch(`${WOOCOMMERCE_API_BASE}/orders`, {
         method: "POST",
