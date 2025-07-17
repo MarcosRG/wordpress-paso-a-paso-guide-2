@@ -545,6 +545,14 @@ export const wooCommerceApi = {
   async getProductVariations(
     productId: number,
   ): Promise<WooCommerceVariation[]> {
+    // Check network availability first
+    if (!(await checkNetworkAvailability())) {
+      console.warn(
+        `Network unavailable, returning empty variations for product ${productId}`,
+      );
+      return [];
+    }
+
     try {
       // Use Promise.race for timeout instead of AbortController
       const response = await Promise.race([
