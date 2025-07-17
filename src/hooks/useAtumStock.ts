@@ -15,6 +15,12 @@ export const useAtumStockBySize = (
   return useQuery({
     queryKey: ["atum-stock", productId],
     queryFn: async (): Promise<Record<string, number>> => {
+      // If API calls are disabled, return mock data
+      if (DISABLE_API_CALLS) {
+        console.info("API calls disabled, returning mock stock data");
+        return { S: 3, M: 5, L: 2, XL: 1 };
+      }
+
       try {
         // Obtener las variaciones del producto
         const variations = await wooCommerceApi.getProductVariations(productId);
