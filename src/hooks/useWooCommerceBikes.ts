@@ -19,6 +19,12 @@ export const useWooCommerceBikes = () => {
   return useQuery({
     queryKey: ["woocommerce-bikes"],
     queryFn: async (): Promise<Bike[]> => {
+      // If API calls are disabled, return mock data
+      if (DISABLE_API_CALLS) {
+        console.info("API calls disabled, returning mock bike data");
+        return mockBikes;
+      }
+
       try {
         console.log("Iniciando carga de productos de WooCommerce...");
         const products = await wooCommerceApi.getProducts();
