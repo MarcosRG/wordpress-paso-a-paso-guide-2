@@ -445,20 +445,30 @@ export const wooCommerceApi = {
   async getProductWithACF(
     productId: number,
   ): Promise<Record<string, unknown> | null> {
+    // Check network availability first
+    if (!(await checkNetworkAvailability())) {
+      console.warn(
+        `Network unavailable, returning null ACF data for product ${productId}`,
+      );
+      return null;
+    }
+
     try {
-      // Simplified fetch without AbortController for individual products
       const WORDPRESS_API_BASE =
         import.meta.env.VITE_WORDPRESS_API_BASE ||
         "https://bikesultoursgest.com/wp-json/wp/v2";
-      const response = await fetch(
-        `${WORDPRESS_API_BASE}/product/${productId}`,
-        {
+
+      const response = await Promise.race([
+        fetch(`${WORDPRESS_API_BASE}/product/${productId}`, {
           headers: {
             Accept: "application/json",
           },
           mode: "cors",
-        },
-      );
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), 5000),
+        ),
+      ]);
 
       if (!response.ok) {
         // Si es 404, el producto no existe en WordPress, no es un error crítico
