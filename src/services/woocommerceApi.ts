@@ -259,16 +259,16 @@ export const checkAtumAvailability = async (
       ? `${WOOCOMMERCE_API_BASE}/products/${productId}/variations/${variationId}`
       : `${WOOCOMMERCE_API_BASE}/products/${productId}`;
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-    const response = await fetch(endpoint, {
-      headers: apiHeaders,
-      signal: controller.signal,
-      mode: "cors",
-    });
-
-    clearTimeout(timeoutId);
+    // Shorter timeout and simplified approach
+    const response = await Promise.race([
+      fetch(endpoint, {
+        headers: apiHeaders,
+        mode: "cors",
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Request timeout")), 5000),
+      ),
+    ]);
 
     if (!response.ok) {
       throw new Error(`Error checking availability: ${response.statusText}`);
@@ -340,11 +340,14 @@ export const checkAtumAvailability = async (
   } catch (error) {
     // Handle different types of errors gracefully
     if (error instanceof Error) {
-      if (error.name === "AbortError") {
+      if (error.message === "Request timeout") {
         console.warn(
           `Request timeout for product ${productId} availability check`,
         );
-      } else if (error.message.includes("fetch")) {
+      } else if (
+        error.message.includes("fetch") ||
+        error.message.includes("Failed to fetch")
+      ) {
         console.warn(
           `Network error checking availability for product ${productId}`,
         );
@@ -517,19 +520,19 @@ export const wooCommerceApi = {
     productId: number,
   ): Promise<WooCommerceVariation[]> {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-      const response = await fetch(
-        `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
-        {
-          headers: apiHeaders,
-          mode: "cors",
-          signal: controller.signal,
-        },
-      );
-
-      clearTimeout(timeoutId);
+      // Use Promise.race for timeout instead of AbortController
+      const response = await Promise.race([
+        fetch(
+          `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
+          {
+            headers: apiHeaders,
+            mode: "cors",
+          },
+        ),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), 5000),
+        ),
+      ]);
 
       if (!response.ok) {
         // Si es 404, el producto no tiene variaciones
@@ -549,9 +552,12 @@ export const wooCommerceApi = {
       return variations;
     } catch (error) {
       if (error instanceof Error) {
-        if (error.name === "AbortError") {
+        if (error.message === "Request timeout") {
           console.warn(`Request timeout for product ${productId} variations`);
-        } else if (error.message.includes("fetch")) {
+        } else if (
+          error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch")
+        ) {
           console.warn(
             `🌐 Error de red al obtener variaciones para producto ${productId} - usando producto principal`,
           );
