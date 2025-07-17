@@ -236,6 +236,9 @@ const Index = () => {
 
         {/* Diagnóstico removido temporalmente por errores CORS */}
 
+        {/* Temporary API Test Component */}
+        <ApiTest />
+
         {/* Progress Indicator */}
         <div className="flex justify-center mb-8">
           <div className="flex items-center space-x-2">
