@@ -12,6 +12,9 @@ import {
 import { Bike } from "@/pages/Index";
 import { mockBikes, mockCategories } from "./useMockBikes";
 
+// Temporary flag to disable API calls when network is problematic
+const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
+
 export const useWooCommerceBikes = () => {
   return useQuery({
     queryKey: ["woocommerce-bikes"],
