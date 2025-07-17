@@ -249,11 +249,35 @@ async function retryRequest<T>(
   return null;
 }
 
+// Network availability flag
+let isNetworkAvailable = true;
+let networkCheckTime = 0;
+
+// Function to check if network is available
+const checkNetworkAvailability = async (): Promise<boolean> => {
+  const now = Date.now();
+  // Only check network every 30 seconds
+  if (now - networkCheckTime < 30000 && !isNetworkAvailable) {
+    return false;
+  }
+
+  networkCheckTime = now;
+  return true;
+};
+
 // Function to check product availability based on ATUM inventory
 export const checkAtumAvailability = async (
   productId: number,
   variationId?: number,
 ): Promise<number> => {
+  // Check network availability first
+  if (!(await checkNetworkAvailability())) {
+    console.warn(
+      `Network unavailable, returning fallback stock for product ${productId}`,
+    );
+    return 5; // Return default stock
+  }
+
   try {
     const endpoint = variationId
       ? `${WOOCOMMERCE_API_BASE}/products/${productId}/variations/${variationId}`
@@ -454,7 +478,7 @@ export const wooCommerceApi = {
           productData.acf,
         );
       } else {
-        console.info(`ℹ️  Producto ${productId} sin datos ACF configurados`);
+        console.info(`���️  Producto ${productId} sin datos ACF configurados`);
       }
 
       return productData;
