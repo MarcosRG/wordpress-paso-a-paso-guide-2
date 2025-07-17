@@ -59,6 +59,7 @@ export const useAtumStockBySize = (
     enabled: enabled && !!productId,
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
+    throwOnError: false, // Don't throw errors to prevent console spam
     retry: (failureCount, error) => {
       // Don't retry on timeout or network errors
       if (
@@ -86,6 +87,7 @@ export const useAtumProductStock = (
     enabled: enabled && !!productId,
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
+    throwOnError: false, // Don't throw errors to prevent console spam
     retry: (failureCount, error) => {
       // Don't retry on timeout or network errors
       if (
