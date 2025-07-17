@@ -60,11 +60,16 @@ export const useAtumStockBySize = (
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
     retry: (failureCount, error) => {
-      // Don't retry on network errors after first attempt
-      if (error instanceof Error && error.message.includes("fetch")) {
-        return failureCount < 1;
+      // Don't retry on timeout or network errors
+      if (
+        error instanceof Error &&
+        (error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch") ||
+          error.message === "Request timeout")
+      ) {
+        return false; // No retries for network/timeout errors
       }
-      return failureCount < 3;
+      return failureCount < 2; // Only 2 retries for other errors
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
@@ -82,11 +87,16 @@ export const useAtumProductStock = (
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
     retry: (failureCount, error) => {
-      // Don't retry on network errors after first attempt
-      if (error instanceof Error && error.message.includes("fetch")) {
-        return failureCount < 1;
+      // Don't retry on timeout or network errors
+      if (
+        error instanceof Error &&
+        (error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch") ||
+          error.message === "Request timeout")
+      ) {
+        return false; // No retries for network/timeout errors
       }
-      return failureCount < 3;
+      return failureCount < 2; // Only 2 retries for other errors
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
