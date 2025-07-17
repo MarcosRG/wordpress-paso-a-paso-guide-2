@@ -92,7 +92,14 @@ export const useAtumProductStock = (
 ) => {
   return useQuery({
     queryKey: ["atum-product-stock", productId],
-    queryFn: () => checkAtumAvailability(productId),
+    queryFn: () => {
+      // If API calls are disabled, return mock data
+      if (DISABLE_API_CALLS) {
+        console.info("API calls disabled, returning mock stock data");
+        return Promise.resolve(10);
+      }
+      return checkAtumAvailability(productId);
+    },
     enabled: enabled && !!productId,
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
