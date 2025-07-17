@@ -368,6 +368,7 @@ export const checkAtumAvailability = async (
         console.warn(
           `Request timeout for product ${productId} availability check`,
         );
+        isNetworkAvailable = false;
       } else if (
         error.message.includes("fetch") ||
         error.message.includes("Failed to fetch")
@@ -375,6 +376,7 @@ export const checkAtumAvailability = async (
         console.warn(
           `Network error checking availability for product ${productId}`,
         );
+        isNetworkAvailable = false;
       } else {
         console.warn(
           `Error checking ATUM availability for product ${productId}:`,
@@ -382,7 +384,7 @@ export const checkAtumAvailability = async (
         );
       }
     }
-    return 0;
+    return 5; // Return default stock instead of 0
   }
 };
 
