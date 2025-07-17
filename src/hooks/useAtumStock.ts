@@ -52,12 +52,21 @@ export const useAtumStockBySize = (
           `Error obteniendo stock ATUM para producto ${productId}:`,
           error,
         );
-        return {};
+        // Return default stock instead of empty object to prevent UI errors
+        return { default: 0 };
       }
     },
     enabled: enabled && !!productId,
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
+    retry: (failureCount, error) => {
+      // Don't retry on network errors after first attempt
+      if (error instanceof Error && error.message.includes("fetch")) {
+        return failureCount < 1;
+      }
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 
