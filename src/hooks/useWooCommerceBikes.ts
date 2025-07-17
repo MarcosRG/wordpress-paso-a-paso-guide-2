@@ -182,6 +182,20 @@ export const useWooCommerceBikes = () => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos (previously cacheTime)
+    throwOnError: false, // Don't throw errors to prevent console spam
+    retry: (failureCount, error) => {
+      // Don't retry on timeout or network errors
+      if (
+        error instanceof Error &&
+        (error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch") ||
+          error.message === "Request timeout")
+      ) {
+        return false; // No retries for network/timeout errors
+      }
+      return failureCount < 2; // Only 2 retries for other errors
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 
