@@ -588,6 +588,7 @@ export const wooCommerceApi = {
       if (error instanceof Error) {
         if (error.message === "Request timeout") {
           console.warn(`Request timeout for product ${productId} variations`);
+          isNetworkAvailable = false;
         } else if (
           error.message.includes("fetch") ||
           error.message.includes("Failed to fetch")
@@ -595,6 +596,7 @@ export const wooCommerceApi = {
           console.warn(
             `🌐 Error de red al obtener variaciones para producto ${productId} - usando producto principal`,
           );
+          isNetworkAvailable = false;
         } else {
           console.warn(
             `⚠️  Error variaciones para producto ${productId}: ${error.message} - usando producto principal`,
