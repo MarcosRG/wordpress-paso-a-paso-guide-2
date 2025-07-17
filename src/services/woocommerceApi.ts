@@ -497,10 +497,17 @@ export const wooCommerceApi = {
     } catch (error) {
       // No loggear como error si es un timeout o network error común
       if (error instanceof Error) {
-        if (error.message.includes("fetch")) {
+        if (error.message === "Request timeout") {
+          console.warn(`Request timeout for product ${productId} ACF data`);
+          isNetworkAvailable = false;
+        } else if (
+          error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch")
+        ) {
           console.warn(
             `🌐 Error de red al obtener ACF para producto ${productId} - continuando sin ACF`,
           );
+          isNetworkAvailable = false;
         } else {
           console.warn(
             `⚠️  Error ACF para producto ${productId}: ${error.message} - continuando sin ACF`,
