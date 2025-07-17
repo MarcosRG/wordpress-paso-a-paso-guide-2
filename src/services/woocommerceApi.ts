@@ -259,7 +259,16 @@ export const checkAtumAvailability = async (
       ? `${WOOCOMMERCE_API_BASE}/products/${productId}/variations/${variationId}`
       : `${WOOCOMMERCE_API_BASE}/products/${productId}`;
 
-    const response = await fetch(endpoint, { headers: apiHeaders });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    const response = await fetch(endpoint, {
+      headers: apiHeaders,
+      signal: controller.signal,
+      mode: "cors",
+    });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`Error checking availability: ${response.statusText}`);
@@ -329,10 +338,23 @@ export const checkAtumAvailability = async (
     // Fallback to regular WooCommerce stock
     return data.stock_quantity || 0;
   } catch (error) {
-    console.warn(
-      `Error checking ATUM availability for product ${productId}:`,
-      error,
-    );
+    // Handle different types of errors gracefully
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        console.warn(
+          `Request timeout for product ${productId} availability check`,
+        );
+      } else if (error.message.includes("fetch")) {
+        console.warn(
+          `Network error checking availability for product ${productId}`,
+        );
+      } else {
+        console.warn(
+          `Error checking ATUM availability for product ${productId}:`,
+          error.message,
+        );
+      }
+    }
     return 0;
   }
 };
@@ -495,14 +517,19 @@ export const wooCommerceApi = {
     productId: number,
   ): Promise<WooCommerceVariation[]> {
     try {
-      // Simplified fetch without AbortController for individual products
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
         {
           headers: apiHeaders,
           mode: "cors",
+          signal: controller.signal,
         },
       );
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         // Si es 404, el producto no tiene variaciones
@@ -522,7 +549,9 @@ export const wooCommerceApi = {
       return variations;
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message.includes("fetch")) {
+        if (error.name === "AbortError") {
+          console.warn(`Request timeout for product ${productId} variations`);
+        } else if (error.message.includes("fetch")) {
           console.warn(
             `🌐 Error de red al obtener variaciones para producto ${productId} - usando producto principal`,
           );
