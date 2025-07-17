@@ -4,6 +4,9 @@ import {
   wooCommerceApi,
 } from "@/services/woocommerceApi";
 
+// Temporary flag to disable API calls when network is problematic
+const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
+
 // Hook para obtener stock específico por tamaño de un producto
 export const useAtumStockBySize = (
   productId: number,
