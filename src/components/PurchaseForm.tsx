@@ -29,6 +29,7 @@ export interface CustomerData {
   address: string;
   city: string;
   postalCode: string;
+  country: string;
 }
 
 interface PurchaseFormProps {
