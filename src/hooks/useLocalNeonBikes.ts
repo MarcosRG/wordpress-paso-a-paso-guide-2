@@ -16,11 +16,29 @@ const convertNeonProductToBike = (
   if (variations.length > 0) {
     // Para productos variables, sumar stock de todas las variaciones
     totalStock = variations.reduce((sum, variation) => {
-      return sum + (variation.atum_stock || variation.stock_quantity);
+      const variationStock = Math.max(
+        variation.atum_stock || 0,
+        variation.stock_quantity || 0,
+      );
+      return sum + variationStock;
     }, 0);
+
+    // Si no hay stock en variaciones pero el producto dice que tiene stock, usar al menos 1
+    if (
+      totalStock === 0 &&
+      (neonProduct.stock_status === "instock" || neonProduct.stock_quantity > 0)
+    ) {
+      totalStock = Math.max(1, neonProduct.stock_quantity || 1);
+      console.log(
+        `🔄 Producto variable ${neonProduct.name}: usando stock del producto principal (${totalStock})`,
+      );
+    }
   } else {
     // Para productos simples, usar stock directo
-    totalStock = neonProduct.stock_quantity || 0;
+    totalStock = Math.max(
+      neonProduct.stock_quantity || 0,
+      neonProduct.stock_status === "instock" ? 1 : 0,
+    );
   }
 
   // Obtener precio base
