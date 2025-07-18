@@ -676,19 +676,15 @@ export const wooCommerceApi = {
     }
 
     try {
-      // Use Promise.race for timeout instead of AbortController
-      const response = await Promise.race([
-        fetch(
-          `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
-          {
-            headers: apiHeaders,
-            mode: "cors",
-          },
-        ),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Request timeout")), 5000),
-        ),
-      ]);
+      // Use enhanced fetch with retry logic
+      const response = await fetchWithRetry(
+        `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
+        {
+          mode: "cors",
+        },
+        TIMEOUT_CONFIG.short, // 10 segundos
+        2, // 2 reintentos para variaciones
+      );
 
       if (!response.ok) {
         // Si es 404, el producto no tiene variaciones
