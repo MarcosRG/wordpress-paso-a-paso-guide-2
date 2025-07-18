@@ -344,6 +344,10 @@ const fetchWithRetry = async (
     }
   }
 
+  // Generar reporte si hay muchos errores consecutivos
+  console.error("❌ Todos los reintentos fallaron");
+  console.error(generateConnectivityReport());
+
   throw lastError || new Error("All retry attempts failed");
 };
 
