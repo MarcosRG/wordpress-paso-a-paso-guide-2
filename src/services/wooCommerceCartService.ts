@@ -187,10 +187,43 @@ export class WooCommerceCartService {
           }
         }
 
+        // Calcular precio correcto basado en ACF pricing y días totales
+        const acfPricing = bike.wooCommerceData?.product
+          ? extractACFPricing(bike.wooCommerceData.product)
+          : null;
+
+        let totalPricePerBike = 0;
+        let pricePerDay = bike.pricePerDay;
+
+        if (acfPricing && reservation.totalDays > 0) {
+          // Usar ACF pricing
+          pricePerDay = getPricePerDayFromACF(
+            reservation.totalDays,
+            acfPricing,
+          );
+          totalPricePerBike = calculateTotalPriceACF(
+            reservation.totalDays,
+            1,
+            acfPricing,
+          );
+        } else {
+          // Usar pricing estándar
+          const priceRanges = bike.wooCommerceData?.product
+            ? extractDayBasedPricing(bike.wooCommerceData.product)
+            : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
+          pricePerDay =
+            reservation.totalDays > 0
+              ? getPriceForDays(priceRanges, reservation.totalDays)
+              : bike.pricePerDay;
+          totalPricePerBike = pricePerDay * reservation.totalDays;
+        }
+
         return {
           product_id: parseInt(bike.id),
           variation_id: variationId,
           quantity: bike.quantity,
+          // El precio total para esta cantidad y días
+          price: totalPricePerBike * bike.quantity,
           meta_data: [
             {
               key: "_rental_start_date",
@@ -206,7 +239,11 @@ export class WooCommerceCartService {
             { key: "_bike_size", value: bike.size },
             {
               key: "_rental_price_per_day",
-              value: bike.pricePerDay.toString(),
+              value: pricePerDay.toString(),
+            },
+            {
+              key: "_rental_total_price",
+              value: totalPricePerBike.toString(),
             },
           ],
         };
