@@ -125,15 +125,16 @@ export const useAtumStockBySize = (
         }
 
         // Reset timeout counter on success
-        consecutiveTimeouts = 0;
+        setConsecutiveTimeouts(0);
         return stockBySize;
       } catch (error) {
         // Track timeout errors
         if (error instanceof Error && error.message === "Request timeout") {
-          consecutiveTimeouts++;
+          const newCount = getConsecutiveTimeouts() + 1;
+          setConsecutiveTimeouts(newCount);
           console.warn(
-            `Timeout ${consecutiveTimeouts}/${MAX_TIMEOUTS_BEFORE_FALLBACK} para producto ${productId}. ${
-              consecutiveTimeouts >= MAX_TIMEOUTS_BEFORE_FALLBACK
+            `Timeout ${newCount}/${MAX_TIMEOUTS_BEFORE_FALLBACK} para producto ${productId}. ${
+              newCount >= MAX_TIMEOUTS_BEFORE_FALLBACK
                 ? "Activando modo fallback."
                 : ""
             }`,
