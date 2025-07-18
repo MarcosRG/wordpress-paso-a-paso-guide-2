@@ -342,51 +342,16 @@ export class WooCommerceCartService {
               },
             ],
           });
-        } else {
+                } else {
           console.warn(
             `⚠️ No se puede agregar seguro: producto ${insuranceProductId} no existe en WooCommerce`,
           );
-
-          // Como el seguro no se puede agregar como producto,
-          // agregamos la información como meta_data de la orden
-          orderData.meta_data.push(
-            { key: "_insurance_type", value: reservation.insurance.id },
-            { key: "_insurance_name", value: reservation.insurance.name },
-            {
-              key: "_insurance_price_per_bike_per_day",
-              value: reservation.insurance.price.toString(),
-            },
-            { key: "_insurance_total_bikes", value: totalBikes.toString() },
-            {
-              key: "_insurance_total_days",
-              value: reservation.totalDays.toString(),
-            },
-            {
-              key: "_insurance_total_price",
-              value: totalInsurancePrice.toString(),
-            },
-            {
-              key: "_insurance_note",
-              value:
-                "Seguro procesado manualmente - producto no encontrado en WooCommerce",
-            },
-          );
+          console.log("📝 El seguro se procesará como información adicional en la orden");
         }
       }
 
-      const orderData = {
-        status: "pending",
-        billing: {
-          first_name: customerData.firstName,
-          last_name: customerData.lastName,
-          email: customerData.email,
-          phone: customerData.phone,
-          address_1: customerData.address || "",
-          city: customerData.city || "",
-          country: customerData.country || "PT",
-        },
-        line_items: lineItems,
-        meta_data: [
+      // Crear meta_data base para la orden
+      const baseMetaData = [
           {
             key: "_rental_start_date",
             value: reservation.startDate?.toISOString() || "",
