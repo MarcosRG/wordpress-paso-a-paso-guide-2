@@ -320,20 +320,19 @@ const fetchWithRetry = async (
       lastError = error as Error;
       console.warn(`⚠️ Intento ${attempt + 1} falló:`, error);
 
-      // Registrar tipo de error
-      if (error instanceof Error) {
-        if (error.message === "Request timeout") {
-          recordApiTimeout();
-        } else if (
-          error.message.includes("fetch") ||
-          error.message.includes("network")
-        ) {
-          recordApiNetworkError();
-        }
-      }
-
-      // Si es el último intento, no hacer retry
+      // Solo registrar error si es el último intento (todos fallaron)
       if (attempt === maxRetries) {
+        // Registrar tipo de error solo cuando realmente falló todo
+        if (error instanceof Error) {
+          if (error.message === "Request timeout") {
+            recordApiTimeout();
+          } else if (
+            error.message.includes("fetch") ||
+            error.message.includes("network")
+          ) {
+            recordApiNetworkError();
+          }
+        }
         break;
       }
 
