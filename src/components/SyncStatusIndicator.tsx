@@ -16,7 +16,10 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { useSyncStatus, useNeonConnectivity } from "@/hooks/useSyncStatus";
+import {
+  useLocalSyncStatus,
+  useLocalConnectivity,
+} from "@/hooks/useLocalSyncStatus";
 import { SyncStatus } from "@/config/neon";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -30,8 +33,8 @@ export const SyncStatusIndicator = ({
   className = "",
   showDetails = false,
 }: SyncStatusIndicatorProps) => {
-  const { syncStatus, forceSync, canSync } = useSyncStatus();
-  const { isConnected } = useNeonConnectivity();
+  const { syncStatus, forceSync, canSync } = useLocalSyncStatus();
+  const { isConnected } = useLocalConnectivity();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
