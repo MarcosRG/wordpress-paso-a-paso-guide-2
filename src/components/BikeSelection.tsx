@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
 import {
-  useWooCommerceBikes,
-  useWooCommerceCategories,
-} from "@/hooks/useWooCommerceBikes";
+  useLocalNeonBikes,
+  useLocalNeonCategories,
+} from "@/hooks/useLocalNeonBikes";
 import { CategoryFilter } from "./CategoryFilter";
+import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
@@ -34,13 +35,16 @@ export const BikeSelection = ({
     isLoading,
     error,
     refetch: refetchBikes,
-  } = useWooCommerceBikes();
+  } = useLocalNeonBikes();
   const { data: categories = [], refetch: refetchCategories } =
-    useWooCommerceCategories();
+    useLocalNeonCategories();
   const { language, setLanguage, t } = useLanguage();
 
   // Manual refresh function
   const handleRefresh = async () => {
+    // Invalidar cache de React Query para forzar recarga desde cache local
+    queryClient.invalidateQueries({ queryKey: ["local-neon-bikes"] });
+    queryClient.invalidateQueries({ queryKey: ["local-neon-categories"] });
     await Promise.all([refetchBikes(), refetchCategories()]);
   };
 
@@ -215,15 +219,18 @@ export const BikeSelection = ({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-4">
+          <SyncStatusIndicator showDetails={false} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Actualizar
+          </Button>
+        </div>
       </div>
 
       <CategoryFilter

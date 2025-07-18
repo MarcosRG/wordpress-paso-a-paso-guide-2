@@ -67,6 +67,7 @@ export const sanitizeCustomerData = (data: any): any => {
     address: sanitizeString(data.address || ""),
     city: sanitizeString(data.city || ""),
     postalCode: sanitizeString(data.postalCode || "").replace(/[^\d\-]/g, ""),
+    country: sanitizeString(data.country || "Portugal"),
   };
 };
 
