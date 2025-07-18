@@ -385,7 +385,17 @@ export const checkAtumAvailability = async (
     }
 
     // Fallback to regular WooCommerce stock
-    return data.stock_quantity || 0;
+    const wooStock = data.stock_quantity || 0;
+
+    // Log stock info for specific product
+    if (productId === 18915) {
+      console.log(`🛒 WooCommerce stock para KTM Chicago: ${wooStock}`);
+      console.log(
+        `📋 Stock status: ${data.stock_status}, manage_stock: ${data.manage_stock}`,
+      );
+    }
+
+    return wooStock;
   } catch (error) {
     // Handle different types of errors gracefully
     if (error instanceof Error) {
