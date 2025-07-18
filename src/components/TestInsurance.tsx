@@ -5,6 +5,7 @@ import {
   testInsuranceProduct,
   searchInsuranceProducts,
 } from "@/utils/testInsuranceProduct";
+import { insuranceProductService } from "@/services/insuranceProductService";
 
 export const TestInsurance = () => {
   const [testResult, setTestResult] = useState<string>("");
