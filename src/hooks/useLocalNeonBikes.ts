@@ -74,7 +74,9 @@ export const useLocalNeonBikes = () => {
     queryKey: ["local-neon-bikes"],
     queryFn: async (): Promise<Bike[]> => {
       try {
-        console.log("🚀 Cargando productos desde cache local...");
+        console.log(
+          "🚀 HOOK EJECUTÁNDOSE: Cargando productos desde cache local...",
+        );
 
         // Obtener productos activos desde cache local
         const products = await neonHttpService.getActiveProducts();
