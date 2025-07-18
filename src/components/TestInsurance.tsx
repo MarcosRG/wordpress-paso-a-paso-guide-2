@@ -116,6 +116,14 @@ Precio: €${premiumProduct.price}
           >
             Buscar Productos de Seguro
           </Button>
+
+          <Button
+            onClick={handleTestSmartService}
+            disabled={isLoading}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            🤖 Test Servicio Inteligente
+          </Button>
         </div>
 
         {testResult && (
