@@ -212,19 +212,18 @@ export class NeonHttpService {
     }
   }
 
-  // Activar sincronización en background (simulada)
-  private triggerBackgroundSync(): void {
-    // En una implementación real, esto haría una llamada HTTP a un endpoint
-    // que ejecutaría la sincronización en el servidor
-    console.log("🔄 Sincronización activada (simulada)");
+  // Activar sincronización en background (real)
+  private async triggerBackgroundSync(): Promise<void> {
+    console.log("🔄 Activando sincronización real...");
 
-    // Por ahora, marcar como ejecutándose
-    this.setSyncStatus(true);
-
-    // Simular que termina después de unos segundos
-    setTimeout(() => {
-      this.setSyncStatus(false);
-    }, 3000);
+    try {
+      // Importar el servicio de sincronización local de forma async para evitar circular deps
+      const { localSyncService } = await import("./localSyncService");
+      await localSyncService.performSync();
+      console.log("✅ Sincronización completada exitosamente");
+    } catch (error) {
+      console.error("❌ Error en sincronización:", error);
+    }
   }
 
   // Verificar si necesita sincronización
