@@ -305,7 +305,10 @@ export const checkAtumAvailability = async (
       (meta: any) =>
         meta.key === "_atum_multi_inventory" ||
         meta.key === "atum_multi_inventory" ||
-        meta.key === "_multi_inventory",
+        meta.key === "_multi_inventory" ||
+        meta.key === "_atum_location_inventory" ||
+        meta.key === "_atum_mi_inventory" ||
+        meta.key === "_inventory_sorting_date",
     );
 
     if (atumMultiStock && atumMultiStock.value) {
