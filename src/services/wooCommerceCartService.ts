@@ -39,6 +39,40 @@ export interface WooCommerceCheckoutData {
 export class WooCommerceCartService {
   private baseUrl = "https://bikesultoursgest.com";
   private checkoutUrl = `${this.baseUrl}/checkout`;
+  private verifiedInsuranceProducts = new Map<number, boolean>();
+
+  // Verificar si un producto de seguro existe en WooCommerce
+  private async verifyInsuranceProduct(productId: number): Promise<boolean> {
+    // Usar cache para evitar múltiples consultas del mismo producto
+    if (this.verifiedInsuranceProducts.has(productId)) {
+      return this.verifiedInsuranceProducts.get(productId)!;
+    }
+
+    try {
+      const product = await wooCommerceApi.getProduct(productId);
+      const exists = product !== null;
+      this.verifiedInsuranceProducts.set(productId, exists);
+
+      if (!exists) {
+        console.warn(
+          `⚠️ Producto de seguro ${productId} no existe en WooCommerce`,
+        );
+      } else {
+        console.log(
+          `✅ Producto de seguro ${productId} verificado en WooCommerce`,
+        );
+      }
+
+      return exists;
+    } catch (error) {
+      console.error(
+        `❌ Error verificando producto de seguro ${productId}:`,
+        error,
+      );
+      this.verifiedInsuranceProducts.set(productId, false);
+      return false;
+    }
+  }
 
   // Generar URL de checkout con datos pre-llenados y productos como parámetros
   generateCheckoutUrl(
