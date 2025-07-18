@@ -39,8 +39,9 @@ export const useAtumStockBySize = (
     queryFn: async (): Promise<Record<string, number>> => {
       // If API calls are disabled or too many timeouts, return mock data
       if (!shouldUseApiWithFallback()) {
+        const timeoutCount = getConsecutiveTimeouts();
         console.info(
-          consecutiveTimeouts >= MAX_TIMEOUTS_BEFORE_FALLBACK
+          timeoutCount >= MAX_TIMEOUTS_BEFORE_FALLBACK
             ? "Too many timeouts, using fallback stock data"
             : "API calls disabled, returning mock stock data",
         );
