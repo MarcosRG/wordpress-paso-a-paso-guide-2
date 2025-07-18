@@ -9,6 +9,7 @@ import {
   recordApiTimeout,
   recordApiNetworkError,
   generateConnectivityReport,
+  getConnectivityStatus,
 } from "./connectivityMonitor";
 
 export interface ACFPricing {
