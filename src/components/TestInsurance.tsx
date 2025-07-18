@@ -59,6 +59,40 @@ export const TestInsurance = () => {
     }
   };
 
+  const handleTestSmartService = async () => {
+    setIsLoading(true);
+    setTestResult("🤖 Probando servicio inteligente de seguro...");
+
+    try {
+      // Limpiar cache para hacer una búsqueda fresca
+      insuranceProductService.clearCache();
+
+      const premiumProduct =
+        await insuranceProductService.findValidInsuranceProduct("premium");
+
+      if (premiumProduct && premiumProduct.exists) {
+        setTestResult(`✅ Servicio inteligente encontró producto premium:
+ID: ${premiumProduct.id}
+Nombre: ${premiumProduct.name}
+Precio: €${premiumProduct.price}
+
+🎉 ¡El problema del carrito debería estar solucionado!`);
+      } else {
+        setTestResult(`❌ Servicio inteligente no encontró producto premium válido.
+
+💡 Soluciones:
+1. Crear producto "Seguro Premium Bikesul" en WooCommerce
+2. Asignar precio €5.00
+3. Publicar el producto
+4. Asegurarse que contiene "seguro" y "premium" en el nombre`);
+      }
+    } catch (error) {
+      setTestResult(`❌ Error en servicio inteligente: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Card className="p-6 max-w-2xl mx-auto">
       <h3 className="text-lg font-semibold mb-4">
