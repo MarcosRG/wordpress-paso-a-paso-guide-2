@@ -7,6 +7,11 @@ import {
   getConnectivityStatus,
   connectivityMonitor,
 } from "@/services/connectivityMonitor";
+import {
+  getErrorStats,
+  generateErrorReport,
+  clearInterceptedErrors,
+} from "@/utils/errorInterceptor";
 
 export const DebugConnectivity = () => {
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
