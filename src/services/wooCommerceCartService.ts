@@ -7,6 +7,7 @@ import {
   extractDayBasedPricing,
   getPriceForDays,
 } from "@/services/woocommerceApi";
+import { insuranceProductService } from "@/services/insuranceProductService";
 
 export interface WooCommerceCartItem {
   product_id: number;
