@@ -77,7 +77,22 @@ export const DebugConnectivity = () => {
   const clearLogs = () => {
     setDebugLogs([]);
     connectivityMonitor.reset();
+    clearInterceptedErrors();
     addLog("🧹 Logs limpiados y métricas reseteadas");
+  };
+
+  const showInterceptedErrors = () => {
+    const errorStats = getErrorStats();
+    addLog(
+      `📊 Errores interceptados: ${errorStats.total} total, ${errorStats.wooCommerceErrors} WooCommerce`,
+    );
+
+    if (errorStats.total > 0) {
+      addLog("📝 Reporte detallado:");
+      addLog(generateErrorReport());
+    } else {
+      addLog("✅ No hay errores interceptados");
+    }
   };
 
   const forceError = async () => {
