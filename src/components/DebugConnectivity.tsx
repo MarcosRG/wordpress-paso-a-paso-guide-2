@@ -189,6 +189,15 @@ export const DebugConnectivity = () => {
         </Button>
 
         <Button
+          onClick={showInterceptedErrors}
+          disabled={isLoading}
+          variant="outline"
+          size="sm"
+        >
+          Ver Errores
+        </Button>
+
+        <Button
           onClick={clearLogs}
           disabled={isLoading}
           variant="ghost"
