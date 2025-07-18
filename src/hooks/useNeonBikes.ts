@@ -106,10 +106,8 @@ export const useNeonBikes = () => {
             // Convertir a formato Bike
             const bike = convertNeonProductToBike(product, variations);
 
-            // Solo agregar si tiene stock disponible
-            if (bike.available > 0) {
-              bikes.push(bike);
-            }
+            // Agregar todos los productos
+            bikes.push(bike);
           } catch (error) {
             console.warn(
               `⚠️ Error procesando producto ${product.woocommerce_id}:`,
