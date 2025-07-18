@@ -94,10 +94,13 @@ const SimpleBikeCard = ({
           />
 
           {/* Stock info */}
-          <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-center">
-            <div className="font-medium text-gray-700">
-              {bike.available}{" "}
-              {bike.available === 1 ? t("available") : t("availables")}
+          <div
+            className={`mt-2 p-2 rounded text-xs text-center ${bike.available === 0 ? "bg-red-100 border border-red-200 text-red-700" : "bg-gray-100 text-gray-700"}`}
+          >
+            <div className="font-medium">
+              {bike.available === 0
+                ? t("outOfStock") || "Sin Stock"
+                : `${bike.available} ${bike.available === 1 ? t("available") : t("availables")}`}
             </div>
           </div>
         </div>
