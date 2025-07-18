@@ -360,6 +360,14 @@ export const checkAtumAvailability = async (
 
     if (atumStock) {
       const stockValue = parseInt(atumStock.value) || 0;
+
+      // Log stock info for specific product
+      if (productId === 18915) {
+        console.log(
+          `📦 ATUM stock para KTM Chicago: key="${atumStock.key}", value="${atumStock.value}", parsed=${stockValue}`,
+        );
+      }
+
       if (stockValue > 0) {
         return stockValue;
       }
