@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import CheckoutDebugInfo from "@/components/CheckoutDebugInfo";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <CheckoutDebugInfo />
             </BrowserRouter>
           </TooltipProvider>
         </LanguageProvider>
