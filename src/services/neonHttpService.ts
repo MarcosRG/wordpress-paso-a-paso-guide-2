@@ -68,7 +68,9 @@ export class NeonHttpService {
 
       // Si no hay cache, devolver array vacío y activar sincronización
       console.log("⚠️ No hay cache local, activando sincronización...");
-      this.triggerBackgroundSync();
+      this.triggerBackgroundSync().catch((error) => {
+        console.error("Error activando sincronización:", error);
+      });
       return [];
     } catch (error) {
       console.error("Error cargando productos desde cache:", error);
