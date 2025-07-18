@@ -361,6 +361,26 @@ export class WooCommerceCartService {
     try {
       console.log("🚀 Iniciando proceso de checkout mejorado...");
 
+      // Log detallado de datos para debugging
+      console.log("📊 Datos de reserva:", {
+        días: reservation.totalDays,
+        fechaInicio: reservation.startDate,
+        fechaFin: reservation.endDate,
+        seguro: reservation.insurance,
+        precioTotal: reservation.totalPrice,
+      });
+
+      console.log(
+        "🚲 Bicicletas seleccionadas:",
+        bikes.map((bike) => ({
+          id: bike.id,
+          nombre: bike.name,
+          cantidad: bike.quantity,
+          tamaño: bike.size,
+          precioPorDía: bike.pricePerDay,
+        })),
+      );
+
       // Intentar crear orden directa primero
       try {
         const checkoutUrl = await this.createDirectOrder(
