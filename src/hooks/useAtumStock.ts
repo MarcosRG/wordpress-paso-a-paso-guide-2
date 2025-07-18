@@ -8,6 +8,15 @@ import { neonStockService } from "@/services/neonStockService";
 // Temporary flag to disable API calls when network is problematic
 const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
 
+// Track consecutive timeout errors
+let consecutiveTimeouts = 0;
+const MAX_TIMEOUTS_BEFORE_FALLBACK = 3;
+
+const shouldUseApiWithFallback = () => {
+  if (DISABLE_API_CALLS) return false;
+  return consecutiveTimeouts < MAX_TIMEOUTS_BEFORE_FALLBACK;
+};
+
 // Hook para obtener stock específico por tamaño de un producto
 export const useAtumStockBySize = (
   productId: number,
