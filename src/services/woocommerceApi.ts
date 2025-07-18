@@ -508,22 +508,18 @@ export const wooCommerceApi = {
       // - status=publish: Solo productos publicados
       // - stock_status=instock: Solo productos en stock (opcional)
       // - type=variable,simple: Productos variables y simples
-      // Use Promise.race for timeout instead of AbortController
-      const response = await Promise.race([
-        fetch(
-          `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish`,
-          {
-            headers: {
-              ...apiHeaders,
-              Accept: "application/json",
-            },
-            mode: "cors",
+      // Use enhanced fetch with retry logic
+      const response = await fetchWithRetry(
+        `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish`,
+        {
+          headers: {
+            Accept: "application/json",
           },
-        ),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Request timeout")), 15000),
-        ),
-      ]);
+          mode: "cors",
+        },
+        TIMEOUT_CONFIG.medium, // 30 segundos timeout
+        RETRY_CONFIG.maxRetries, // 3 reintentos
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
