@@ -83,8 +83,18 @@ export class WooCommerceCartService {
     params.append("return_time", reservation.returnTime);
 
     if (reservation.insurance) {
+      const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
+      const totalInsurancePrice =
+        reservation.insurance.price * totalBikes * reservation.totalDays;
+
       params.append("insurance_type", reservation.insurance.id);
-      params.append("insurance_price", reservation.insurance.price.toString());
+      params.append("insurance_name", reservation.insurance.name);
+      params.append(
+        "insurance_price_per_bike_per_day",
+        reservation.insurance.price.toString(),
+      );
+      params.append("insurance_total_bikes", totalBikes.toString());
+      params.append("insurance_total_price", totalInsurancePrice.toString());
     }
 
     // Agregar información de productos como parámetros para que puedan ser procesados por el checkout
