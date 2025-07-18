@@ -3,7 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
-import { useNeonBikes, useNeonCategories } from "@/hooks/useNeonBikes";
+import {
+  useLocalNeonBikes,
+  useLocalNeonCategories,
+} from "@/hooks/useLocalNeonBikes";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -32,16 +35,16 @@ export const BikeSelection = ({
     isLoading,
     error,
     refetch: refetchBikes,
-  } = useNeonBikes();
+  } = useLocalNeonBikes();
   const { data: categories = [], refetch: refetchCategories } =
-    useNeonCategories();
+    useLocalNeonCategories();
   const { language, setLanguage, t } = useLanguage();
 
   // Manual refresh function
   const handleRefresh = async () => {
-    // Invalidar cache de React Query para forzar recarga desde Neon
-    queryClient.invalidateQueries({ queryKey: ["neon-bikes"] });
-    queryClient.invalidateQueries({ queryKey: ["neon-categories"] });
+    // Invalidar cache de React Query para forzar recarga desde cache local
+    queryClient.invalidateQueries({ queryKey: ["local-neon-bikes"] });
+    queryClient.invalidateQueries({ queryKey: ["local-neon-categories"] });
     await Promise.all([refetchBikes(), refetchCategories()]);
   };
 
