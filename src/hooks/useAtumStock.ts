@@ -3,6 +3,7 @@ import {
   checkAtumAvailability,
   wooCommerceApi,
 } from "@/services/woocommerceApi";
+import { neonStockService } from "@/services/neonStockService";
 
 // Temporary flag to disable API calls when network is problematic
 const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
