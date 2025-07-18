@@ -4,6 +4,9 @@ import {
   wooCommerceApi,
 } from "@/services/woocommerceApi";
 
+// Temporary flag to disable API calls when network is problematic
+const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
+
 // Hook para obtener stock específico por tamaño de un producto
 export const useAtumStockBySize = (
   productId: number,
@@ -12,6 +15,12 @@ export const useAtumStockBySize = (
   return useQuery({
     queryKey: ["atum-stock", productId],
     queryFn: async (): Promise<Record<string, number>> => {
+      // If API calls are disabled, return mock data
+      if (DISABLE_API_CALLS) {
+        console.info("API calls disabled, returning mock stock data");
+        return { S: 3, M: 5, L: 2, XL: 1 };
+      }
+
       try {
         // Obtener las variaciones del producto
         const variations = await wooCommerceApi.getProductVariations(productId);
@@ -52,12 +61,27 @@ export const useAtumStockBySize = (
           `Error obteniendo stock ATUM para producto ${productId}:`,
           error,
         );
-        return {};
+        // Return default stock instead of empty object to prevent UI errors
+        return { default: 0 };
       }
     },
     enabled: enabled && !!productId,
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
+    throwOnError: false, // Don't throw errors to prevent console spam
+    retry: (failureCount, error) => {
+      // Don't retry on timeout or network errors
+      if (
+        error instanceof Error &&
+        (error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch") ||
+          error.message === "Request timeout")
+      ) {
+        return false; // No retries for network/timeout errors
+      }
+      return failureCount < 2; // Only 2 retries for other errors
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 
@@ -68,9 +92,30 @@ export const useAtumProductStock = (
 ) => {
   return useQuery({
     queryKey: ["atum-product-stock", productId],
-    queryFn: () => checkAtumAvailability(productId),
+    queryFn: () => {
+      // If API calls are disabled, return mock data
+      if (DISABLE_API_CALLS) {
+        console.info("API calls disabled, returning mock stock data");
+        return Promise.resolve(10);
+      }
+      return checkAtumAvailability(productId);
+    },
     enabled: enabled && !!productId,
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
+    throwOnError: false, // Don't throw errors to prevent console spam
+    retry: (failureCount, error) => {
+      // Don't retry on timeout or network errors
+      if (
+        error instanceof Error &&
+        (error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch") ||
+          error.message === "Request timeout")
+      ) {
+        return false; // No retries for network/timeout errors
+      }
+      return failureCount < 2; // Only 2 retries for other errors
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };

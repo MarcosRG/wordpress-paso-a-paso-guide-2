@@ -12,6 +12,8 @@ const ERROR_MESSAGES: Record<string, string> = {
     "Error de conexión. Por favor, verifica tu conexión a internet.",
   "Failed to fetch":
     "Error de conexión. Por favor, verifica tu conexión a internet.",
+  "Request timeout":
+    "La solicitud ha excedido el tiempo límite. Inténtalo de nuevo.",
   timeout: "La solicitud ha excedido el tiempo límite. Inténtalo de nuevo.",
   Unauthorized: "Error de autenticación. Por favor, contacta al soporte.",
   Forbidden: "No tienes permisos para realizar esta acción.",

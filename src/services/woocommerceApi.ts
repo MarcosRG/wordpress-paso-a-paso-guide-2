@@ -249,17 +249,50 @@ async function retryRequest<T>(
   return null;
 }
 
+// Network availability flag
+let isNetworkAvailable = true;
+let networkCheckTime = 0;
+
+// Function to check if network is available
+const checkNetworkAvailability = async (): Promise<boolean> => {
+  const now = Date.now();
+  // Only check network every 30 seconds
+  if (now - networkCheckTime < 30000 && !isNetworkAvailable) {
+    return false;
+  }
+
+  networkCheckTime = now;
+  return true;
+};
+
 // Function to check product availability based on ATUM inventory
 export const checkAtumAvailability = async (
   productId: number,
   variationId?: number,
 ): Promise<number> => {
+  // Check network availability first
+  if (!(await checkNetworkAvailability())) {
+    console.warn(
+      `Network unavailable, returning fallback stock for product ${productId}`,
+    );
+    return 5; // Return default stock
+  }
+
   try {
     const endpoint = variationId
       ? `${WOOCOMMERCE_API_BASE}/products/${productId}/variations/${variationId}`
       : `${WOOCOMMERCE_API_BASE}/products/${productId}`;
 
-    const response = await fetch(endpoint, { headers: apiHeaders });
+    // Shorter timeout and simplified approach
+    const response = await Promise.race([
+      fetch(endpoint, {
+        headers: apiHeaders,
+        mode: "cors",
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Request timeout")), 5000),
+      ),
+    ]);
 
     if (!response.ok) {
       throw new Error(`Error checking availability: ${response.statusText}`);
@@ -329,11 +362,29 @@ export const checkAtumAvailability = async (
     // Fallback to regular WooCommerce stock
     return data.stock_quantity || 0;
   } catch (error) {
-    console.warn(
-      `Error checking ATUM availability for product ${productId}:`,
-      error,
-    );
-    return 0;
+    // Handle different types of errors gracefully
+    if (error instanceof Error) {
+      if (error.message === "Request timeout") {
+        console.warn(
+          `Request timeout for product ${productId} availability check`,
+        );
+        isNetworkAvailable = false;
+      } else if (
+        error.message.includes("fetch") ||
+        error.message.includes("Failed to fetch")
+      ) {
+        console.warn(
+          `Network error checking availability for product ${productId}`,
+        );
+        isNetworkAvailable = false;
+      } else {
+        console.warn(
+          `Error checking ATUM availability for product ${productId}:`,
+          error.message,
+        );
+      }
+    }
+    return 5; // Return default stock instead of 0
   }
 };
 
@@ -348,22 +399,22 @@ export const wooCommerceApi = {
       // - status=publish: Solo productos publicados
       // - stock_status=instock: Solo productos en stock (opcional)
       // - type=variable,simple: Productos variables y simples
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
-
-      const response = await fetch(
-        `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish`,
-        {
-          headers: {
-            ...apiHeaders,
-            Accept: "application/json",
+      // Use Promise.race for timeout instead of AbortController
+      const response = await Promise.race([
+        fetch(
+          `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319&status=publish`,
+          {
+            headers: {
+              ...apiHeaders,
+              Accept: "application/json",
+            },
+            mode: "cors",
           },
-          signal: controller.signal,
-          mode: "cors",
-        },
-      );
-
-      clearTimeout(timeoutId);
+        ),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), 15000),
+        ),
+      ]);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -394,20 +445,30 @@ export const wooCommerceApi = {
   async getProductWithACF(
     productId: number,
   ): Promise<Record<string, unknown> | null> {
+    // Check network availability first
+    if (!(await checkNetworkAvailability())) {
+      console.warn(
+        `Network unavailable, returning null ACF data for product ${productId}`,
+      );
+      return null;
+    }
+
     try {
-      // Simplified fetch without AbortController for individual products
       const WORDPRESS_API_BASE =
         import.meta.env.VITE_WORDPRESS_API_BASE ||
         "https://bikesultoursgest.com/wp-json/wp/v2";
-      const response = await fetch(
-        `${WORDPRESS_API_BASE}/product/${productId}`,
-        {
+
+      const response = await Promise.race([
+        fetch(`${WORDPRESS_API_BASE}/product/${productId}`, {
           headers: {
             Accept: "application/json",
           },
           mode: "cors",
-        },
-      );
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), 5000),
+        ),
+      ]);
 
       if (!response.ok) {
         // Si es 404, el producto no existe en WordPress, no es un error crítico
@@ -429,17 +490,24 @@ export const wooCommerceApi = {
           productData.acf,
         );
       } else {
-        console.info(`ℹ️  Producto ${productId} sin datos ACF configurados`);
+        console.info(`���️  Producto ${productId} sin datos ACF configurados`);
       }
 
       return productData;
     } catch (error) {
       // No loggear como error si es un timeout o network error común
       if (error instanceof Error) {
-        if (error.message.includes("fetch")) {
+        if (error.message === "Request timeout") {
+          console.warn(`Request timeout for product ${productId} ACF data`);
+          isNetworkAvailable = false;
+        } else if (
+          error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch")
+        ) {
           console.warn(
             `🌐 Error de red al obtener ACF para producto ${productId} - continuando sin ACF`,
           );
+          isNetworkAvailable = false;
         } else {
           console.warn(
             `⚠️  Error ACF para producto ${productId}: ${error.message} - continuando sin ACF`,
@@ -494,15 +562,28 @@ export const wooCommerceApi = {
   async getProductVariations(
     productId: number,
   ): Promise<WooCommerceVariation[]> {
-    try {
-      // Simplified fetch without AbortController for individual products
-      const response = await fetch(
-        `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
-        {
-          headers: apiHeaders,
-          mode: "cors",
-        },
+    // Check network availability first
+    if (!(await checkNetworkAvailability())) {
+      console.warn(
+        `Network unavailable, returning empty variations for product ${productId}`,
       );
+      return [];
+    }
+
+    try {
+      // Use Promise.race for timeout instead of AbortController
+      const response = await Promise.race([
+        fetch(
+          `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
+          {
+            headers: apiHeaders,
+            mode: "cors",
+          },
+        ),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), 5000),
+        ),
+      ]);
 
       if (!response.ok) {
         // Si es 404, el producto no tiene variaciones
@@ -522,10 +603,17 @@ export const wooCommerceApi = {
       return variations;
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message.includes("fetch")) {
+        if (error.message === "Request timeout") {
+          console.warn(`Request timeout for product ${productId} variations`);
+          isNetworkAvailable = false;
+        } else if (
+          error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch")
+        ) {
           console.warn(
             `🌐 Error de red al obtener variaciones para producto ${productId} - usando producto principal`,
           );
+          isNetworkAvailable = false;
         } else {
           console.warn(
             `⚠️  Error variaciones para producto ${productId}: ${error.message} - usando producto principal`,

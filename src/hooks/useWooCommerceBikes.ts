@@ -12,10 +12,19 @@ import {
 import { Bike } from "@/pages/Index";
 import { mockBikes, mockCategories } from "./useMockBikes";
 
+// Temporary flag to disable API calls when network is problematic
+const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
+
 export const useWooCommerceBikes = () => {
   return useQuery({
     queryKey: ["woocommerce-bikes"],
     queryFn: async (): Promise<Bike[]> => {
+      // If API calls are disabled, return mock data
+      if (DISABLE_API_CALLS) {
+        console.info("API calls disabled, returning mock bike data");
+        return mockBikes;
+      }
+
       try {
         console.log("Iniciando carga de productos de WooCommerce...");
         const products = await wooCommerceApi.getProducts();
@@ -173,6 +182,20 @@ export const useWooCommerceBikes = () => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos (previously cacheTime)
+    throwOnError: false, // Don't throw errors to prevent console spam
+    retry: (failureCount, error) => {
+      // Don't retry on timeout or network errors
+      if (
+        error instanceof Error &&
+        (error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch") ||
+          error.message === "Request timeout")
+      ) {
+        return false; // No retries for network/timeout errors
+      }
+      return failureCount < 2; // Only 2 retries for other errors
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 
