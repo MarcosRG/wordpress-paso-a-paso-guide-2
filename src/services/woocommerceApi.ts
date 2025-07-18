@@ -563,17 +563,17 @@ export const wooCommerceApi = {
         import.meta.env.VITE_WORDPRESS_API_BASE ||
         "https://bikesultoursgest.com/wp-json/wp/v2";
 
-      const response = await Promise.race([
-        fetch(`${WORDPRESS_API_BASE}/product/${productId}`, {
+      const response = await fetchWithRetry(
+        `${WORDPRESS_API_BASE}/product/${productId}`,
+        {
           headers: {
             Accept: "application/json",
           },
           mode: "cors",
-        }),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Request timeout")), 5000),
-        ),
-      ]);
+        },
+        TIMEOUT_CONFIG.short, // 10 segundos
+        2, // Solo 2 reintentos para ACF data
+      );
 
       if (!response.ok) {
         // Si es 404, el producto no existe en WordPress, no es un error crítico
