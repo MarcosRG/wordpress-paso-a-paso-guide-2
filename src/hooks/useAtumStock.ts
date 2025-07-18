@@ -163,9 +163,13 @@ export const useAtumProductStock = (
   return useQuery({
     queryKey: ["atum-product-stock", productId],
     queryFn: () => {
-      // If API calls are disabled, return mock data
-      if (DISABLE_API_CALLS) {
-        console.info("API calls disabled, returning mock stock data");
+      // If API calls are disabled or too many timeouts, return mock data
+      if (!shouldUseApiWithFallback()) {
+        console.info(
+          consecutiveTimeouts >= MAX_TIMEOUTS_BEFORE_FALLBACK
+            ? "Too many timeouts, using fallback stock data"
+            : "API calls disabled, returning mock stock data",
+        );
         return Promise.resolve(10);
       }
       return checkAtumAvailability(productId);
