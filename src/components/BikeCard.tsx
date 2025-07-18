@@ -149,60 +149,23 @@ const BikeCard = ({
           />
         </div>
 
-        {/* Selector de Tamaños */}
-        <div className="space-y-2">
-          <h4 className="font-medium text-sm text-center">
-            {t("availableSizes")}:
-          </h4>
-          {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
-            const quantity = getQuantityForBikeAndSize(bike.id, size);
-            // Usar stock real de ATUM si está disponible, sino usar estimación
-            const availableForSize =
-              atumStockBySize[size] ?? Math.floor(bike.available / 5);
-
-            return (
-              <div
-                key={size}
-                className="flex items-center justify-between p-2 border rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-medium w-6">{size}</span>
-                  <span className="text-xs text-gray-500">
-                    ({availableForSize}{" "}
-                    {availableForSize === 1 ? t("available") : t("availables")})
-                    {atumStockBySize[size] !== undefined && (
-                      <span className="text-green-600 font-medium"> ✓ATUM</span>
-                    )}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateBikeQuantity(bike, size, -1)}
-                    disabled={quantity === 0}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="w-8 text-center font-medium text-sm">
-                    {quantity}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateBikeQuantity(bike, size, 1)}
-                    disabled={quantity >= availableForSize}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {/* Stock ATUM por tamaños */}
+        <AtumStockDisplay
+          atumStockBySize={atumStockBySize}
+          selectedQuantities={{
+            XS: getQuantityForBikeAndSize(bike.id, "XS"),
+            S: getQuantityForBikeAndSize(bike.id, "S"),
+            M: getQuantityForBikeAndSize(bike.id, "M"),
+            L: getQuantityForBikeAndSize(bike.id, "L"),
+            XL: getQuantityForBikeAndSize(bike.id, "XL"),
+          }}
+          onQuantityChange={(size, change) =>
+            updateBikeQuantity(bike, size, change)
+          }
+          isVariable={bike.wooCommerceData?.product?.type === "variable"}
+          totalAvailable={bike.available}
+          className=""
+        />
       </CardContent>
     </Card>
   );
