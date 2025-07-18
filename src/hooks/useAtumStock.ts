@@ -8,27 +8,6 @@ import { neonStockService } from "@/services/neonStockService";
 // Temporary flag to disable API calls when network is problematic
 const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
 
-// Track consecutive timeout errors
-const getConsecutiveTimeouts = () => {
-  const stored = localStorage.getItem("consecutive_timeouts");
-  return stored ? parseInt(stored) : 0;
-};
-
-const setConsecutiveTimeouts = (count: number) => {
-  if (count <= 0) {
-    localStorage.removeItem("consecutive_timeouts");
-  } else {
-    localStorage.setItem("consecutive_timeouts", count.toString());
-  }
-};
-
-const MAX_TIMEOUTS_BEFORE_FALLBACK = 3;
-
-const shouldUseApiWithFallback = () => {
-  if (DISABLE_API_CALLS) return false;
-  return getConsecutiveTimeouts() < MAX_TIMEOUTS_BEFORE_FALLBACK;
-};
-
 // Hook para obtener stock específico por tamaño de un producto
 export const useAtumStockBySize = (
   productId: number,
@@ -37,14 +16,9 @@ export const useAtumStockBySize = (
   return useQuery({
     queryKey: ["atum-stock", productId],
     queryFn: async (): Promise<Record<string, number>> => {
-      // If API calls are disabled or too many timeouts, return mock data
-      if (!shouldUseApiWithFallback()) {
-        const timeoutCount = getConsecutiveTimeouts();
-        console.info(
-          timeoutCount >= MAX_TIMEOUTS_BEFORE_FALLBACK
-            ? "Too many timeouts, using fallback stock data"
-            : "API calls disabled, returning mock stock data",
-        );
+      // If API calls are disabled, return mock data
+      if (DISABLE_API_CALLS) {
+        console.info("API calls disabled, returning mock stock data");
         return { S: 3, M: 5, L: 2, XL: 1 };
       }
 
@@ -124,23 +98,8 @@ export const useAtumStockBySize = (
             });
         }
 
-        // Reset timeout counter on success
-        setConsecutiveTimeouts(0);
         return stockBySize;
       } catch (error) {
-        // Track timeout errors
-        if (error instanceof Error && error.message === "Request timeout") {
-          const newCount = getConsecutiveTimeouts() + 1;
-          setConsecutiveTimeouts(newCount);
-          console.warn(
-            `Timeout ${newCount}/${MAX_TIMEOUTS_BEFORE_FALLBACK} para producto ${productId}. ${
-              newCount >= MAX_TIMEOUTS_BEFORE_FALLBACK
-                ? "Activando modo fallback."
-                : ""
-            }`,
-          );
-        }
-
         console.error(
           `Error obteniendo stock ATUM para producto ${productId}:`,
           error,
@@ -177,14 +136,9 @@ export const useAtumProductStock = (
   return useQuery({
     queryKey: ["atum-product-stock", productId],
     queryFn: () => {
-      // If API calls are disabled or too many timeouts, return mock data
-      if (!shouldUseApiWithFallback()) {
-        const timeoutCount = getConsecutiveTimeouts();
-        console.info(
-          timeoutCount >= MAX_TIMEOUTS_BEFORE_FALLBACK
-            ? "Too many timeouts, using fallback stock data"
-            : "API calls disabled, returning mock stock data",
-        );
+      // If API calls are disabled, return mock data
+      if (DISABLE_API_CALLS) {
+        console.info("API calls disabled, returning mock stock data");
         return Promise.resolve(10);
       }
       return checkAtumAvailability(productId);

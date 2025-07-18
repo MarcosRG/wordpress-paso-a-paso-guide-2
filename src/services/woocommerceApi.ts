@@ -290,7 +290,7 @@ export const checkAtumAvailability = async (
         mode: "cors",
       }),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Request timeout")), 30000),
+        setTimeout(() => reject(new Error("Request timeout")), 5000),
       ),
     ]);
 
@@ -412,7 +412,7 @@ export const wooCommerceApi = {
           },
         ),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Request timeout")), 45000),
+          setTimeout(() => reject(new Error("Request timeout")), 15000),
         ),
       ]);
 
@@ -466,7 +466,7 @@ export const wooCommerceApi = {
           mode: "cors",
         }),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Request timeout")), 30000),
+          setTimeout(() => reject(new Error("Request timeout")), 5000),
         ),
       ]);
 
@@ -581,7 +581,7 @@ export const wooCommerceApi = {
           },
         ),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Request timeout")), 30000),
+          setTimeout(() => reject(new Error("Request timeout")), 5000),
         ),
       ]);
 
