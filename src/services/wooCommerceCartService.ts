@@ -1,5 +1,12 @@
 import { SelectedBike, ReservationData } from "@/pages/Index";
 import { CustomerData } from "@/components/PurchaseForm";
+import {
+  extractACFPricing,
+  getPricePerDayFromACF,
+  calculateTotalPriceACF,
+  extractDayBasedPricing,
+  getPriceForDays,
+} from "@/services/woocommerceApi";
 
 export interface WooCommerceCartItem {
   product_id: number;
