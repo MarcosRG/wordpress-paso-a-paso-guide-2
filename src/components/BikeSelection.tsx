@@ -218,20 +218,24 @@ export const BikeSelection = ({
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
-        <div className="flex items-center gap-4">
-          <SyncStatusIndicator showDetails={false} />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Actualizar
-          </Button>
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
+          <div className="flex items-center gap-4">
+            <SyncStatusIndicator showDetails={false} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Actualizar
+            </Button>
+          </div>
         </div>
+
+        <NetworkStatusIndicator />
       </div>
 
       <CategoryFilter
