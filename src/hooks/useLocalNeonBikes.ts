@@ -107,9 +107,15 @@ export const useLocalNeonBikes = () => {
             // Convertir a formato Bike
             const bike = convertNeonProductToBike(product, variations);
 
-            // Solo agregar si tiene stock disponible
-            if (bike.available > 0) {
+            // Solo agregar si tiene stock disponible O si es un producto variable (el stock puede estar en variaciones)
+            if (bike.available > 0 || product.type === "variable") {
               bikes.push(bike);
+
+              if (bike.available <= 0) {
+                console.log(
+                  `🔄 Incluyendo producto variable sin stock aparente: ${bike.name} (puede tener stock en variaciones)`,
+                );
+              }
             }
           } catch (error) {
             console.warn(
