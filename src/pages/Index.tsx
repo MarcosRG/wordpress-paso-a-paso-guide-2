@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { orderService } from "@/services/orderService";
+import { wooCommerceCartService } from "@/services/wooCommerceCartService";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -158,43 +159,34 @@ const Index = () => {
     setIsCreatingOrder(true);
 
     try {
-      const order = await orderService.createReservationOrder(
-        reservation,
-        customerData,
-      );
-
+      // Mostrar mensaje de proceso
       toast({
         title: t("processing"),
-        description: `${t("confirm")} #${order.id}. ${t("proceedToCheckout")}`,
+        description: "Preparando carrito y redirección al checkout...",
       });
 
-      // Store order data for later use
+      // Guardar datos de la reserva para referencia
       localStorage.setItem(
-        "bikesul_order",
+        "bikesul_reservation",
         JSON.stringify({
-          orderId: order.id,
-          orderKey: order.order_key,
           reservation,
           customerData,
           timestamp: new Date().toISOString(),
         }),
       );
 
-      // Determinar la URL del checkout apropiada
-      let checkoutUrl = "";
+      // Usar el nuevo servicio de carrito para redirigir al checkout
+      await wooCommerceCartService.redirectToCheckout(
+        reservation.selectedBikes,
+        reservation,
+        customerData,
+      );
 
-      if (order.order_key) {
-        // Si tenemos order_key, usar la URL de pago directo
-        checkoutUrl = `https://bikesultoursgest.com/checkout/order-pay/${order.id}/?pay_for_order=true&key=${order.order_key}`;
-      } else {
-        // Fallback: redirigir al checkout normal con el pedido pre-cargado
-        checkoutUrl = `https://bikesultoursgest.com/checkout/?order_id=${order.id}`;
-      }
-
-      // Dar un momento para que el toast se muestre antes de redireccionar
-      setTimeout(() => {
-        window.location.href = checkoutUrl;
-      }, 1500);
+      // Mostrar éxito
+      toast({
+        title: "Éxito",
+        description: "Redirigiendo al checkout de WooCommerce...",
+      });
     } catch (error) {
       toast({
         title: "Erro ao criar a reserva",
