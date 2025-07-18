@@ -332,9 +332,16 @@ const Index = () => {
           )}
         </div>
 
+        {/* Componente de estado de conectividad */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-4">
+            <ConnectivityStatus />
+          </div>
+        )}
+
         {/* Componente de prueba temporal - REMOVER EN PRODUCCIÓN */}
         {process.env.NODE_ENV === "development" && (
-          <div className="mt-8">
+          <div className="mt-4">
             <TestInsurance />
           </div>
         )}
