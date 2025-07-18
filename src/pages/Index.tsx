@@ -330,6 +330,13 @@ const Index = () => {
             </Button>
           )}
         </div>
+
+        {/* Componente de prueba temporal - REMOVER EN PRODUCCIÓN */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-8">
+            <TestInsurance />
+          </div>
+        )}
       </div>
     </div>
   );
