@@ -29,6 +29,24 @@ export const useAtumStockBySize = (
         if (!variations || variations.length === 0) {
           // Para productos simples, devolver stock total
           const stock = await checkAtumAvailability(productId);
+
+          // Sincronizar producto simple con Neon
+          neonStockService
+            .syncProductStock(productId, [
+              {
+                stock_quantity: stock,
+                manage_stock: true,
+                in_stock: stock > 0,
+                backorders_allowed: false,
+              },
+            ])
+            .catch((error) => {
+              console.warn(
+                `Error sincronizando producto simple ${productId} con Neon:`,
+                error,
+              );
+            });
+
           return { default: stock };
         }
 
