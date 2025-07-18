@@ -190,7 +190,7 @@ const SimpleBikeCard = ({
               size="sm"
               variant="outline"
               onClick={() => updateBikeQuantity(bike, 1)}
-              disabled={quantity >= bike.available}
+              disabled={quantity >= bike.available || bike.available === 0}
               className="h-8 w-8 p-0"
             >
               <Plus className="h-3 w-3" />
