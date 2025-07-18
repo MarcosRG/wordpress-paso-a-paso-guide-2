@@ -6,6 +6,7 @@ import {
   calculateTotalPriceACF,
   extractDayBasedPricing,
   getPriceForDays,
+  wooCommerceApi,
 } from "@/services/woocommerceApi";
 import { WOOCOMMERCE_PRODUCT_IDS } from "@/config/products";
 
