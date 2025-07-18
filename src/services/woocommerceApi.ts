@@ -4,6 +4,13 @@ export interface PriceRange {
   pricePerDay: number;
 }
 
+import {
+  recordApiSuccess,
+  recordApiTimeout,
+  recordApiNetworkError,
+  generateConnectivityReport,
+} from "./connectivityMonitor";
+
 export interface ACFPricing {
   precio_1_2: number;
   precio_3_6: number;
