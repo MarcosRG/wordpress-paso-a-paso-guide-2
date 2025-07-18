@@ -343,11 +343,22 @@ const fetchWithRetry = async (
     }
   }
 
-  // Generar reporte si hay muchos errores consecutivos
-  console.error("❌ Todos los reintentos fallaron");
-  console.error(generateConnectivityReport());
+  // Solo mostrar reporte si realmente hay errores consecutivos
+  const shortUrl = url.length > 50 ? `...${url.slice(-47)}` : url;
+  console.error(`❌ Falló después de ${maxRetries + 1} intentos: ${shortUrl}`);
 
-  throw lastError || new Error("All retry attempts failed");
+  // Solo mostrar reporte detallado si hay patrones de error
+  const status = getConnectivityStatus();
+  if (status.consecutiveErrors > 2 || status.successRate < 80) {
+    console.error(generateConnectivityReport());
+  }
+
+  throw (
+    lastError ||
+    new Error(
+      `Failed after ${maxRetries + 1} attempts: ${lastError?.message || "Unknown error"}`,
+    )
+  );
 };
 
 // Enhanced network health check
