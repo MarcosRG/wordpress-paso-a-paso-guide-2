@@ -13,6 +13,7 @@ import {
 } from "@/services/woocommerceApi";
 import { useSimpleStockBySize } from "@/hooks/useSimpleBikes";
 import VariablePricing from "./VariablePricing";
+import AtumStockDisplay from "./AtumStockDisplay";
 
 interface BikeCardProps {
   bike: Bike;
