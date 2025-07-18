@@ -96,6 +96,9 @@ const Index = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
 
+  // Activar alertas de conectividad
+  useConnectivityAlert();
+
   const [reservation, setReservation] = useState<ReservationData>({
     selectedBikes: [],
     startDate: null,
