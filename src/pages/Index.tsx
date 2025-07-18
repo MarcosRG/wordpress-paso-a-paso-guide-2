@@ -119,6 +119,7 @@ const Index = () => {
     address: "",
     city: "",
     postalCode: "",
+    country: "Portugal",
   });
 
   const handleNext = () => {
