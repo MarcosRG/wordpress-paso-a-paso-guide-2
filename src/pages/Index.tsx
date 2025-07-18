@@ -274,10 +274,13 @@ const Index = () => {
           )}
 
           {currentStep === 2 && (
-            <BikeSelection
-              reservation={reservation}
-              setReservation={updateReservation}
-            />
+            <div className="space-y-6">
+              <NeonStockStats />
+              <BikeSelection
+                reservation={reservation}
+                setReservation={updateReservation}
+              />
+            </div>
           )}
 
           {currentStep === 3 && (
