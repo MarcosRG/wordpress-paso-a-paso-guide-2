@@ -111,8 +111,22 @@ export const useAtumStockBySize = (
             });
         }
 
+        // Reset timeout counter on success
+        consecutiveTimeouts = 0;
         return stockBySize;
       } catch (error) {
+        // Track timeout errors
+        if (error instanceof Error && error.message === "Request timeout") {
+          consecutiveTimeouts++;
+          console.warn(
+            `Timeout ${consecutiveTimeouts}/${MAX_TIMEOUTS_BEFORE_FALLBACK} para producto ${productId}. ${
+              consecutiveTimeouts >= MAX_TIMEOUTS_BEFORE_FALLBACK
+                ? "Activando modo fallback."
+                : ""
+            }`,
+          );
+        }
+
         console.error(
           `Error obteniendo stock ATUM para producto ${productId}:`,
           error,
