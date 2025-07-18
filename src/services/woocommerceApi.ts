@@ -357,16 +357,15 @@ export const checkAtumAvailability = async (
       ? `${WOOCOMMERCE_API_BASE}/products/${productId}/variations/${variationId}`
       : `${WOOCOMMERCE_API_BASE}/products/${productId}`;
 
-    // Shorter timeout and simplified approach
-    const response = await Promise.race([
-      fetch(endpoint, {
-        headers: apiHeaders,
+    // Use enhanced fetch with retry logic
+    const response = await fetchWithRetry(
+      endpoint,
+      {
         mode: "cors",
-      }),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Request timeout")), 5000),
-      ),
-    ]);
+      },
+      TIMEOUT_CONFIG.short, // 10 segundos
+      1, // Solo 1 reintento para verificación de stock
+    );
 
     if (!response.ok) {
       throw new Error(`Error checking availability: ${response.statusText}`);
