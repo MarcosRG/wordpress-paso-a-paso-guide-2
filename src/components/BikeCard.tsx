@@ -12,6 +12,7 @@ import {
   getPricePerDayFromACF,
 } from "@/services/woocommerceApi";
 import { useSimpleStockBySize } from "@/hooks/useSimpleBikes";
+import VariablePricing from "./VariablePricing";
 
 interface BikeCardProps {
   bike: Bike;
@@ -138,54 +139,14 @@ const BikeCard = ({
           )}
         </div>
 
-        {/* Pricing tiers display */}
-        {(acfPricing || priceRanges.length > 1) && (
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-            <h4 className="text-xs font-medium text-gray-700 mb-2">
-              {t("priceRange")}:
-            </h4>
-            <div className="space-y-1">
-              {acfPricing ? (
-                // Display ACF pricing format
-                <>
-                  <div className="flex justify-between text-xs text-gray-600">
-                    <span>1-2 {t("days")}</span>
-                    <span className="font-medium">
-                      €{acfPricing.precio_1_2}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-600">
-                    <span>3-6 {t("days")}</span>
-                    <span className="font-medium">
-                      €{acfPricing.precio_3_6}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-600">
-                    <span>7+ {t("days")}</span>
-                    <span className="font-medium">
-                      €{acfPricing.precio_7_mais}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                // Display legacy price ranges
-                priceRanges.map((range, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between text-xs text-gray-600"
-                  >
-                    <span>
-                      {range.minDays}
-                      {range.maxDays < 999 ? `-${range.maxDays}` : "+"}{" "}
-                      {t("days")}
-                    </span>
-                    <span className="font-medium">€{range.pricePerDay}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
+        {/* Pricing display with variable pricing */}
+        <div className="mb-4">
+          <VariablePricing
+            product={bike.wooCommerceData?.product}
+            totalDays={totalDays}
+            className=""
+          />
+        </div>
 
         {/* Selector de Tamaños */}
         <div className="space-y-2">
