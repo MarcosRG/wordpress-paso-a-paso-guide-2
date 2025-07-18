@@ -188,10 +188,14 @@ const Index = () => {
         description: "Redirigiendo al checkout de WooCommerce...",
       });
     } catch (error) {
+      console.error("❌ Error en proceso de reserva:", error);
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
+
       toast({
-        title: "Erro ao criar a reserva",
-        description:
-          "Houve um problema ao processar sua reserva. Por favor, tente novamente.",
+        title: "Error al crear la reserva",
+        description: `Problema al procesar la reserva: ${errorMessage}. Por favor, intente nuevamente.`,
         variant: "destructive",
       });
     } finally {
