@@ -327,16 +327,53 @@ const fetchWithRetry = async (
   throw lastError || new Error("All retry attempts failed");
 };
 
+// Enhanced network health check
+const performHealthCheck = async (): Promise<boolean> => {
+  try {
+    console.log("🩺 Verificando conectividad de WooCommerce...");
+
+    // Try a simple endpoint first
+    const response = await Promise.race([
+      fetch(`${WOOCOMMERCE_API_BASE}/system_status`, {
+        method: "HEAD", // Only check headers, no body
+        headers: apiHeaders,
+        mode: "cors",
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Health check timeout")), 5000),
+      ),
+    ]);
+
+    const isHealthy = response.ok;
+    console.log(
+      isHealthy
+        ? "✅ WooCommerce responde correctamente"
+        : "⚠️ WooCommerce con problemas",
+    );
+    return isHealthy;
+  } catch (error) {
+    console.warn("❌ Health check falló:", error);
+    return false;
+  }
+};
+
 // Function to check if network is available
 const checkNetworkAvailability = async (): Promise<boolean> => {
   const now = Date.now();
-  // Only check network every 30 seconds
+
+  // If we recently determined network is unavailable, don't check again immediately
   if (now - networkCheckTime < 30000 && !isNetworkAvailable) {
     return false;
   }
 
-  networkCheckTime = now;
-  return true;
+  // If it's been a while since we checked, do a fresh health check
+  if (now - networkCheckTime > 60000) {
+    // Check every minute
+    networkCheckTime = now;
+    isNetworkAvailable = await performHealthCheck();
+  }
+
+  return isNetworkAvailable;
 };
 
 // Function to check product availability based on ATUM inventory
