@@ -235,7 +235,9 @@ const BikeCard = ({
                     size="sm"
                     variant="outline"
                     onClick={() => updateBikeQuantity(bike, size, 1)}
-                    disabled={quantity >= availableForSize}
+                    disabled={
+                      quantity >= availableForSize || availableForSize === 0
+                    }
                     className="h-8 w-8 p-0"
                   >
                     <Plus className="h-3 w-3" />
