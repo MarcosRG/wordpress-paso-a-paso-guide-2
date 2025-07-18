@@ -35,6 +35,8 @@ export const useAtumStockBySize = (
         // Para productos variables, obtener stock por tamaño
         const stockBySize: Record<string, number> = {};
 
+        const stockData = [];
+
         for (const variation of variations) {
           // Buscar el atributo de tamaño en la variación
           const sizeAttribute = variation.attributes.find(
@@ -50,10 +52,32 @@ export const useAtumStockBySize = (
             const stock = await checkAtumAvailability(productId, variation.id);
             stockBySize[size] = stock;
 
+            // Preparar datos para sincronizar con Neon
+            stockData.push({
+              variation_id: variation.id,
+              size: size,
+              stock_quantity: stock,
+              manage_stock: true,
+              in_stock: stock > 0,
+              backorders_allowed: false,
+            });
+
             console.log(
               `Stock ATUM para ${productId} tamaño ${size}: ${stock}`,
             );
           }
+        }
+
+        // Sincronizar con Neon (en segundo plano)
+        if (stockData.length > 0) {
+          neonStockService
+            .syncProductStock(productId, stockData)
+            .catch((error) => {
+              console.warn(
+                `Error sincronizando stock con Neon para producto ${productId}:`,
+                error,
+              );
+            });
         }
 
         return stockBySize;
