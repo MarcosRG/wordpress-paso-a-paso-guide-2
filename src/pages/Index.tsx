@@ -344,6 +344,13 @@ const Index = () => {
           </div>
         )}
 
+        {/* Componente de debug de conectividad */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-4">
+            <DebugConnectivity />
+          </div>
+        )}
+
         {/* Componente de prueba temporal - REMOVER EN PRODUCCIÓN */}
         {process.env.NODE_ENV === "development" && (
           <div className="mt-4">
