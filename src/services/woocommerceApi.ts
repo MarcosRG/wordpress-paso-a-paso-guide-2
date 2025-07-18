@@ -314,6 +314,7 @@ const fetchWithRetry = async (
       }
 
       console.log(`✅ Éxito en intento ${attempt + 1}`);
+      recordApiSuccess();
       return response;
     } catch (error) {
       lastError = error as Error;
