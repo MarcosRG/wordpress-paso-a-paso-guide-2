@@ -26,17 +26,9 @@ const convertNeonProductToBike = (
   // Obtener precio base
   let basePrice = neonProduct.price || neonProduct.regular_price || 0;
 
-  // Si hay variaciones, usar el precio de la primera variación disponible
-  if (variations.length > 0) {
-    const availableVariation = variations.find(
-      (v) => (v.atum_stock || v.stock_quantity) > 0,
-    );
-    if (availableVariation) {
-      basePrice =
-        availableVariation.price ||
-        availableVariation.regular_price ||
-        basePrice;
-    }
+  // Si hay variaciones, usar el precio de la primera variación
+  if (variations.length > 0 && variations[0]) {
+    basePrice = variations[0].price || variations[0].regular_price || basePrice;
   }
 
   // Obtener categoría principal (excluyendo ALUGUERES)
