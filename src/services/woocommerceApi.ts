@@ -412,7 +412,7 @@ export const wooCommerceApi = {
           },
         ),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Request timeout")), 15000),
+          setTimeout(() => reject(new Error("Request timeout")), 45000),
         ),
       ]);
 
