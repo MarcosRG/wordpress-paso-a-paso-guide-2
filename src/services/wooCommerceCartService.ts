@@ -307,8 +307,15 @@ export class WooCommerceCartService {
             ? WOOCOMMERCE_PRODUCT_IDS.PREMIUM_INSURANCE
             : WOOCOMMERCE_PRODUCT_IDS.BASIC_INSURANCE;
 
-        // Solo agregar si tenemos un ID válido de producto de seguro
-        if (insuranceProductId) {
+        // Verificar que el producto de seguro existe antes de agregarlo
+        if (
+          insuranceProductId &&
+          (await this.verifyInsuranceProduct(insuranceProductId))
+        ) {
+          console.log(
+            `✅ Agregando seguro ${reservation.insurance.id} con ID ${insuranceProductId}`,
+          );
+
           lineItems.push({
             product_id: insuranceProductId,
             quantity: totalBikes, // Una unidad de seguro por bicicleta
@@ -335,6 +342,35 @@ export class WooCommerceCartService {
               },
             ],
           });
+        } else {
+          console.warn(
+            `⚠️ No se puede agregar seguro: producto ${insuranceProductId} no existe en WooCommerce`,
+          );
+
+          // Como el seguro no se puede agregar como producto,
+          // agregamos la información como meta_data de la orden
+          orderData.meta_data.push(
+            { key: "_insurance_type", value: reservation.insurance.id },
+            { key: "_insurance_name", value: reservation.insurance.name },
+            {
+              key: "_insurance_price_per_bike_per_day",
+              value: reservation.insurance.price.toString(),
+            },
+            { key: "_insurance_total_bikes", value: totalBikes.toString() },
+            {
+              key: "_insurance_total_days",
+              value: reservation.totalDays.toString(),
+            },
+            {
+              key: "_insurance_total_price",
+              value: totalInsurancePrice.toString(),
+            },
+            {
+              key: "_insurance_note",
+              value:
+                "Seguro procesado manualmente - producto no encontrado en WooCommerce",
+            },
+          );
         }
       }
 
