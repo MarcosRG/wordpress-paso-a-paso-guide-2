@@ -261,30 +261,58 @@ export class WooCommerceCartService {
       });
 
       // Si hay seguro, agregarlo como line item separado
-      if (reservation.insurance) {
+      if (reservation.insurance && reservation.insurance.price > 0) {
         const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
         const totalInsurancePrice =
           reservation.insurance.price * totalBikes * reservation.totalDays;
 
-        lineItems.push({
-          // Usar el ID real del producto de seguro premium en WooCommerce
-          product_id: 18814, // ID del producto "Seguro Premium Bikesul" en WooCommerce
-          quantity: 1,
-          price: totalInsurancePrice,
-          meta_data: [
-            { key: "_insurance_type", value: reservation.insurance.id },
-            { key: "_insurance_name", value: reservation.insurance.name },
-            {
-              key: "_insurance_price_per_bike_per_day",
-              value: reservation.insurance.price.toString(),
-            },
-            { key: "_insurance_total_bikes", value: totalBikes.toString() },
-            {
-              key: "_insurance_total_days",
-              value: reservation.totalDays.toString(),
-            },
-          ],
-        });
+        try {
+          // Buscar automáticamente un producto de seguro válido
+          const insuranceProduct =
+            await insuranceProductService.findValidInsuranceProduct(
+              reservation.insurance.id as "premium" | "basic",
+            );
+
+          if (insuranceProduct && insuranceProduct.exists) {
+            console.log(
+              `✅ Usando producto de seguro: ${insuranceProduct.name} (ID: ${insuranceProduct.id})`,
+            );
+
+            lineItems.push({
+              product_id: insuranceProduct.id,
+              quantity: totalBikes, // Una unidad por bicicleta
+              price: reservation.insurance.price * reservation.totalDays, // Precio por bicicleta por todos los días
+              meta_data: [
+                { key: "_insurance_type", value: reservation.insurance.id },
+                { key: "_insurance_name", value: reservation.insurance.name },
+                {
+                  key: "_insurance_price_per_bike_per_day",
+                  value: reservation.insurance.price.toString(),
+                },
+                { key: "_insurance_total_bikes", value: totalBikes.toString() },
+                {
+                  key: "_insurance_total_days",
+                  value: reservation.totalDays.toString(),
+                },
+                {
+                  key: "_rental_start_date",
+                  value: reservation.startDate?.toISOString() || "",
+                },
+                {
+                  key: "_rental_end_date",
+                  value: reservation.endDate?.toISOString() || "",
+                },
+                { key: "_wc_product_name", value: insuranceProduct.name },
+              ],
+            });
+          } else {
+            console.warn(
+              "⚠️ No se encontró producto de seguro válido en WooCommerce",
+            );
+          }
+        } catch (error) {
+          console.error("❌ Error buscando producto de seguro:", error);
+        }
       }
 
       const orderData = {
