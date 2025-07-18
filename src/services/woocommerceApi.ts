@@ -253,6 +253,80 @@ async function retryRequest<T>(
 let isNetworkAvailable = true;
 let networkCheckTime = 0;
 
+// Timeout configurations
+const TIMEOUT_CONFIG = {
+  short: 10000, // 10 segundos para operaciones rápidas
+  medium: 30000, // 30 segundos para obtener productos
+  long: 60000, // 60 segundos para operaciones complejas
+};
+
+// Retry configuration
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  baseDelay: 1000, // 1 segundo
+  maxDelay: 10000, // 10 segundos máximo
+};
+
+// Function to sleep for a given time
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Function to calculate retry delay with exponential backoff
+const calculateRetryDelay = (attempt: number): number => {
+  const delay = RETRY_CONFIG.baseDelay * Math.pow(2, attempt);
+  return Math.min(delay, RETRY_CONFIG.maxDelay);
+};
+
+// Enhanced fetch with retry logic
+const fetchWithRetry = async (
+  url: string,
+  options: RequestInit = {},
+  timeout: number = TIMEOUT_CONFIG.medium,
+  maxRetries: number = RETRY_CONFIG.maxRetries,
+): Promise<Response> => {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 Intento ${attempt + 1}/${maxRetries + 1} para: ${url}`);
+
+      const response = await Promise.race([
+        fetch(url, {
+          ...options,
+          headers: {
+            ...apiHeaders,
+            ...options.headers,
+          },
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), timeout),
+        ),
+      ]);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      console.log(`✅ Éxito en intento ${attempt + 1}`);
+      return response;
+    } catch (error) {
+      lastError = error as Error;
+      console.warn(`⚠️ Intento ${attempt + 1} falló:`, error);
+
+      // Si es el último intento, no hacer retry
+      if (attempt === maxRetries) {
+        break;
+      }
+
+      // Calcular delay para el siguiente intento
+      const delay = calculateRetryDelay(attempt);
+      console.log(`⏱️ Reintentando en ${delay}ms...`);
+      await sleep(delay);
+    }
+  }
+
+  throw lastError || new Error("All retry attempts failed");
+};
+
 // Function to check if network is available
 const checkNetworkAvailability = async (): Promise<boolean> => {
   const now = Date.now();
