@@ -156,9 +156,7 @@ export const useLocalNeonBikesByCategory = (categorySlug: string | null) => {
           }
 
           const bike = convertNeonProductToBike(product, variations);
-          if (bike.available > 0) {
-            bikes.push(bike);
-          }
+          bikes.push(bike);
         }
 
         return bikes;
