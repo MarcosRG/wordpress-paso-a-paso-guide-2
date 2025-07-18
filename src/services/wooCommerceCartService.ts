@@ -266,8 +266,8 @@ export class WooCommerceCartService {
           reservation.insurance.price * totalBikes * reservation.totalDays;
 
         lineItems.push({
-          // Usar un ID ficticio para el seguro o crear un producto de seguro en WooCommerce
-          product_id: 99999, // ID ficticio - necesitarás crear un producto de seguro en WooCommerce
+          // Usar el ID real del producto de seguro premium en WooCommerce
+          product_id: 18814, // ID del producto "Seguro Premium Bikesul" en WooCommerce
           quantity: 1,
           price: totalInsurancePrice,
           meta_data: [
