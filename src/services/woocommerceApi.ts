@@ -352,7 +352,10 @@ export const checkAtumAvailability = async (
       (meta: { key: string; value: unknown }) =>
         meta.key === "_atum_stock_quantity" ||
         meta.key === "atum_stock_quantity" ||
-        meta.key === "_atum_stock",
+        meta.key === "_atum_stock" ||
+        meta.key === "_atum_stock_status" ||
+        meta.key === "_atum_manage_stock" ||
+        meta.key === "_stock_quantity",
     );
 
     if (atumStock) {
