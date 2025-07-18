@@ -64,20 +64,38 @@ export const NetworkStatusIndicator = () => {
   }
 
   if (fallbackMode) {
+    const resetFallbackMode = () => {
+      localStorage.removeItem("consecutive_timeouts");
+      setFallbackMode(false);
+    };
+
     return (
       <Alert className="border-orange-200 bg-orange-50">
         <AlertTriangle className="h-4 w-4 text-orange-600" />
-        <AlertDescription className="text-orange-800 flex items-center gap-2">
-          <span>
-            Modo fallback activo debido a problemas de conexión con WooCommerce
-            API.
-          </span>
-          <Badge
-            variant="outline"
-            className="text-orange-700 border-orange-300"
-          >
-            Datos locales
-          </Badge>
+        <AlertDescription className="text-orange-800">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span>
+                Modo fallback activo debido a problemas de conexión con
+                WooCommerce API.
+              </span>
+              <Badge
+                variant="outline"
+                className="text-orange-700 border-orange-300"
+              >
+                Datos locales
+              </Badge>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetFallbackMode}
+              className="ml-4 text-orange-700 border-orange-300 hover:bg-orange-100"
+            >
+              <RotateCcw className="h-3 w-3 mr-1" />
+              Reintentar
+            </Button>
+          </div>
         </AlertDescription>
       </Alert>
     );
