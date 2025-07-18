@@ -1,5 +1,12 @@
 import { SelectedBike, ReservationData } from "@/pages/Index";
 import { CustomerData } from "@/components/PurchaseForm";
+import {
+  extractACFPricing,
+  getPricePerDayFromACF,
+  calculateTotalPriceACF,
+  extractDayBasedPricing,
+  getPriceForDays,
+} from "@/services/woocommerceApi";
 
 export interface WooCommerceCartItem {
   product_id: number;
@@ -76,17 +83,54 @@ export class WooCommerceCartService {
     params.append("return_time", reservation.returnTime);
 
     if (reservation.insurance) {
+      const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
+      const totalInsurancePrice =
+        reservation.insurance.price * totalBikes * reservation.totalDays;
+
       params.append("insurance_type", reservation.insurance.id);
-      params.append("insurance_price", reservation.insurance.price.toString());
+      params.append("insurance_name", reservation.insurance.name);
+      params.append(
+        "insurance_price_per_bike_per_day",
+        reservation.insurance.price.toString(),
+      );
+      params.append("insurance_total_bikes", totalBikes.toString());
+      params.append("insurance_total_price", totalInsurancePrice.toString());
     }
 
     // Agregar información de productos como parámetros para que puedan ser procesados por el checkout
     bikes.forEach((bike, index) => {
+      // Calcular precio correcto basado en ACF pricing y días totales
+      const acfPricing = bike.wooCommerceData?.product
+        ? extractACFPricing(bike.wooCommerceData.product)
+        : null;
+
+      let totalPricePerBike = 0;
+      if (acfPricing && reservation.totalDays > 0) {
+        // Usar ACF pricing
+        totalPricePerBike = calculateTotalPriceACF(
+          reservation.totalDays,
+          1,
+          acfPricing,
+        );
+      } else {
+        // Usar pricing estándar
+        const priceRanges = bike.wooCommerceData?.product
+          ? extractDayBasedPricing(bike.wooCommerceData.product)
+          : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
+        const pricePerDay =
+          reservation.totalDays > 0
+            ? getPriceForDays(priceRanges, reservation.totalDays)
+            : bike.pricePerDay;
+        totalPricePerBike = pricePerDay * reservation.totalDays;
+      }
+
       params.append(`bike_${index}_id`, bike.id);
       params.append(`bike_${index}_name`, bike.name);
       params.append(`bike_${index}_quantity`, bike.quantity.toString());
       params.append(`bike_${index}_size`, bike.size);
-      params.append(`bike_${index}_price`, bike.pricePerDay.toString());
+      params.append(`bike_${index}_price_per_day`, bike.pricePerDay.toString());
+      params.append(`bike_${index}_total_price`, totalPricePerBike.toString());
+      params.append(`bike_${index}_days`, reservation.totalDays.toString());
 
       // Si hay variación, incluirla
       if (
@@ -153,10 +197,43 @@ export class WooCommerceCartService {
           }
         }
 
+        // Calcular precio correcto basado en ACF pricing y días totales
+        const acfPricing = bike.wooCommerceData?.product
+          ? extractACFPricing(bike.wooCommerceData.product)
+          : null;
+
+        let totalPricePerBike = 0;
+        let pricePerDay = bike.pricePerDay;
+
+        if (acfPricing && reservation.totalDays > 0) {
+          // Usar ACF pricing
+          pricePerDay = getPricePerDayFromACF(
+            reservation.totalDays,
+            acfPricing,
+          );
+          totalPricePerBike = calculateTotalPriceACF(
+            reservation.totalDays,
+            1,
+            acfPricing,
+          );
+        } else {
+          // Usar pricing estándar
+          const priceRanges = bike.wooCommerceData?.product
+            ? extractDayBasedPricing(bike.wooCommerceData.product)
+            : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
+          pricePerDay =
+            reservation.totalDays > 0
+              ? getPriceForDays(priceRanges, reservation.totalDays)
+              : bike.pricePerDay;
+          totalPricePerBike = pricePerDay * reservation.totalDays;
+        }
+
         return {
           product_id: parseInt(bike.id),
           variation_id: variationId,
           quantity: bike.quantity,
+          // El precio total para esta cantidad y días
+          price: totalPricePerBike * bike.quantity,
           meta_data: [
             {
               key: "_rental_start_date",
@@ -172,21 +249,41 @@ export class WooCommerceCartService {
             { key: "_bike_size", value: bike.size },
             {
               key: "_rental_price_per_day",
-              value: bike.pricePerDay.toString(),
+              value: pricePerDay.toString(),
+            },
+            {
+              key: "_rental_total_price",
+              value: totalPricePerBike.toString(),
             },
           ],
         };
       });
 
-      // Si hay seguro, agregarlo como producto adicional o metadata
+      // Si hay seguro, agregarlo como line item separado
       if (reservation.insurance) {
-        lineItems[0].meta_data?.push(
-          { key: "_insurance_type", value: reservation.insurance.id },
-          {
-            key: "_insurance_price",
-            value: reservation.insurance.price.toString(),
-          },
-        );
+        const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
+        const totalInsurancePrice =
+          reservation.insurance.price * totalBikes * reservation.totalDays;
+
+        lineItems.push({
+          // Usar un ID ficticio para el seguro o crear un producto de seguro en WooCommerce
+          product_id: 99999, // ID ficticio - necesitarás crear un producto de seguro en WooCommerce
+          quantity: 1,
+          price: totalInsurancePrice,
+          meta_data: [
+            { key: "_insurance_type", value: reservation.insurance.id },
+            { key: "_insurance_name", value: reservation.insurance.name },
+            {
+              key: "_insurance_price_per_bike_per_day",
+              value: reservation.insurance.price.toString(),
+            },
+            { key: "_insurance_total_bikes", value: totalBikes.toString() },
+            {
+              key: "_insurance_total_days",
+              value: reservation.totalDays.toString(),
+            },
+          ],
+        });
       }
 
       const orderData = {
@@ -263,6 +360,26 @@ export class WooCommerceCartService {
   ): Promise<void> {
     try {
       console.log("🚀 Iniciando proceso de checkout mejorado...");
+
+      // Log detallado de datos para debugging
+      console.log("📊 Datos de reserva:", {
+        días: reservation.totalDays,
+        fechaInicio: reservation.startDate,
+        fechaFin: reservation.endDate,
+        seguro: reservation.insurance,
+        precioTotal: reservation.totalPrice,
+      });
+
+      console.log(
+        "🚲 Bicicletas seleccionadas:",
+        bikes.map((bike) => ({
+          id: bike.id,
+          nombre: bike.name,
+          cantidad: bike.quantity,
+          tamaño: bike.size,
+          precioPorDía: bike.pricePerDay,
+        })),
+      );
 
       // Intentar crear orden directa primero
       try {

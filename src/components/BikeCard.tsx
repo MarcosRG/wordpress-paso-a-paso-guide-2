@@ -103,9 +103,13 @@ const BikeCard = ({
           />
 
           {/* Size guide below image */}
-          <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+          <div
+            className={`mt-2 p-2 rounded text-xs ${bike.available === 0 ? "bg-red-100 border border-red-200" : "bg-gray-100"}`}
+          >
             <div className="font-medium text-center mb-1">
-              {t("availableSizes")}
+              {bike.available === 0
+                ? t("outOfStock") || "Sin Stock"
+                : t("availableSizes")}
             </div>
             <div className="grid grid-cols-5 gap-1 text-center">
               {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
@@ -231,7 +235,9 @@ const BikeCard = ({
                     size="sm"
                     variant="outline"
                     onClick={() => updateBikeQuantity(bike, size, 1)}
-                    disabled={quantity >= availableForSize}
+                    disabled={
+                      quantity >= availableForSize || availableForSize === 0
+                    }
                     className="h-8 w-8 p-0"
                   >
                     <Plus className="h-3 w-3" />

@@ -300,12 +300,26 @@ export const checkAtumAvailability = async (
 
     const data = await response.json();
 
+    // Log all meta_data keys for debugging (only for specific product)
+    if (productId === 18915) {
+      console.log(
+        `🔍 Meta data keys para KTM Chicago (ID: ${productId}):`,
+        data.meta_data?.map((m: any) => ({
+          key: m.key,
+          hasValue: !!m.value,
+        })) || [],
+      );
+    }
+
     // Check for ATUM Multi-Inventory data in meta_data
     const atumMultiStock = data.meta_data?.find(
       (meta: any) =>
         meta.key === "_atum_multi_inventory" ||
         meta.key === "atum_multi_inventory" ||
-        meta.key === "_multi_inventory",
+        meta.key === "_multi_inventory" ||
+        meta.key === "_atum_location_inventory" ||
+        meta.key === "_atum_mi_inventory" ||
+        meta.key === "_inventory_sorting_date",
     );
 
     if (atumMultiStock && atumMultiStock.value) {
@@ -338,11 +352,22 @@ export const checkAtumAvailability = async (
       (meta: { key: string; value: unknown }) =>
         meta.key === "_atum_stock_quantity" ||
         meta.key === "atum_stock_quantity" ||
-        meta.key === "_atum_stock",
+        meta.key === "_atum_stock" ||
+        meta.key === "_atum_stock_status" ||
+        meta.key === "_atum_manage_stock" ||
+        meta.key === "_stock_quantity",
     );
 
     if (atumStock) {
       const stockValue = parseInt(atumStock.value) || 0;
+
+      // Log stock info for specific product
+      if (productId === 18915) {
+        console.log(
+          `📦 ATUM stock para KTM Chicago: key="${atumStock.key}", value="${atumStock.value}", parsed=${stockValue}`,
+        );
+      }
+
       if (stockValue > 0) {
         return stockValue;
       }
@@ -360,7 +385,17 @@ export const checkAtumAvailability = async (
     }
 
     // Fallback to regular WooCommerce stock
-    return data.stock_quantity || 0;
+    const wooStock = data.stock_quantity || 0;
+
+    // Log stock info for specific product
+    if (productId === 18915) {
+      console.log(`🛒 WooCommerce stock para KTM Chicago: ${wooStock}`);
+      console.log(
+        `📋 Stock status: ${data.stock_status}, manage_stock: ${data.manage_stock}`,
+      );
+    }
+
+    return wooStock;
   } catch (error) {
     // Handle different types of errors gracefully
     if (error instanceof Error) {

@@ -3,6 +3,7 @@ import {
   checkAtumAvailability,
   wooCommerceApi,
 } from "@/services/woocommerceApi";
+import { neonStockService } from "@/services/neonStockService";
 
 // Temporary flag to disable API calls when network is problematic
 const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
@@ -28,11 +29,31 @@ export const useAtumStockBySize = (
         if (!variations || variations.length === 0) {
           // Para productos simples, devolver stock total
           const stock = await checkAtumAvailability(productId);
+
+          // Sincronizar producto simple con Neon
+          neonStockService
+            .syncProductStock(productId, [
+              {
+                stock_quantity: stock,
+                manage_stock: true,
+                in_stock: stock > 0,
+                backorders_allowed: false,
+              },
+            ])
+            .catch((error) => {
+              console.warn(
+                `Error sincronizando producto simple ${productId} con Neon:`,
+                error,
+              );
+            });
+
           return { default: stock };
         }
 
         // Para productos variables, obtener stock por tamaño
         const stockBySize: Record<string, number> = {};
+
+        const stockData = [];
 
         for (const variation of variations) {
           // Buscar el atributo de tamaño en la variación
@@ -49,10 +70,32 @@ export const useAtumStockBySize = (
             const stock = await checkAtumAvailability(productId, variation.id);
             stockBySize[size] = stock;
 
+            // Preparar datos para sincronizar con Neon
+            stockData.push({
+              variation_id: variation.id,
+              size: size,
+              stock_quantity: stock,
+              manage_stock: true,
+              in_stock: stock > 0,
+              backorders_allowed: false,
+            });
+
             console.log(
               `Stock ATUM para ${productId} tamaño ${size}: ${stock}`,
             );
           }
+        }
+
+        // Sincronizar con Neon (en segundo plano)
+        if (stockData.length > 0) {
+          neonStockService
+            .syncProductStock(productId, stockData)
+            .catch((error) => {
+              console.warn(
+                `Error sincronizando stock con Neon para producto ${productId}:`,
+                error,
+              );
+            });
         }
 
         return stockBySize;

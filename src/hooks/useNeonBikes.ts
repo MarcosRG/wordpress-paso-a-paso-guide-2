@@ -106,10 +106,8 @@ export const useNeonBikes = () => {
             // Convertir a formato Bike
             const bike = convertNeonProductToBike(product, variations);
 
-            // Solo agregar si tiene stock disponible
-            if (bike.available > 0) {
-              bikes.push(bike);
-            }
+            // Agregar todos los productos
+            bikes.push(bike);
           } catch (error) {
             console.warn(
               `⚠️ Error procesando producto ${product.woocommerce_id}:`,
@@ -155,9 +153,7 @@ export const useNeonBikesByCategory = (categorySlug: string | null) => {
           }
 
           const bike = convertNeonProductToBike(product, variations);
-          if (bike.available > 0) {
-            bikes.push(bike);
-          }
+          bikes.push(bike);
         }
 
         return bikes;

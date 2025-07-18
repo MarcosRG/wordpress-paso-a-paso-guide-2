@@ -26,17 +26,9 @@ const convertNeonProductToBike = (
   // Obtener precio base
   let basePrice = neonProduct.price || neonProduct.regular_price || 0;
 
-  // Si hay variaciones, usar el precio de la primera variación disponible
-  if (variations.length > 0) {
-    const availableVariation = variations.find(
-      (v) => (v.atum_stock || v.stock_quantity) > 0,
-    );
-    if (availableVariation) {
-      basePrice =
-        availableVariation.price ||
-        availableVariation.regular_price ||
-        basePrice;
-    }
+  // Si hay variaciones, usar el precio de la primera variación
+  if (variations.length > 0 && variations[0]) {
+    basePrice = variations[0].price || variations[0].regular_price || basePrice;
   }
 
   // Obtener categoría principal (excluyendo ALUGUERES)
@@ -82,7 +74,9 @@ export const useLocalNeonBikes = () => {
     queryKey: ["local-neon-bikes"],
     queryFn: async (): Promise<Bike[]> => {
       try {
-        console.log("🚀 Cargando productos desde cache local...");
+        console.log(
+          "🚀 HOOK EJECUTÁNDOSE: Cargando productos desde cache local...",
+        );
 
         // Obtener productos activos desde cache local
         const products = await neonHttpService.getActiveProducts();
@@ -107,10 +101,8 @@ export const useLocalNeonBikes = () => {
             // Convertir a formato Bike
             const bike = convertNeonProductToBike(product, variations);
 
-            // Solo agregar si tiene stock disponible
-            if (bike.available > 0) {
-              bikes.push(bike);
-            }
+            // Agregar todos los productos (incluso sin stock para mostrar disponibilidad)
+            bikes.push(bike);
           } catch (error) {
             console.warn(
               `⚠️ Error procesando producto ${product.woocommerce_id}:`,
@@ -158,9 +150,7 @@ export const useLocalNeonBikesByCategory = (categorySlug: string | null) => {
           }
 
           const bike = convertNeonProductToBike(product, variations);
-          if (bike.available > 0) {
-            bikes.push(bike);
-          }
+          bikes.push(bike);
         }
 
         return bikes;
@@ -180,9 +170,7 @@ export const useLocalNeonBikesByCategory = (categorySlug: string | null) => {
         }
 
         const bike = convertNeonProductToBike(product, variations);
-        if (bike.available > 0) {
-          bikes.push(bike);
-        }
+        bikes.push(bike);
       }
 
       return bikes;
