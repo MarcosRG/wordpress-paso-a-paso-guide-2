@@ -11,7 +11,7 @@ import {
   ACFPricing,
   getPricePerDayFromACF,
 } from "@/services/woocommerceApi";
-import { useAtumStockBySize } from "@/hooks/useAtumStock";
+import { useSimpleStockBySize } from "@/hooks/useSimpleBikes";
 
 interface BikeCardProps {
   bike: Bike;
@@ -33,7 +33,7 @@ const BikeCard = ({
   const { t } = useLanguage();
 
   // Obtener stock real de ATUM por tamaño
-  const { data: atumStockBySize = {} } = useAtumStockBySize(
+  const { data: atumStockBySize = {} } = useSimpleStockBySize(
     parseInt(bike.id),
     bike.wooCommerceData?.product?.type === "variable",
   );
