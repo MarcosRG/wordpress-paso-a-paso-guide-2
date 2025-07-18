@@ -261,30 +261,46 @@ export class WooCommerceCartService {
       });
 
       // Si hay seguro, agregarlo como line item separado
-      if (reservation.insurance) {
+      if (reservation.insurance && reservation.insurance.price > 0) {
         const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
         const totalInsurancePrice =
           reservation.insurance.price * totalBikes * reservation.totalDays;
 
-        lineItems.push({
-          // Usar un ID ficticio para el seguro o crear un producto de seguro en WooCommerce
-          product_id: 99999, // ID ficticio - necesitarás crear un producto de seguro en WooCommerce
-          quantity: 1,
-          price: totalInsurancePrice,
-          meta_data: [
-            { key: "_insurance_type", value: reservation.insurance.id },
-            { key: "_insurance_name", value: reservation.insurance.name },
-            {
-              key: "_insurance_price_per_bike_per_day",
-              value: reservation.insurance.price.toString(),
-            },
-            { key: "_insurance_total_bikes", value: totalBikes.toString() },
-            {
-              key: "_insurance_total_days",
-              value: reservation.totalDays.toString(),
-            },
-          ],
-        });
+        // Usar el ID real del producto de seguro premium
+        const insuranceProductId =
+          reservation.insurance.id === "premium"
+            ? WOOCOMMERCE_PRODUCT_IDS.PREMIUM_INSURANCE
+            : WOOCOMMERCE_PRODUCT_IDS.BASIC_INSURANCE;
+
+        // Solo agregar si tenemos un ID válido de producto de seguro
+        if (insuranceProductId) {
+          lineItems.push({
+            product_id: insuranceProductId,
+            quantity: totalBikes, // Una unidad de seguro por bicicleta
+            price: reservation.insurance.price * reservation.totalDays, // Precio por bicicleta por todos los días
+            meta_data: [
+              { key: "_insurance_type", value: reservation.insurance.id },
+              { key: "_insurance_name", value: reservation.insurance.name },
+              {
+                key: "_insurance_price_per_bike_per_day",
+                value: reservation.insurance.price.toString(),
+              },
+              { key: "_insurance_total_bikes", value: totalBikes.toString() },
+              {
+                key: "_insurance_total_days",
+                value: reservation.totalDays.toString(),
+              },
+              {
+                key: "_rental_start_date",
+                value: reservation.startDate?.toISOString() || "",
+              },
+              {
+                key: "_rental_end_date",
+                value: reservation.endDate?.toISOString() || "",
+              },
+            ],
+          });
+        }
       }
 
       const orderData = {
