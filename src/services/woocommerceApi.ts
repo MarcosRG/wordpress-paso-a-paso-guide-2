@@ -682,6 +682,33 @@ export const wooCommerceApi = {
     }
   },
 
+  // Verificar si un producto específico existe en WooCommerce
+  async getProduct(productId: number): Promise<WooCommerceProduct | null> {
+    try {
+      const response = await fetch(
+        `${WOOCOMMERCE_API_BASE}/products/${productId}`,
+        {
+          headers: apiHeaders,
+        },
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.warn(`⚠️ Producto ${productId} no encontrado en WooCommerce`);
+          return null;
+        }
+        throw new Error(
+          `Error fetching product ${productId}: ${response.statusText}`,
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`❌ Error verificando producto ${productId}:`, error);
+      return null;
+    }
+  },
+
   // Get categories from WooCommerce
   async getCategories() {
     try {
