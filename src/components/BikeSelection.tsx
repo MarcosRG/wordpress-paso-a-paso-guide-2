@@ -3,10 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
-import {
-  useWooCommerceBikes,
-  useWooCommerceCategories,
-} from "@/hooks/useWooCommerceBikes";
+import { useNeonBikes, useNeonCategories } from "@/hooks/useNeonBikes";
 import { CategoryFilter } from "./CategoryFilter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
@@ -34,13 +31,16 @@ export const BikeSelection = ({
     isLoading,
     error,
     refetch: refetchBikes,
-  } = useWooCommerceBikes();
+  } = useNeonBikes();
   const { data: categories = [], refetch: refetchCategories } =
-    useWooCommerceCategories();
+    useNeonCategories();
   const { language, setLanguage, t } = useLanguage();
 
   // Manual refresh function
   const handleRefresh = async () => {
+    // Invalidar cache de React Query para forzar recarga desde Neon
+    queryClient.invalidateQueries({ queryKey: ["neon-bikes"] });
+    queryClient.invalidateQueries({ queryKey: ["neon-categories"] });
     await Promise.all([refetchBikes(), refetchCategories()]);
   };
 
