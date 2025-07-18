@@ -6,9 +6,7 @@ import {
   calculateTotalPriceACF,
   extractDayBasedPricing,
   getPriceForDays,
-  wooCommerceApi,
 } from "@/services/woocommerceApi";
-import { WOOCOMMERCE_PRODUCT_IDS } from "@/config/products";
 
 export interface WooCommerceCartItem {
   product_id: number;
@@ -39,40 +37,6 @@ export interface WooCommerceCheckoutData {
 export class WooCommerceCartService {
   private baseUrl = "https://bikesultoursgest.com";
   private checkoutUrl = `${this.baseUrl}/checkout`;
-  private verifiedInsuranceProducts = new Map<number, boolean>();
-
-  // Verificar si un producto de seguro existe en WooCommerce
-  private async verifyInsuranceProduct(productId: number): Promise<boolean> {
-    // Usar cache para evitar múltiples consultas del mismo producto
-    if (this.verifiedInsuranceProducts.has(productId)) {
-      return this.verifiedInsuranceProducts.get(productId)!;
-    }
-
-    try {
-      const product = await wooCommerceApi.getProduct(productId);
-      const exists = product !== null;
-      this.verifiedInsuranceProducts.set(productId, exists);
-
-      if (!exists) {
-        console.warn(
-          `⚠️ Producto de seguro ${productId} no existe en WooCommerce`,
-        );
-      } else {
-        console.log(
-          `✅ Producto de seguro ${productId} verificado en WooCommerce`,
-        );
-      }
-
-      return exists;
-    } catch (error) {
-      console.error(
-        `❌ Error verificando producto de seguro ${productId}:`,
-        error,
-      );
-      this.verifiedInsuranceProducts.set(productId, false);
-      return false;
-    }
-  }
 
   // Generar URL de checkout con datos pre-llenados y productos como parámetros
   generateCheckoutUrl(
@@ -296,62 +260,45 @@ export class WooCommerceCartService {
       });
 
       // Si hay seguro, agregarlo como line item separado
-      if (reservation.insurance && reservation.insurance.price > 0) {
+      if (reservation.insurance) {
         const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
         const totalInsurancePrice =
           reservation.insurance.price * totalBikes * reservation.totalDays;
 
-        // Usar el ID real del producto de seguro premium
-        const insuranceProductId =
-          reservation.insurance.id === "premium"
-            ? WOOCOMMERCE_PRODUCT_IDS.PREMIUM_INSURANCE
-            : WOOCOMMERCE_PRODUCT_IDS.BASIC_INSURANCE;
-
-        // Verificar que el producto de seguro existe antes de agregarlo
-        if (
-          insuranceProductId &&
-          (await this.verifyInsuranceProduct(insuranceProductId))
-        ) {
-          console.log(
-            `✅ Agregando seguro ${reservation.insurance.id} con ID ${insuranceProductId}`,
-          );
-
-          lineItems.push({
-            product_id: insuranceProductId,
-            quantity: totalBikes, // Una unidad de seguro por bicicleta
-            price: reservation.insurance.price * reservation.totalDays, // Precio por bicicleta por todos los días
-            meta_data: [
-              { key: "_insurance_type", value: reservation.insurance.id },
-              { key: "_insurance_name", value: reservation.insurance.name },
-              {
-                key: "_insurance_price_per_bike_per_day",
-                value: reservation.insurance.price.toString(),
-              },
-              { key: "_insurance_total_bikes", value: totalBikes.toString() },
-              {
-                key: "_insurance_total_days",
-                value: reservation.totalDays.toString(),
-              },
-              {
-                key: "_rental_start_date",
-                value: reservation.startDate?.toISOString() || "",
-              },
-              {
-                key: "_rental_end_date",
-                value: reservation.endDate?.toISOString() || "",
-              },
-            ],
-          });
-                } else {
-          console.warn(
-            `⚠️ No se puede agregar seguro: producto ${insuranceProductId} no existe en WooCommerce`,
-          );
-          console.log("📝 El seguro se procesará como información adicional en la orden");
-        }
+        lineItems.push({
+          // Usar un ID ficticio para el seguro o crear un producto de seguro en WooCommerce
+          product_id: 99999, // ID ficticio - necesitarás crear un producto de seguro en WooCommerce
+          quantity: 1,
+          price: totalInsurancePrice,
+          meta_data: [
+            { key: "_insurance_type", value: reservation.insurance.id },
+            { key: "_insurance_name", value: reservation.insurance.name },
+            {
+              key: "_insurance_price_per_bike_per_day",
+              value: reservation.insurance.price.toString(),
+            },
+            { key: "_insurance_total_bikes", value: totalBikes.toString() },
+            {
+              key: "_insurance_total_days",
+              value: reservation.totalDays.toString(),
+            },
+          ],
+        });
       }
 
-      // Crear meta_data base para la orden
-      const baseMetaData = [
+      const orderData = {
+        status: "pending",
+        billing: {
+          first_name: customerData.firstName,
+          last_name: customerData.lastName,
+          email: customerData.email,
+          phone: customerData.phone,
+          address_1: customerData.address || "",
+          city: customerData.city || "",
+          country: customerData.country || "PT",
+        },
+        line_items: lineItems,
+        meta_data: [
           {
             key: "_rental_start_date",
             value: reservation.startDate?.toISOString() || "",
