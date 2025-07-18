@@ -1,237 +1,168 @@
-import { wooCommerceApi } from "./woocommerceApi";
-import { neonHttpService } from "./neonHttpService";
-import { localSyncService } from "./localSyncService";
+import { WOOCOMMERCE_API_BASE, apiHeaders } from "./woocommerceApi";
 
-export interface ProductDiagnosticResult {
-  productName: string;
-  productId: number;
+export interface ProductDiagnostic {
+  id: number;
+  name: string;
   status: string;
-  stockStatus: string;
-  stockQuantity: number;
   type: string;
-  inCache: boolean;
-  variations: number;
-  categories: string[];
-  price: string;
-  hasACF: boolean;
+  stock_status: string;
+  stock_quantity: number;
+  categories: Array<{
+    id: number;
+    name: string;
+    slug: string;
+  }>;
+  published: boolean;
+  hasStock: boolean;
+  hasImages: boolean;
+  hasPrice: boolean;
+  isComplete: boolean;
+  issues: string[];
 }
 
-export class ProductDiagnosticsService {
-  // Buscar productos específicamente por nombre
-  async searchProducts(searchTerm: string): Promise<ProductDiagnosticResult[]> {
-    console.log(`🔍 Buscando productos que contengan: "${searchTerm}"`);
-
+export const productDiagnostics = {
+  // Diagnosticar todos los productos de la categoría ALUGUERES
+  async diagnoseAlugueresProducts(): Promise<ProductDiagnostic[]> {
     try {
-      // Obtener productos de WooCommerce
-      const wooProducts = await wooCommerceApi.getProducts();
-      console.log(`📦 Total productos en WooCommerce: ${wooProducts.length}`);
+      // Verificar si estamos en un entorno que puede acceder a la API
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
 
-      // Obtener productos del cache
-      const cachedProducts = await neonHttpService.getActiveProducts();
-      const cachedProductIds = new Set(
-        cachedProducts.map((p) => p.woocommerce_id),
+      // Obtener TODOS los productos de la categoría, sin filtros
+      const response = await fetch(
+        `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319`,
+        {
+          headers: {
+            ...apiHeaders,
+            Accept: "application/json",
+          },
+          signal: controller.signal,
+          mode: "cors",
+        },
       );
 
-      // Filtrar productos que coincidan con el término de búsqueda
-      const matchingProducts = wooProducts.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.description
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          product.short_description
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()),
-      );
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const products = await response.json();
+      const totalHeader = response.headers.get("X-WP-Total");
 
       console.log(
-        `🎯 Productos encontrados con "${searchTerm}": ${matchingProducts.length}`,
+        `Total de productos en WooCommerce para ALUGUERES: ${totalHeader}`,
       );
+      console.log(`Productos obtenidos en esta llamada: ${products.length}`);
 
-      const results: ProductDiagnosticResult[] = [];
+      const diagnostics: ProductDiagnostic[] = products.map((product: any) => {
+        const issues: string[] = [];
 
-      for (const product of matchingProducts) {
-        try {
-          // Obtener variaciones si es un producto variable
-          let variationCount = 0;
-          if (product.type === "variable" && product.variations?.length > 0) {
-            try {
-              const variations = await wooCommerceApi.getProductVariations(
-                product.id,
-              );
-              variationCount = variations.length;
-            } catch (error) {
-              console.warn(
-                `⚠️ Error obteniendo variaciones para ${product.id}:`,
-                error,
-              );
-            }
-          }
+        // Verificar estado de publicación
+        const published = product.status === "publish";
+        if (!published) issues.push(`Estado: ${product.status}`);
 
-          // Verificar si tiene datos ACF
-          let hasACF = false;
-          try {
-            const acfData = await wooCommerceApi.getProductWithACF(product.id);
-            hasACF = !!(acfData?.acf && Object.keys(acfData.acf).length > 0);
-          } catch (error) {
-            // ACF es opcional
-          }
-
-          const result: ProductDiagnosticResult = {
-            productName: product.name,
-            productId: product.id,
-            status: product.status,
-            stockStatus: product.stock_status,
-            stockQuantity: product.stock_quantity || 0,
-            type: product.type,
-            inCache: cachedProductIds.has(product.id),
-            variations: variationCount,
-            categories: product.categories?.map((cat) => cat.name) || [],
-            price: product.price || product.regular_price || "0",
-            hasACF,
-          };
-
-          results.push(result);
-
-          console.log(`📋 ${product.name} (ID: ${product.id}):`, {
-            status: product.status,
-            stock: `${product.stock_status} (${product.stock_quantity})`,
-            type: product.type,
-            inCache: cachedProductIds.has(product.id) ? "✅" : "❌",
-            variations: variationCount,
-            hasACF: hasACF ? "✅" : "❌",
-          });
-        } catch (error) {
-          console.error(`❌ Error procesando producto ${product.id}:`, error);
-        }
-      }
-
-      return results;
-    } catch (error) {
-      console.error("❌ Error en búsqueda de productos:", error);
-      throw error;
-    }
-  }
-
-  // Función específica para buscar productos KTM Chicago
-  async searchKTMChicago(): Promise<ProductDiagnosticResult[]> {
-    console.log("🏍️ Buscando productos KTM Chicago...");
-
-    const ktmResults = await this.searchProducts("ktm");
-    const chicagoResults = await this.searchProducts("chicago");
-
-    // Combinar resultados y eliminar duplicados
-    const allResults = [...ktmResults, ...chicagoResults];
-    const uniqueResults = allResults.filter(
-      (result, index, self) =>
-        index === self.findIndex((r) => r.productId === result.productId),
-    );
-
-    console.log(
-      `🎯 Productos únicos KTM/Chicago encontrados: ${uniqueResults.length}`,
-    );
-
-    return uniqueResults;
-  }
-
-  // Sincronizar productos específicos que faltan
-  async syncMissingProducts(productIds: number[]): Promise<void> {
-    console.log(
-      `🔄 Sincronizando ${productIds.length} productos específicos...`,
-    );
-
-    for (const productId of productIds) {
-      try {
-        await localSyncService.syncSingleProduct(productId);
-        console.log(`✅ Producto ${productId} sincronizado`);
-      } catch (error) {
-        console.error(`❌ Error sincronizando producto ${productId}:`, error);
-      }
-    }
-
-    console.log("✅ Sincronización de productos específicos completada");
-  }
-
-  // Función para forzar sincronización completa y buscar KTM
-  async forceResyncAndSearchKTM(): Promise<ProductDiagnosticResult[]> {
-    console.log("🔄 Forzando sincronización completa y buscando KTM...");
-
-    try {
-      // Limpiar cache y forzar sincronización
-      await localSyncService.forceSync();
-
-      // Buscar productos KTM después de la sincronización
-      const results = await this.searchKTMChicago();
-
-      console.log("✅ Sincronización completa y búsqueda KTM terminada");
-      return results;
-    } catch (error) {
-      console.error("❌ Error en resync y búsqueda KTM:", error);
-      throw error;
-    }
-  }
-
-  // Verificar estado de productos específicos
-  async checkProductsStatus(
-    productIds: number[],
-  ): Promise<ProductDiagnosticResult[]> {
-    console.log(
-      `🔍 Verificando estado de ${productIds.length} productos específicos...`,
-    );
-
-    const results: ProductDiagnosticResult[] = [];
-
-    for (const productId of productIds) {
-      try {
-        // Obtener producto directamente de WooCommerce
-        const response = await fetch(
-          `https://bikesultoursgest.com/wp-json/wc/v3/products/${productId}`,
-          {
-            headers: {
-              Authorization:
-                "Basic " +
-                btoa(
-                  "ck_d702f875c82d5973562a62579cfa284db06e3a87:cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71",
-                ),
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        if (response.ok) {
-          const product = await response.json();
-
-          // Verificar si está en cache
-          const cachedProducts = await neonHttpService.getActiveProducts();
-          const inCache = cachedProducts.some(
-            (p) => p.woocommerce_id === productId,
+        // Verificar stock
+        const hasStock =
+          product.stock_status === "instock" && product.stock_quantity > 0;
+        if (!hasStock)
+          issues.push(
+            `Stock: ${product.stock_status}, Cantidad: ${product.stock_quantity}`,
           );
 
-          results.push({
-            productName: product.name,
-            productId: product.id,
-            status: product.status,
-            stockStatus: product.stock_status,
-            stockQuantity: product.stock_quantity || 0,
-            type: product.type,
-            inCache,
-            variations: product.variations?.length || 0,
-            categories: product.categories?.map((cat) => cat.name) || [],
-            price: product.price || product.regular_price || "0",
-            hasACF: false, // Se podría verificar más tarde
-          });
-        } else {
-          console.warn(`⚠️ Producto ${productId} no encontrado en WooCommerce`);
-        }
-      } catch (error) {
-        console.error(`❌ Error verificando producto ${productId}:`, error);
+        // Verificar imágenes
+        const hasImages = product.images && product.images.length > 0;
+        if (!hasImages) issues.push("Sin imágenes");
+
+        // Verificar precio
+        const hasPrice = product.price && parseFloat(product.price) > 0;
+        if (!hasPrice) issues.push(`Sin precio válido: ${product.price}`);
+
+        // Verificar categorías
+        const hasCategories =
+          product.categories && product.categories.length > 0;
+        if (!hasCategories) issues.push("Sin categorías");
+
+        // Determinar si está completo
+        const isComplete =
+          published && hasStock && hasImages && hasPrice && hasCategories;
+
+        return {
+          id: product.id,
+          name: product.name,
+          status: product.status,
+          type: product.type,
+          stock_status: product.stock_status,
+          stock_quantity: product.stock_quantity || 0,
+          categories: product.categories || [],
+          published,
+          hasStock,
+          hasImages,
+          hasPrice,
+          isComplete,
+          issues,
+        };
+      });
+
+      return diagnostics;
+    } catch (error) {
+      console.error("Error al diagnosticar productos:", error);
+
+      // Si es un error de CORS o red, devolver diagnóstico simulado
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        console.warn(
+          "API de WooCommerce no accesible desde entorno de desarrollo. Usando datos simulados.",
+        );
+        return this.getMockDiagnostics();
       }
+
+      throw error;
     }
+  },
 
-    return results;
-  }
-}
+  // Datos simulados para cuando la API no es accesible
+  getMockDiagnostics(): ProductDiagnostic[] {
+    return [
+      {
+        id: 1,
+        name: "Producto simulado - No se puede acceder a la API",
+        status: "publish",
+        type: "variable",
+        stock_status: "instock",
+        stock_quantity: 5,
+        categories: [{ id: 319, name: "ALUGUERES", slug: "alugueres" }],
+        published: true,
+        hasStock: true,
+        hasImages: false,
+        hasPrice: true,
+        isComplete: false,
+        issues: ["Error de CORS - API no accesible desde desarrollo"],
+      },
+    ];
+  },
 
-// Instancia singleton
-export const productDiagnosticsService = new ProductDiagnosticsService();
+  // Obtener resumen del diagnóstico
+  getSummary(diagnostics: ProductDiagnostic[]) {
+    const total = diagnostics.length;
+    const published = diagnostics.filter((d) => d.published).length;
+    const withStock = diagnostics.filter((d) => d.hasStock).length;
+    const withImages = diagnostics.filter((d) => d.hasImages).length;
+    const withPrice = diagnostics.filter((d) => d.hasPrice).length;
+    const complete = diagnostics.filter((d) => d.isComplete).length;
+
+    return {
+      total,
+      published,
+      withStock,
+      withImages,
+      withPrice,
+      complete,
+      incomplete: total - complete,
+    };
+  },
+
+  // Obtener productos incompletos
+  getIncompleteProducts(diagnostics: ProductDiagnostic[]) {
+    return diagnostics.filter((d) => !d.isComplete);
+  },
+};

@@ -11,9 +11,7 @@ import {
   ACFPricing,
   getPricePerDayFromACF,
 } from "@/services/woocommerceApi";
-import { useSimpleStockBySize } from "@/hooks/useSimpleBikes";
-import VariablePricing from "./VariablePricing";
-import AtumStockDisplay from "./AtumStockDisplay";
+import { useAtumStockBySize } from "@/hooks/useAtumStock";
 
 interface BikeCardProps {
   bike: Bike;
@@ -35,7 +33,7 @@ const BikeCard = ({
   const { t } = useLanguage();
 
   // Obtener stock real de ATUM por tamaño
-  const { data: atumStockBySize = {} } = useSimpleStockBySize(
+  const { data: atumStockBySize = {} } = useAtumStockBySize(
     parseInt(bike.id),
     bike.wooCommerceData?.product?.type === "variable",
   );
@@ -140,32 +138,109 @@ const BikeCard = ({
           )}
         </div>
 
-        {/* Pricing display with variable pricing */}
-        <div className="mb-4">
-          <VariablePricing
-            product={bike.wooCommerceData?.product}
-            totalDays={totalDays}
-            className=""
-          />
-        </div>
+        {/* Pricing tiers display */}
+        {(acfPricing || priceRanges.length > 1) && (
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <h4 className="text-xs font-medium text-gray-700 mb-2">
+              {t("priceRange")}:
+            </h4>
+            <div className="space-y-1">
+              {acfPricing ? (
+                // Display ACF pricing format
+                <>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>1-2 {t("days")}</span>
+                    <span className="font-medium">
+                      €{acfPricing.precio_1_2}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>3-6 {t("days")}</span>
+                    <span className="font-medium">
+                      €{acfPricing.precio_3_6}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>7+ {t("days")}</span>
+                    <span className="font-medium">
+                      €{acfPricing.precio_7_mais}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                // Display legacy price ranges
+                priceRanges.map((range, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between text-xs text-gray-600"
+                  >
+                    <span>
+                      {range.minDays}
+                      {range.maxDays < 999 ? `-${range.maxDays}` : "+"}{" "}
+                      {t("days")}
+                    </span>
+                    <span className="font-medium">€{range.pricePerDay}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
-        {/* Stock ATUM por tamaños */}
-        <AtumStockDisplay
-          atumStockBySize={atumStockBySize}
-          selectedQuantities={{
-            XS: getQuantityForBikeAndSize(bike.id, "XS"),
-            S: getQuantityForBikeAndSize(bike.id, "S"),
-            M: getQuantityForBikeAndSize(bike.id, "M"),
-            L: getQuantityForBikeAndSize(bike.id, "L"),
-            XL: getQuantityForBikeAndSize(bike.id, "XL"),
-          }}
-          onQuantityChange={(size, change) =>
-            updateBikeQuantity(bike, size, change)
-          }
-          isVariable={bike.wooCommerceData?.product?.type === "variable"}
-          totalAvailable={bike.available}
-          className=""
-        />
+        {/* Selector de Tamaños */}
+        <div className="space-y-2">
+          <h4 className="font-medium text-sm text-center">
+            {t("availableSizes")}:
+          </h4>
+          {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
+            const quantity = getQuantityForBikeAndSize(bike.id, size);
+            // Usar stock real de ATUM si está disponible, sino usar estimación
+            const availableForSize =
+              atumStockBySize[size] ?? Math.floor(bike.available / 5);
+
+            return (
+              <div
+                key={size}
+                className="flex items-center justify-between p-2 border rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-medium w-6">{size}</span>
+                  <span className="text-xs text-gray-500">
+                    ({availableForSize}{" "}
+                    {availableForSize === 1 ? t("available") : t("availables")})
+                    {atumStockBySize[size] !== undefined && (
+                      <span className="text-green-600 font-medium"> ✓ATUM</span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => updateBikeQuantity(bike, size, -1)}
+                    disabled={quantity === 0}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <span className="w-8 text-center font-medium text-sm">
+                    {quantity}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => updateBikeQuantity(bike, size, 1)}
+                    disabled={quantity >= availableForSize}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );

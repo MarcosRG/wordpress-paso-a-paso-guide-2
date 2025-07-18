@@ -7,7 +7,6 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CheckoutDebugInfo from "@/components/CheckoutDebugInfo";
-import ProductDiagnostics from "@/components/ProductDiagnostics";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
@@ -31,7 +30,6 @@ const App = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <CheckoutDebugInfo />
-              <ProductDiagnostics />
             </BrowserRouter>
           </TooltipProvider>
         </LanguageProvider>

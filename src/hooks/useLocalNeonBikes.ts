@@ -16,29 +16,11 @@ const convertNeonProductToBike = (
   if (variations.length > 0) {
     // Para productos variables, sumar stock de todas las variaciones
     totalStock = variations.reduce((sum, variation) => {
-      const variationStock = Math.max(
-        variation.atum_stock || 0,
-        variation.stock_quantity || 0,
-      );
-      return sum + variationStock;
+      return sum + (variation.atum_stock || variation.stock_quantity);
     }, 0);
-
-    // Si no hay stock en variaciones pero el producto dice que tiene stock, usar al menos 1
-    if (
-      totalStock === 0 &&
-      (neonProduct.stock_status === "instock" || neonProduct.stock_quantity > 0)
-    ) {
-      totalStock = Math.max(1, neonProduct.stock_quantity || 1);
-      console.log(
-        `🔄 Producto variable ${neonProduct.name}: usando stock del producto principal (${totalStock})`,
-      );
-    }
   } else {
     // Para productos simples, usar stock directo
-    totalStock = Math.max(
-      neonProduct.stock_quantity || 0,
-      neonProduct.stock_status === "instock" ? 1 : 0,
-    );
+    totalStock = neonProduct.stock_quantity || 0;
   }
 
   // Obtener precio base
@@ -125,15 +107,9 @@ export const useLocalNeonBikes = () => {
             // Convertir a formato Bike
             const bike = convertNeonProductToBike(product, variations);
 
-            // Solo agregar si tiene stock disponible O si es un producto variable (el stock puede estar en variaciones)
-            if (bike.available > 0 || product.type === "variable") {
+            // Solo agregar si tiene stock disponible
+            if (bike.available > 0) {
               bikes.push(bike);
-
-              if (bike.available <= 0) {
-                console.log(
-                  `🔄 Incluyendo producto variable sin stock aparente: ${bike.name} (puede tener stock en variaciones)`,
-                );
-              }
             }
           } catch (error) {
             console.warn(
