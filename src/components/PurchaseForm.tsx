@@ -216,7 +216,7 @@ export const PurchaseForm = ({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="city">{t("city")}</Label>
                 <Input
@@ -244,6 +244,16 @@ export const PurchaseForm = ({
                     {fieldErrors.postalCode}
                   </div>
                 )}
+              </div>
+              <div>
+                <Label htmlFor="country">País</Label>
+                <Input
+                  id="country"
+                  value={customerData.country}
+                  onChange={(e) => handleInputChange("country", e.target.value)}
+                  placeholder="Portugal"
+                  className="mt-1"
+                />
               </div>
             </div>
           </CardContent>
