@@ -300,6 +300,17 @@ export const checkAtumAvailability = async (
 
     const data = await response.json();
 
+    // Log all meta_data keys for debugging (only for specific product)
+    if (productId === 18915) {
+      console.log(
+        `🔍 Meta data keys para KTM Chicago (ID: ${productId}):`,
+        data.meta_data?.map((m: any) => ({
+          key: m.key,
+          hasValue: !!m.value,
+        })) || [],
+      );
+    }
+
     // Check for ATUM Multi-Inventory data in meta_data
     const atumMultiStock = data.meta_data?.find(
       (meta: any) =>
