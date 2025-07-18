@@ -44,11 +44,15 @@ export const ProductDiagnostics = () => {
       const cachedProducts = await neonHttpService.getActiveProducts();
       console.log(`💾 Productos en cache: ${cachedProducts.length}`);
 
-      // 3. Buscar productos KTM específicamente
+      // 3. Buscar productos KTM específicamente (búsqueda más amplia)
       const ktmProducts = wooProducts.filter(
         (product) =>
           product.name.toLowerCase().includes("ktm") ||
-          product.name.toLowerCase().includes("chicago"),
+          product.name.toLowerCase().includes("chicago") ||
+          product.slug?.toLowerCase().includes("ktm") ||
+          product.slug?.toLowerCase().includes("chicago") ||
+          product.description?.toLowerCase().includes("ktm") ||
+          product.short_description?.toLowerCase().includes("ktm"),
       );
       console.log(`🏍️ Productos KTM encontrados: ${ktmProducts.length}`);
 
