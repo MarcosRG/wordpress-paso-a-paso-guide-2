@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
 import { useNeonBikes, useNeonCategories } from "@/hooks/useNeonBikes";
 import { CategoryFilter } from "./CategoryFilter";
+import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
