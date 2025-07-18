@@ -9,6 +9,7 @@ import {
 } from "@/hooks/useLocalNeonBikes";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
+import NetworkStatusIndicator from "./NetworkStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
