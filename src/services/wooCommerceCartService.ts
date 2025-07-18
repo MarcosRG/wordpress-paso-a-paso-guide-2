@@ -29,162 +29,13 @@ export interface WooCommerceCheckoutData {
 
 export class WooCommerceCartService {
   private baseUrl = "https://bikesultoursgest.com";
-  private cartApiUrl = `${this.baseUrl}/wp-json/wc/store/v1/cart`;
   private checkoutUrl = `${this.baseUrl}/checkout`;
 
-  // Agregar producto al carrito
-  async addToCart(cartItem: WooCommerceCartItem): Promise<boolean> {
-    try {
-      const response = await fetch(`${this.cartApiUrl}/add-item`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        credentials: "include", // Para mantener cookies de sesión
-        body: JSON.stringify(cartItem),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error adding to cart: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      console.log("✅ Producto agregado al carrito:", result);
-      return true;
-    } catch (error) {
-      console.error("❌ Error adding to cart:", error);
-      return false;
-    }
-  }
-
-  // Limpiar carrito
-  async clearCart(): Promise<boolean> {
-    try {
-      const response = await fetch(`${this.cartApiUrl}/remove-item`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ key: "all" }),
-      });
-
-      if (!response.ok) {
-        console.warn("No se pudo limpiar el carrito, pero continuando...");
-      }
-
-      return true;
-    } catch (error) {
-      console.warn("Error clearing cart:", error);
-      return false;
-    }
-  }
-
-  // Agregar múltiples productos al carrito
-  async addMultipleToCart(
+  // Generar URL de checkout con datos pre-llenados y productos como parámetros
+  generateCheckoutUrl(
     bikes: SelectedBike[],
     reservation: ReservationData,
-  ): Promise<boolean> {
-    try {
-      console.log("🛒 Agregando productos al carrito de WooCommerce...");
-
-      // Opcional: limpiar carrito antes de agregar nuevos productos
-      // await this.clearCart();
-
-      let allSuccess = true;
-
-      for (const bike of bikes) {
-        try {
-          const productId = parseInt(bike.id);
-
-          // Preparar metadatos para el producto
-          const metaData = [
-            {
-              key: "_rental_start_date",
-              value: reservation.startDate?.toISOString() || "",
-            },
-            {
-              key: "_rental_end_date",
-              value: reservation.endDate?.toISOString() || "",
-            },
-            { key: "_rental_days", value: reservation.totalDays.toString() },
-            { key: "_pickup_time", value: reservation.pickupTime },
-            { key: "_return_time", value: reservation.returnTime },
-            { key: "_bike_size", value: bike.size },
-            {
-              key: "_rental_price_per_day",
-              value: bike.pricePerDay.toString(),
-            },
-          ];
-
-          // Si hay seguro, agregarlo
-          if (reservation.insurance) {
-            metaData.push(
-              { key: "_insurance_type", value: reservation.insurance.id },
-              {
-                key: "_insurance_price",
-                value: reservation.insurance.price.toString(),
-              },
-            );
-          }
-
-          // Determinar si es una variación o producto simple
-          let variationId: number | undefined;
-
-          if (
-            bike.wooCommerceData?.variations &&
-            bike.wooCommerceData.variations.length > 0
-          ) {
-            // Buscar la variación que corresponde al tamaño seleccionado
-            const selectedVariation = bike.wooCommerceData.variations.find(
-              (variation: any) => {
-                const sizeAttribute = variation.attributes?.find(
-                  (attr: any) =>
-                    attr.name?.toLowerCase().includes("tama") ||
-                    attr.name?.toLowerCase().includes("size"),
-                );
-                return sizeAttribute?.option?.toUpperCase() === bike.size;
-              },
-            );
-
-            if (selectedVariation) {
-              variationId = selectedVariation.id;
-            }
-          }
-
-          const cartItem: WooCommerceCartItem = {
-            product_id: productId,
-            variation_id: variationId,
-            quantity: bike.quantity,
-            meta_data: metaData,
-          };
-
-          const success = await this.addToCart(cartItem);
-
-          if (!success) {
-            allSuccess = false;
-            console.error(`❌ Error agregando ${bike.name} al carrito`);
-          } else {
-            console.log(`✅ ${bike.name} agregado al carrito`);
-          }
-        } catch (error) {
-          console.error(`❌ Error procesando ${bike.name}:`, error);
-          allSuccess = false;
-        }
-      }
-
-      return allSuccess;
-    } catch (error) {
-      console.error("❌ Error agregando productos al carrito:", error);
-      return false;
-    }
-  }
-
-  // Generar URL de checkout con datos pre-llenados
-  generateCheckoutUrl(
     customerData: CustomerData,
-    reservation: ReservationData,
   ): string {
     const params = new URLSearchParams();
 
@@ -211,7 +62,7 @@ export class WooCommerceCartService {
       params.append("billing_country", customerData.country);
     }
 
-    // Datos adicionales de la reserva como parámetros de consulta
+    // Datos de la reserva
     params.append(
       "rental_start_date",
       reservation.startDate?.toISOString().split("T")[0] || "",
@@ -226,7 +77,41 @@ export class WooCommerceCartService {
 
     if (reservation.insurance) {
       params.append("insurance_type", reservation.insurance.id);
+      params.append("insurance_price", reservation.insurance.price.toString());
     }
+
+    // Agregar información de productos como parámetros para que puedan ser procesados por el checkout
+    bikes.forEach((bike, index) => {
+      params.append(`bike_${index}_id`, bike.id);
+      params.append(`bike_${index}_name`, bike.name);
+      params.append(`bike_${index}_quantity`, bike.quantity.toString());
+      params.append(`bike_${index}_size`, bike.size);
+      params.append(`bike_${index}_price`, bike.pricePerDay.toString());
+
+      // Si hay variación, incluirla
+      if (
+        bike.wooCommerceData?.variations &&
+        bike.wooCommerceData.variations.length > 0
+      ) {
+        const selectedVariation = bike.wooCommerceData.variations.find(
+          (variation: any) => {
+            const sizeAttribute = variation.attributes?.find(
+              (attr: any) =>
+                attr.name?.toLowerCase().includes("tama") ||
+                attr.name?.toLowerCase().includes("size"),
+            );
+            return sizeAttribute?.option?.toUpperCase() === bike.size;
+          },
+        );
+
+        if (selectedVariation) {
+          params.append(
+            `bike_${index}_variation_id`,
+            selectedVariation.id.toString(),
+          );
+        }
+      }
+    });
 
     // Construir URL completa
     const queryString = params.toString();
@@ -235,76 +120,74 @@ export class WooCommerceCartService {
       : this.checkoutUrl;
   }
 
-  // Redirigir al checkout de WooCommerce
-  async redirectToCheckout(
-    bikes: SelectedBike[],
-    reservation: ReservationData,
-    customerData: CustomerData,
-  ): Promise<void> {
-    try {
-      console.log("🚀 Iniciando proceso de checkout...");
-
-      // 1. Agregar productos al carrito
-      const cartSuccess = await this.addMultipleToCart(bikes, reservation);
-
-      if (!cartSuccess) {
-        console.warn(
-          "⚠️ Algunos productos no se pudieron agregar al carrito, pero continuando...",
-        );
-      }
-
-      // 2. Esperar un momento para que se procese el carrito
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // 3. Generar URL de checkout con datos pre-llenados
-      const checkoutUrl = this.generateCheckoutUrl(customerData, reservation);
-
-      console.log("🔗 Redirigiendo a checkout:", checkoutUrl);
-
-      // 4. Redirigir a la página de checkout
-      window.open(checkoutUrl, "_blank", "noopener,noreferrer");
-
-      // También podríamos usar window.location.href para redirección en la misma pestaña:
-      // window.location.href = checkoutUrl;
-    } catch (error) {
-      console.error("❌ Error en proceso de checkout:", error);
-      throw error;
-    }
-  }
-
-  // Método alternativo: crear orden directamente (sin carrito)
+  // Crear orden directamente usando la API de WooCommerce
   async createDirectOrder(
     bikes: SelectedBike[],
     reservation: ReservationData,
     customerData: CustomerData,
   ): Promise<string> {
     try {
-      const lineItems = bikes.map((bike) => ({
-        product_id: parseInt(bike.id),
-        variation_id: bike.wooCommerceData?.variations?.find((v: any) => {
-          const sizeAttr = v.attributes?.find(
-            (attr: any) =>
-              attr.name?.toLowerCase().includes("tama") ||
-              attr.name?.toLowerCase().includes("size"),
+      console.log("🔄 Creando orden directa en WooCommerce...");
+
+      const lineItems = bikes.map((bike) => {
+        // Buscar variación si es necesario
+        let variationId: number | undefined;
+
+        if (
+          bike.wooCommerceData?.variations &&
+          bike.wooCommerceData.variations.length > 0
+        ) {
+          const selectedVariation = bike.wooCommerceData.variations.find(
+            (variation: any) => {
+              const sizeAttribute = variation.attributes?.find(
+                (attr: any) =>
+                  attr.name?.toLowerCase().includes("tama") ||
+                  attr.name?.toLowerCase().includes("size"),
+              );
+              return sizeAttribute?.option?.toUpperCase() === bike.size;
+            },
           );
-          return sizeAttr?.option?.toUpperCase() === bike.size;
-        })?.id,
-        quantity: bike.quantity,
-        meta_data: [
+
+          if (selectedVariation) {
+            variationId = selectedVariation.id;
+          }
+        }
+
+        return {
+          product_id: parseInt(bike.id),
+          variation_id: variationId,
+          quantity: bike.quantity,
+          meta_data: [
+            {
+              key: "_rental_start_date",
+              value: reservation.startDate?.toISOString() || "",
+            },
+            {
+              key: "_rental_end_date",
+              value: reservation.endDate?.toISOString() || "",
+            },
+            { key: "_rental_days", value: reservation.totalDays.toString() },
+            { key: "_pickup_time", value: reservation.pickupTime },
+            { key: "_return_time", value: reservation.returnTime },
+            { key: "_bike_size", value: bike.size },
+            {
+              key: "_rental_price_per_day",
+              value: bike.pricePerDay.toString(),
+            },
+          ],
+        };
+      });
+
+      // Si hay seguro, agregarlo como producto adicional o metadata
+      if (reservation.insurance) {
+        lineItems[0].meta_data?.push(
+          { key: "_insurance_type", value: reservation.insurance.id },
           {
-            key: "_rental_start_date",
-            value: reservation.startDate?.toISOString() || "",
+            key: "_insurance_price",
+            value: reservation.insurance.price.toString(),
           },
-          {
-            key: "_rental_end_date",
-            value: reservation.endDate?.toISOString() || "",
-          },
-          { key: "_rental_days", value: reservation.totalDays.toString() },
-          { key: "_pickup_time", value: reservation.pickupTime },
-          { key: "_return_time", value: reservation.returnTime },
-          { key: "_bike_size", value: bike.size },
-        ],
-      }));
+        );
+      }
 
       const orderData = {
         status: "pending",
@@ -333,6 +216,8 @@ export class WooCommerceCartService {
           },
           { key: "_pickup_time", value: reservation.pickupTime },
           { key: "_return_time", value: reservation.returnTime },
+          { key: "_total_bikes", value: bikes.length.toString() },
+          { key: "_reservation_source", value: "rental_app" },
         ],
       };
 
@@ -353,11 +238,14 @@ export class WooCommerceCartService {
       );
 
       if (!response.ok) {
-        throw new Error(`Error creating order: ${response.statusText}`);
+        const errorData = await response.text();
+        throw new Error(
+          `Error creating order: ${response.status} ${response.statusText} - ${errorData}`,
+        );
       }
 
       const order = await response.json();
-      console.log("✅ Orden creada:", order);
+      console.log("✅ Orden creada exitosamente:", order);
 
       // Redirigir al checkout con la orden creada
       return `${this.checkoutUrl}/order-pay/${order.id}/?pay_for_order=true&key=${order.order_key}`;
@@ -365,6 +253,103 @@ export class WooCommerceCartService {
       console.error("❌ Error creating direct order:", error);
       throw error;
     }
+  }
+
+  // Método principal: intentar crear orden directa, si falla usar URL con parámetros
+  async redirectToCheckout(
+    bikes: SelectedBike[],
+    reservation: ReservationData,
+    customerData: CustomerData,
+  ): Promise<void> {
+    try {
+      console.log("🚀 Iniciando proceso de checkout mejorado...");
+
+      // Intentar crear orden directa primero
+      try {
+        const checkoutUrl = await this.createDirectOrder(
+          bikes,
+          reservation,
+          customerData,
+        );
+
+        console.log("🔗 Redirigiendo a checkout con orden:", checkoutUrl);
+
+        // Guardar datos de la orden para referencia
+        localStorage.setItem(
+          "bikesul_current_order",
+          JSON.stringify({
+            bikes,
+            reservation,
+            customerData,
+            checkoutUrl,
+            timestamp: new Date().toISOString(),
+          }),
+        );
+
+        // Redirigir a la página de checkout
+        window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+
+        return;
+      } catch (orderError) {
+        console.warn(
+          "⚠️ No se pudo crear orden directa, usando URL con parámetros:",
+          orderError,
+        );
+
+        // Fallback: usar URL con parámetros
+        const checkoutUrl = this.generateCheckoutUrl(
+          bikes,
+          reservation,
+          customerData,
+        );
+
+        console.log("🔗 Redirigiendo a checkout con parámetros:", checkoutUrl);
+
+        // Guardar datos para referencia
+        localStorage.setItem(
+          "bikesul_current_order",
+          JSON.stringify({
+            bikes,
+            reservation,
+            customerData,
+            checkoutUrl,
+            method: "parameters",
+            timestamp: new Date().toISOString(),
+          }),
+        );
+
+        // Redirigir a la página de checkout
+        window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+      }
+    } catch (error) {
+      console.error("❌ Error en proceso de checkout:", error);
+      throw error;
+    }
+  }
+
+  // Método de compatibilidad (no usado)
+  async addToCart(cartItem: WooCommerceCartItem): Promise<boolean> {
+    console.log(
+      "⚠️ addToCart method is deprecated, using direct order creation instead",
+    );
+    return false;
+  }
+
+  // Método de compatibilidad (no usado)
+  async addMultipleToCart(
+    bikes: SelectedBike[],
+    reservation: ReservationData,
+  ): Promise<boolean> {
+    console.log(
+      "⚠️ addMultipleToCart method is deprecated, using direct order creation instead",
+    );
+    return false;
+  }
+
+  // Método de compatibilidad (no usado)
+  async clearCart(): Promise<boolean> {
+    console.log("⚠️ clearCart method is deprecated");
+    return true;
   }
 }
 
