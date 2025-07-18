@@ -249,15 +249,31 @@ export class WooCommerceCartService {
         };
       });
 
-      // Si hay seguro, agregarlo como producto adicional o metadata
+      // Si hay seguro, agregarlo como line item separado
       if (reservation.insurance) {
-        lineItems[0].meta_data?.push(
-          { key: "_insurance_type", value: reservation.insurance.id },
-          {
-            key: "_insurance_price",
-            value: reservation.insurance.price.toString(),
-          },
-        );
+        const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
+        const totalInsurancePrice =
+          reservation.insurance.price * totalBikes * reservation.totalDays;
+
+        lineItems.push({
+          // Usar un ID ficticio para el seguro o crear un producto de seguro en WooCommerce
+          product_id: 99999, // ID ficticio - necesitarás crear un producto de seguro en WooCommerce
+          quantity: 1,
+          price: totalInsurancePrice,
+          meta_data: [
+            { key: "_insurance_type", value: reservation.insurance.id },
+            { key: "_insurance_name", value: reservation.insurance.name },
+            {
+              key: "_insurance_price_per_bike_per_day",
+              value: reservation.insurance.price.toString(),
+            },
+            { key: "_insurance_total_bikes", value: totalBikes.toString() },
+            {
+              key: "_insurance_total_days",
+              value: reservation.totalDays.toString(),
+            },
+          ],
+        });
       }
 
       const orderData = {
