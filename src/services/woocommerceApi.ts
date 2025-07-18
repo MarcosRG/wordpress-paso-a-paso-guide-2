@@ -290,7 +290,7 @@ export const checkAtumAvailability = async (
         mode: "cors",
       }),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Request timeout")), 5000),
+        setTimeout(() => reject(new Error("Request timeout")), 30000),
       ),
     ]);
 
