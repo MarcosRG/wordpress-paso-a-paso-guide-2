@@ -38,7 +38,10 @@ export class InsuranceProductService {
     console.log(`🔍 Buscando producto de seguro ${insuranceType}...`);
 
     // Estrategia 1: Verificar IDs conocidos
-    for (const productId of this.INSURANCE_PRODUCT_IDS) {
+    // Verificar IDs conocidos para el tipo específico
+    const idsToCheck = this.INSURANCE_PRODUCT_IDS[insuranceType] || [];
+
+    for (const productId of idsToCheck) {
       try {
         const product = await wooCommerceApi.getProduct(productId);
         if (product && this.isValidInsuranceProduct(product, insuranceType)) {
@@ -51,7 +54,7 @@ export class InsuranceProductService {
 
           this.productCache.set(cacheKey, productInfo);
           console.log(
-            `✅ Producto de seguro encontrado: ID ${productId} - ${product.name}`,
+            `✅ Producto de seguro ${insuranceType} encontrado: ID ${productId} - ${product.name}`,
           );
           return productInfo;
         }
