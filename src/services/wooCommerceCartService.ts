@@ -432,8 +432,8 @@ export class WooCommerceCartService {
           }),
         );
 
-        // Redirigir a la página de checkout
-        window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+        // Redirigir en la misma ventana para evitar confusión
+        window.location.href = checkoutUrl;
 
         return;
       } catch (orderError) {
