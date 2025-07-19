@@ -11,11 +11,26 @@ export const useConnectivityAlert = () => {
   useEffect(() => {
     const checkConnectivity = () => {
       const status = getConnectivityStatus();
+      const protection = getWooCommerceProtectionStatus();
       const now = Date.now();
 
       // Solo mostrar alertas cada 2 minutos para evitar spam
       if (now - lastAlertTime.current < 120000) {
         return;
+      }
+
+      // Alert para circuit breaker abierto (prioridad máxima)
+      if (protection.circuitBreaker.state === "OPEN") {
+        toast({
+          title: "🚨 Protección API Activada",
+          description: `Circuit breaker abierto - requests temporalmente bloqueados para proteger el servidor`,
+          variant: "destructive",
+          duration: 15000,
+        });
+
+        lastAlertTime.current = now;
+        hasShownCriticalAlert.current = true;
+        return; // Priorizar esta alerta
       }
 
       // Alert para múltiples errores consecutivos
