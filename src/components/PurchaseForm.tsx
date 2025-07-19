@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";\nimport { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";\nimport { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   User,
@@ -9,13 +9,6 @@ import {
   MapPin,
   CreditCard,
   AlertCircle,
-  Calendar,
-  Users,
-  Ruler,
-  IdCard,
-  Building,
-  ClockIcon,
-  CheckCircle,
 } from "lucide-react";
 import {
   sanitizeString,
@@ -37,14 +30,6 @@ export interface CustomerData {
   city: string;
   postalCode: string;
   country: string;
-  age: string;
-  height: string;
-  gender: string;
-  documentType: string;
-  documentNumber: string;
-  issuedBy: string;
-  expiresDate: string;
-  acceptTerms: boolean;
 }
 
 interface PurchaseFormProps {
