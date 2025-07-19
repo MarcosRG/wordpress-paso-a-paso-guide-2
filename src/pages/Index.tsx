@@ -338,41 +338,6 @@ const Index = () => {
             </Button>
           )}
         </div>
-
-        {/* Notificación de estado ACF */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="mt-4">
-            <ACFStatusNotice />
-          </div>
-        )}
-
-        {/* Componente de protección API */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="mt-4">
-            <CircuitBreakerStatus />
-          </div>
-        )}
-
-        {/* Componente de estado de conectividad */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="mt-4">
-            <ConnectivityStatus />
-          </div>
-        )}
-
-        {/* Componente de debug de conectividad */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="mt-4">
-            <DebugConnectivity />
-          </div>
-        )}
-
-        {/* Componente de prueba temporal - REMOVER EN PRODUCCIÓN */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="mt-4">
-            <TestInsurance />
-          </div>
-        )}
       </div>
     </div>
   );
