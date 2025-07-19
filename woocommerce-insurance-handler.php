@@ -39,7 +39,18 @@ function bikesul_procesar_seguro_en_orden($item, $cart_item_key, $values, $order
     $product_id = $item->get_product_id();
     $is_insurance = get_post_meta($product_id, '_is_insurance_product', true);
     
-    if ($is_insurance === 'yes') {
+        // También verificar si tiene datos de seguro en meta_data
+    $has_insurance_meta = false;
+    $meta_data = $item->get_meta_data();
+    foreach ($meta_data as $meta) {
+        $meta_array = $meta->get_data();
+        if (in_array($meta_array['key'], ['_insurance_price_per_bike_per_day', '_insurance_total_bikes', '_insurance_total_days'])) {
+            $has_insurance_meta = true;
+            break;
+        }
+    }
+
+    if ($is_insurance === 'yes' || $has_insurance_meta) {
         // Este es un producto de seguro, aplicar lógica especial
         $insurance_price_per_bike_per_day = 0;
         $insurance_total_bikes = 0;
@@ -123,7 +134,12 @@ function bikesul_ajustar_precio_seguro_carrito($cart) {
         $product_id = $cart_item['product_id'];
         $is_insurance = get_post_meta($product_id, '_is_insurance_product', true);
         
-        if ($is_insurance === 'yes') {
+                // También verificar si tiene datos de seguro en cart_item
+        $has_insurance_data = isset($cart_item['insurance_price_per_bike_per_day']) ||
+                             isset($cart_item['insurance_total_bikes']) ||
+                             isset($cart_item['insurance_total_days']);
+
+        if ($is_insurance === 'yes' || $has_insurance_data) {
             $insurance_price_per_bike_per_day = 0;
             $insurance_total_bikes = 0;
             $insurance_total_days = 0;
@@ -163,7 +179,12 @@ function bikesul_mostrar_info_seguro_carrito($item_data, $cart_item) {
     $product_id = $cart_item['product_id'];
     $is_insurance = get_post_meta($product_id, '_is_insurance_product', true);
     
-    if ($is_insurance === 'yes') {
+        // También verificar si tiene datos de seguro en cart_item
+    $has_insurance_data = isset($cart_item['insurance_price_per_bike_per_day']) ||
+                         isset($cart_item['insurance_total_bikes']) ||
+                         isset($cart_item['insurance_total_days']);
+
+    if ($is_insurance === 'yes' || $has_insurance_data) {
         if (isset($cart_item['insurance_price_per_bike_per_day'])) {
             $item_data[] = array(
                 'key' => 'Precio por bicicleta/día',
