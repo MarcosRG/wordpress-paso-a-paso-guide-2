@@ -78,11 +78,16 @@ export const DebugConnectivity = () => {
   const clearLogs = () => {
     setDebugLogs([]);
     connectivityMonitor.reset();
-    clearInterceptedErrors();
+    // clearInterceptedErrors(); // Temporarily disabled
     addLog("🧹 Logs limpiados y métricas reseteadas");
   };
 
   const showInterceptedErrors = () => {
+    // Temporarily disabled - error interceptor causes fetch recursion
+    addLog("⚠️ Error interceptor temporalmente deshabilitado");
+    addLog("🔧 Causa recursión con fetchWithRetry - será reactivado después");
+
+    /* DISABLED TEMPORARILY
     const errorStats = getErrorStats();
     addLog(
       `📊 Errores interceptados: ${errorStats.total} total, ${errorStats.wooCommerceErrors} WooCommerce`,
@@ -94,6 +99,7 @@ export const DebugConnectivity = () => {
     } else {
       addLog("✅ No hay errores interceptados");
     }
+    */
   };
 
   const forceError = async () => {
