@@ -95,6 +95,7 @@ export class WooCommerceCartService {
         reservation.insurance.price.toString(),
       );
       params.append("insurance_total_bikes", totalBikes.toString());
+      params.append("insurance_total_days", reservation.totalDays.toString());
       params.append("insurance_total_price", totalInsurancePrice.toString());
     }
 
