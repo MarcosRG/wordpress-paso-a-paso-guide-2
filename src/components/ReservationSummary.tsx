@@ -95,12 +95,37 @@ export const ReservationSummary = ({
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold">
-                      €{bike.pricePerDay}/{t("day")}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      €{bike.pricePerDay * bike.quantity}/{t("day")} total
-                    </div>
+                    {(() => {
+                      // Calculate actual price per day based on ACF pricing
+                      const acfPricing = bike.wooCommerceData?.product
+                        ? extractACFPricing(bike.wooCommerceData.product)
+                        : null;
+
+                      let actualPricePerDay = bike.pricePerDay;
+
+                      if (acfPricing && reservation.totalDays > 0) {
+                        // Get the ACF price per day for the rental duration
+                        if (reservation.totalDays <= 2) {
+                          actualPricePerDay = acfPricing.precio_1_2;
+                        } else if (reservation.totalDays <= 6) {
+                          actualPricePerDay = acfPricing.precio_3_6;
+                        } else {
+                          actualPricePerDay = acfPricing.precio_7_mais;
+                        }
+                      }
+
+                      return (
+                        <>
+                          <div className="font-semibold">
+                            €{actualPricePerDay.toFixed(2)}/{t("day")}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            €{(actualPricePerDay * bike.quantity).toFixed(2)}/
+                            {t("day")} total
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
