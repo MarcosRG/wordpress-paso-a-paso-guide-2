@@ -296,14 +296,19 @@ const fetchWithRetry = async (
   timeout: number = TIMEOUT_CONFIG.medium,
   maxRetries: number = RETRY_CONFIG.maxRetries,
 ): Promise<Response> => {
-  // Check circuit breaker and rate limiter
-  if (!canMakeWooCommerceRequest()) {
-    throw new Error("Request blocked by circuit breaker or rate limiter");
-  }
-
   let lastError: Error | null = null;
+  let circuitBreakerChecked = false;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    // Check circuit breaker on first attempt or after reset
+    if (attempt === 0 || !circuitBreakerChecked) {
+      if (!canMakeWooCommerceRequest()) {
+        console.warn(`🚫 Request blocked by circuit breaker: ${url}`);
+        throw new Error("Request blocked by circuit breaker or rate limiter");
+      }
+      circuitBreakerChecked = true;
+    }
+
     try {
       console.log(`🔄 Intento ${attempt + 1}/${maxRetries + 1} para: ${url}`);
 
@@ -321,7 +326,17 @@ const fetchWithRetry = async (
       ]);
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Handle HTTP errors differently from network errors
+        if (response.status >= 500) {
+          throw new Error(
+            `Server error ${response.status}: ${response.statusText}`,
+          );
+        } else if (response.status === 404) {
+          console.warn(`⚠️ Resource not found: ${url}`);
+          return response; // Return 404 responses for handling upstream
+        } else {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
       }
 
       console.log(`✅ Éxito en intento ${attempt + 1}`);
@@ -332,10 +347,35 @@ const fetchWithRetry = async (
       lastError = error as Error;
       console.warn(`⚠️ Intento ${attempt + 1} falló:`, error);
 
+      // Handle network errors vs other errors differently
+      const isNetworkError =
+        error instanceof TypeError &&
+        (error.message.includes("Failed to fetch") ||
+          error.message.includes("fetch") ||
+          error.message.includes("Network request failed"));
+
+      const isTimeoutError = error.message === "Request timeout";
+
+      // For network errors, wait longer before next attempt
+      if (attempt < maxRetries && (isNetworkError || isTimeoutError)) {
+        const waitTime = Math.min(1000 * Math.pow(2, attempt), 5000); // Exponential backoff up to 5s
+        console.log(
+          `⏳ Esperando ${waitTime}ms antes del siguiente intento...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+
+        // Reset circuit breaker check for network errors to allow retry
+        if (isNetworkError) {
+          circuitBreakerChecked = false;
+        }
+      }
+
       // Solo registrar error si es el último intento (todos fallaron)
       if (attempt === maxRetries) {
-        // Registrar tipo de error solo cuando realmente falló todo
-        recordWooCommerceFailure(); // Register failure in circuit breaker
+        // Only register failure in circuit breaker for non-network errors or after all retries
+        if (!isNetworkError || attempt === maxRetries) {
+          recordWooCommerceFailure(); // Register failure in circuit breaker
+        }
 
         if (error instanceof Error) {
           if (error.message === "Request timeout") {
@@ -642,7 +682,7 @@ export const wooCommerceApi = {
   },
 
   // Get product with ACF data - temporarily disabled to avoid endpoint errors
-    async getProductWithACF(
+  async getProductWithACF(
     productId: number,
   ): Promise<Record<string, unknown> | null> {
     // Use WooCommerce API to extract ACF data from meta_data
@@ -658,7 +698,7 @@ export const wooCommerceApi = {
           mode: "cors",
         },
         TIMEOUT_CONFIG.short,
-        1
+        1,
       );
 
       if (!response.ok) {
@@ -677,11 +717,14 @@ export const wooCommerceApi = {
       if (productData && productData.meta_data) {
         productData.meta_data.forEach((meta: any) => {
           // Look for pricing fields and other relevant ACF fields
-          if (meta.key && meta.value &&
-              (meta.key.includes('precio') ||
-               meta.key.includes('price') ||
-               meta.key.includes('ACF') ||
-               !meta.key.startsWith('_'))) {
+          if (
+            meta.key &&
+            meta.value &&
+            (meta.key.includes("precio") ||
+              meta.key.includes("price") ||
+              meta.key.includes("ACF") ||
+              !meta.key.startsWith("_"))
+          ) {
             acfData[meta.key] = meta.value;
           }
         });
@@ -698,8 +741,11 @@ export const wooCommerceApi = {
       }
 
       return null;
-        } catch (error) {
-      console.warn(`⚠️ Error obteniendo ACF para producto ${productId}:`, error);
+    } catch (error) {
+      console.warn(
+        `⚠️ Error obteniendo ACF para producto ${productId}:`,
+        error,
+      );
       return null;
     }
   },
