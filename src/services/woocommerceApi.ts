@@ -328,10 +328,13 @@ const fetchWithRetry = async (
           if (error.message === "Request timeout") {
             recordApiTimeout();
           } else if (
+            error.message.includes("Failed to fetch") ||
             error.message.includes("fetch") ||
-            error.message.includes("network")
+            error.message.includes("network") ||
+            error.name === "TypeError"
           ) {
             recordApiNetworkError();
+            isNetworkAvailable = false; // Mark network as unavailable
           }
         }
         break;
