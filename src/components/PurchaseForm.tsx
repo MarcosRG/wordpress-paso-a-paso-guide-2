@@ -9,6 +9,13 @@ import {
   MapPin,
   CreditCard,
   AlertCircle,
+  Calendar,
+  Users,
+  Ruler,
+  IdCard,
+  Building,
+  ClockIcon,
+  CheckCircle,
 } from "lucide-react";
 import {
   sanitizeString,
@@ -30,6 +37,14 @@ export interface CustomerData {
   city: string;
   postalCode: string;
   country: string;
+  age: string;
+  height: string;
+  gender: string;
+  documentType: string;
+  documentNumber: string;
+  issuedBy: string;
+  expiresDate: string;
+  acceptTerms: boolean;
 }
 
 interface PurchaseFormProps {
