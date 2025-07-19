@@ -144,6 +144,20 @@ export class LocalSyncService {
       console.log(`🔧 Variaciones sincronizadas: ${neonVariations.length}`);
     } catch (error) {
       console.error("❌ Error durante la sincronización:", error);
+
+      // Handle network errors gracefully - don't crash the app
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        console.warn(
+          "🌐 Network connectivity issue during sync, will retry later",
+        );
+        // Don't throw - let the app continue with cached data
+        return;
+      }
+
+      // For other errors, still throw
       throw error;
     } finally {
       this.isRunning = false;
