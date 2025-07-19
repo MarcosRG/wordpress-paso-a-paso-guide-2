@@ -1,14 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   User,
@@ -17,13 +9,6 @@ import {
   MapPin,
   CreditCard,
   AlertCircle,
-  Calendar,
-  Users,
-  Ruler,
-  IdCard,
-  Building,
-  Clock,
-  CheckCircle,
 } from "lucide-react";
 import {
   sanitizeString,
@@ -45,14 +30,6 @@ export interface CustomerData {
   city: string;
   postalCode: string;
   country: string;
-  age: string;
-  height: string;
-  gender: string;
-  documentType: string;
-  documentNumber: string;
-  issuedBy: string;
-  expiresDate: string;
-  acceptTerms: boolean;
 }
 
 interface PurchaseFormProps {
@@ -68,63 +45,32 @@ export const PurchaseForm = ({
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const handleInputChange = (
-    field: keyof CustomerData,
-    value: string | boolean,
-  ) => {
-    // Handle boolean fields (acceptTerms)
-    let processedValue: any = value;
-    if (field === "acceptTerms") {
-      processedValue = value === "true" || value === true;
-    } else {
-      // Sanitizar el input for string fields
-      processedValue = sanitizeString(value as string);
-    }
+  const handleInputChange = (field: keyof CustomerData, value: string) => {
+    // Sanitizar el input
+    const sanitizedValue = sanitizeString(value);
 
     // Validación específica por campo
     let fieldError = "";
     switch (field) {
       case "email":
-        if (processedValue && !isValidEmail(processedValue)) {
+        if (sanitizedValue && !isValidEmail(sanitizedValue)) {
           fieldError = "Formato de email inválido";
         }
         break;
       case "phone":
-        if (processedValue && !isValidPhone(processedValue)) {
+        if (sanitizedValue && !isValidPhone(sanitizedValue)) {
           fieldError = "Formato de teléfono inválido";
         }
         break;
       case "firstName":
       case "lastName":
-        if (processedValue && !isValidName(processedValue)) {
+        if (sanitizedValue && !isValidName(sanitizedValue)) {
           fieldError = "Solo letras y espacios, máximo 50 caracteres";
         }
         break;
       case "postalCode":
-        if (processedValue && !isValidPostalCode(processedValue)) {
+        if (sanitizedValue && !isValidPostalCode(sanitizedValue)) {
           fieldError = "Código postal debe ser formato XXXX-XXX";
-        }
-        break;
-      case "age":
-        const age = parseInt(processedValue);
-        if (processedValue && (isNaN(age) || age < 18 || age > 100)) {
-          fieldError = "Age must be between 18 and 100";
-        }
-        break;
-      case "height":
-        const height = parseInt(processedValue);
-        if (processedValue && (isNaN(height) || height < 100 || height > 250)) {
-          fieldError = "Height must be between 100 and 250 cm";
-        }
-        break;
-      case "documentNumber":
-        if (processedValue && processedValue.length < 5) {
-          fieldError = "Document number too short";
-        }
-        break;
-      case "expiresDate":
-        if (processedValue && new Date(processedValue) <= new Date()) {
-          fieldError = "Document must not be expired";
         }
         break;
     }
@@ -138,7 +84,7 @@ export const PurchaseForm = ({
     // Actualizar datos del cliente
     const newCustomerData = {
       ...customerData,
-      [field]: processedValue,
+      [field]: sanitizedValue,
     };
 
     // Validar todos los datos y actualizar errores generales
@@ -247,149 +193,6 @@ export const PurchaseForm = ({
                 </div>
               )}
             </div>
-
-            {/* Additional Personal Details */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="age" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Age *
-                </Label>
-                <Input
-                  id="age"
-                  type="number"
-                  value={customerData.age}
-                  onChange={(e) => handleInputChange("age", e.target.value)}
-                  placeholder="25"
-                  min="18"
-                  max="100"
-                  required
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="height" className="flex items-center gap-2">
-                  <Ruler className="h-4 w-4" />
-                  Height (cm) *
-                </Label>
-                <Input
-                  id="height"
-                  type="number"
-                  value={customerData.height}
-                  onChange={(e) => handleInputChange("height", e.target.value)}
-                  placeholder="175"
-                  min="100"
-                  max="250"
-                  required
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="gender" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Gender *
-                </Label>
-                <Select
-                  value={customerData.gender}
-                  onValueChange={(value) => handleInputChange("gender", value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Document Information */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <IdCard className="h-5 w-5" />
-              Document Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="documentType">BI/CC/PASSPORT *</Label>
-                <Select
-                  value={customerData.documentType}
-                  onValueChange={(value) =>
-                    handleInputChange("documentType", value)
-                  }
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select document type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bi">
-                      BI (Bilhete de Identidade)
-                    </SelectItem>
-                    <SelectItem value="cc">CC (Cartão de Cidadão)</SelectItem>
-                    <SelectItem value="passport">Passport</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="documentNumber">Document Number *</Label>
-                <Input
-                  id="documentNumber"
-                  value={customerData.documentNumber}
-                  onChange={(e) =>
-                    handleInputChange("documentNumber", e.target.value)
-                  }
-                  placeholder="123456789"
-                  required
-                  className="mt-1"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="issuedBy" className="flex items-center gap-2">
-                  <Building className="h-4 w-4" />
-                  Issued by *
-                </Label>
-                <Input
-                  id="issuedBy"
-                  value={customerData.issuedBy}
-                  onChange={(e) =>
-                    handleInputChange("issuedBy", e.target.value)
-                  }
-                  placeholder="Portugal"
-                  required
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label
-                  htmlFor="expiresDate"
-                  className="flex items-center gap-2"
-                >
-                  <Clock className="h-4 w-4" />
-                  Expires *
-                </Label>
-                <Input
-                  id="expiresDate"
-                  type="date"
-                  value={customerData.expiresDate}
-                  onChange={(e) =>
-                    handleInputChange("expiresDate", e.target.value)
-                  }
-                  required
-                  className="mt-1"
-                  min={new Date().toISOString().split("T")[0]}
-                />
-              </div>
-            </div>
           </CardContent>
         </Card>
 
@@ -451,42 +254,6 @@ export const PurchaseForm = ({
                   placeholder="Portugal"
                   className="mt-1"
                 />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Terms and Conditions */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                id="acceptTerms"
-                checked={customerData.acceptTerms}
-                onCheckedChange={(checked) =>
-                  handleInputChange("acceptTerms", checked ? "true" : "false")
-                }
-                className="mt-1"
-              />
-              <div className="grid gap-1.5 leading-none">
-                <Label
-                  htmlFor="acceptTerms"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                >
-                  <CheckCircle className="inline h-4 w-4 mr-1" />I accept the{" "}
-                  <a
-                    href="https://bikesultoursgest.com/termos-e-condicoes/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline"
-                  >
-                    Terms and Conditions
-                  </a>{" "}
-                  *
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  You must accept the terms and conditions to proceed.
-                </p>
               </div>
             </div>
           </CardContent>

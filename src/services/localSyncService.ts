@@ -72,21 +72,7 @@ export class LocalSyncService {
           try {
             acfData = await wooCommerceApi.getProductWithACF(product.id);
           } catch (error) {
-            // Handle network errors during ACF data retrieval
-            if (
-              error instanceof TypeError &&
-              error.message.includes("Failed to fetch")
-            ) {
-              console.warn(
-                `🌐 Skipping ACF data for product ${product.id} due to network issue`,
-              );
-            } else {
-              console.warn(
-                `⚠️ Error getting ACF for product ${product.id}:`,
-                error,
-              );
-            }
-            // ACF data is optional - continue without it
+            // ACF data is optional
           }
 
           // Convertir producto a formato Neon
@@ -231,21 +217,7 @@ export class LocalSyncService {
       try {
         acfData = await wooCommerceApi.getProductWithACF(product.id);
       } catch (error) {
-        // Handle network errors during ACF data retrieval
-        if (
-          error instanceof TypeError &&
-          error.message.includes("Failed to fetch")
-        ) {
-          console.warn(
-            `🌐 Skipping ACF data for product ${product.id} due to network issue`,
-          );
-        } else {
-          console.warn(
-            `⚠️ Error getting ACF for product ${product.id}:`,
-            error,
-          );
-        }
-        // ACF data is optional - continue without it
+        // ACF data is optional
       }
 
       // Convertir y actualizar en cache

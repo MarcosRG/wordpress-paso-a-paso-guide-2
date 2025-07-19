@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { ReservationData } from '@/pages/Index';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { CalendarDays, Clock } from 'lucide-react';\nimport { pt } from 'date-fns/locale';
+import { CalendarDays, Clock } from 'lucide-react';
 
 interface DateTimeSelectionProps {
   reservation: ReservationData;

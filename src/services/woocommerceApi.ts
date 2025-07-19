@@ -712,18 +712,7 @@ export const wooCommerceApi = {
   ): Promise<Record<string, unknown> | null> {
     // Use WooCommerce API to extract ACF data from meta_data
     if (!canMakeWooCommerceRequest()) {
-      console.warn(
-        `🚫 Request blocked for product ${productId} ACF data (circuit breaker/rate limit)`,
-      );
-      return null;
-    }
-
-    // Additional check for network availability
-    const circuitState = wooCommerceCircuitBreaker.getState();
-    if (circuitState.state === "OPEN") {
-      console.warn(
-        `🚫 Circuit breaker is OPEN, skipping ACF data for product ${productId}`,
-      );
+      console.warn(`⚠️ Request blocked for product ${productId} ACF data`);
       return null;
     }
 
@@ -782,21 +771,6 @@ export const wooCommerceApi = {
         `⚠️ Error obteniendo ACF para producto ${productId}:`,
         error,
       );
-
-      // Handle network errors specifically
-      if (
-        error instanceof TypeError &&
-        error.message.includes("Failed to fetch")
-      ) {
-        console.warn(
-          `🌐 Network connectivity issue for product ${productId} ACF data`,
-        );
-        await handleNetworkError();
-        // Return null instead of throwing to allow sync to continue
-        return null;
-      }
-
-      // For other errors, also return null to not break the sync
       return null;
     }
   },
