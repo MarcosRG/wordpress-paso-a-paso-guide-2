@@ -763,11 +763,19 @@ export const wooCommerceApi = {
     }
   },
 
-  // Obtener variaciones de un producto específico
+  // Obtener variaciones de un producto específico con circuit breaker
   async getProductVariations(
     productId: number,
   ): Promise<WooCommerceVariation[]> {
-    // Check network availability first
+    // Check circuit breaker first
+    if (!canMakeWooCommerceRequest()) {
+      console.warn(
+        `⚠️ Request blocked for product ${productId} variations - circuit breaker or rate limit`,
+      );
+      return [];
+    }
+
+    // Check network availability
     if (!(await checkNetworkAvailability())) {
       console.warn(
         `Network unavailable, returning empty variations for product ${productId}`,
@@ -776,14 +784,14 @@ export const wooCommerceApi = {
     }
 
     try {
-      // Use enhanced fetch with retry logic
+      // Use enhanced fetch with retry logic - reduced retries for variations
       const response = await fetchWithRetry(
         `${WOOCOMMERCE_API_BASE}/products/${productId}/variations?per_page=100`,
         {
           mode: "cors",
         },
         TIMEOUT_CONFIG.short, // 10 segundos
-        2, // 2 reintentos para variaciones
+        1, // Solo 1 reintento para variaciones para reducir carga
       );
 
       if (!response.ok) {
