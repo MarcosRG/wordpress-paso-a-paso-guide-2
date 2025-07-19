@@ -216,6 +216,149 @@ export const PurchaseForm = ({
                 </div>
               )}
             </div>
+
+            {/* Additional Personal Details */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="age" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Age *
+                </Label>
+                <Input
+                  id="age"
+                  type="number"
+                  value={customerData.age}
+                  onChange={(e) => handleInputChange("age", e.target.value)}
+                  placeholder="25"
+                  min="18"
+                  max="100"
+                  required
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="height" className="flex items-center gap-2">
+                  <Ruler className="h-4 w-4" />
+                  Height (cm) *
+                </Label>
+                <Input
+                  id="height"
+                  type="number"
+                  value={customerData.height}
+                  onChange={(e) => handleInputChange("height", e.target.value)}
+                  placeholder="175"
+                  min="100"
+                  max="250"
+                  required
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="gender" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Gender *
+                </Label>
+                <Select
+                  value={customerData.gender}
+                  onValueChange={(value) => handleInputChange("gender", value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Document Information */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <IdCard className="h-5 w-5" />
+              Document Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="documentType">BI/CC/PASSPORT *</Label>
+                <Select
+                  value={customerData.documentType}
+                  onValueChange={(value) =>
+                    handleInputChange("documentType", value)
+                  }
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select document type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bi">
+                      BI (Bilhete de Identidade)
+                    </SelectItem>
+                    <SelectItem value="cc">CC (Cartão de Cidadão)</SelectItem>
+                    <SelectItem value="passport">Passport</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="documentNumber">Document Number *</Label>
+                <Input
+                  id="documentNumber"
+                  value={customerData.documentNumber}
+                  onChange={(e) =>
+                    handleInputChange("documentNumber", e.target.value)
+                  }
+                  placeholder="123456789"
+                  required
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="issuedBy" className="flex items-center gap-2">
+                  <Building className="h-4 w-4" />
+                  Issued by *
+                </Label>
+                <Input
+                  id="issuedBy"
+                  value={customerData.issuedBy}
+                  onChange={(e) =>
+                    handleInputChange("issuedBy", e.target.value)
+                  }
+                  placeholder="Portugal"
+                  required
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label
+                  htmlFor="expiresDate"
+                  className="flex items-center gap-2"
+                >
+                  <Clock className="h-4 w-4" />
+                  Expires *
+                </Label>
+                <Input
+                  id="expiresDate"
+                  type="date"
+                  value={customerData.expiresDate}
+                  onChange={(e) =>
+                    handleInputChange("expiresDate", e.target.value)
+                  }
+                  required
+                  className="mt-1"
+                  min={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
