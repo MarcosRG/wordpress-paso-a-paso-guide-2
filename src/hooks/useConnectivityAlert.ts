@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getConnectivityStatus } from "@/services/connectivityMonitor";
+import { getWooCommerceProtectionStatus } from "@/services/circuitBreaker";
 
 export const useConnectivityAlert = () => {
   const { toast } = useToast();
