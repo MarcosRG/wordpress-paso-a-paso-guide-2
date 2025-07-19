@@ -8,6 +8,16 @@
 // 1. IDENTIFICAR PRODUCTOS DE SEGURO
 // ===============================================
 add_action('init', 'bikesul_setup_insurance_products');
+add_action('wp_loaded', 'bikesul_force_insurance_setup'); // Forzar una vez más
+
+function bikesul_force_insurance_setup() {
+    // Solo ejecutar una vez por día para no sobrecargar
+    $last_run = get_option('bikesul_last_insurance_setup', 0);
+    if (time() - $last_run > 86400) { // 24 horas
+        bikesul_setup_insurance_products();
+        update_option('bikesul_last_insurance_setup', time());
+    }
+}
 
 function bikesul_setup_insurance_products() {
     // Buscar productos que contengan "seguro" en el nombre
