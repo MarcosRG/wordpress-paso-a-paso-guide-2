@@ -771,6 +771,21 @@ export const wooCommerceApi = {
         `⚠️ Error obteniendo ACF para producto ${productId}:`,
         error,
       );
+
+      // Handle network errors specifically
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        console.warn(
+          `🌐 Network connectivity issue for product ${productId} ACF data`,
+        );
+        await handleNetworkError();
+        // Return null instead of throwing to allow sync to continue
+        return null;
+      }
+
+      // For other errors, also return null to not break the sync
       return null;
     }
   },
