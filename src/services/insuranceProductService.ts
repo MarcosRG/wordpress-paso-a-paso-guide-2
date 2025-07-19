@@ -19,11 +19,10 @@ export class InsuranceProductService {
   }
 
   // Lista de IDs de productos de seguro a verificar en orden de preferencia
-  private readonly INSURANCE_PRODUCT_IDS = [
-    18814, // ID principal configurado
-    18815, // Posible ID alternativo
-    18816, // Otro posible ID
-  ];
+  private readonly INSURANCE_PRODUCT_IDS = {
+    premium: [18814, 18815, 18816], // IDs posibles para seguro premium
+    basic: [18817, 18818, 18819], // IDs posibles para seguro básico
+  };
 
   // Buscar y verificar un producto de seguro válido
   async findValidInsuranceProduct(
