@@ -300,14 +300,12 @@ function bikesul_agregar_seguro_desde_url() {
         if (!empty($insurance_products)) {
             $insurance_product_id = $insurance_products[0]->ID;
             
-            $cart_item_data = array(
+                        $cart_item_data = array(
                 'insurance_type' => sanitize_text_field($_GET['insurance_type'] ?? ''),
                 'insurance_name' => $insurance_name,
                 'insurance_price_per_bike_per_day' => $insurance_price_per_bike_per_day,
                 'insurance_total_bikes' => $insurance_total_bikes,
                 'insurance_total_days' => $insurance_total_days,
-                'rental_price_per_day' => $insurance_price_per_bike_per_day,
-                'rental_days' => $insurance_total_days,
                 'rental_start_date' => sanitize_text_field($_GET['rental_start_date'] ?? ''),
                 'rental_end_date' => sanitize_text_field($_GET['rental_end_date'] ?? ''),
             );
