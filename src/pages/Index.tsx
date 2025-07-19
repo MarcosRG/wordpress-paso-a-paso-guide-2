@@ -338,6 +338,13 @@ const Index = () => {
           )}
         </div>
 
+        {/* Notificación de estado ACF */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-4">
+            <ACFStatusNotice />
+          </div>
+        )}
+
         {/* Componente de estado de conectividad */}
         {process.env.NODE_ENV === "development" && (
           <div className="mt-4">
