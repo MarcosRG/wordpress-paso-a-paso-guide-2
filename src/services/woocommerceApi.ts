@@ -698,12 +698,11 @@ export const wooCommerceApi = {
       }
 
       return null;
-    } catch (error) {
+        } catch (error) {
       console.warn(`⚠️ Error obteniendo ACF para producto ${productId}:`, error);
       return null;
     }
-
-    /* DISABLED TEMPORARILY - RE-ENABLE WHEN WORDPRESS ENDPOINT IS FIXED
+  },
     // Check network availability first
     if (!(await checkNetworkAvailability())) {
       console.warn(
