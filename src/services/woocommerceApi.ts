@@ -617,12 +617,14 @@ export const wooCommerceApi = {
     }
   },
 
-    // Get product with ACF data - temporarily disabled to avoid endpoint errors
+  // Get product with ACF data - temporarily disabled to avoid endpoint errors
   async getProductWithACF(
     productId: number,
   ): Promise<Record<string, unknown> | null> {
     // Temporarily disable ACF data fetching to avoid the wp/v2/product endpoint errors
-    console.info(`ℹ️ ACF data disabled for product ${productId} - using fallback pricing`);
+    console.info(
+      `ℹ️ ACF data disabled for product ${productId} - using fallback pricing`,
+    );
     return null;
 
     /* DISABLED TEMPORARILY - RE-ENABLE WHEN WORDPRESS ENDPOINT IS FIXED
@@ -693,8 +695,8 @@ export const wooCommerceApi = {
           );
         }
       }
-      return null;
-    }
+            return null;
+    */
   },
 
   // Get products by specific category
