@@ -68,32 +68,63 @@ export const PurchaseForm = ({
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const handleInputChange = (field: keyof CustomerData, value: string) => {
-    // Sanitizar el input
-    const sanitizedValue = sanitizeString(value);
+  const handleInputChange = (
+    field: keyof CustomerData,
+    value: string | boolean,
+  ) => {
+    // Handle boolean fields (acceptTerms)
+    let processedValue: any = value;
+    if (field === "acceptTerms") {
+      processedValue = value === "true" || value === true;
+    } else {
+      // Sanitizar el input for string fields
+      processedValue = sanitizeString(value as string);
+    }
 
     // Validación específica por campo
     let fieldError = "";
     switch (field) {
       case "email":
-        if (sanitizedValue && !isValidEmail(sanitizedValue)) {
+        if (processedValue && !isValidEmail(processedValue)) {
           fieldError = "Formato de email inválido";
         }
         break;
       case "phone":
-        if (sanitizedValue && !isValidPhone(sanitizedValue)) {
+        if (processedValue && !isValidPhone(processedValue)) {
           fieldError = "Formato de teléfono inválido";
         }
         break;
       case "firstName":
       case "lastName":
-        if (sanitizedValue && !isValidName(sanitizedValue)) {
+        if (processedValue && !isValidName(processedValue)) {
           fieldError = "Solo letras y espacios, máximo 50 caracteres";
         }
         break;
       case "postalCode":
-        if (sanitizedValue && !isValidPostalCode(sanitizedValue)) {
+        if (processedValue && !isValidPostalCode(processedValue)) {
           fieldError = "Código postal debe ser formato XXXX-XXX";
+        }
+        break;
+      case "age":
+        const age = parseInt(processedValue);
+        if (processedValue && (isNaN(age) || age < 18 || age > 100)) {
+          fieldError = "Age must be between 18 and 100";
+        }
+        break;
+      case "height":
+        const height = parseInt(processedValue);
+        if (processedValue && (isNaN(height) || height < 100 || height > 250)) {
+          fieldError = "Height must be between 100 and 250 cm";
+        }
+        break;
+      case "documentNumber":
+        if (processedValue && processedValue.length < 5) {
+          fieldError = "Document number too short";
+        }
+        break;
+      case "expiresDate":
+        if (processedValue && new Date(processedValue) <= new Date()) {
+          fieldError = "Document must not be expired";
         }
         break;
     }
@@ -107,7 +138,7 @@ export const PurchaseForm = ({
     // Actualizar datos del cliente
     const newCustomerData = {
       ...customerData,
-      [field]: sanitizedValue,
+      [field]: processedValue,
     };
 
     // Validar todos los datos y actualizar errores generales
