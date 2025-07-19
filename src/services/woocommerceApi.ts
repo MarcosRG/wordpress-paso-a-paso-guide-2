@@ -95,7 +95,7 @@ if (!CONSUMER_KEY || !CONSUMER_SECRET) {
   console.error("❌ WooCommerce credentials not properly configured");
 }
 
-// Crear las credenciales en base64 para la autenticación
+// Crear las credenciales en base64 para la autenticaci��n
 const auth = btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`);
 
 export const apiHeaders = {
@@ -645,11 +645,69 @@ export const wooCommerceApi = {
   async getProductWithACF(
     productId: number,
   ): Promise<Record<string, unknown> | null> {
-    // Temporarily disable ACF data fetching to avoid the wp/v2/product endpoint errors
-    console.info(
-      `ℹ️ ACF data disabled for product ${productId} - using fallback pricing`,
-    );
-    return null;
+    // Use WooCommerce API to extract ACF data from meta_data
+    if (!canMakeWooCommerceRequest()) {
+      console.warn(`⚠️ Request blocked for product ${productId} ACF data`);
+      return null;
+    }
+
+    try {
+      const response = await fetchWithRetry(
+        `${WOOCOMMERCE_API_BASE}/products/${productId}`,
+        {
+          mode: "cors",
+        },
+        TIMEOUT_CONFIG.short,
+        1,
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.warn(`Producto ${productId} no encontrado`);
+          return null;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const productData = await response.json();
+
+      // Extract ACF data from WooCommerce meta_data
+      const acfData: Record<string, unknown> = {};
+
+      if (productData && productData.meta_data) {
+        productData.meta_data.forEach((meta: any) => {
+          // Look for pricing fields and other relevant ACF fields
+          if (
+            meta.key &&
+            meta.value &&
+            (meta.key.includes("precio") ||
+              meta.key.includes("price") ||
+              meta.key.includes("ACF") ||
+              !meta.key.startsWith("_"))
+          ) {
+            acfData[meta.key] = meta.value;
+          }
+        });
+      }
+
+      // Also check if there's an acf property directly
+      if (productData.acf) {
+        Object.assign(acfData, productData.acf);
+      }
+
+      if (Object.keys(acfData).length > 0) {
+        console.log(`✅ ACF data extraída para producto ${productId}`);
+        return acfData;
+      }
+
+      return null;
+    } catch (error) {
+      console.warn(
+        `⚠️ Error obteniendo ACF para producto ${productId}:`,
+        error,
+      );
+      return null;
+    }
 
     /* DISABLED TEMPORARILY - RE-ENABLE WHEN WORDPRESS ENDPOINT IS FIXED
     // Check network availability first
