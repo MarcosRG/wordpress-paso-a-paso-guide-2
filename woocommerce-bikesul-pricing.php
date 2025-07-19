@@ -316,7 +316,9 @@ function bikesul_agregar_seguro_desde_url() {
                 'rental_end_date' => sanitize_text_field($_GET['rental_end_date'] ?? ''),
             );
             
-            WC()->cart->add_to_cart($insurance_product_id, $insurance_total_bikes, 0, array(), $cart_item_data);
+                        // IMPORTANTE: Para seguros, siempre usar cantidad 1
+            // El precio total se calcula en el handler de seguros
+            WC()->cart->add_to_cart($insurance_product_id, 1, 0, array(), $cart_item_data);
             
             error_log("BIKESUL: Seguro añadido - €{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} bikes × {$insurance_total_days} días");
         }
