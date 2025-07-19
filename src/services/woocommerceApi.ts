@@ -712,7 +712,18 @@ export const wooCommerceApi = {
   ): Promise<Record<string, unknown> | null> {
     // Use WooCommerce API to extract ACF data from meta_data
     if (!canMakeWooCommerceRequest()) {
-      console.warn(`⚠️ Request blocked for product ${productId} ACF data`);
+      console.warn(
+        `🚫 Request blocked for product ${productId} ACF data (circuit breaker/rate limit)`,
+      );
+      return null;
+    }
+
+    // Additional check for network availability
+    const circuitState = wooCommerceCircuitBreaker.getState();
+    if (circuitState.state === "OPEN") {
+      console.warn(
+        `🚫 Circuit breaker is OPEN, skipping ACF data for product ${productId}`,
+      );
       return null;
     }
 
