@@ -89,25 +89,32 @@ export class InsuranceProductService {
   ): boolean {
     const name = product.name.toLowerCase();
     const isPublished = product.status === "publish";
-    const hasPrice =
-      parseFloat(product.price || product.regular_price || "0") > 0;
+    const price = parseFloat(product.price || product.regular_price || "0");
 
-    // Para seguro premium debe contener "seguro" y "premium"
+    // Para seguro premium debe contener "seguro" y "premium" y tener precio > 0
     if (insuranceType === "premium") {
       return (
         isPublished &&
-        hasPrice &&
+        price > 0 &&
         (name.includes("seguro") || name.includes("insurance")) &&
         (name.includes("premium") || name.includes("bikesul"))
       );
     }
 
-    // Para seguro básico (normalmente gratis)
-    return (
-      isPublished &&
-      (name.includes("seguro") || name.includes("insurance")) &&
-      (name.includes("basic") || name.includes("basico"))
-    );
+    // Para seguro básico puede ser gratis y contener "básico" o "basic"
+    if (insuranceType === "basic") {
+      return (
+        isPublished &&
+        (name.includes("seguro") || name.includes("insurance")) &&
+        (name.includes("basic") ||
+          name.includes("basico") ||
+          name.includes("gratuito") ||
+          name.includes("free") ||
+          name.includes("responsabilidad"))
+      );
+    }
+
+    return false;
   }
 
   // Buscar productos de seguro por nombre
