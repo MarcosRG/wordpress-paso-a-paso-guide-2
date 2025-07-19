@@ -632,6 +632,15 @@ export const checkAtumAvailability = async (
   }
 };
 
+// Function to handle network connectivity issues
+const handleNetworkError = async (): Promise<void> => {
+  console.log("🔄 Handling network error, attempting circuit breaker reset...");
+  wooCommerceCircuitBreaker.resetIfNetworkRestored();
+
+  // Wait a bit before next operation
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+};
+
 export const wooCommerceApi = {
   // Get all products from ALUGUERES category (ID: 319)
   async getProducts(): Promise<WooCommerceProduct[]> {
