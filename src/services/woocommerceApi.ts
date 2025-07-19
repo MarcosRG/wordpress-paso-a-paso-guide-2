@@ -95,7 +95,7 @@ if (!CONSUMER_KEY || !CONSUMER_SECRET) {
   console.error("❌ WooCommerce credentials not properly configured");
 }
 
-// Crear las credenciales en base64 para la autenticaci��n
+// Crear las credenciales en base64 para la autenticación
 const auth = btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`);
 
 export const apiHeaders = {
@@ -362,7 +362,7 @@ const fetchWithRetry = async (
 
   // Solo mostrar reporte si realmente hay errores consecutivos
   const shortUrl = url.length > 50 ? `...${url.slice(-47)}` : url;
-  console.error(`❌ Falló después de ${maxRetries + 1} intentos: ${shortUrl}`);
+  console.error(`�� Falló después de ${maxRetries + 1} intentos: ${shortUrl}`);
 
   // Solo mostrar reporte detallado si hay patrones de error
   const status = getConnectivityStatus();
@@ -642,7 +642,7 @@ export const wooCommerceApi = {
   },
 
   // Get product with ACF data - temporarily disabled to avoid endpoint errors
-  async getProductWithACF(
+    async getProductWithACF(
     productId: number,
   ): Promise<Record<string, unknown> | null> {
     // Use WooCommerce API to extract ACF data from meta_data
@@ -658,7 +658,7 @@ export const wooCommerceApi = {
           mode: "cors",
         },
         TIMEOUT_CONFIG.short,
-        1,
+        1
       );
 
       if (!response.ok) {
@@ -677,14 +677,11 @@ export const wooCommerceApi = {
       if (productData && productData.meta_data) {
         productData.meta_data.forEach((meta: any) => {
           // Look for pricing fields and other relevant ACF fields
-          if (
-            meta.key &&
-            meta.value &&
-            (meta.key.includes("precio") ||
-              meta.key.includes("price") ||
-              meta.key.includes("ACF") ||
-              !meta.key.startsWith("_"))
-          ) {
+          if (meta.key && meta.value &&
+              (meta.key.includes('precio') ||
+               meta.key.includes('price') ||
+               meta.key.includes('ACF') ||
+               !meta.key.startsWith('_'))) {
             acfData[meta.key] = meta.value;
           }
         });
@@ -702,10 +699,7 @@ export const wooCommerceApi = {
 
       return null;
     } catch (error) {
-      console.warn(
-        `⚠️ Error obteniendo ACF para producto ${productId}:`,
-        error,
-      );
+      console.warn(`⚠️ Error obteniendo ACF para producto ${productId}:`, error);
       return null;
     }
 
@@ -777,9 +771,7 @@ export const wooCommerceApi = {
           );
         }
       }
-            return null;
-    */
-  },
+              },
 
   // Get products by specific category
   async getProductsByCategory(
