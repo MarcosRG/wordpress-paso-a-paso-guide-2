@@ -335,6 +335,8 @@ const fetchWithRetry = async (
       // Solo registrar error si es el último intento (todos fallaron)
       if (attempt === maxRetries) {
         // Registrar tipo de error solo cuando realmente falló todo
+        recordWooCommerceFailure(); // Register failure in circuit breaker
+
         if (error instanceof Error) {
           if (error.message === "Request timeout") {
             recordApiTimeout();
