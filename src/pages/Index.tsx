@@ -125,6 +125,14 @@ const Index = () => {
     city: "",
     postalCode: "",
     country: "Portugal",
+    age: "",
+    height: "",
+    gender: "",
+    documentType: "",
+    documentNumber: "",
+    issuedBy: "",
+    expiresDate: "",
+    acceptTerms: false,
   });
 
   const handleNext = () => {
