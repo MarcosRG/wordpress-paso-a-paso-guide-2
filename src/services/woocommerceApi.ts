@@ -703,6 +703,57 @@ export const wooCommerceApi = {
             `⚠️  Error ACF para producto ${productId}: ${error.message} - continuando sin ACF`,
           );
         }
+                if (!response.ok) {
+            if (response.status === 404) {
+              console.warn(`Producto ${productId} no encontrado en ${endpoint}`);
+              continue; // Try next endpoint
+            }
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const productData = await response.json();
+
+          // Extract ACF data from the response
+          if (productData && productData.acf) {
+            console.log(`✅ ACF data obtenida desde: ${endpoint}`);
+            return productData.acf;
+          } else if (productData && productData.meta_data) {
+            // Try to extract ACF from WooCommerce meta_data
+            const acfData: Record<string, unknown> = {};
+            productData.meta_data.forEach((meta: any) => {
+              if (meta.key && meta.key.startsWith('_') === false) {
+                acfData[meta.key] = meta.value;
+              }
+            });
+
+            if (Object.keys(acfData).length > 0) {
+              console.log(`✅ ACF data extraída de meta_data desde: ${endpoint}`);
+              return acfData;
+            }
+          }
+        } catch (error) {
+          lastError = error as Error;
+          console.warn(`⚠️ Falló endpoint ${endpoint}:`, error);
+          continue; // Try next endpoint
+        }
+      }
+
+      // If we get here, all endpoints failed
+      if (lastError) {
+        if (lastError.message === "Request timeout") {
+          console.warn(`Request timeout for product ${productId} ACF data`);
+          isNetworkAvailable = false;
+        } else if (
+          lastError.message.includes("fetch") ||
+          lastError.message.includes("Failed to fetch")
+        ) {
+          console.warn(`Network error getting ACF data for product ${productId}`);
+          isNetworkAvailable = false;
+        } else {
+          console.warn(
+            `⚠️ Error ACF para producto ${productId}: ${lastError.message} - continuando sin ACF`,
+          );
+        }
       }
       return null;
     }
