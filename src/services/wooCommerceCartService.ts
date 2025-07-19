@@ -418,7 +418,7 @@ export class WooCommerceCartService {
           customerData,
         );
 
-        console.log("🔗 Redirigiendo a checkout con orden:", checkoutUrl);
+        console.log("���� Redirigiendo a checkout con orden:", checkoutUrl);
 
         // Guardar datos de la orden para referencia
         localStorage.setItem(
@@ -464,8 +464,8 @@ export class WooCommerceCartService {
           }),
         );
 
-        // Redirigir a la página de checkout
-        window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+        // Redirigir en la misma ventana para evitar confusión
+        window.location.href = checkoutUrl;
       }
     } catch (error) {
       console.error("❌ Error en proceso de checkout:", error);
