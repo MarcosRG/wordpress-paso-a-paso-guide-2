@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CheckoutDebugInfo from "@/components/CheckoutDebugInfo";
+import { networkRecoveryService } from "./services/networkRecovery";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
