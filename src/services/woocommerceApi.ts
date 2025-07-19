@@ -272,7 +272,7 @@ const TIMEOUT_CONFIG = {
 const RETRY_CONFIG = {
   maxRetries: 3,
   baseDelay: 1000, // 1 segundo
-  maxDelay: 10000, // 10 segundos máximo
+  maxDelay: 10000, // 10 segundos m��ximo
 };
 
 // Function to sleep for a given time
@@ -617,7 +617,7 @@ export const wooCommerceApi = {
     }
   },
 
-  // Get product with ACF data using WordPress REST API
+  // Get product with ACF data using multiple fallback strategies
   async getProductWithACF(
     productId: number,
   ): Promise<Record<string, unknown> | null> {
@@ -630,6 +630,50 @@ export const wooCommerceApi = {
     }
 
     try {
+      // Strategy 1: Try WooCommerce API directly (most reliable)
+      try {
+        const response = await fetchWithRetry(
+          `${WOOCOMMERCE_API_BASE}/products/${productId}`,
+          {
+            headers: {
+              ...apiHeaders,
+              Accept: "application/json",
+            },
+            mode: "cors",
+          },
+          TIMEOUT_CONFIG.short, // 10 segundos
+          1, // Solo 1 reintento para evitar spam
+        );
+
+        if (response.ok) {
+          const productData = await response.json();
+
+          // Extract ACF data from WooCommerce meta_data
+          if (productData && productData.meta_data) {
+            const acfData: Record<string, unknown> = {};
+            productData.meta_data.forEach((meta: any) => {
+              // Look for ACF fields (they often don't start with underscore)
+              if (meta.key && !meta.key.startsWith("_") && meta.value) {
+                acfData[meta.key] = meta.value;
+              }
+            });
+
+            if (Object.keys(acfData).length > 0) {
+              console.log(
+                `✅ ACF data extraída de WooCommerce API para producto ${productId}`,
+              );
+              return acfData;
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(
+          `⚠️ WooCommerce API falló para producto ${productId}:`,
+          error,
+        );
+      }
+
+      // Strategy 2: Try WordPress REST API (original approach)
       const WORDPRESS_API_BASE =
         import.meta.env.VITE_WORDPRESS_API_BASE ||
         "https://bikesultoursgest.com/wp-json/wp/v2";
@@ -643,7 +687,7 @@ export const wooCommerceApi = {
           mode: "cors",
         },
         TIMEOUT_CONFIG.short, // 10 segundos
-        2, // Solo 2 reintentos para ACF data
+        1, // Solo 1 reintento para evitar spam
       );
 
       if (!response.ok) {
