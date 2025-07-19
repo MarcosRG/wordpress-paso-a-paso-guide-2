@@ -288,18 +288,14 @@ function bikesul_agregar_seguro_desde_url() {
     $insurance_total_days = intval($_GET['insurance_total_days'] ?? 0);
     
     if ($insurance_price_per_bike_per_day > 0 && $insurance_total_bikes > 0 && $insurance_total_days > 0) {
-        // Buscar producto de seguro (ajustar según tu configuración)
-        $insurance_products = get_posts(array(
-            'post_type' => 'product',
-            'meta_query' => array(
-                array(
-                    'key' => '_insurance_product',
-                    'value' => 'yes',
-                    'compare' => '='
-                )
-            ),
-            'posts_per_page' => 1
-        ));
+                // Buscar producto de seguro usando función del handler de seguros
+        $insurance_type = sanitize_text_field($_GET['insurance_type'] ?? 'premium');
+        $insurance_product_id = bikesul_encontrar_producto_seguro($insurance_type);
+
+        $insurance_products = array();
+        if ($insurance_product_id) {
+            $insurance_products = array((object)array('ID' => $insurance_product_id));
+        }
         
         if (!empty($insurance_products)) {
             $insurance_product_id = $insurance_products[0]->ID;
