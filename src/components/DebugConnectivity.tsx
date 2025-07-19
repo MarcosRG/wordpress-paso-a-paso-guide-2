@@ -7,11 +7,12 @@ import {
   getConnectivityStatus,
   connectivityMonitor,
 } from "@/services/connectivityMonitor";
-import {
-  getErrorStats,
-  generateErrorReport,
-  clearInterceptedErrors,
-} from "@/utils/errorInterceptor";
+// Temporarily disabled - error interceptor causes fetch recursion
+// import {
+//   getErrorStats,
+//   generateErrorReport,
+//   clearInterceptedErrors,
+// } from "@/utils/errorInterceptor";
 
 export const DebugConnectivity = () => {
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
