@@ -617,7 +617,7 @@ export const wooCommerceApi = {
     }
   },
 
-  // Get product with ACF data using WordPress REST API
+    // Get product with ACF data using WordPress REST API
   async getProductWithACF(
     productId: number,
   ): Promise<Record<string, unknown> | null> {
@@ -634,17 +634,31 @@ export const wooCommerceApi = {
         import.meta.env.VITE_WORDPRESS_API_BASE ||
         "https://bikesultoursgest.com/wp-json/wp/v2";
 
-      const response = await fetchWithRetry(
-        `${WORDPRESS_API_BASE}/product/${productId}`,
-        {
-          headers: {
-            Accept: "application/json",
-          },
-          mode: "cors",
-        },
-        TIMEOUT_CONFIG.short, // 10 segundos
-        2, // Solo 2 reintentos para ACF data
-      );
+      // Try multiple possible endpoints for ACF data
+      const possibleEndpoints = [
+        `${WORDPRESS_API_BASE}/products/${productId}`, // WooCommerce REST API products
+        `${WOOCOMMERCE_API_BASE}/products/${productId}`, // Direct WooCommerce API
+        `${WORDPRESS_API_BASE}/product/${productId}`, // Original endpoint (fallback)
+      ];
+
+      let lastError: Error | null = null;
+
+      for (const endpoint of possibleEndpoints) {
+        try {
+          console.log(`🔍 Intentando obtener ACF data desde: ${endpoint}`);
+
+          const response = await fetchWithRetry(
+            endpoint,
+            {
+              headers: {
+                Accept: "application/json",
+                ...(endpoint.includes('/wc/v3/') ? apiHeaders : {}),
+              },
+              mode: "cors",
+            },
+            TIMEOUT_CONFIG.short, // 10 segundos
+            1, // Solo 1 reintento por endpoint
+          );
 
       if (!response.ok) {
         // Si es 404, el producto no existe en WordPress, no es un error crítico
