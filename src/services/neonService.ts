@@ -1,8 +1,5 @@
 import { Client } from "pg";
-
-// Configuración de la conexión a Neon
-const NEON_CONNECTION_STRING =
-  "postgresql://neondb_owner:npg_f5qU6FzxSZXJ@ep-silent-waterfall-aeyw6n39-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require";
+import { NEON_CONFIG } from "../config/neon";
 
 // Interface para productos en Neon
 export interface NeonProduct {
@@ -65,7 +62,7 @@ export class NeonService {
   private async connect() {
     try {
       this.client = new Client({
-        connectionString: NEON_CONNECTION_STRING,
+        connectionString: NEON_CONFIG.connectionString,
       });
       await this.client.connect();
       console.log("✅ Connected to Neon database");

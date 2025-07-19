@@ -95,6 +95,7 @@ export class WooCommerceCartService {
         reservation.insurance.price.toString(),
       );
       params.append("insurance_total_bikes", totalBikes.toString());
+      params.append("insurance_total_days", reservation.totalDays.toString());
       params.append("insurance_total_price", totalInsurancePrice.toString());
     }
 
@@ -280,8 +281,8 @@ export class WooCommerceCartService {
 
             lineItems.push({
               product_id: insuranceProduct.id,
-              quantity: totalBikes, // Una unidad por bicicleta
-              price: reservation.insurance.price * reservation.totalDays, // Precio por bicicleta por todos los días
+              quantity: 1, // Siempre 1 unidad para seguros (el precio incluye todas las bicis y días)
+              price: totalInsurancePrice, // Precio total del seguro (price_per_bike_per_day × bicis × días)
               meta_data: [
                 { key: "_insurance_type", value: reservation.insurance.id },
                 { key: "_insurance_name", value: reservation.insurance.name },
