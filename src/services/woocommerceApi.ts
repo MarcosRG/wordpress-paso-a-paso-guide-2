@@ -11,6 +11,11 @@ import {
   generateConnectivityReport,
   getConnectivityStatus,
 } from "./connectivityMonitor";
+import {
+  canMakeWooCommerceRequest,
+  recordWooCommerceSuccess,
+  recordWooCommerceFailure,
+} from "./circuitBreaker";
 
 export interface ACFPricing {
   precio_1_2: number;
