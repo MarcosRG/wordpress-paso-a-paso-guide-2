@@ -5,11 +5,6 @@ import { InsuranceOptions } from "@/components/InsuranceOptions";
 import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
-import { TestInsurance } from "@/components/TestInsurance";
-import { ConnectivityStatus } from "@/components/ConnectivityStatus";
-import { DebugConnectivity } from "@/components/DebugConnectivity";
-import { ACFStatusNotice } from "@/components/ACFStatusNotice";
-import { CircuitBreakerStatus } from "@/components/CircuitBreakerStatus";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
