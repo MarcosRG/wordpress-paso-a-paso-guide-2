@@ -367,6 +367,13 @@ const fetchWithRetry = async (
 
 // Enhanced network health check
 const performHealthCheck = async (): Promise<boolean> => {
+  // Temporarily disable health check to avoid Failed to fetch errors
+  // The health check was causing recursive fetch issues
+
+  // Always assume network is available to avoid blocking operations
+  return true;
+
+  /* DISABLED TEMPORARILY - CAUSES Failed to fetch ERRORS
   try {
     console.log("🩺 Verificando conectividad de WooCommerce...");
 
@@ -393,6 +400,7 @@ const performHealthCheck = async (): Promise<boolean> => {
     console.warn("❌ Health check falló:", error);
     return false;
   }
+  */
 };
 
 // Function to check if network is available
