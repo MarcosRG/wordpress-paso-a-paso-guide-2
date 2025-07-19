@@ -62,7 +62,7 @@ export class NeonService {
   private async connect() {
     try {
       this.client = new Client({
-        connectionString: NEON_CONNECTION_STRING,
+        connectionString: NEON_CONFIG.connectionString,
       });
       await this.client.connect();
       console.log("✅ Connected to Neon database");
