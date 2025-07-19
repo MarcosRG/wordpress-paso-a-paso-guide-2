@@ -6,11 +6,12 @@ import "./index.css";
 import "./services/localSyncService";
 
 // Inicializar interceptor de errores para debugging
-import { initializeErrorInterceptor } from "./utils/errorInterceptor";
+// import { initializeErrorInterceptor } from "./utils/errorInterceptor";
 
+// TEMPORALMENTE DESHABILITADO - Causa recursión con fetchWithRetry
 // Solo inicializar en desarrollo
-if (import.meta.env.DEV) {
-  initializeErrorInterceptor();
-}
+// if (import.meta.env.DEV) {
+//   initializeErrorInterceptor();
+// }
 
 createRoot(document.getElementById("root")!).render(<App />);
