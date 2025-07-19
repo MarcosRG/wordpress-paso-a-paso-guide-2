@@ -135,6 +135,29 @@ export class CircuitBreaker {
       nextAttempt: 0,
     };
   }
+
+  // Reset if network connectivity is restored
+  resetIfNetworkRestored(): void {
+    if (this.state.state === "OPEN") {
+      console.log(
+        "🌐 Checking network connectivity for circuit breaker reset...",
+      );
+      // Simple connectivity test
+      fetch("https://bikesultoursgest.com/wp-json/wp/v2/", {
+        method: "HEAD",
+        mode: "no-cors",
+      })
+        .then(() => {
+          console.log(
+            "✅ Network connectivity restored, resetting circuit breaker",
+          );
+          this.reset();
+        })
+        .catch(() => {
+          console.log("❌ Network still unavailable");
+        });
+    }
+  }
 }
 
 // Rate limiter simple para evitar spam de requests
