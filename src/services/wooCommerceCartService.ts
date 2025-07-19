@@ -558,10 +558,8 @@ export class WooCommerceCartService {
 
         return;
       } catch (orderError) {
-        console.warn(
-          "⚠️ No se pudo crear orden directa, usando URL con parámetros:",
-          orderError,
-        );
+        console.error("❌ Error creando orden directa, detalles:", orderError);
+        console.warn("⚠️ Fallback: usando URL con parámetros");
 
         // Fallback: usar URL con parámetros
         const checkoutUrl = this.generateCheckoutUrl(
