@@ -381,6 +381,127 @@ export class WooCommerceCartService {
     }
   }
 
+  // Agregar productos al carrito con datos de rental
+  private addToCartWithRentalData(
+    bikes: SelectedBike[],
+    reservation: ReservationData,
+    customerData: CustomerData,
+  ): void {
+    // Crear formulario dinámico para enviar datos al carrito
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = `${this.baseUrl}/cart/`;
+
+    bikes.forEach((bike, index) => {
+      // Calcular precio por día correcto
+      const acfPricing = bike.wooCommerceData?.product
+        ? extractACFPricing(bike.wooCommerceData.product)
+        : null;
+
+      let pricePerDay = bike.pricePerDay;
+      if (acfPricing && reservation.totalDays > 0) {
+        pricePerDay = getPricePerDayFromACF(reservation.totalDays, acfPricing);
+      } else {
+        const priceRanges = bike.wooCommerceData?.product
+          ? extractDayBasedPricing(bike.wooCommerceData.product)
+          : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
+        pricePerDay =
+          reservation.totalDays > 0
+            ? getPriceForDays(priceRanges, reservation.totalDays)
+            : bike.pricePerDay;
+      }
+
+      // Buscar variación si es necesario
+      let variationId: number | undefined;
+      if (
+        bike.wooCommerceData?.variations &&
+        bike.wooCommerceData.variations.length > 0
+      ) {
+        const selectedVariation = bike.wooCommerceData.variations.find(
+          (variation: any) => {
+            const sizeAttribute = variation.attributes?.find(
+              (attr: any) =>
+                attr.name?.toLowerCase().includes("tama") ||
+                attr.name?.toLowerCase().includes("size"),
+            );
+            return sizeAttribute?.option?.toUpperCase() === bike.size;
+          },
+        );
+        if (selectedVariation) {
+          variationId = selectedVariation.id;
+        }
+      }
+
+      // Agregar campos del producto al formulario
+      this.addHiddenField(form, `add-to-cart`, bike.id);
+      if (variationId) {
+        this.addHiddenField(form, `variation_id`, variationId.toString());
+      }
+      this.addHiddenField(form, `quantity`, bike.quantity.toString());
+
+      // Datos de rental
+      this.addHiddenField(form, `rental_price_per_day`, pricePerDay.toString());
+      this.addHiddenField(
+        form,
+        `rental_days`,
+        reservation.totalDays.toString(),
+      );
+      this.addHiddenField(
+        form,
+        `rental_start_date`,
+        reservation.startDate?.toISOString() || "",
+      );
+      this.addHiddenField(
+        form,
+        `rental_end_date`,
+        reservation.endDate?.toISOString() || "",
+      );
+      this.addHiddenField(form, `pickup_time`, reservation.pickupTime);
+      this.addHiddenField(form, `return_time`, reservation.returnTime);
+      this.addHiddenField(form, `bike_size`, bike.size);
+    });
+
+    // Datos del cliente
+    this.addHiddenField(form, `billing_first_name`, customerData.firstName);
+    this.addHiddenField(form, `billing_last_name`, customerData.lastName);
+    this.addHiddenField(form, `billing_email`, customerData.email);
+    this.addHiddenField(form, `billing_phone`, customerData.phone);
+
+    // Agregar seguro si existe
+    if (reservation.insurance && reservation.insurance.price > 0) {
+      const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
+      this.addHiddenField(form, `insurance_type`, reservation.insurance.id);
+      this.addHiddenField(form, `insurance_name`, reservation.insurance.name);
+      this.addHiddenField(
+        form,
+        `insurance_price_per_bike_per_day`,
+        reservation.insurance.price.toString(),
+      );
+      this.addHiddenField(form, `insurance_total_bikes`, totalBikes.toString());
+      this.addHiddenField(
+        form,
+        `insurance_total_days`,
+        reservation.totalDays.toString(),
+      );
+    }
+
+    // Agregar al DOM y enviar
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  private addHiddenField(
+    form: HTMLFormElement,
+    name: string,
+    value: string,
+  ): void {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  }
+
   // Método principal: intentar crear orden directa, si falla usar URL con parámetros
   async redirectToCheckout(
     bikes: SelectedBike[],
