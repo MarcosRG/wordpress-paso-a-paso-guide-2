@@ -289,13 +289,18 @@ const calculateRetryDelay = (attempt: number): number => {
   return Math.min(delay, RETRY_CONFIG.maxDelay);
 };
 
-// Enhanced fetch with retry logic
+// Enhanced fetch with retry logic and circuit breaker
 const fetchWithRetry = async (
   url: string,
   options: RequestInit = {},
   timeout: number = TIMEOUT_CONFIG.medium,
   maxRetries: number = RETRY_CONFIG.maxRetries,
 ): Promise<Response> => {
+  // Check circuit breaker and rate limiter
+  if (!canMakeWooCommerceRequest()) {
+    throw new Error("Request blocked by circuit breaker or rate limiter");
+  }
+
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -321,6 +326,7 @@ const fetchWithRetry = async (
 
       console.log(`✅ Éxito en intento ${attempt + 1}`);
       recordApiSuccess();
+      recordWooCommerceSuccess(); // Register success in circuit breaker
       return response;
     } catch (error) {
       lastError = error as Error;
