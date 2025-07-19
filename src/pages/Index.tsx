@@ -346,6 +346,13 @@ const Index = () => {
           </div>
         )}
 
+        {/* Componente de protección API */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-4">
+            <CircuitBreakerStatus />
+          </div>
+        )}
+
         {/* Componente de estado de conectividad */}
         {process.env.NODE_ENV === "development" && (
           <div className="mt-4">
