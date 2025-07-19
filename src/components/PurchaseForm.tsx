@@ -425,6 +425,42 @@ export const PurchaseForm = ({
           </CardContent>
         </Card>
 
+        {/* Terms and Conditions */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                id="acceptTerms"
+                checked={customerData.acceptTerms}
+                onCheckedChange={(checked) =>
+                  handleInputChange("acceptTerms", checked ? "true" : "false")
+                }
+                className="mt-1"
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label
+                  htmlFor="acceptTerms"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  <CheckCircle className="inline h-4 w-4 mr-1" />I accept the{" "}
+                  <a
+                    href="https://bikesultoursgest.com/termos-e-condicoes/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Terms and Conditions
+                  </a>{" "}
+                  *
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  You must accept the terms and conditions to proceed.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Informação de Pagamento */}
         <Card>
           <CardHeader>
