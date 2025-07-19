@@ -16,6 +16,16 @@ const App = () => {
   // Check if running in WordPress iframe
   const isWordPressEmbed = window.location !== window.parent.location;
 
+  // Initialize network recovery service
+  React.useEffect(() => {
+    networkRecoveryService.startMonitoring();
+
+    // Cleanup on unmount
+    return () => {
+      networkRecoveryService.stopMonitoring();
+    };
+  }, []);
+
   return (
     <div
       className={`bike-rental-app ${isWordPressEmbed ? "wordpress-embed" : ""}`}
