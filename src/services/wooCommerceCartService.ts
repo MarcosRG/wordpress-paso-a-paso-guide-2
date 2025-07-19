@@ -553,8 +553,8 @@ export class WooCommerceCartService {
           }),
         );
 
-        // Redirigir en la misma ventana para evitar confusión
-        window.location.href = checkoutUrl;
+        // Abrir en nueva ventana para órdenes directas (como antes)
+        window.open(checkoutUrl, "_blank");
 
         return;
       } catch (orderError) {
