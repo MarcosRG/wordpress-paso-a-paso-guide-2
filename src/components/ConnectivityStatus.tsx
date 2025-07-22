@@ -69,8 +69,8 @@ export const ConnectivityStatus = () => {
 
   const getStatusText = () => {
     if (status.isHealthy) return "Conectado";
-    if (status.consecutiveErrors > 0) return "Con problemas";
-    return "Desconectado";
+    if (status.consecutiveErrors > 0) return t("connectionProblems");
+    return t("disconnected");
   };
 
   return (
