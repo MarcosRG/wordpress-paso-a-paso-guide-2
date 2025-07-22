@@ -334,6 +334,13 @@ const Index = () => {
             </Button>
           )}
         </div>
+
+        {/* Debug component for insurance testing - development only */}
+        {import.meta.env.DEV && (
+          <div className="mt-8">
+            <InsuranceTestDebugger />
+          </div>
+        )}
       </div>
     </div>
   );
