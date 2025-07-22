@@ -306,6 +306,7 @@ export class WooCommerceCartService {
             console.log(`  ID: ${insuranceProduct.id}`);
             console.log(`  Product base price: €${insuranceProduct.price}`);
             console.log(`  Will set custom price: €${totalInsurancePrice}`);
+            console.log(`  Is virtual product: ${!insuranceProduct.exists}`);
 
             lineItems.push({
               product_id: insuranceProduct.id,
