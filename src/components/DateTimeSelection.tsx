@@ -118,6 +118,7 @@ export const DateTimeSelection = ({
                 date < new Date() || (startDate && date <= startDate)
               }
               className="rounded-md border"
+              locale={language}
             />
           </CardContent>
         </Card>
