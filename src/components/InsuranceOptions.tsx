@@ -143,7 +143,7 @@ export const InsuranceOptions = ({
     <div>
       <h2 className="text-2xl font-bold mb-6">{t("insuranceOptions")}</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {INSURANCE_OPTIONS.map((option) => {
           const Icon = option.icon;
           const isSelected = selectedInsurance === option.id;
