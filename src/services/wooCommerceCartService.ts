@@ -313,7 +313,7 @@ export class WooCommerceCartService {
               lineItems.push({
                 product_id: insuranceProduct.id,
                 quantity: 1, // Siempre 1 unidad para seguros (el precio incluye todas las bicis y días)
-                price: totalInsurancePrice, // Precio total del seguro (price_per_bike_per_day × bicis × d��as)
+                price: totalInsurancePrice, // Precio total del seguro (price_per_bike_per_day × bicis × días)
                 meta_data: [
                   { key: "_insurance_type", value: reservation.insurance.id },
                   { key: "_insurance_name", value: reservation.insurance.name },
@@ -504,8 +504,8 @@ export class WooCommerceCartService {
     this.addHiddenField(form, `billing_email`, customerData.email);
     this.addHiddenField(form, `billing_phone`, customerData.phone);
 
-    // Agregar seguro si existe
-    if (reservation.insurance && reservation.insurance.price > 0) {
+    // Agregar seguro si existe (including free basic insurance)
+    if (reservation.insurance) {
       const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
       this.addHiddenField(form, `insurance_type`, reservation.insurance.id);
       this.addHiddenField(form, `insurance_name`, reservation.insurance.name);
