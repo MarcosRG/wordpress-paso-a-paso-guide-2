@@ -20,6 +20,7 @@ function Calendar({
   const dateLocale = locale === "pt" ? pt : enUS;
   return (
     <DayPicker
+      locale={dateLocale}
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
