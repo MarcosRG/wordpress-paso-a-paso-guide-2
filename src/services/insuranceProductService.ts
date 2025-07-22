@@ -74,7 +74,8 @@ export class InsuranceProductService {
       }
     }
 
-    // Estrategia 2: Buscar por nombre
+    // Strategy 2: Search by name
+    console.log(`🔍 No products found by ID, searching by name for ${insuranceType}...`);
     try {
       const searchResults = await this.searchInsuranceByName(insuranceType);
       if (searchResults) {
