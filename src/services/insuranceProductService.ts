@@ -35,11 +35,11 @@ export class InsuranceProductService {
       return this.productCache.get(cacheKey)!;
     }
 
-    console.log(`🔍 Buscando producto de seguro ${insuranceType}...`);
+    console.log(`🔍 Searching for ${insuranceType} insurance product...`);
 
-    // Estrategia 1: Verificar IDs conocidos
-    // Verificar IDs conocidos para el tipo específico
+    // Strategy 1: Check known IDs
     const idsToCheck = this.INSURANCE_PRODUCT_IDS[insuranceType] || [];
+    console.log(`📋 Checking known IDs for ${insuranceType}:`, idsToCheck);
 
     for (const productId of idsToCheck) {
       try {
