@@ -25,7 +25,7 @@ const translations = {
     "gravel-alugueres": "Gravel",
     "junior-alugueres": "Junior",
     "touring-alugueres": "Touring",
-    availableSizes: "Tamanhos disponíveis",
+    availableSizes: "Tamanhos dispon��veis",
     available: "disponível",
     availables: "disponíveis",
     selectionSummary: "Resumo da sua seleção",
@@ -96,6 +96,38 @@ const translations = {
     arriveEarly: "Por favor, chegue 15 minutos antes da sua hora de recolha",
     idRequired: "É necessária identificação válida para levantar as bicicletas",
     size: "Tamanho",
+
+    // Status and Error Messages
+    loadingBikes: "A carregar bicicletas...",
+    noBikesAvailable: "Não há bicicletas disponíveis",
+    tryAgain: "Tente novamente",
+    preparingCart: "A preparar carrinho e redirecionamento...",
+    redirectingCheckout: "A redirecionar para o checkout do WooCommerce...",
+    success: "Sucesso",
+    unknownError: "Erro desconhecido",
+    reservationError: "Problema ao processar a reserva: {error}. Por favor, tente novamente.",
+
+    // Timeout and Server Errors
+    timeoutError: "A solicitação excedeu o tempo limite. Tente novamente.",
+    serverError: "Erro interno do servidor. Por favor, tente mais tarde.",
+    tooManyRequests: "Demasiadas solicitações. Por favor, aguarde um momento antes de tentar novamente.",
+    unexpectedError: "Ocorreu um erro inesperado. Por favor, tente novamente.",
+    serviceUnavailable: "Serviço temporariamente indisponível.",
+    createOrderError: "Erro ao criar o pedido. Por favor, tente novamente.",
+    availabilityError: "Erro ao verificar disponibilidade. Por favor, tente novamente.",
+
+    // Form Validation
+    invalidEmail: "Formato de email inválido",
+    invalidPhone: "Formato de telefone inválido",
+    invalidName: "Apenas letras e espaços, máximo 50 caracteres",
+    invalidPostalCode: "Código postal deve ter formato XXXX-XXX",
+
+    // Connectivity
+    connectionProblems: "Com problemas",
+    disconnected: "Desconectado",
+    connectivityAlert: "⚠️ Problemas de Conectividade",
+    connectivityMessage: "Foram detectados {count} erros consecutivos. A verificar conexão...",
+    consecutiveErrors: "⚠️ {count} erros consecutivos",
   },
   en: {
     // Navigation
@@ -185,6 +217,38 @@ const translations = {
     arriveEarly: "Please arrive 15 minutes before your pickup time",
     idRequired: "Valid identification required to collect bikes",
     size: "Size",
+
+    // Status and Error Messages
+    loadingBikes: "Loading bikes...",
+    noBikesAvailable: "No bikes available",
+    tryAgain: "Try again",
+    preparingCart: "Preparing cart and redirecting...",
+    redirectingCheckout: "Redirecting to WooCommerce checkout...",
+    success: "Success",
+    unknownError: "Unknown error",
+    reservationError: "Problem processing reservation: {error}. Please try again.",
+
+    // Timeout and Server Errors
+    timeoutError: "Request timed out. Please try again.",
+    serverError: "Internal server error. Please try again later.",
+    tooManyRequests: "Too many requests. Please wait a moment before trying again.",
+    unexpectedError: "An unexpected error occurred. Please try again.",
+    serviceUnavailable: "Service temporarily unavailable.",
+    createOrderError: "Error creating order. Please try again.",
+    availabilityError: "Error checking availability. Please try again.",
+
+    // Form Validation
+    invalidEmail: "Invalid email format",
+    invalidPhone: "Invalid phone format",
+    invalidName: "Only letters and spaces, maximum 50 characters",
+    invalidPostalCode: "Postal code must be XXXX-XXX format",
+
+    // Connectivity
+    connectionProblems: "Connection Issues",
+    disconnected: "Disconnected",
+    connectivityAlert: "⚠️ Connectivity Issues",
+    connectivityMessage: "Detected {count} consecutive errors. Checking connection...",
+    consecutiveErrors: "⚠️ {count} consecutive errors",
   },
 };
 
