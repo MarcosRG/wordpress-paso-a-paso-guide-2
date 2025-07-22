@@ -43,23 +43,34 @@ export class InsuranceProductService {
 
     for (const productId of idsToCheck) {
       try {
+        console.log(`  🔍 Checking product ID ${productId}...`);
         const product = await wooCommerceApi.getProduct(productId);
-        if (product && this.isValidInsuranceProduct(product, insuranceType)) {
-          const productInfo: InsuranceProductInfo = {
-            id: product.id,
-            name: product.name,
-            price: parseFloat(product.price || product.regular_price || "0"),
-            exists: true,
-          };
 
-          this.productCache.set(cacheKey, productInfo);
-          console.log(
-            `✅ Producto de seguro ${insuranceType} encontrado: ID ${productId} - ${product.name}`,
-          );
-          return productInfo;
+        if (product) {
+          console.log(`  📦 Found product: "${product.name}" (Status: ${product.status}, Price: €${product.price || product.regular_price || 0})`);
+
+          if (this.isValidInsuranceProduct(product, insuranceType)) {
+            console.log(`  ✅ Valid ${insuranceType} insurance product found!`);
+            const productInfo: InsuranceProductInfo = {
+              id: product.id,
+              name: product.name,
+              price: parseFloat(product.price || product.regular_price || "0"),
+              exists: true,
+            };
+
+            this.productCache.set(cacheKey, productInfo);
+            console.log(
+              `✅ ${insuranceType} insurance product found: ID ${productId} - ${product.name}`,
+            );
+            return productInfo;
+          } else {
+            console.log(`  ❌ Product "${product.name}" doesn't match ${insuranceType} criteria`);
+          }
+        } else {
+          console.log(`  ❌ Product ID ${productId} not found`);
         }
       } catch (error) {
-        console.warn(`⚠️ No se pudo verificar producto ${productId}:`, error);
+        console.warn(`⚠️ Error checking product ${productId}:`, error);
       }
     }
 
