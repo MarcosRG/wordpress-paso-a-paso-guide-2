@@ -112,7 +112,7 @@ export const ConnectivityStatus = () => {
 
       {status.consecutiveErrors > 0 && (
         <div className="text-xs text-orange-600 mb-2">
-          ⚠️ {status.consecutiveErrors} errores consecutivos
+          {t("consecutiveErrors").replace("{count}", status.consecutiveErrors.toString())}
         </div>
       )}
 
