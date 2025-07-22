@@ -308,33 +308,39 @@ export class WooCommerceCartService {
             console.log(`  Will set custom price: €${totalInsurancePrice}`);
             console.log(`  Is virtual product: ${!insuranceProduct.exists}`);
 
-            lineItems.push({
-              product_id: insuranceProduct.id,
-              quantity: 1, // Siempre 1 unidad para seguros (el precio incluye todas las bicis y días)
-              price: totalInsurancePrice, // Precio total del seguro (price_per_bike_per_day × bicis × días)
-              meta_data: [
-                { key: "_insurance_type", value: reservation.insurance.id },
-                { key: "_insurance_name", value: reservation.insurance.name },
-                {
-                  key: "_insurance_price_per_bike_per_day",
-                  value: reservation.insurance.price.toString(),
-                },
-                { key: "_insurance_total_bikes", value: totalBikes.toString() },
-                {
-                  key: "_insurance_total_days",
-                  value: reservation.totalDays.toString(),
-                },
-                {
-                  key: "_rental_start_date",
-                  value: reservation.startDate?.toISOString() || "",
-                },
-                {
-                  key: "_rental_end_date",
-                  value: reservation.endDate?.toISOString() || "",
-                },
-                { key: "_wc_product_name", value: insuranceProduct.name },
-              ],
-            });
+            // Only add to lineItems if it's a real product (not virtual)
+            if (insuranceProduct.exists && insuranceProduct.id > 0) {
+              lineItems.push({
+                product_id: insuranceProduct.id,
+                quantity: 1, // Siempre 1 unidad para seguros (el precio incluye todas las bicis y días)
+                price: totalInsurancePrice, // Precio total del seguro (price_per_bike_per_day × bicis × d��as)
+                meta_data: [
+                  { key: "_insurance_type", value: reservation.insurance.id },
+                  { key: "_insurance_name", value: reservation.insurance.name },
+                  {
+                    key: "_insurance_price_per_bike_per_day",
+                    value: reservation.insurance.price.toString(),
+                  },
+                  { key: "_insurance_total_bikes", value: totalBikes.toString() },
+                  {
+                    key: "_insurance_total_days",
+                    value: reservation.totalDays.toString(),
+                  },
+                  {
+                    key: "_rental_start_date",
+                    value: reservation.startDate?.toISOString() || "",
+                  },
+                  {
+                    key: "_rental_end_date",
+                    value: reservation.endDate?.toISOString() || "",
+                  },
+                  { key: "_wc_product_name", value: insuranceProduct.name },
+                ],
+              });
+            } else {
+              console.log(`📋 Virtual ${reservation.insurance.id} insurance (${insuranceProduct.name}) - no product to add to cart`);
+              // For virtual insurance (like free basic), we just acknowledge it but don't add to cart
+            }
           } else {
             console.error("❌ INSURANCE PRODUCT NOT FOUND:");
             console.error(`  Searched for type: ${reservation.insurance.id}`);
