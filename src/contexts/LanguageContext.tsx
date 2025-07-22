@@ -44,7 +44,7 @@ const translations = {
     pickupHours: "Horário de Funcionamento: 9:00 - 17:00",
 
     // Insurance
-    insuranceOptions: "Opç��es de Seguro",
+    insuranceOptions: "Opções de Seguro",
     basicInsurance: "Seguro Básico e Responsabilidade Civil",
     premiumInsurance: "Seguro Premium Bikesul",
     moreInfo: "Mais informações",
