@@ -195,11 +195,11 @@ const Index = () => {
       console.error("❌ Error en proceso de reserva:", error);
 
       const errorMessage =
-        error instanceof Error ? error.message : "Error desconocido";
+        error instanceof Error ? error.message : t("unknownError");
 
       toast({
         title: "Error al crear la reserva",
-        description: `Problema al procesar la reserva: ${errorMessage}. Por favor, intente nuevamente.`,
+        description: t("reservationError").replace("{error}", errorMessage),
         variant: "destructive",
       });
     } finally {
