@@ -205,11 +205,11 @@ export const BikeSelection = ({
       <div className="text-center py-8">
         <BikeIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <h2 className="text-xl font-semibold mb-2">
-          No hay bicicletas disponibles
+          {t("loadingBikes")}
         </h2>
         <Button onClick={handleRefresh} className="mt-4">
           <RefreshCw className="h-4 w-4 mr-2" />
-          Intentar de nuevo
+          {t("tryAgain")}
         </Button>
       </div>
     );
