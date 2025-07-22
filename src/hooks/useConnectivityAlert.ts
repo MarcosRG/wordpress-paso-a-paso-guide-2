@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export const useConnectivityAlert = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const lastAlertTime = useRef(0);
   const hasShownCriticalAlert = useRef(false);
 
