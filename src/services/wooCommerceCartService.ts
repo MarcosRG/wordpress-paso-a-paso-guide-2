@@ -557,7 +557,7 @@ export class WooCommerceCartService {
           customerData,
         );
 
-        console.log("���� Redirigiendo a checkout con orden:", checkoutUrl);
+        console.log("🔗 Redirecting to checkout with order:", checkoutUrl);
 
         // Guardar datos de la orden para referencia
         localStorage.setItem(
