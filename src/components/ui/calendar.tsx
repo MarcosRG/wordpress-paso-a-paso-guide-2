@@ -6,14 +6,18 @@ import { pt, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  locale?: "pt" | "en";
+};
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  locale = "pt",
   ...props
 }: CalendarProps) {
+  const dateLocale = locale === "pt" ? pt : enUS;
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
