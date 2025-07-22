@@ -203,10 +203,20 @@ export const DateTimeSelection = ({
                 {t("duration")}: {reservation.totalDays || 0} {t("days")}
               </div>
               <div>
-                {t("startDate")}: {startDate?.toLocaleDateString()}
+                {t("startDate")}:{" "}
+                {startDate
+                  ? format(startDate, "dd/MM/yyyy", {
+                      locale: language === "pt" ? pt : enUS,
+                    })
+                  : ""}
               </div>
               <div>
-                {t("endDate")}: {endDate?.toLocaleDateString()}
+                {t("endDate")}:{" "}
+                {endDate
+                  ? format(endDate, "dd/MM/yyyy", {
+                      locale: language === "pt" ? pt : enUS,
+                    })
+                  : ""}
               </div>
               <div>
                 {t("pickupTime")}: {reservation.pickupTime}
