@@ -26,7 +26,7 @@ export class InsuranceProductService {
 
   // Buscar y verificar un producto de seguro válido
   async findValidInsuranceProduct(
-    insuranceType: "premium" | "basic" = "premium",
+    insuranceType: "premium" | "basic" | "free" = "premium",
   ): Promise<InsuranceProductInfo | null> {
     const cacheKey = `insurance_${insuranceType}`;
 
