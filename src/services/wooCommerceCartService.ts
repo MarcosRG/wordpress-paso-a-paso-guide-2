@@ -159,6 +159,23 @@ export class WooCommerceCartService {
       }
     });
 
+    // Agregar datos del seguro si está presente
+    if (reservation.insurance && reservation.insurance.price > 0) {
+      const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
+      const totalInsurancePrice =
+        reservation.insurance.price * totalBikes * reservation.totalDays;
+
+      params.append("insurance_type", reservation.insurance.id);
+      params.append("insurance_name", reservation.insurance.name);
+      params.append(
+        "insurance_price_per_bike_per_day",
+        reservation.insurance.price.toString(),
+      );
+      params.append("insurance_total_bikes", totalBikes.toString());
+      params.append("insurance_total_days", reservation.totalDays.toString());
+      params.append("insurance_total_price", totalInsurancePrice.toString());
+    }
+
     // Construir URL completa
     const queryString = params.toString();
     return queryString
