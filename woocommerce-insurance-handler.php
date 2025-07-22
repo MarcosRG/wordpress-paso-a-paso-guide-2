@@ -169,13 +169,37 @@ function bikesul_ajustar_precio_seguro_carrito($cart) {
             if ($insurance_price_per_bike_per_day > 0 && $insurance_total_bikes > 0 && $insurance_total_days > 0) {
                 // Para seguros, el precio por unidad es el total (ya que quantity = 1)
                 $precio_total_seguro = $insurance_price_per_bike_per_day * $insurance_total_bikes * $insurance_total_days;
-                
+
+                // Verificar precio anterior para debugging
+                $precio_anterior = $cart_item['data']->get_price();
+
+                // Establecer el precio personalizado
                 $cart_item['data']->set_price($precio_total_seguro);
-                
+
                 // Forzar cantidad a 1 para seguros
                 $cart_item['quantity'] = 1;
-                
-                error_log("BIKESUL CART SEGURO: €{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} × {$insurance_total_days} = €{$precio_total_seguro}");
+
+                // Log completo para debugging
+                error_log("BIKESUL CART SEGURO DEBUG:");
+                error_log("  Product ID: {$product_id}");
+                error_log("  Price per bike/day: €{$insurance_price_per_bike_per_day}");
+                error_log("  Total bikes: {$insurance_total_bikes}");
+                error_log("  Total days: {$insurance_total_days}");
+                error_log("  Calculated total: €{$precio_total_seguro}");
+                error_log("  Previous price: €{$precio_anterior}");
+                error_log("  New price set: €" . $cart_item['data']->get_price());
+
+                // Verificar que el precio se estableció correctamente
+                if ($cart_item['data']->get_price() != $precio_total_seguro) {
+                    error_log("⚠️ WARNING: Price was not set correctly!");
+                    error_log("  Expected: €{$precio_total_seguro}");
+                    error_log("  Actual: €" . $cart_item['data']->get_price());
+                }
+            } else {
+                error_log("BIKESUL CART SEGURO WARNING: Missing data for product {$product_id}");
+                error_log("  Price per bike/day: {$insurance_price_per_bike_per_day}");
+                error_log("  Total bikes: {$insurance_total_bikes}");
+                error_log("  Total days: {$insurance_total_days}");
             }
         }
     }
