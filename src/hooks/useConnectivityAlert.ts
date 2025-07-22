@@ -2,9 +2,11 @@ import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getConnectivityStatus } from "@/services/connectivityMonitor";
 import { getWooCommerceProtectionStatus } from "@/services/circuitBreaker";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const useConnectivityAlert = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const lastAlertTime = useRef(0);
   const hasShownCriticalAlert = useRef(false);
 
@@ -36,8 +38,8 @@ export const useConnectivityAlert = () => {
       // Alert para múltiples errores consecutivos
       if (status.consecutiveErrors >= 3 && !hasShownCriticalAlert.current) {
         toast({
-          title: "⚠️ Problemas de Conectividad",
-          description: `Se detectaron ${status.consecutiveErrors} errores consecutivos. Verificando conexión...`,
+          title: t("connectivityAlert"),
+          description: t("connectivityMessage").replace("{count}", status.consecutiveErrors.toString()),
           variant: "destructive",
           duration: 10000,
         });

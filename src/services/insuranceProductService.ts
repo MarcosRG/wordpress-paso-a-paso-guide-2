@@ -20,13 +20,14 @@ export class InsuranceProductService {
 
   // Lista de IDs de productos de seguro a verificar en orden de preferencia
   private readonly INSURANCE_PRODUCT_IDS = {
-    premium: [18814, 18815, 18816], // IDs posibles para seguro premium
-    basic: [18817, 18818, 18819], // IDs posibles para seguro básico
+    premium: [21815], // Seguro premium €5 por bicicleta por día
+    basic: [21819], // Seguro básico gratis
+    free: [21819], // Seguro básico gratis (alias)
   };
 
   // Buscar y verificar un producto de seguro válido
   async findValidInsuranceProduct(
-    insuranceType: "premium" | "basic" = "premium",
+    insuranceType: "premium" | "basic" | "free" = "premium",
   ): Promise<InsuranceProductInfo | null> {
     const cacheKey = `insurance_${insuranceType}`;
 
@@ -35,35 +36,47 @@ export class InsuranceProductService {
       return this.productCache.get(cacheKey)!;
     }
 
-    console.log(`🔍 Buscando producto de seguro ${insuranceType}...`);
+    console.log(`🔍 Searching for ${insuranceType} insurance product...`);
 
-    // Estrategia 1: Verificar IDs conocidos
-    // Verificar IDs conocidos para el tipo específico
+    // Strategy 1: Check known IDs
     const idsToCheck = this.INSURANCE_PRODUCT_IDS[insuranceType] || [];
+    console.log(`📋 Checking known IDs for ${insuranceType}:`, idsToCheck);
 
     for (const productId of idsToCheck) {
       try {
+        console.log(`  🔍 Checking product ID ${productId}...`);
         const product = await wooCommerceApi.getProduct(productId);
-        if (product && this.isValidInsuranceProduct(product, insuranceType)) {
-          const productInfo: InsuranceProductInfo = {
-            id: product.id,
-            name: product.name,
-            price: parseFloat(product.price || product.regular_price || "0"),
-            exists: true,
-          };
 
-          this.productCache.set(cacheKey, productInfo);
-          console.log(
-            `✅ Producto de seguro ${insuranceType} encontrado: ID ${productId} - ${product.name}`,
-          );
-          return productInfo;
+        if (product) {
+          console.log(`  📦 Found product: "${product.name}" (Status: ${product.status}, Price: €${product.price || product.regular_price || 0})`);
+
+          if (this.isValidInsuranceProduct(product, insuranceType)) {
+            console.log(`  ✅ Valid ${insuranceType} insurance product found!`);
+            const productInfo: InsuranceProductInfo = {
+              id: product.id,
+              name: product.name,
+              price: parseFloat(product.price || product.regular_price || "0"),
+              exists: true,
+            };
+
+            this.productCache.set(cacheKey, productInfo);
+            console.log(
+              `✅ ${insuranceType} insurance product found: ID ${productId} - ${product.name}`,
+            );
+            return productInfo;
+          } else {
+            console.log(`  ❌ Product "${product.name}" doesn't match ${insuranceType} criteria`);
+          }
+        } else {
+          console.log(`  ❌ Product ID ${productId} not found`);
         }
       } catch (error) {
-        console.warn(`⚠️ No se pudo verificar producto ${productId}:`, error);
+        console.warn(`⚠️ Error checking product ${productId}:`, error);
       }
     }
 
-    // Estrategia 2: Buscar por nombre
+    // Strategy 2: Search by name
+    console.log(`🔍 No products found by ID, searching by name for ${insuranceType}...`);
     try {
       const searchResults = await this.searchInsuranceByName(insuranceType);
       if (searchResults) {
@@ -71,13 +84,28 @@ export class InsuranceProductService {
         return searchResults;
       }
     } catch (error) {
-      console.warn("⚠️ Búsqueda por nombre falló:", error);
+      console.warn("⚠️ Búsqueda por nombre fall��:", error);
     }
 
-    // No se encontró ningún producto válido
+    // No valid product found
     console.error(
-      `❌ No se encontró un producto de seguro ${insuranceType} válido`,
+      `❌ No ${insuranceType} insurance product found in WooCommerce`,
     );
+
+    // Special fallback for basic/free insurance - create a virtual product info
+    if (insuranceType === "basic" || insuranceType === "free") {
+      console.log("🔄 Creating fallback basic insurance (free)...");
+      const fallbackProduct: InsuranceProductInfo = {
+        id: 0, // Virtual product ID for basic insurance
+        name: "Basic Insurance & Liability",
+        price: 0,
+        exists: false, // Mark as virtual
+      };
+
+      this.productCache.set(cacheKey, fallbackProduct);
+      return fallbackProduct;
+    }
+
     this.productCache.set(cacheKey, null);
     return null;
   }
@@ -101,8 +129,8 @@ export class InsuranceProductService {
       );
     }
 
-    // Para seguro básico puede ser gratis y contener "básico" o "basic"
-    if (insuranceType === "basic") {
+    // Para seguro básico/gratis puede ser gratis y contener "básico", "basic" o "free"
+    if (insuranceType === "basic" || insuranceType === "free") {
       return (
         isPublished &&
         (name.includes("seguro") || name.includes("insurance")) &&
@@ -125,7 +153,17 @@ export class InsuranceProductService {
       const searchTerms =
         insuranceType === "premium"
           ? ["seguro premium", "premium insurance", "bikesul"]
-          : ["seguro basic", "basic insurance"];
+          : [
+              "seguro basic",
+              "basic insurance",
+              "seguro básico",
+              "seguro basico",
+              "responsabilidad civil",
+              "basic liability",
+              "free insurance",
+              "seguro gratis",
+              "seguro gratuito"
+            ];
 
       for (const term of searchTerms) {
         console.log(`🔍 Buscando productos con término: "${term}"`);

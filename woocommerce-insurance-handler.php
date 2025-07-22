@@ -128,7 +128,8 @@ function bikesul_procesar_seguro_en_orden($item, $cart_item_key, $values, $order
 // ===============================================
 // 3. AJUSTAR PRECIOS DE SEGURO EN CARRITO
 // ===============================================
-add_action('woocommerce_before_calculate_totals', 'bikesul_ajustar_precio_seguro_carrito', 25, 1);
+add_action('woocommerce_before_calculate_totals', 'bikesul_ajustar_precio_seguro_carrito', 30, 1);
+add_action('woocommerce_cart_loaded_from_session', 'bikesul_ajustar_precio_seguro_carrito', 30, 1);
 
 function bikesul_ajustar_precio_seguro_carrito($cart) {
     if (is_admin() && !defined('DOING_AJAX')) {
@@ -168,16 +169,75 @@ function bikesul_ajustar_precio_seguro_carrito($cart) {
             if ($insurance_price_per_bike_per_day > 0 && $insurance_total_bikes > 0 && $insurance_total_days > 0) {
                 // Para seguros, el precio por unidad es el total (ya que quantity = 1)
                 $precio_total_seguro = $insurance_price_per_bike_per_day * $insurance_total_bikes * $insurance_total_days;
-                
+
+                // Verificar precio anterior para debugging
+                $precio_anterior = $cart_item['data']->get_price();
+
+                // Establecer el precio personalizado
                 $cart_item['data']->set_price($precio_total_seguro);
-                
+
                 // Forzar cantidad a 1 para seguros
                 $cart_item['quantity'] = 1;
-                
-                error_log("BIKESUL CART SEGURO: €{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} × {$insurance_total_days} = €{$precio_total_seguro}");
+
+                // Log completo para debugging
+                error_log("BIKESUL CART SEGURO DEBUG:");
+                error_log("  Product ID: {$product_id}");
+                error_log("  Price per bike/day: €{$insurance_price_per_bike_per_day}");
+                error_log("  Total bikes: {$insurance_total_bikes}");
+                error_log("  Total days: {$insurance_total_days}");
+                error_log("  Calculated total: €{$precio_total_seguro}");
+                error_log("  Previous price: €{$precio_anterior}");
+                error_log("  New price set: €" . $cart_item['data']->get_price());
+
+                // Verificar que el precio se estableció correctamente
+                if ($cart_item['data']->get_price() != $precio_total_seguro) {
+                    error_log("⚠️ WARNING: Price was not set correctly!");
+                    error_log("  Expected: €{$precio_total_seguro}");
+                    error_log("  Actual: €" . $cart_item['data']->get_price());
+                }
+            } else {
+                error_log("BIKESUL CART SEGURO WARNING: Missing data for product {$product_id}");
+                error_log("  Price per bike/day: {$insurance_price_per_bike_per_day}");
+                error_log("  Total bikes: {$insurance_total_bikes}");
+                error_log("  Total days: {$insurance_total_days}");
             }
         }
     }
+}
+
+// ===============================================
+// 3.1. PREVENIR QUE WOOCOMMERCE SOBRESCRIBA EL PRECIO PERSONALIZADO
+// ===============================================
+add_filter('woocommerce_product_get_price', 'bikesul_get_custom_insurance_price', 30, 2);
+add_filter('woocommerce_product_get_regular_price', 'bikesul_get_custom_insurance_price', 30, 2);
+
+function bikesul_get_custom_insurance_price($price, $product) {
+    if (is_admin() && !defined('DOING_AJAX')) {
+        return $price;
+    }
+
+    // Solo aplicar en el carrito/checkout
+    if (!WC()->cart) {
+        return $price;
+    }
+
+    $product_id = $product->get_id();
+    $is_insurance = get_post_meta($product_id, '_is_insurance_product', true);
+
+    if ($is_insurance === 'yes') {
+        // Buscar el item en el carrito para obtener el precio personalizado
+        foreach (WC()->cart->get_cart() as $cart_item) {
+            if ($cart_item['product_id'] == $product_id && isset($cart_item['data'])) {
+                $custom_price = $cart_item['data']->get_price();
+                if ($custom_price && $custom_price > 0) {
+                    error_log("BIKESUL: Usando precio personalizado para seguro ID {$product_id}: €{$custom_price}");
+                    return $custom_price;
+                }
+            }
+        }
+    }
+
+    return $price;
 }
 
 // ===============================================

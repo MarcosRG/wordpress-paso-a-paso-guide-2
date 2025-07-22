@@ -8,8 +8,10 @@ import {
   generateConnectivityReport,
   connectivityMonitor,
 } from "@/services/connectivityMonitor";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const ConnectivityStatus = () => {
+  const { t } = useLanguage();
   const [status, setStatus] = useState(getConnectivityStatus());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -69,8 +71,8 @@ export const ConnectivityStatus = () => {
 
   const getStatusText = () => {
     if (status.isHealthy) return "Conectado";
-    if (status.consecutiveErrors > 0) return "Con problemas";
-    return "Desconectado";
+    if (status.consecutiveErrors > 0) return t("connectionProblems");
+    return t("disconnected");
   };
 
   return (
@@ -110,7 +112,7 @@ export const ConnectivityStatus = () => {
 
       {status.consecutiveErrors > 0 && (
         <div className="text-xs text-orange-600 mb-2">
-          ⚠️ {status.consecutiveErrors} errores consecutivos
+          {t("consecutiveErrors").replace("{count}", status.consecutiveErrors.toString())}
         </div>
       )}
 

@@ -163,10 +163,10 @@ const Index = () => {
     setIsCreatingOrder(true);
 
     try {
-      // Mostrar mensaje de proceso
+      // Mostrar mensaje de processo
       toast({
         title: t("processing"),
-        description: "Preparando carrito y redirección al checkout...",
+        description: t("preparingCart"),
       });
 
       // Guardar datos de la reserva para referencia
@@ -186,20 +186,20 @@ const Index = () => {
         customerData,
       );
 
-      // Mostrar éxito
+      // Mostrar sucesso
       toast({
-        title: "Éxito",
-        description: "Redirigiendo al checkout de WooCommerce...",
+        title: t("success"),
+        description: t("redirectingCheckout"),
       });
     } catch (error) {
       console.error("❌ Error en proceso de reserva:", error);
 
       const errorMessage =
-        error instanceof Error ? error.message : "Error desconocido";
+        error instanceof Error ? error.message : t("unknownError");
 
       toast({
         title: "Error al crear la reserva",
-        description: `Problema al procesar la reserva: ${errorMessage}. Por favor, intente nuevamente.`,
+        description: t("reservationError").replace("{error}", errorMessage),
         variant: "destructive",
       });
     } finally {

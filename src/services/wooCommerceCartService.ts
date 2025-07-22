@@ -284,49 +284,68 @@ export class WooCommerceCartService {
         const totalInsurancePrice =
           reservation.insurance.price * totalBikes * reservation.totalDays;
 
+        // Debug insurance calculation
+        console.log("🛡️ INSURANCE CALCULATION:");
+        console.log(`  Price per bike/day: €${reservation.insurance.price}`);
+        console.log(`  Total bikes: ${totalBikes}`);
+        console.log(`  Total days: ${reservation.totalDays}`);
+        console.log(`  Calculated total: €${totalInsurancePrice}`);
+        console.log(`  Insurance type: ${reservation.insurance.id}`);
+
         try {
           // Buscar automáticamente un producto de seguro válido
           const insuranceProduct =
             await insuranceProductService.findValidInsuranceProduct(
-              reservation.insurance.id as "premium" | "basic",
+              reservation.insurance.id as "premium" | "basic" | "free",
             );
 
-          if (insuranceProduct && insuranceProduct.exists) {
-            console.log(
-              `✅ Usando producto de seguro: ${insuranceProduct.name} (ID: ${insuranceProduct.id})`,
-            );
+          if (insuranceProduct) {
+            // Handle virtual basic insurance (free, no actual product)
+            console.log("✅ INSURANCE PRODUCT FOUND:");
+            console.log(`  Name: ${insuranceProduct.name}`);
+            console.log(`  ID: ${insuranceProduct.id}`);
+            console.log(`  Product base price: €${insuranceProduct.price}`);
+            console.log(`  Will set custom price: €${totalInsurancePrice}`);
+            console.log(`  Is virtual product: ${!insuranceProduct.exists}`);
 
-            lineItems.push({
-              product_id: insuranceProduct.id,
-              quantity: 1, // Siempre 1 unidad para seguros (el precio incluye todas las bicis y días)
-              price: totalInsurancePrice, // Precio total del seguro (price_per_bike_per_day × bicis × días)
-              meta_data: [
-                { key: "_insurance_type", value: reservation.insurance.id },
-                { key: "_insurance_name", value: reservation.insurance.name },
-                {
-                  key: "_insurance_price_per_bike_per_day",
-                  value: reservation.insurance.price.toString(),
-                },
-                { key: "_insurance_total_bikes", value: totalBikes.toString() },
-                {
-                  key: "_insurance_total_days",
-                  value: reservation.totalDays.toString(),
-                },
-                {
-                  key: "_rental_start_date",
-                  value: reservation.startDate?.toISOString() || "",
-                },
-                {
-                  key: "_rental_end_date",
-                  value: reservation.endDate?.toISOString() || "",
-                },
-                { key: "_wc_product_name", value: insuranceProduct.name },
-              ],
-            });
+            // Only add to lineItems if it's a real product (not virtual)
+            if (insuranceProduct.exists && insuranceProduct.id > 0) {
+              lineItems.push({
+                product_id: insuranceProduct.id,
+                quantity: 1, // Siempre 1 unidad para seguros (el precio incluye todas las bicis y días)
+                price: totalInsurancePrice, // Precio total del seguro (price_per_bike_per_day × bicis × días)
+                meta_data: [
+                  { key: "_insurance_type", value: reservation.insurance.id },
+                  { key: "_insurance_name", value: reservation.insurance.name },
+                  {
+                    key: "_insurance_price_per_bike_per_day",
+                    value: reservation.insurance.price.toString(),
+                  },
+                  { key: "_insurance_total_bikes", value: totalBikes.toString() },
+                  {
+                    key: "_insurance_total_days",
+                    value: reservation.totalDays.toString(),
+                  },
+                  {
+                    key: "_rental_start_date",
+                    value: reservation.startDate?.toISOString() || "",
+                  },
+                  {
+                    key: "_rental_end_date",
+                    value: reservation.endDate?.toISOString() || "",
+                  },
+                  { key: "_wc_product_name", value: insuranceProduct.name },
+                ],
+              });
+            } else {
+              console.log(`📋 Virtual ${reservation.insurance.id} insurance (${insuranceProduct.name}) - no product to add to cart`);
+              // For virtual insurance (like free basic), we just acknowledge it but don't add to cart
+            }
           } else {
-            console.warn(
-              "⚠️ No se encontró producto de seguro válido en WooCommerce",
-            );
+            console.error("❌ INSURANCE PRODUCT NOT FOUND:");
+            console.error(`  Searched for type: ${reservation.insurance.id}`);
+            console.error(`  Expected calculation: €${totalInsurancePrice}`);
+            console.error(`  This will prevent insurance from being added to order`);
           }
         } catch (error) {
           console.error("❌ Error buscando producto de seguro:", error);
@@ -485,8 +504,8 @@ export class WooCommerceCartService {
     this.addHiddenField(form, `billing_email`, customerData.email);
     this.addHiddenField(form, `billing_phone`, customerData.phone);
 
-    // Agregar seguro si existe
-    if (reservation.insurance && reservation.insurance.price > 0) {
+    // Agregar seguro si existe (including free basic insurance)
+    if (reservation.insurance) {
       const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
       this.addHiddenField(form, `insurance_type`, reservation.insurance.id);
       this.addHiddenField(form, `insurance_name`, reservation.insurance.name);
@@ -557,7 +576,7 @@ export class WooCommerceCartService {
           customerData,
         );
 
-        console.log("���� Redirigiendo a checkout con orden:", checkoutUrl);
+        console.log("🔗 Redirecting to checkout with order:", checkoutUrl);
 
         // Guardar datos de la orden para referencia
         localStorage.setItem(
