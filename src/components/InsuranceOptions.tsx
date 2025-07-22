@@ -156,18 +156,22 @@ export const InsuranceOptions = ({
               }`}
               onClick={() => handleInsuranceSelect(option.id)}
             >
-              <CardHeader>
-                <div className="flex items-center justify-between">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <Icon className="h-8 w-8 text-red-600" />
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        {option.name[language]}
+                    <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm sm:text-base">
+                        <span className="break-words">
+                          {option.name[language]}
+                        </span>
                         {option.price === 0 && (
-                          <Badge variant="secondary">{t("free")}</Badge>
+                          <Badge variant="secondary" className="w-fit">
+                            {t("free")}
+                          </Badge>
                         )}
                       </CardTitle>
-                      <div className="text-lg font-bold text-red-600 mt-1">
+                      <div className="text-base sm:text-lg font-bold text-red-600 mt-1">
                         {option.price === 0
                           ? t("included")
                           : `+€${option.price}/${t("day")}`}
@@ -180,17 +184,20 @@ export const InsuranceOptions = ({
                       <Button
                         variant="outline"
                         size="sm"
+                        className="w-full sm:w-auto flex-shrink-0"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Info className="h-4 w-4 mr-1" />
                         {t("moreInfo")}
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto mx-4">
                       <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                          <Icon className="h-6 w-6 text-red-600" />
-                          {option.name[language]}
+                        <DialogTitle className="flex items-center gap-2 text-left">
+                          <Icon className="h-6 w-6 text-red-600 flex-shrink-0" />
+                          <span className="break-words">
+                            {option.name[language]}
+                          </span>
                         </DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
