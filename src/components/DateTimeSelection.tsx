@@ -11,6 +11,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { ReservationData } from "@/pages/Index";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { CalendarDays, Clock } from "lucide-react";
+import { format } from "date-fns";
+import { pt, enUS } from "date-fns/locale";
 
 interface DateTimeSelectionProps {
   reservation: ReservationData;
