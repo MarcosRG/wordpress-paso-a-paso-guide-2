@@ -83,7 +83,7 @@ export class InsuranceProductService {
         return searchResults;
       }
     } catch (error) {
-      console.warn("⚠️ Búsqueda por nombre falló:", error);
+      console.warn("⚠️ Búsqueda por nombre fall��:", error);
     }
 
     // No se encontró ningún producto válido
@@ -137,7 +137,15 @@ export class InsuranceProductService {
       const searchTerms =
         insuranceType === "premium"
           ? ["seguro premium", "premium insurance", "bikesul"]
-          : ["seguro basic", "basic insurance"];
+          : [
+              "seguro basic",
+              "basic insurance",
+              "seguro básico",
+              "seguro basico",
+              "responsabilidad civil",
+              "basic liability",
+              "free insurance"
+            ];
 
       for (const term of searchTerms) {
         console.log(`🔍 Buscando productos con término: "${term}"`);
