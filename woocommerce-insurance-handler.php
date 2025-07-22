@@ -128,7 +128,8 @@ function bikesul_procesar_seguro_en_orden($item, $cart_item_key, $values, $order
 // ===============================================
 // 3. AJUSTAR PRECIOS DE SEGURO EN CARRITO
 // ===============================================
-add_action('woocommerce_before_calculate_totals', 'bikesul_ajustar_precio_seguro_carrito', 25, 1);
+add_action('woocommerce_before_calculate_totals', 'bikesul_ajustar_precio_seguro_carrito', 30, 1);
+add_action('woocommerce_cart_loaded_from_session', 'bikesul_ajustar_precio_seguro_carrito', 30, 1);
 
 function bikesul_ajustar_precio_seguro_carrito($cart) {
     if (is_admin() && !defined('DOING_AJAX')) {
