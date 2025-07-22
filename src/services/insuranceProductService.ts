@@ -91,8 +91,8 @@ export class InsuranceProductService {
       `❌ No ${insuranceType} insurance product found in WooCommerce`,
     );
 
-    // Special fallback for basic insurance - create a virtual product info
-    if (insuranceType === "basic") {
+    // Special fallback for basic/free insurance - create a virtual product info
+    if (insuranceType === "basic" || insuranceType === "free") {
       console.log("🔄 Creating fallback basic insurance (free)...");
       const fallbackProduct: InsuranceProductInfo = {
         id: 0, // Virtual product ID for basic insurance
