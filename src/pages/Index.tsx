@@ -163,10 +163,10 @@ const Index = () => {
     setIsCreatingOrder(true);
 
     try {
-      // Mostrar mensaje de proceso
+      // Mostrar mensaje de processo
       toast({
         title: t("processing"),
-        description: "Preparando carrito y redirección al checkout...",
+        description: t("preparingCart"),
       });
 
       // Guardar datos de la reserva para referencia
