@@ -285,7 +285,7 @@ export class WooCommerceCartService {
           reservation.insurance.price * totalBikes * reservation.totalDays;
 
         // Debug insurance calculation
-        console.log("��️ INSURANCE CALCULATION:");
+        console.log("🛡️ INSURANCE CALCULATION:");
         console.log(`  Price per bike/day: €${reservation.insurance.price}`);
         console.log(`  Total bikes: ${totalBikes}`);
         console.log(`  Total days: ${reservation.totalDays}`);
@@ -334,9 +334,10 @@ export class WooCommerceCartService {
               ],
             });
           } else {
-            console.warn(
-              "⚠️ No se encontró producto de seguro válido en WooCommerce",
-            );
+            console.error("❌ INSURANCE PRODUCT NOT FOUND:");
+            console.error(`  Searched for type: ${reservation.insurance.id}`);
+            console.error(`  Expected calculation: €${totalInsurancePrice}`);
+            console.error(`  This will prevent insurance from being added to order`);
           }
         } catch (error) {
           console.error("❌ Error buscando producto de seguro:", error);
