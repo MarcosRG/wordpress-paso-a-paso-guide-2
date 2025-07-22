@@ -29,7 +29,7 @@ export const DateTimeSelection = ({
   const [endDate, setEndDate] = useState<Date | undefined>(
     reservation.endDate || undefined,
   );
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const businessHours = [
     "09:00",
