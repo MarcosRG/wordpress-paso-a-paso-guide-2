@@ -159,7 +159,9 @@ export class InsuranceProductService {
               "seguro basico",
               "responsabilidad civil",
               "basic liability",
-              "free insurance"
+              "free insurance",
+              "seguro gratis",
+              "seguro gratuito"
             ];
 
       for (const term of searchTerms) {
