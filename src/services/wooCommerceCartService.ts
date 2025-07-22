@@ -284,6 +284,14 @@ export class WooCommerceCartService {
         const totalInsurancePrice =
           reservation.insurance.price * totalBikes * reservation.totalDays;
 
+        // Debug insurance calculation
+        console.log("🛡️ INSURANCE CALCULATION:");
+        console.log(`  Price per bike/day: €${reservation.insurance.price}`);
+        console.log(`  Total bikes: ${totalBikes}`);
+        console.log(`  Total days: ${reservation.totalDays}`);
+        console.log(`  Calculated total: €${totalInsurancePrice}`);
+        console.log(`  Insurance type: ${reservation.insurance.id}`);
+
         try {
           // Buscar automáticamente un producto de seguro válido
           const insuranceProduct =
