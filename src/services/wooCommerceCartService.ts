@@ -299,7 +299,8 @@ export class WooCommerceCartService {
               reservation.insurance.id as "premium" | "basic",
             );
 
-          if (insuranceProduct && insuranceProduct.exists) {
+          if (insuranceProduct) {
+            // Handle virtual basic insurance (free, no actual product)
             console.log("✅ INSURANCE PRODUCT FOUND:");
             console.log(`  Name: ${insuranceProduct.name}`);
             console.log(`  ID: ${insuranceProduct.id}`);
