@@ -217,18 +217,18 @@ export const InsuranceOptions = ({
                   </Dialog>
                 </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm mb-3">
+              <CardContent className="pt-0">
+                <p className="text-gray-600 text-xs sm:text-sm mb-3 break-words">
                   {option.description[language]}
                 </p>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {option.coverage[language].slice(0, 2).map((item, index) => (
                     <div
                       key={index}
                       className="flex items-start gap-2 text-xs text-gray-500"
                     >
                       <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <span>{item}</span>
+                      <span className="break-words">{item}</span>
                     </div>
                   ))}
                   {option.coverage[language].length > 2 && (
