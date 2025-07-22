@@ -296,7 +296,7 @@ export class WooCommerceCartService {
           // Buscar automáticamente un producto de seguro válido
           const insuranceProduct =
             await insuranceProductService.findValidInsuranceProduct(
-              reservation.insurance.id as "premium" | "basic",
+              reservation.insurance.id as "premium" | "basic" | "free",
             );
 
           if (insuranceProduct) {
