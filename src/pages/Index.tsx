@@ -303,7 +303,7 @@ const Index = () => {
         </Card>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between">
+        <div className="flex justify-between pb-8 mb-4">
           <Button
             variant="outline"
             onClick={handlePrevious}
