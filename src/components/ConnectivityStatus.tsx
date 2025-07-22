@@ -11,6 +11,7 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export const ConnectivityStatus = () => {
+  const { t } = useLanguage();
   const [status, setStatus] = useState(getConnectivityStatus());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
