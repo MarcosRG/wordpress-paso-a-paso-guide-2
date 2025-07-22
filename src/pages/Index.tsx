@@ -186,10 +186,10 @@ const Index = () => {
         customerData,
       );
 
-      // Mostrar éxito
+      // Mostrar sucesso
       toast({
-        title: "Éxito",
-        description: "Redirigiendo al checkout de WooCommerce...",
+        title: t("success"),
+        description: t("redirectingCheckout"),
       });
     } catch (error) {
       console.error("❌ Error en proceso de reserva:", error);
