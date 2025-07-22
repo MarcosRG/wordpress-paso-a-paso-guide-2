@@ -86,10 +86,25 @@ export class InsuranceProductService {
       console.warn("⚠️ Búsqueda por nombre fall��:", error);
     }
 
-    // No se encontró ningún producto válido
+    // No valid product found
     console.error(
-      `❌ No se encontró un producto de seguro ${insuranceType} válido`,
+      `❌ No ${insuranceType} insurance product found in WooCommerce`,
     );
+
+    // Special fallback for basic insurance - create a virtual product info
+    if (insuranceType === "basic") {
+      console.log("🔄 Creating fallback basic insurance (free)...");
+      const fallbackProduct: InsuranceProductInfo = {
+        id: 0, // Virtual product ID for basic insurance
+        name: "Basic Insurance & Liability",
+        price: 0,
+        exists: false, // Mark as virtual
+      };
+
+      this.productCache.set(cacheKey, fallbackProduct);
+      return fallbackProduct;
+    }
+
     this.productCache.set(cacheKey, null);
     return null;
   }
