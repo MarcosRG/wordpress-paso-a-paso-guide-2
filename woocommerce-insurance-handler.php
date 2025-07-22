@@ -182,6 +182,41 @@ function bikesul_ajustar_precio_seguro_carrito($cart) {
 }
 
 // ===============================================
+// 3.1. PREVENIR QUE WOOCOMMERCE SOBRESCRIBA EL PRECIO PERSONALIZADO
+// ===============================================
+add_filter('woocommerce_product_get_price', 'bikesul_get_custom_insurance_price', 30, 2);
+add_filter('woocommerce_product_get_regular_price', 'bikesul_get_custom_insurance_price', 30, 2);
+
+function bikesul_get_custom_insurance_price($price, $product) {
+    if (is_admin() && !defined('DOING_AJAX')) {
+        return $price;
+    }
+
+    // Solo aplicar en el carrito/checkout
+    if (!WC()->cart) {
+        return $price;
+    }
+
+    $product_id = $product->get_id();
+    $is_insurance = get_post_meta($product_id, '_is_insurance_product', true);
+
+    if ($is_insurance === 'yes') {
+        // Buscar el item en el carrito para obtener el precio personalizado
+        foreach (WC()->cart->get_cart() as $cart_item) {
+            if ($cart_item['product_id'] == $product_id && isset($cart_item['data'])) {
+                $custom_price = $cart_item['data']->get_price();
+                if ($custom_price && $custom_price > 0) {
+                    error_log("BIKESUL: Usando precio personalizado para seguro ID {$product_id}: €{$custom_price}");
+                    return $custom_price;
+                }
+            }
+        }
+    }
+
+    return $price;
+}
+
+// ===============================================
 // 4. MOSTRAR INFO ESPECIAL PARA SEGUROS EN CARRITO
 // ===============================================
 add_filter('woocommerce_get_item_data', 'bikesul_mostrar_info_seguro_carrito', 15, 2);
