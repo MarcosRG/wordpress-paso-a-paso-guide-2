@@ -8,6 +8,7 @@ import {
   generateConnectivityReport,
   connectivityMonitor,
 } from "@/services/connectivityMonitor";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const ConnectivityStatus = () => {
   const [status, setStatus] = useState(getConnectivityStatus());
