@@ -128,8 +128,8 @@ export class InsuranceProductService {
       );
     }
 
-    // Para seguro básico puede ser gratis y contener "básico" o "basic"
-    if (insuranceType === "basic") {
+    // Para seguro básico/gratis puede ser gratis y contener "básico", "basic" o "free"
+    if (insuranceType === "basic" || insuranceType === "free") {
       return (
         isPublished &&
         (name.includes("seguro") || name.includes("insurance")) &&
