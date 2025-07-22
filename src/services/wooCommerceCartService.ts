@@ -285,7 +285,7 @@ export class WooCommerceCartService {
           reservation.insurance.price * totalBikes * reservation.totalDays;
 
         // Debug insurance calculation
-        console.log("🛡️ INSURANCE CALCULATION:");
+        console.log("��️ INSURANCE CALCULATION:");
         console.log(`  Price per bike/day: €${reservation.insurance.price}`);
         console.log(`  Total bikes: ${totalBikes}`);
         console.log(`  Total days: ${reservation.totalDays}`);
@@ -300,9 +300,11 @@ export class WooCommerceCartService {
             );
 
           if (insuranceProduct && insuranceProduct.exists) {
-            console.log(
-              `✅ Usando producto de seguro: ${insuranceProduct.name} (ID: ${insuranceProduct.id})`,
-            );
+            console.log("✅ INSURANCE PRODUCT FOUND:");
+            console.log(`  Name: ${insuranceProduct.name}`);
+            console.log(`  ID: ${insuranceProduct.id}`);
+            console.log(`  Product base price: €${insuranceProduct.price}`);
+            console.log(`  Will set custom price: €${totalInsurancePrice}`);
 
             lineItems.push({
               product_id: insuranceProduct.id,
