@@ -19,6 +19,26 @@ export class FixedInsuranceProductService {
     return FixedInsuranceProductService.instance;
   }
 
+  // Obtener datos completos desde el endpoint PHP
+  private async getProductDataFromPHPEndpoint(): Promise<any> {
+    try {
+      console.log("🔍 Obteniendo datos completos de seguros desde PHP endpoint...");
+
+      const response = await fetch('https://bikesultoursgest.com/wp-json/bikesul/v1/insurance-products');
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("✅ Datos de seguros obtenidos desde PHP:", data);
+        return data;
+      } else {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("❌ Error obteniendo datos de seguros desde PHP:", error);
+      return null;
+    }
+  }
+
   // Obtener IDs reales de productos desde el endpoint PHP
   private async getRealProductIds(): Promise<{ premium: number | null; basic: number | null }> {
     if (this.realProductIds.premium && this.realProductIds.basic) {
