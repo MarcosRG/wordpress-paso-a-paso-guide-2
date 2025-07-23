@@ -326,6 +326,113 @@ export const BikeSelection = ({
           </div>
         </div>
       )}
+
+      {/* Información de seguros disponibles */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Shield className="h-5 w-5 text-red-600" />
+          {language === "pt" ? "Opções de Seguro Disponíveis" : "Available Insurance Options"}
+        </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Seguro Básico */}
+          <Card className="border-green-200 bg-green-50">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <Shield className="h-6 w-6 text-green-600" />
+                <div>
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    {language === "pt" ? "Seguro Básico e Responsabilidade Civil" : "Basic Insurance and Liability"}
+                    <Badge variant="secondary">
+                      {language === "pt" ? "Incluído" : "Included"}
+                    </Badge>
+                  </CardTitle>
+                  <div className="text-sm font-bold text-green-600 mt-1">
+                    {language === "pt" ? "Incluído sem custo" : "Included at no cost"}
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-xs text-gray-600 mb-2">
+                {language === "pt"
+                  ? "Cobertura básica incluída sem custo adicional"
+                  : "Basic coverage included at no additional cost"}
+              </p>
+              <div className="space-y-1">
+                <div className="flex items-start gap-2 text-xs text-gray-500">
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2"></div>
+                  <span>
+                    {language === "pt"
+                      ? "Morte ou Invalidez Permanente: 20.000,00 EUR"
+                      : "Death or Permanent Disability: 20,000.00 EUR"}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2 text-xs text-gray-500">
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2"></div>
+                  <span>
+                    {language === "pt"
+                      ? "Responsabilidade Civil: 50.000,00 EUR"
+                      : "Liability: 50,000.00 EUR"}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Seguro Premium */}
+          <Card className="border-blue-200 bg-blue-50">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="h-6 w-6 text-blue-600" />
+                <div>
+                  <CardTitle className="text-sm">
+                    {language === "pt" ? "Seguro Premium Bikesul" : "PREMIUM Bikesul Insurance"}
+                  </CardTitle>
+                  <div className="text-sm font-bold text-blue-600 mt-1">
+                    +€5/{language === "pt" ? "dia" : "day"}
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-xs text-gray-600 mb-2">
+                {language === "pt"
+                  ? "Cobertura completa para máxima tranquilidade"
+                  : "Complete coverage for maximum peace of mind"}
+              </p>
+              <div className="space-y-1">
+                <div className="flex items-start gap-2 text-xs text-gray-500">
+                  <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2"></div>
+                  <span>
+                    {language === "pt"
+                      ? "Inclui seguro de acidentes pessoais"
+                      : "Includes personal accidents insurance"}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2 text-xs text-gray-500">
+                  <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2"></div>
+                  <span>
+                    {language === "pt"
+                      ? "Danos acidentais menores: até €200"
+                      : "Minor accidental damage: up to €200"}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-start gap-2">
+            <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-blue-700">
+              {language === "pt"
+                ? "Você poderá escolher sua opção de seguro no próximo passo."
+                : "You will be able to choose your insurance option in the next step."}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
