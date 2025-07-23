@@ -67,66 +67,52 @@ export const ConnectivityTest = () => {
       });
     }
 
-    // Test 2: CORS preflight check
+    // Test 2: CORS Analysis (diagnostic only, no actual requests)
     try {
-      console.log("🧪 Testing CORS preflight...");
+      console.log("🧪 Analyzing CORS configuration...");
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const origin = window.location.origin;
+      const targetDomain = "bikesultoursgest.com";
+      const isSameOrigin = origin.includes(targetDomain);
 
-      const response = await fetch("https://bikesultoursgest.com/wp-json/wc/v3", {
-        method: "OPTIONS",
-        mode: "cors",
-        signal: controller.signal,
-        headers: {
-          "Access-Control-Request-Method": "GET",
-          "Access-Control-Request-Headers": "authorization,content-type",
-          "Origin": window.location.origin
-        },
-        cache: "no-cache"
-      });
-
-      clearTimeout(timeoutId);
-
-      const corsHeaders = {
-        allowOrigin: response.headers.get("Access-Control-Allow-Origin"),
-        allowMethods: response.headers.get("Access-Control-Allow-Methods"),
-        allowHeaders: response.headers.get("Access-Control-Allow-Headers"),
-      };
-
-      if (corsHeaders.allowOrigin) {
+      if (isSameOrigin) {
         testResults.push({
-          test: "CORS Preflight",
+          test: "CORS Analysis",
           status: "success",
-          message: "CORS headers present",
-          details: `Origin: ${corsHeaders.allowOrigin}, Methods: ${corsHeaders.allowMethods || 'Not specified'}`
+          message: "Same-origin request - CORS not needed",
+          details: `Current origin: ${origin}. No CORS configuration required.`
         });
       } else {
+        // Analyze the domain difference
+        const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
+        const isBuilderDev = origin.includes("fly.dev");
+        const isNetlify = origin.includes("netlify");
+
+        let details = `Current origin: ${origin}\nTarget: https://${targetDomain}\n\n`;
+
+        if (isLocalhost) {
+          details += "Local development detected. CORS configuration needed in WordPress .htaccess to allow localhost origins.";
+        } else if (isBuilderDev) {
+          details += "Builder.io development environment detected. CORS configuration needed to allow *.fly.dev origins.";
+        } else if (isNetlify) {
+          details += "Netlify deployment detected. CORS configuration needed to allow *.netlify.app origins.";
+        } else {
+          details += "Cross-origin request detected. CORS configuration needed in WordPress .htaccess.";
+        }
+
         testResults.push({
-          test: "CORS Preflight",
+          test: "CORS Analysis",
           status: "warning",
-          message: "CORS headers missing or incomplete",
-          details: `Response status: ${response.status}. Server responded but missing Access-Control-Allow-Origin header.`
+          message: "Cross-origin request - CORS needed",
+          details
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      let details = errorMessage;
-      let message = "CORS preflight failed";
-
-      if (errorMessage.includes("Failed to fetch")) {
-        message = "CORS Configuration Missing";
-        details = "Server doesn't support CORS preflight requests. This confirms CORS is not configured properly on the WordPress server.";
-      } else if (errorMessage.includes("AbortError")) {
-        message = "Preflight Timeout";
-        details = "CORS preflight request timed out. Server may be slow or unreachable.";
-      }
-
       testResults.push({
-        test: "CORS Preflight",
+        test: "CORS Analysis",
         status: "error",
-        message,
-        details
+        message: "Could not analyze CORS requirements",
+        details: "Error determining origin compatibility."
       });
     }
 
@@ -304,7 +290,7 @@ export const ConnectivityTest = () => {
   return (
     <Card className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold">🔍 WooCommerce Connectivity Test</h3>
+        <h3 className="text-lg font-semibold">��� WooCommerce Connectivity Test</h3>
         <Button 
           onClick={runConnectivityTests} 
           disabled={isRunning}
