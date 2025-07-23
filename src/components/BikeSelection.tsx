@@ -55,9 +55,9 @@ export const BikeSelection = ({
         if (selectedCategory === "all") return true;
 
         // Check if product has the selected category
-        if (bike.wooCommerceData?.product?.categories) {
+        if (bike.wooCommerceData?.product?.categories && Array.isArray(bike.wooCommerceData.product.categories)) {
           const hasCategory = bike.wooCommerceData.product.categories.some(
-            (category) => category.slug === selectedCategory,
+            (category) => category && category.slug === selectedCategory,
           );
 
           if (hasCategory) {
