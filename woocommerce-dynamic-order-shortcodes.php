@@ -74,13 +74,15 @@ function bikesul_display_order_info($atts) {
 }
 
 // ===============================================
-// 2. SHORTCODES ESPECÍFICOS
+// 2. SHORTCODES ESPECÍFICOS CON RESOLUCIÓN DINÁMICA
 // ===============================================
 
 /**
  * [bikesul_customer_name id="123"] - Nombre completo del cliente
  * [bikesul_customer_email id="123"] - Email del cliente
  * [bikesul_customer_phone id="123"] - Teléfono del cliente
+ *
+ * NOTA: También soportan placeholders dinámicos como [order_id]
  */
 add_shortcode('bikesul_customer_name', 'bikesul_get_customer_name');
 add_shortcode('bikesul_customer_email', 'bikesul_get_customer_email');
