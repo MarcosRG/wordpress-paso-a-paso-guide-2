@@ -693,9 +693,10 @@ error_log("BIKESUL: Sistema de shortcodes dinámicos cargado correctamente");
 
 ?>
 
-<!-- 
+<!--
 EJEMPLOS DE USO:
 
+==== USO CON ID ESPECÍFICO ====
 1. Información completa de un pedido:
 [bikesul_order_info id="123"]
 
@@ -716,11 +717,52 @@ EJEMPLOS DE USO:
 [bikesul_total_bikes id="123"]
 [bikesul_insurance_info id="123" field="name"]
 
-6. Datos en formato JSON (para desarrolladores):
+==== USO CON PLACEHOLDERS DINÁMICOS (PARA FLUENTCRM/AUTOMACIONES) ====
+6. Nome do cliente (dinâmico):
+[bikesul_customer_name id="[order_id]"]
+
+7. Datas de aluguel (dinâmico):
+[bikesul_rental_dates id="[order_id]"]
+
+8. Lista de bicicletas em formato tabela (dinâmico):
+[bikesul_bikes_list id="[order_id]" format="table"]
+
+9. Informações do seguro (dinâmico):
+[bikesul_insurance_info id="[order_id]"]
+
+10. Total de dias (dinâmico):
+[bikesul_rental_days id="[order_id]"]
+
+11. Horários (dinâmico):
+[bikesul_rental_times id="[order_id]"]
+
+==== PARA FLUENTCRM - TEXTO COMPLETO DE EXEMPLO ====
+Encomenda Confirmada!
+Olá [bikesul_customer_name id="[order_id]"]
+A sua reserva foi confirmada para [bikesul_rental_dates id="[order_id]"]
+
+Detalhes do seu Aluguer:
+[bikesul_bikes_list id="[order_id]" format="table"]
+
+Informações do Seguro:
+[bikesul_insurance_info id="[order_id]"]
+
+Total de dias: [bikesul_rental_days id="[order_id]"] dias
+
+Horários: [bikesul_rental_times id="[order_id]"]
+
+==== OUTROS FORMATOS ====
+12. Dados em formato JSON (para desenvolvedores):
 [bikesul_order_info id="123" format="json"]
 
-PERSONALIZACIÓN:
-- Todos los shortcodes admiten el parámetro 'class' para CSS personalizado
-- El formato puede ser 'table', 'list', 'simple' o 'json'
-- Puedes agregar más campos y funcionalidades según necesites
+PERSONALIZAÇÃO:
+- Todos os shortcodes admitem o parâmetro 'class' para CSS personalizado
+- O formato pode ser 'table', 'list', 'simple' ou 'json'
+- Suporta placeholders dinâmicos como [order_id] para automações
+- Pode capturar order_id de URLs, sessões, cookies e hooks do WooCommerce
+
+INTEGRAÇÃO COM FLUENTCRM:
+1. Use os shortcodes com id="[order_id]" em suas automações
+2. O sistema resolverá automaticamente o ID da ordem no contexto correto
+3. Funciona com triggers de mudança de status de pedido
 -->
