@@ -15,6 +15,7 @@ import {
   canMakeWooCommerceRequest,
   recordWooCommerceSuccess,
   recordWooCommerceFailure,
+  wooCommerceCircuitBreaker,
 } from "./circuitBreaker";
 
 export interface ACFPricing {
