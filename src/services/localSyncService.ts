@@ -1,17 +1,20 @@
-import { wooCommerceApi, checkAtumAvailability } from "./woocommerceApi";
-import {
-  neonHttpService,
-  convertToNeonProduct,
-  convertToNeonVariation,
-  NeonProduct,
-  NeonVariation,
-} from "./neonHttpService";
+import { wooCommerceApi } from "./woocommerceApi";
+import { neonHttpService } from "./neonHttpService";
+import { NeonProduct, NeonVariation } from "./neonHttpService";
+
+// Configuración para desarrollo
+const DISABLE_AUTO_SYNC = import.meta.env.VITE_DISABLE_AUTO_SYNC === "true" || false;
 
 export class LocalSyncService {
   private isRunning = false;
   private lastSyncTime: Date | null = null;
 
   constructor() {
+    if (DISABLE_AUTO_SYNC) {
+      console.log("🚫 Auto-sync deshabilitado por variable de entorno VITE_DISABLE_AUTO_SYNC");
+      return;
+    }
+
     // Verificar si necesita sincronización inicial
     if (neonHttpService.needsSync()) {
       this.performSync()
@@ -19,19 +22,20 @@ export class LocalSyncService {
           console.log("✅ Sincronización inicial completada");
         })
         .catch((error) => {
-          const isCorsError = error instanceof TypeError &&
+          const isCorsError = error instanceof TypeError && 
             error.message.includes("Failed to fetch");
-
+          
           if (isCorsError && import.meta.env.DEV) {
             console.warn("⚠️ CORS Error en desarrollo - La app continuará con datos mock/cache");
             console.warn("💡 Para corregir: Configurar CORS en WordPress o usar datos locales");
+            console.warn("💡 Para deshabilitar auto-sync: Agregar VITE_DISABLE_AUTO_SYNC=true a .env");
           } else {
             console.error("❌ Error en sincronización inicial:", error);
           }
         });
     }
 
-    // Programar sincronización cada 10 minutos
+    // Programar sincronización cada 10 minutos (solo si no está deshabilitado)
     setInterval(
       () => {
         if (neonHttpService.needsSync()) {
@@ -67,12 +71,12 @@ export class LocalSyncService {
         );
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-
+        
         if (errorMessage.includes("Failed to fetch")) {
           console.warn("⚠️ CORS Error: No se pueden obtener productos de WooCommerce");
           console.warn("💡 Solución: Configurar CORS en el servidor WordPress");
           console.log("🔄 Continuando con productos locales en cache...");
-
+          
           // Continue with cached products only
           wooProducts = [];
         } else {
@@ -104,11 +108,11 @@ export class LocalSyncService {
               `⚠️ Error obteniendo ACF para producto ${product.id}:`,
               error,
             );
-
+            
             // Check if it's a CORS or network error
-            const isCorsError = error instanceof TypeError &&
+            const isCorsError = error instanceof TypeError && 
               error.message.includes("Failed to fetch");
-
+            
             if (isCorsError) {
               console.log("🔄 CORS error detected, skipping ACF data for this product");
             }
@@ -128,44 +132,35 @@ export class LocalSyncService {
 
               for (const variation of variations) {
                 // Obtener stock ATUM para la variación
-                const atumStock = await checkAtumAvailability(
-                  product.id,
-                  variation.id,
-                );
+                let atumStockData = null;
+                try {
+                  // Solo intentar obtener stock ATUM si el producto tiene variaciones
+                  const stockData = await wooCommerceApi.getAtumStock(
+                    product.id,
+                    variation.id,
+                  );
+                  atumStockData = stockData;
+                } catch (stockError) {
+                  // Stock ATUM es opcional
+                  console.warn(
+                    `⚠️ No se pudo obtener stock ATUM para variación ${variation.id}`,
+                  );
+                }
 
                 const neonVariation = convertToNeonVariation(
+                  product,
                   variation,
-                  product.id,
-                  atumStock,
+                  atumStockData,
                 );
                 neonVariations.push(neonVariation);
               }
             } catch (error) {
               console.warn(
-                `⚠️ Error obteniendo variaciones para producto ${product.id}:`,
-                error,
-              );
-            }
-          } else {
-            // Producto simple - obtener stock ATUM
-            try {
-              const atumStock = await checkAtumAvailability(product.id);
-              if (atumStock > 0) {
-                // Actualizar stock en el producto
-                neonProduct.stock_quantity = Math.max(
-                  neonProduct.stock_quantity,
-                  atumStock,
-                );
-              }
-            } catch (error) {
-              console.warn(
-                `⚠️ Error obteniendo stock ATUM para producto ${product.id}:`,
+                `⚠️ Error procesando variaciones del producto ${product.id}:`,
                 error,
               );
             }
           }
-
-          console.log(`✅ Procesado: ${product.name} (ID: ${product.id})`);
         } catch (error) {
           console.warn(`⚠️ Error procesando producto ${product.id}:`, error);
           // Continuar con el siguiente producto
@@ -203,7 +198,7 @@ export class LocalSyncService {
         return;
       }
 
-      // For other errors, still throw
+      // Throw non-network errors to be handled by caller
       throw error;
     } finally {
       this.isRunning = false;
@@ -211,151 +206,78 @@ export class LocalSyncService {
     }
   }
 
-  // Sincronización manual
-  async forceSync(): Promise<void> {
-    if (this.isRunning) {
-      throw new Error("Sincronización ya en curso");
-    }
+  getLastSyncTime(): Date | null {
+    return this.lastSyncTime;
+  }
 
-    // Limpiar cache para forzar recarga completa
-    neonHttpService.clearCache();
-
+  // Forzar sincronización manual
+  async forcSync(): Promise<void> {
     await this.performSync();
   }
 
-  // Obtener estado de la sincronización
-  getStatus(): { isRunning: boolean; lastSyncTime: Date | null } {
-    const syncStatus = neonHttpService.getSyncStatus();
-    return {
-      isRunning: this.isRunning || syncStatus.isRunning,
-      lastSyncTime: this.lastSyncTime || syncStatus.lastSyncTime,
-    };
+  // Obtener stats del cache
+  getCacheStats() {
+    return neonHttpService.getCacheStats();
   }
+}
 
-  // Sincronizar un producto específico
-  async syncSingleProduct(productId: number): Promise<void> {
-    try {
-      console.log(`🔄 Sincronizando producto individual: ${productId}`);
+// Helper functions para convertir datos
+function convertToNeonProduct(
+  wooProduct: any,
+  acfData: any = null,
+): NeonProduct {
+  // Extract price based on product type
+  let price = parseFloat(wooProduct.price || wooProduct.regular_price || "0");
 
-      // Obtener producto de WooCommerce
-      const response = await fetch(
-        `https://bikesultoursgest.com/wp-json/wc/v3/products/${productId}`,
-        {
-          headers: {
-            Authorization:
-              "Basic " +
-              btoa(
-                "ck_d702f875c82d5973562a62579cfa284db06e3a87:cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71",
-              ),
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`Producto ${productId} no encontrado en WooCommerce`);
-      }
-
-      const product = await response.json();
-
-      // Obtener ACF data
-      let acfData = null;
-      try {
-        acfData = await wooCommerceApi.getProductWithACF(product.id);
-      } catch (error) {
-        // ACF data is optional
-      }
-
-      // Convertir y actualizar en cache
-      const neonProduct = convertToNeonProduct(product, acfData);
-
-      // Obtener productos existentes del cache
-      const existingProducts = await neonHttpService.getActiveProducts();
-      const otherProducts = existingProducts.filter(
-        (p) => p.woocommerce_id !== productId,
-      );
-
-      // Agregar/actualizar el producto
-      await neonHttpService.cacheProducts([...otherProducts, neonProduct]);
-
-      // Sincronizar variaciones si las hay
-      if (product.type === "variable" && product.variations.length > 0) {
-        const variations = await wooCommerceApi.getProductVariations(
-          product.id,
-        );
-        const neonVariations: NeonVariation[] = [];
-
-        for (const variation of variations) {
-          const atumStock = await checkAtumAvailability(
-            product.id,
-            variation.id,
-          );
-          const neonVariation = convertToNeonVariation(
-            variation,
-            product.id,
-            atumStock,
-          );
-          neonVariations.push(neonVariation);
-        }
-
-        // Actualizar variaciones en cache
-        const existingVariations = JSON.parse(
-          localStorage.getItem("neon_variations_cache") || "[]",
-        );
-        const otherVariations = existingVariations.filter(
-          (v: NeonVariation) => v.product_id !== product.id,
-        );
-        await neonHttpService.cacheVariations([
-          ...otherVariations,
-          ...neonVariations,
-        ]);
-      }
-
-      console.log(`✅ Producto ${productId} sincronizado correctamente`);
-    } catch (error) {
-      console.error(`❌ Error sincronizando producto ${productId}:`, error);
-      throw error;
+  // For variable products, try to get the starting price
+  if (wooProduct.type === "variable" && wooProduct.price_html) {
+    const priceMatch = wooProduct.price_html.match(/[\d,]+\.?\d*/);
+    if (priceMatch) {
+      price = parseFloat(priceMatch[0].replace(",", ""));
     }
   }
 
-  // Verificar si hay datos en cache
-  hasCachedData(): boolean {
-    try {
-      const products = localStorage.getItem("neon_products_cache");
-      return !!(products && JSON.parse(products).length > 0);
-    } catch {
-      return false;
-    }
-  }
+  return {
+    woocommerce_id: wooProduct.id,
+    name: wooProduct.name,
+    slug: wooProduct.slug,
+    type: wooProduct.type,
+    status: wooProduct.status,
+    description: wooProduct.description || "",
+    short_description: wooProduct.short_description || "",
+    price: price,
+    regular_price: parseFloat(
+      wooProduct.regular_price || wooProduct.price || "0",
+    ),
+    sale_price: parseFloat(wooProduct.sale_price || "0"),
+    categories: JSON.stringify(wooProduct.categories),
+    images: JSON.stringify(wooProduct.images),
+    attributes: JSON.stringify(wooProduct.attributes),
+    variations: JSON.stringify(wooProduct.variations || []),
+    stock_quantity: wooProduct.stock_quantity || 0,
+    stock_status: wooProduct.stock_status || "outofstock",
+    meta_data: JSON.stringify(wooProduct.meta_data || []),
+    acf_data: acfData ? JSON.stringify(acfData) : null,
+  };
+}
 
-  // Obtener estadísticas del cache
-  getCacheStats(): {
-    products: number;
-    variations: number;
-    lastSync: Date | null;
-  } {
-    try {
-      const products = JSON.parse(
-        localStorage.getItem("neon_products_cache") || "[]",
-      );
-      const variations = JSON.parse(
-        localStorage.getItem("neon_variations_cache") || "[]",
-      );
-      const lastSync = localStorage.getItem("neon_last_sync");
-
-      return {
-        products: products.length,
-        variations: variations.length,
-        lastSync: lastSync ? new Date(lastSync) : null,
-      };
-    } catch {
-      return {
-        products: 0,
-        variations: 0,
-        lastSync: null,
-      };
-    }
-  }
+function convertToNeonVariation(
+  parentProduct: any,
+  variation: any,
+  atumStockData: any = null,
+): NeonVariation {
+  return {
+    woocommerce_id: variation.id,
+    parent_id: parentProduct.id,
+    price: parseFloat(variation.price || variation.regular_price || "0"),
+    regular_price: parseFloat(variation.regular_price || "0"),
+    sale_price: parseFloat(variation.sale_price || "0"),
+    stock_quantity: variation.stock_quantity || 0,
+    stock_status: variation.stock_status || "outofstock",
+    attributes: JSON.stringify(variation.attributes),
+    image: JSON.stringify(variation.image),
+    atum_stock: atumStockData ? JSON.stringify(atumStockData) : null,
+  };
 }
 
 // Instancia singleton del servicio de sincronización
