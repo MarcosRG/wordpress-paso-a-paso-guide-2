@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
 import {
   useLocalNeonBikes,
@@ -11,7 +10,7 @@ import {
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bike as BikeIcon, AlertCircle, RefreshCw, Shield, ShieldCheck, Info } from "lucide-react";
+import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
 import SimpleBikeCard from "./SimpleBikeCard";
 import {
