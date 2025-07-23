@@ -247,6 +247,43 @@ export const ConnectivityTest = () => {
       });
     }
 
+    // Test 5: Alternative connectivity test (no CORS)
+    try {
+      console.log("🧪 Testing alternative connectivity...");
+
+      const img = new Image();
+      const testPromise = new Promise<boolean>((resolve) => {
+        const timeout = setTimeout(() => resolve(false), 5000);
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve(true);
+        };
+        img.onerror = () => {
+          clearTimeout(timeout);
+          resolve(false);
+        };
+        img.src = "https://bikesultoursgest.com/wp-includes/images/media/default.png?" + Date.now();
+      });
+
+      const canReachServer = await testPromise;
+
+      testResults.push({
+        test: "Server Reachability",
+        status: canReachServer ? "success" : "error",
+        message: canReachServer ? "Server is reachable" : "Cannot reach server",
+        details: canReachServer ?
+          "Basic connectivity to WordPress server works. CORS issues are configuration-only." :
+          "Cannot reach the WordPress server at all. Check domain, DNS, or network connectivity."
+      });
+    } catch (error) {
+      testResults.push({
+        test: "Server Reachability",
+        status: "error",
+        message: "Connectivity test failed",
+        details: "Could not test basic server connectivity."
+      });
+    }
+
     setResults(testResults);
     setIsRunning(false);
   };
