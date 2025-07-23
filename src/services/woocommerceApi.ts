@@ -200,29 +200,44 @@ export const convertACFToPriceRanges = (
 export const extractDayBasedPricing = (
   product: WooCommerceProduct,
 ): PriceRange[] => {
-  // First try to get ACF pricing
-  const acfPricing = extractACFPricing(product);
-  if (acfPricing) {
-    return convertACFToPriceRanges(acfPricing);
-  }
-
-  // Look for day-based pricing in meta_data (legacy format)
-  const pricingMeta = product.meta_data?.find(
-    (meta) => meta.key === "_day_pricing" || meta.key === "day_pricing",
-  );
-
-  if (pricingMeta && pricingMeta.value) {
-    try {
-      // Expected format: [{"minDays": 1, "maxDays": 3, "pricePerDay": 60}, ...]
-      return JSON.parse(pricingMeta.value);
-    } catch (e) {
-      // Error parsing day-based pricing, will use fallback
+  try {
+    // Validate input
+    if (!product || typeof product !== 'object') {
+      return [];
     }
-  }
 
-  // Fallback: create default pricing based on regular price
-  const basePrice = parseFloat(product.regular_price || product.price || "0");
-  return [{ minDays: 1, maxDays: 999, pricePerDay: basePrice }];
+    // First try to get ACF pricing
+    const acfPricing = extractACFPricing(product);
+    if (acfPricing) {
+      return convertACFToPriceRanges(acfPricing);
+    }
+
+    // Look for day-based pricing in meta_data (legacy format)
+    if (Array.isArray(product.meta_data)) {
+      const pricingMeta = product.meta_data.find(
+        (meta) => meta && meta.key && (meta.key === "_day_pricing" || meta.key === "day_pricing"),
+      );
+
+      if (pricingMeta && pricingMeta.value) {
+        try {
+          // Expected format: [{"minDays": 1, "maxDays": 3, "pricePerDay": 60}, ...]
+          const parsed = JSON.parse(pricingMeta.value);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        } catch (e) {
+          console.warn("Error parsing day-based pricing:", e);
+        }
+      }
+    }
+
+    // Fallback: create default pricing based on regular price
+    const basePrice = parseFloat(product.regular_price || product.price || "0");
+    return [{ minDays: 1, maxDays: 999, pricePerDay: basePrice }];
+  } catch (error) {
+    console.warn("Error in extractDayBasedPricing:", error);
+    return [];
+  }
 };
 
 // Function to get price for specific number of days
