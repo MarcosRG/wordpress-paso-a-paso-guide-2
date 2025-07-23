@@ -27,7 +27,10 @@ export class LocalSyncService {
     setInterval(
       () => {
         if (neonHttpService.needsSync()) {
-          this.performSync();
+          this.performSync().catch((error) => {
+            console.warn("⚠️ Error en sincronización programada:", error);
+            // Don't let sync errors break the app
+          });
         }
       },
       10 * 60 * 1000,
