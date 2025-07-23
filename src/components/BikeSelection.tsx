@@ -50,25 +50,37 @@ export const BikeSelection = ({
   };
 
   // Filter bikes by category using WooCommerce slugs
-  const filteredBikes = bikes
-    ? bikes.filter((bike) => {
-        if (selectedCategory === "all") return true;
+  const filteredBikes = React.useMemo(() => {
+    try {
+      return bikes
+        ? bikes.filter((bike) => {
+            try {
+              if (selectedCategory === "all") return true;
 
-        // Check if product has the selected category
-        if (bike.wooCommerceData?.product?.categories && Array.isArray(bike.wooCommerceData.product.categories)) {
-          const hasCategory = bike.wooCommerceData.product.categories.some(
-            (category) => category && category.slug === selectedCategory,
-          );
+              // Check if product has the selected category
+              if (bike.wooCommerceData?.product?.categories && Array.isArray(bike.wooCommerceData.product.categories)) {
+                const hasCategory = bike.wooCommerceData.product.categories.some(
+                  (category) => category && typeof category === 'object' && category.slug === selectedCategory,
+                );
 
-          if (hasCategory) {
-            return true;
-          }
-        }
+                if (hasCategory) {
+                  return true;
+                }
+              }
 
-        // Fallback to bike type
-        return bike.type === selectedCategory;
-      })
-    : [];
+              // Fallback to bike type
+              return bike.type === selectedCategory;
+            } catch (error) {
+              console.warn(`Error filtering bike ${bike.id}:`, error);
+              return selectedCategory === "all"; // Show bike if "all" selected, hide if specific category
+            }
+          })
+        : [];
+    } catch (error) {
+      console.error("Error filtering bikes:", error);
+      return [];
+    }
+  }, [bikes, selectedCategory]);
 
   const getQuantityForBikeAndSize = (bikeId: string, size: string) => {
     const selectedBike = reservation.selectedBikes.find(
