@@ -210,27 +210,40 @@ export const ConnectivityTest = () => {
       }
     }
 
-    // Test 4: Network timing
+    // Test 4: Network timing (simplified to avoid additional CORS errors)
     const startTime = Date.now();
     try {
-      await fetch("https://bikesultoursgest.com/wp-json/wc/v3", {
-        method: "HEAD",
-        mode: "cors",
+      console.log("🧪 Testing network timing...");
+
+      // Use a simple image request to test timing without CORS issues
+      const img = new Image();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timing test timeout")), 10000)
+      );
+
+      const loadPromise = new Promise((resolve) => {
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false); // Still count as "completed" for timing
+        img.src = "https://bikesultoursgest.com/favicon.ico?" + Date.now(); // Cache bust
       });
+
+      await Promise.race([loadPromise, timeoutPromise]);
       const duration = Date.now() - startTime;
-      
+
       testResults.push({
         test: "Network Timing",
         status: duration < 2000 ? "success" : "warning",
         message: `Response time: ${duration}ms`,
-        details: duration > 2000 ? "Slow connection detected" : "Connection speed is good"
+        details: duration > 5000 ? "Very slow connection detected" :
+                duration > 2000 ? "Slow connection detected" : "Connection speed is good"
       });
     } catch (error) {
+      const duration = Date.now() - startTime;
       testResults.push({
         test: "Network Timing",
         status: "error",
-        message: "Timing test failed",
-        details: error instanceof Error ? error.message : String(error)
+        message: `Timing test failed after ${duration}ms`,
+        details: "Could not measure network timing to the server. This may indicate connectivity issues."
       });
     }
 
