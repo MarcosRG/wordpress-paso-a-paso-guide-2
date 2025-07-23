@@ -80,7 +80,7 @@ export const productDiagnostics = {
 
         // Verificar categorías
         const hasCategories =
-          product.categories && product.categories.length > 0;
+          product.categories && Array.isArray(product.categories) && product.categories.length > 0;
         if (!hasCategories) issues.push("Sin categorías");
 
         // Determinar si está completo
