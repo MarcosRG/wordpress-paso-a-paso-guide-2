@@ -725,7 +725,7 @@ export const wooCommerceApi = {
           mode: "cors",
         },
         TIMEOUT_CONFIG.short,
-        1,
+        1, // Reduced retries for ACF data
       );
 
       if (!response.ok) {
