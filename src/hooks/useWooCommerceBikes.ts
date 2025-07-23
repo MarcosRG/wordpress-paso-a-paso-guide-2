@@ -129,9 +129,9 @@ export const useWooCommerceBikes = () => {
             }
 
             // Obtener categoría principal del producto (excluyendo ALUGUERES)
-            const subcategory = product.categories.find(
-              (cat) => cat.slug !== "alugueres",
-            );
+            const subcategory = Array.isArray(product.categories)
+              ? product.categories.find((cat) => cat && cat.slug !== "alugueres")
+              : null;
             const primaryCategory = subcategory ? subcategory.slug : "general";
 
             // Merge ACF data into product if available
