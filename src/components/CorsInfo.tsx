@@ -156,8 +156,14 @@ export const CorsInfo = () => {
               </div>
               
               <div className="mt-2 text-xs text-gray-600">
-                Add this configuration to the .htaccess file in your WordPress root directory 
+                Add this configuration to the .htaccess file in your WordPress root directory
                 (where wp-config.php is located).
+                {copyError && (
+                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                    <strong>Copy manually:</strong> Select the text above and use Ctrl+C (or Cmd+C on Mac) to copy.
+                    Clipboard access is restricted in this environment.
+                  </div>
+                )}
               </div>
             </div>
           </div>
