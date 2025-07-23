@@ -198,8 +198,11 @@ function bikesul_get_bikes_list($atts) {
         'format' => 'list', // list, table, simple
         'show_price' => 'yes'
     ), $atts);
-    
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
     
     $bikes_html = '';
