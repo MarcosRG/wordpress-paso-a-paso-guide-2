@@ -6,6 +6,7 @@ import { useState } from "react";
 
 export const CorsInfo = () => {
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
   
   const currentOrigin = window.location.origin;
   const targetDomain = "bikesultoursgest.com";
