@@ -208,40 +208,48 @@ export const ConnectivityTest = () => {
       });
     }
 
-    // Test 5: Alternative connectivity test (no CORS)
+    // Test 5: Summary and Recommendations
     try {
-      console.log("🧪 Testing alternative connectivity...");
+      console.log("🧪 Generating summary...");
 
-      const img = new Image();
-      const testPromise = new Promise<boolean>((resolve) => {
-        const timeout = setTimeout(() => resolve(false), 5000);
-        img.onload = () => {
-          clearTimeout(timeout);
-          resolve(true);
-        };
-        img.onerror = () => {
-          clearTimeout(timeout);
-          resolve(false);
-        };
-        img.src = "https://bikesultoursgest.com/wp-includes/images/media/default.png?" + Date.now();
-      });
+      const hasConnectivity = testResults.some(r => r.status === 'success');
+      const hasCorsIssues = testResults.some(r => r.message.toLowerCase().includes('cors'));
+      const hasSlowConnection = testResults.some(r => r.message.includes('slow'));
 
-      const canReachServer = await testPromise;
+      let summaryMessage = "";
+      let summaryDetails = "";
+      let summaryStatus: TestResult['status'] = 'success';
+
+      if (!hasConnectivity) {
+        summaryMessage = "Server connectivity issues detected";
+        summaryDetails = "Cannot reach the WordPress server. Check DNS, hosting status, or network connectivity before proceeding.";
+        summaryStatus = 'error';
+      } else if (hasCorsIssues) {
+        summaryMessage = "CORS configuration required";
+        summaryDetails = "Server is reachable but needs CORS headers. Add the provided .htaccess configuration to fix 'Failed to fetch' errors.";
+        summaryStatus = 'warning';
+      } else {
+        summaryMessage = "Configuration looks good";
+        summaryDetails = "Basic connectivity works. If you're still experiencing issues, try the Simple CORS Check below.";
+        summaryStatus = 'success';
+      }
+
+      if (hasSlowConnection) {
+        summaryDetails += " Note: Slow network detected - API calls may be slower than expected.";
+      }
 
       testResults.push({
-        test: "Server Reachability",
-        status: canReachServer ? "success" : "error",
-        message: canReachServer ? "Server is reachable" : "Cannot reach server",
-        details: canReachServer ?
-          "Basic connectivity to WordPress server works. CORS issues are configuration-only." :
-          "Cannot reach the WordPress server at all. Check domain, DNS, or network connectivity."
+        test: "Summary & Recommendations",
+        status: summaryStatus,
+        message: summaryMessage,
+        details: summaryDetails
       });
     } catch (error) {
       testResults.push({
-        test: "Server Reachability",
+        test: "Summary & Recommendations",
         status: "error",
-        message: "Connectivity test failed",
-        details: "Could not test basic server connectivity."
+        message: "Could not generate summary",
+        details: "Error analyzing test results."
       });
     }
 
