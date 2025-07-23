@@ -145,15 +145,19 @@ export const extractACFPricing = (
     };
   }
 
-  // Check in meta_data for ACF fields
-  const precio_1_2 = product.meta_data?.find(
-    (meta) => meta.key === "precio_1_2" || meta.key === "_precio_1_2",
+  // Check in meta_data for ACF fields (ensure meta_data is an array)
+  if (!Array.isArray(product.meta_data)) {
+    return null;
+  }
+
+  const precio_1_2 = product.meta_data.find(
+    (meta) => meta && meta.key && (meta.key === "precio_1_2" || meta.key === "_precio_1_2"),
   );
-  const precio_3_6 = product.meta_data?.find(
-    (meta) => meta.key === "precio_3_6" || meta.key === "_precio_3_6",
+  const precio_3_6 = product.meta_data.find(
+    (meta) => meta && meta.key && (meta.key === "precio_3_6" || meta.key === "_precio_3_6"),
   );
-  const precio_7_mais = product.meta_data?.find(
-    (meta) => meta.key === "precio_7_mais" || meta.key === "_precio_7_mais",
+  const precio_7_mais = product.meta_data.find(
+    (meta) => meta && meta.key && (meta.key === "precio_7_mais" || meta.key === "_precio_7_mais"),
   );
 
   if (precio_1_2 && precio_3_6 && precio_7_mais) {
