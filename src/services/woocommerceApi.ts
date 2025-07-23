@@ -374,9 +374,11 @@ const fetchWithRetry = async (
 
       // Solo registrar error si es el último intento (todos fallaron)
       if (attempt === maxRetries) {
-        // Only register failure in circuit breaker for non-network errors or after all retries
-        if (!isNetworkError || attempt === maxRetries) {
-          recordWooCommerceFailure(); // Register failure in circuit breaker
+        // Don't register CORS/network errors in circuit breaker as they are configuration issues, not service failures
+        if (!isNetworkError) {
+          recordWooCommerceFailure(); // Register failure in circuit breaker only for non-network errors
+        } else {
+          console.log("🔄 Network/CORS error detected - not triggering circuit breaker");
         }
 
         if (error instanceof Error) {
