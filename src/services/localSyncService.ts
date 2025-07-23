@@ -171,9 +171,15 @@ export class LocalSyncService {
       const duration = Date.now() - startTime;
       this.lastSyncTime = new Date();
 
-      console.log(`✅ Sincronización completada en ${duration}ms`);
-      console.log(`📊 Productos sincronizados: ${neonProducts.length}`);
-      console.log(`🔧 Variaciones sincronizadas: ${neonVariations.length}`);
+      if (wooProducts.length === 0) {
+        console.log(`⚠️ Sincronización completada en ${duration}ms (modo offline por CORS)`);
+        console.log(`📊 Productos disponibles: ${neonProducts.length} (desde cache)`);
+        console.log(`💡 Para sincronizar con WooCommerce, configure CORS en el servidor`);
+      } else {
+        console.log(`✅ Sincronización completada en ${duration}ms`);
+        console.log(`📊 Productos sincronizados: ${neonProducts.length}`);
+        console.log(`🔧 Variaciones sincronizadas: ${neonVariations.length}`);
+      }
     } catch (error) {
       console.error("❌ Error durante la sincronización:", error);
 
