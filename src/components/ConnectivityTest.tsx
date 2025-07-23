@@ -81,43 +81,64 @@ export const ConnectivityTest = () => {
 
     // Test 2: CORS preflight check
     try {
+      console.log("🧪 Testing CORS preflight...");
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       const response = await fetch("https://bikesultoursgest.com/wp-json/wc/v3", {
         method: "OPTIONS",
         mode: "cors",
+        signal: controller.signal,
         headers: {
           "Access-Control-Request-Method": "GET",
           "Access-Control-Request-Headers": "authorization,content-type",
           "Origin": window.location.origin
-        }
+        },
+        cache: "no-cache"
       });
-      
+
+      clearTimeout(timeoutId);
+
       const corsHeaders = {
         allowOrigin: response.headers.get("Access-Control-Allow-Origin"),
         allowMethods: response.headers.get("Access-Control-Allow-Methods"),
         allowHeaders: response.headers.get("Access-Control-Allow-Headers"),
       };
-      
+
       if (corsHeaders.allowOrigin) {
         testResults.push({
           test: "CORS Preflight",
           status: "success",
           message: "CORS headers present",
-          details: `Origin: ${corsHeaders.allowOrigin}, Methods: ${corsHeaders.allowMethods}`
+          details: `Origin: ${corsHeaders.allowOrigin}, Methods: ${corsHeaders.allowMethods || 'Not specified'}`
         });
       } else {
         testResults.push({
           test: "CORS Preflight",
           status: "warning",
           message: "CORS headers missing or incomplete",
-          details: `No Access-Control-Allow-Origin header found`
+          details: `Response status: ${response.status}. Server responded but missing Access-Control-Allow-Origin header.`
         });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      let details = errorMessage;
+      let message = "CORS preflight failed";
+
+      if (errorMessage.includes("Failed to fetch")) {
+        message = "CORS Configuration Missing";
+        details = "Server doesn't support CORS preflight requests. This confirms CORS is not configured properly on the WordPress server.";
+      } else if (errorMessage.includes("AbortError")) {
+        message = "Preflight Timeout";
+        details = "CORS preflight request timed out. Server may be slow or unreachable.";
+      }
+
       testResults.push({
         test: "CORS Preflight",
         status: "error",
-        message: "CORS preflight failed",
-        details: error instanceof Error ? error.message : String(error)
+        message,
+        details
       });
     }
 
@@ -249,7 +270,7 @@ export const ConnectivityTest = () => {
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <h4 className="font-medium text-blue-900 mb-2">💡 Troubleshooting Tips</h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• If CORS tests fail, the WooCommerce server needs CORS configuration</li>
+              <li>�� If CORS tests fail, the WooCommerce server needs CORS configuration</li>
               <li>• Check if your browser is blocking mixed content (HTTP/HTTPS)</li>
               <li>• Verify WooCommerce REST API is enabled in WordPress admin</li>
               <li>• Ensure API credentials have proper permissions</li>
