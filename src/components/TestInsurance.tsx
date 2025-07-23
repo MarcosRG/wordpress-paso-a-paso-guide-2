@@ -5,7 +5,7 @@ import {
   testInsuranceProduct,
   searchInsuranceProducts,
 } from "@/utils/testInsuranceProduct";
-import { fixedInsuranceProductService } from "@/services/insuranceProductService.fixed";
+import { insuranceProductService } from "@/services/insuranceProductService";
 
 export const TestInsurance = () => {
   const [testResult, setTestResult] = useState<string>("");
@@ -65,10 +65,10 @@ export const TestInsurance = () => {
 
     try {
       // Limpiar cache para hacer una búsqueda fresca
-      fixedInsuranceProductService.clearCache();
+      insuranceProductService.clearCache();
 
       const premiumProduct =
-        await fixedInsuranceProductService.findValidInsuranceProduct("premium");
+        await insuranceProductService.findValidInsuranceProduct("premium");
 
       if (premiumProduct && premiumProduct.exists) {
         setTestResult(`✅ Servicio inteligente encontró producto premium:
