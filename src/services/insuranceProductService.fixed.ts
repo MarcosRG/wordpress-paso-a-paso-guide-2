@@ -19,6 +19,26 @@ export class FixedInsuranceProductService {
     return FixedInsuranceProductService.instance;
   }
 
+  // Obtener datos completos desde el endpoint PHP
+  private async getProductDataFromPHPEndpoint(): Promise<any> {
+    try {
+      console.log("🔍 Obteniendo datos completos de seguros desde PHP endpoint...");
+
+      const response = await fetch('https://bikesultoursgest.com/wp-json/bikesul/v1/insurance-products');
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("✅ Datos de seguros obtenidos desde PHP:", data);
+        return data;
+      } else {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("❌ Error obteniendo datos de seguros desde PHP:", error);
+      return null;
+    }
+  }
+
   // Obtener IDs reales de productos desde el endpoint PHP
   private async getRealProductIds(): Promise<{ premium: number | null; basic: number | null }> {
     if (this.realProductIds.premium && this.realProductIds.basic) {
@@ -26,25 +46,21 @@ export class FixedInsuranceProductService {
     }
 
     try {
-      console.log("🔍 Obteniendo IDs reales de productos de seguro...");
-      
-      const response = await fetch('https://bikesultoursgest.com/wp-json/bikesul/v1/insurance-products');
-      
-      if (response.ok) {
-        const data = await response.json();
-        
+      const data = await this.getProductDataFromPHPEndpoint();
+
+      if (data) {
         this.realProductIds = {
           premium: data.premium?.id || null,
           basic: data.basic?.id || null
         };
-        
+
         console.log("✅ IDs de seguros obtenidos:");
         console.log(`   Premium: ID ${this.realProductIds.premium} - ${data.premium?.name}`);
         console.log(`   Basic: ID ${this.realProductIds.basic} - ${data.basic?.name}`);
-        
+
         return this.realProductIds;
       } else {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        throw new Error("No data received from PHP endpoint");
       }
     } catch (error) {
       console.error("❌ Error obteniendo IDs de seguros:", error);
@@ -89,44 +105,77 @@ export class FixedInsuranceProductService {
         return null;
       }
 
-      // Obtener datos del producto
-      console.log(`🔍 Verificando producto ID ${targetId}...`);
-      const product = await wooCommerceApi.getProduct(targetId);
+      // Primary approach: Get data from PHP endpoint (more reliable)
+      console.log(`🔍 Getting product data for ${insuranceType} from PHP endpoint...`);
+      const data = await this.getProductDataFromPHPEndpoint();
 
-      if (product && product.status === 'publish') {
+      if (data && data[insuranceType]) {
+        console.log(`✅ Product data found in PHP endpoint for ${insuranceType}`);
         const productInfo: InsuranceProductInfo = {
-          id: product.id,
-          name: product.name,
-          price: parseFloat(product.price || product.regular_price || "0"),
-          exists: true,
+          id: data[insuranceType].id,
+          name: data[insuranceType].name,
+          price: parseFloat(data[insuranceType].price || "0"),
+          exists: true, // Mark as existing since we have data from PHP
         };
 
         this.productCache.set(cacheKey, productInfo);
-        
+
         console.log(`✅ Producto de seguro ${insuranceType} encontrado:`);
         console.log(`   ID: ${productInfo.id}`);
         console.log(`   Nombre: "${productInfo.name}"`);
         console.log(`   Precio base: €${productInfo.price}`);
-        
+
         return productInfo;
-      } else {
-        console.error(`❌ Producto ID ${targetId} no encontrado o no publicado`);
-        
-        // Fallback para seguro básico
-        if (insuranceType === "basic" || insuranceType === "free") {
-          const fallbackProduct: InsuranceProductInfo = {
-            id: 0,
-            name: "Basic Insurance & Liability", 
-            price: 0,
-            exists: false,
-          };
-          this.productCache.set(cacheKey, fallbackProduct);
-          return fallbackProduct;
-        }
-        
-        this.productCache.set(cacheKey, null);
-        return null;
       }
+
+      // Secondary approach: Try WooCommerce API if PHP endpoint fails
+      console.log(`⚠️ PHP endpoint failed, trying WooCommerce API for product ID ${targetId}...`);
+
+      try {
+        const product = await wooCommerceApi.getProduct(targetId);
+
+        if (product) {
+          // Accept any product status, not just 'publish'
+          const productInfo: InsuranceProductInfo = {
+            id: product.id,
+            name: product.name,
+            price: parseFloat(product.price || product.regular_price || "0"),
+            exists: true,
+          };
+
+          this.productCache.set(cacheKey, productInfo);
+
+          console.log(`✅ Producto de seguro ${insuranceType} encontrado via WooCommerce API:`);
+          console.log(`   ID: ${productInfo.id}`);
+          console.log(`   Nombre: "${productInfo.name}"`);
+          console.log(`   Status: ${product.status}`);
+          console.log(`   Precio base: €${productInfo.price}`);
+
+          return productInfo;
+        } else {
+          console.warn(`⚠️ Producto ID ${targetId} no encontrado en WooCommerce API`);
+        }
+      } catch (apiError) {
+        console.warn(`⚠️ Error calling WooCommerce API for product ${targetId}:`, apiError);
+      }
+
+      // Final fallback para seguro básico
+      if (insuranceType === "basic" || insuranceType === "free") {
+        console.log(`🔄 Creating fallback basic insurance product`);
+        const fallbackProduct: InsuranceProductInfo = {
+          id: 0,
+          name: "Basic Insurance & Liability",
+          price: 0,
+          exists: false,
+        };
+        this.productCache.set(cacheKey, fallbackProduct);
+        return fallbackProduct;
+      }
+
+      // No valid product found
+      console.error(`❌ No valid ${insuranceType} insurance product found`);
+      this.productCache.set(cacheKey, null);
+      return null;
 
     } catch (error) {
       console.error(`❌ Error buscando producto de seguro ${insuranceType}:`, error);

@@ -15,6 +15,7 @@ import {
   canMakeWooCommerceRequest,
   recordWooCommerceSuccess,
   recordWooCommerceFailure,
+  wooCommerceCircuitBreaker,
 } from "./circuitBreaker";
 
 export interface ACFPricing {
@@ -905,6 +906,54 @@ export const wooCommerceApi = {
       return order;
     } catch (error) {
       throw error;
+    }
+  },
+
+  // Get a single product by ID
+  async getProduct(productId: number): Promise<WooCommerceProduct | null> {
+    // Check circuit breaker first
+    if (!canMakeWooCommerceRequest()) {
+      console.warn(`⚠️ Request blocked for product ${productId} - circuit breaker or rate limit`);
+      return null;
+    }
+
+    try {
+      const response = await fetchWithRetry(
+        `${WOOCOMMERCE_API_BASE}/products/${productId}`,
+        {
+          mode: "cors",
+        },
+        TIMEOUT_CONFIG.short, // 10 seconds
+        1, // Only 1 retry for single product fetch
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.warn(`Product ${productId} not found`);
+          return null;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const product = await response.json();
+      console.log(`✅ Product ${productId} retrieved successfully`);
+      return product;
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === "Request timeout") {
+          console.warn(`Request timeout for product ${productId}`);
+          isNetworkAvailable = false;
+        } else if (
+          error.message.includes("fetch") ||
+          error.message.includes("Failed to fetch")
+        ) {
+          console.warn(`🌐 Network error getting product ${productId}`);
+          isNetworkAvailable = false;
+        } else {
+          console.warn(`⚠️ Error getting product ${productId}: ${error.message}`);
+        }
+      }
+      return null;
     }
   },
 

@@ -36,21 +36,61 @@ function bikesul_ensure_insurance_products_exist() {
 }
 
 function bikesul_find_insurance_product($type) {
-    $search_terms = $type === 'premium' ? 
-        ['premium', 'bikesul'] : 
+    // First try to find by exact slug (most reliable)
+    if ($type === 'premium') {
+        $product = get_page_by_path('seguro-premium-bikesul', OBJECT, 'product');
+        if ($product && get_post_status($product->ID) === 'publish') {
+            return $product->ID;
+        }
+        // Try hardcoded ID
+        if (get_post(21815) && get_post_status(21815) === 'publish') {
+            return 21815;
+        }
+    } else {
+        $product = get_page_by_path('seguro-basico-bikesul', OBJECT, 'product');
+        if ($product && get_post_status($product->ID) === 'publish') {
+            return $product->ID;
+        }
+        // Try hardcoded ID
+        if (get_post(21819) && get_post_status(21819) === 'publish') {
+            return 21819;
+        }
+    }
+
+    // Fallback to original search method
+    $search_terms = $type === 'premium' ?
+        ['premium', 'bikesul'] :
         ['basic', 'básico', 'basico', 'gratis', 'free', 'responsabilidad'];
-    
+
+    // Search in insurance category (ID: 370)
     $products = get_posts(array(
         'post_type' => 'product',
-        's' => 'seguro',
+        'tax_query' => array(
+            array(
+                'taxonomy' => 'product_cat',
+                'field' => 'term_id',
+                'terms' => 370,
+                'operator' => 'IN'
+            )
+        ),
         'posts_per_page' => -1,
         'post_status' => 'publish'
     ));
-    
+
+    if (empty($products)) {
+        // If no products in category, search by text
+        $products = get_posts(array(
+            'post_type' => 'product',
+            's' => 'seguro',
+            'posts_per_page' => -1,
+            'post_status' => 'publish'
+        ));
+    }
+
     foreach ($products as $product) {
         $title = strtolower($product->post_title);
         $price = get_post_meta($product->ID, '_price', true);
-        
+
         if ($type === 'premium') {
             // Premium debe tener precio > 0 y contener palabras clave
             if ($price > 0) {
@@ -69,7 +109,7 @@ function bikesul_find_insurance_product($type) {
             }
         }
     }
-    
+
     return false;
 }
 
@@ -295,29 +335,42 @@ add_action('rest_api_init', function () {
 });
 
 function bikesul_get_insurance_products() {
-    $premium_id = bikesul_find_insurance_product('premium');
-    $basic_id = bikesul_find_insurance_product('basic');
-    
-    // Si no existen, crearlos
-    if (!$premium_id) {
-        $premium_id = bikesul_create_insurance_product('premium');
+    // Use hardcoded IDs based on Bikesul's confirmation
+    $premium_id = 21815; // Seguro Premium Bikesul - €5
+    $basic_id = 21819;   // Seguro Básico Bikesul - grátis
+
+    // Verify products exist, if not find them dynamically
+    if (!get_post($premium_id) || get_post_status($premium_id) !== 'publish') {
+        $premium_id = bikesul_find_insurance_product('premium');
+        if (!$premium_id) {
+            $premium_id = bikesul_create_insurance_product('premium');
+        }
     }
-    if (!$basic_id) {
-        $basic_id = bikesul_create_insurance_product('basic');
+
+    if (!get_post($basic_id) || get_post_status($basic_id) !== 'publish') {
+        $basic_id = bikesul_find_insurance_product('basic');
+        if (!$basic_id) {
+            $basic_id = bikesul_create_insurance_product('basic');
+        }
     }
-    
+
     return array(
         'premium' => array(
             'id' => $premium_id,
             'name' => get_the_title($premium_id),
-            'price' => get_post_meta($premium_id, '_price', true)
+            'price' => get_post_meta($premium_id, '_price', true) ?: '5'
         ),
         'basic' => array(
             'id' => $basic_id,
             'name' => get_the_title($basic_id),
-            'price' => get_post_meta($basic_id, '_price', true)
+            'price' => get_post_meta($basic_id, '_price', true) ?: '0'
         )
     );
+}
+
+// Add missing function for URL handling compatibility
+function bikesul_encontrar_produto_seguro($type) {
+    return bikesul_find_insurance_product($type);
 }
 
 error_log("BIKESUL: Insurance handler v2 loaded successfully");
