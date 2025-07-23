@@ -303,18 +303,22 @@ export class WooCommerceCartService {
             );
 
           if (insuranceProduct) {
-            // Handle virtual basic insurance (free, no actual product)
             console.log("✅ INSURANCE PRODUCT FOUND:");
             console.log(`  Name: ${insuranceProduct.name}`);
             console.log(`  ID: ${insuranceProduct.id}`);
             console.log(`  Product base price: €${insuranceProduct.price}`);
             console.log(`  Will set custom price: €${totalInsurancePrice}`);
-            console.log(`  Is virtual product: ${!insuranceProduct.exists}`);
+            console.log(`  Product exists: ${insuranceProduct.exists}`);
 
-            // Only add to lineItems if it's a real product (not virtual)
-            if (insuranceProduct.exists && insuranceProduct.id > 0) {
+            // CAMBIO IMPORTANTE: Agregar TODOS los seguros al carrito, incluso los gratuitos
+            // Esto asegura que aparezcan en el carrito y en la orden para registro completo
+            if (insuranceProduct.id > 0 || !insuranceProduct.exists) {
+              // Si no hay ID real (producto virtual), crear uno temporal para seguro básico
+              const productId = insuranceProduct.id > 0 ? insuranceProduct.id :
+                (reservation.insurance.id === 'free' || reservation.insurance.id === 'basic') ? 21819 : 21815;
+
               lineItems.push({
-                product_id: insuranceProduct.id,
+                product_id: productId,
                 quantity: 1, // Siempre 1 unidad para seguros (el precio incluye todas las bicis y días)
                 price: totalInsurancePrice, // Precio total del seguro (price_per_bike_per_day × bicis × días)
                 meta_data: [
@@ -338,11 +342,14 @@ export class WooCommerceCartService {
                     value: reservation.endDate?.toISOString() || "",
                   },
                   { key: "_wc_product_name", value: insuranceProduct.name },
+                  // Marcar como producto de seguro para que PHP lo procese correctamente
+                  { key: "_is_insurance_product", value: "yes" },
                 ],
               });
+
+              console.log(`✅ Seguro ${reservation.insurance.id} agregado al carrito (ID: ${productId}, precio: €${totalInsurancePrice})`);
             } else {
-              console.log(`📋 Virtual ${reservation.insurance.id} insurance (${insuranceProduct.name}) - no product to add to cart`);
-              // For virtual insurance (like free basic), we just acknowledge it but don't add to cart
+              console.log(`📋 Error: No se pudo determinar ID para seguro ${reservation.insurance.id}`);
             }
           } else {
             console.error("❌ INSURANCE PRODUCT NOT FOUND:");
@@ -523,6 +530,8 @@ export class WooCommerceCartService {
         `insurance_total_days`,
         reservation.totalDays.toString(),
       );
+      // Marcar que el seguro debe aparecer en el carrito
+      this.addHiddenField(form, `insurance_force_visible`, "yes");
     }
 
     // Agregar al DOM y enviar
