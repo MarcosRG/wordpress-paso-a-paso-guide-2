@@ -6,7 +6,7 @@ import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { ConnectivityTest } from "@/components/ConnectivityTest";
-import { SimpleCorsCheck } from "@/components/SimpleCorsCheck";
+import { CorsInfo } from "@/components/CorsInfo";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
