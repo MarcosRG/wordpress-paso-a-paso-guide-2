@@ -131,18 +131,28 @@ export const calcularPrecioAlquiler = (
 export const extractACFPricing = (
   product: WooCommerceProduct,
 ): ACFPricing | null => {
-  // Check if product has ACF data directly
-  if (
-    product.acf &&
-    product.acf.precio_1_2 &&
-    product.acf.precio_3_6 &&
-    product.acf.precio_7_mais
-  ) {
-    return {
-      precio_1_2: parseFloat(product.acf.precio_1_2.toString()),
-      precio_3_6: parseFloat(product.acf.precio_3_6.toString()),
-      precio_7_mais: parseFloat(product.acf.precio_7_mais.toString()),
-    };
+  try {
+    // Validate product input
+    if (!product || typeof product !== 'object') {
+      return null;
+    }
+
+    // Check if product has ACF data directly
+    if (
+      product.acf &&
+      product.acf.precio_1_2 &&
+      product.acf.precio_3_6 &&
+      product.acf.precio_7_mais
+    ) {
+      return {
+        precio_1_2: parseFloat(product.acf.precio_1_2.toString()),
+        precio_3_6: parseFloat(product.acf.precio_3_6.toString()),
+        precio_7_mais: parseFloat(product.acf.precio_7_mais.toString()),
+      };
+    }
+  } catch (error) {
+    console.warn("Error extracting ACF pricing:", error);
+    return null;
   }
 
   // Check in meta_data for ACF fields (ensure meta_data is an array)
