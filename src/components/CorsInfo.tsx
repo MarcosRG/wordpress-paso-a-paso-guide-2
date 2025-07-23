@@ -152,7 +152,21 @@ export const CorsInfo = () => {
               </div>
               
               <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
-                <pre className="text-xs whitespace-pre-wrap">{htaccessConfig}</pre>
+                <pre
+                  className="text-xs whitespace-pre-wrap select-all cursor-text"
+                  onClick={(e) => {
+                    // Make it easier to select text when copy fails
+                    if (copyError) {
+                      const selection = window.getSelection();
+                      const range = document.createRange();
+                      range.selectNodeContents(e.currentTarget);
+                      selection?.removeAllRanges();
+                      selection?.addRange(range);
+                    }
+                  }}
+                >
+                  {htaccessConfig}
+                </pre>
               </div>
               
               <div className="mt-2 text-xs text-gray-600">
