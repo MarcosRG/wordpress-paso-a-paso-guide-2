@@ -317,10 +317,13 @@ export class WooCommerceCartService {
               const productId = insuranceProduct.id > 0 ? insuranceProduct.id :
                 (reservation.insurance.id === 'free' || reservation.insurance.id === 'basic') ? 21819 : 21815;
 
+              // Calcular cantidad total (bicicletas × días) para que aparezca correctamente
+              const totalQuantity = totalBikes * reservation.totalDays;
+
               lineItems.push({
                 product_id: productId,
-                quantity: 1, // Siempre 1 unidad para seguros (el precio incluye todas las bicis y días)
-                price: totalInsurancePrice, // Precio total del seguro (price_per_bike_per_day × bicis × días)
+                quantity: totalQuantity, // Cantidad total: bicicletas × días
+                price: reservation.insurance.price, // Precio unitario por bicicleta por día
                 meta_data: [
                   { key: "_insurance_type", value: reservation.insurance.id },
                   { key: "_insurance_name", value: reservation.insurance.name },
@@ -332,6 +335,10 @@ export class WooCommerceCartService {
                   {
                     key: "_insurance_total_days",
                     value: reservation.totalDays.toString(),
+                  },
+                  {
+                    key: "_insurance_total_price",
+                    value: totalInsurancePrice.toString(),
                   },
                   {
                     key: "_rental_start_date",
