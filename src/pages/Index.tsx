@@ -335,6 +335,13 @@ const Index = () => {
           )}
         </div>
       </div>
+
+      {/* Development-only debug tools */}
+      {import.meta.env.DEV && (
+        <div className="max-w-6xl mx-auto mt-8">
+          <ConnectivityTest />
+        </div>
+      )}
     </div>
   );
 };
