@@ -91,39 +91,93 @@ export class FixedInsuranceProductService {
 
       // Obtener datos del producto
       console.log(`🔍 Verificando producto ID ${targetId}...`);
-      const product = await wooCommerceApi.getProduct(targetId);
 
-      if (product && product.status === 'publish') {
-        const productInfo: InsuranceProductInfo = {
-          id: product.id,
-          name: product.name,
-          price: parseFloat(product.price || product.regular_price || "0"),
-          exists: true,
-        };
+      try {
+        const product = await wooCommerceApi.getProduct(targetId);
 
-        this.productCache.set(cacheKey, productInfo);
-        
-        console.log(`✅ Producto de seguro ${insuranceType} encontrado:`);
-        console.log(`   ID: ${productInfo.id}`);
-        console.log(`   Nombre: "${productInfo.name}"`);
-        console.log(`   Precio base: €${productInfo.price}`);
-        
-        return productInfo;
-      } else {
-        console.error(`❌ Producto ID ${targetId} no encontrado o no publicado`);
-        
-        // Fallback para seguro básico
+        if (product && product.status === 'publish') {
+          const productInfo: InsuranceProductInfo = {
+            id: product.id,
+            name: product.name,
+            price: parseFloat(product.price || product.regular_price || "0"),
+            exists: true,
+          };
+
+          this.productCache.set(cacheKey, productInfo);
+
+          console.log(`✅ Producto de seguro ${insuranceType} encontrado:`);
+          console.log(`   ID: ${productInfo.id}`);
+          console.log(`   Nombre: "${productInfo.name}"`);
+          console.log(`   Precio base: €${productInfo.price}`);
+
+          return productInfo;
+        } else {
+          console.error(`❌ Producto ID ${targetId} no encontrado o no publicado`);
+
+          // Fallback: Create a virtual product with correct info from PHP endpoint
+          const realIds = await this.getRealProductIds();
+          const data = await this.getProductDataFromPHPEndpoint();
+
+          if (data && data[insuranceType]) {
+            console.log(`🔄 Using product data from PHP endpoint for ${insuranceType}`);
+            const productInfo: InsuranceProductInfo = {
+              id: data[insuranceType].id,
+              name: data[insuranceType].name,
+              price: parseFloat(data[insuranceType].price || "0"),
+              exists: true, // Mark as existing since we have data
+            };
+
+            this.productCache.set(cacheKey, productInfo);
+            return productInfo;
+          }
+
+          // Final fallback para seguro básico
+          if (insuranceType === "basic" || insuranceType === "free") {
+            const fallbackProduct: InsuranceProductInfo = {
+              id: 0,
+              name: "Basic Insurance & Liability",
+              price: 0,
+              exists: false,
+            };
+            this.productCache.set(cacheKey, fallbackProduct);
+            return fallbackProduct;
+          }
+
+          this.productCache.set(cacheKey, null);
+          return null;
+        }
+      } catch (apiError) {
+        console.error(`❌ Error calling WooCommerce API for product ${targetId}:`, apiError);
+
+        // Fallback: Try to get product data from PHP endpoint directly
+        console.log(`🔄 Fallback: Getting product data from PHP endpoint for ${insuranceType}`);
+        const data = await this.getProductDataFromPHPEndpoint();
+
+        if (data && data[insuranceType]) {
+          console.log(`✅ Using PHP endpoint data as fallback for ${insuranceType}`);
+          const productInfo: InsuranceProductInfo = {
+            id: data[insuranceType].id,
+            name: data[insuranceType].name,
+            price: parseFloat(data[insuranceType].price || "0"),
+            exists: true, // Mark as existing since we have data
+          };
+
+          this.productCache.set(cacheKey, productInfo);
+          return productInfo;
+        }
+
+        // Final fallback para seguro básico
         if (insuranceType === "basic" || insuranceType === "free") {
           const fallbackProduct: InsuranceProductInfo = {
             id: 0,
-            name: "Basic Insurance & Liability", 
+            name: "Basic Insurance & Liability",
             price: 0,
             exists: false,
           };
           this.productCache.set(cacheKey, fallbackProduct);
           return fallbackProduct;
         }
-        
+
         this.productCache.set(cacheKey, null);
         return null;
       }
