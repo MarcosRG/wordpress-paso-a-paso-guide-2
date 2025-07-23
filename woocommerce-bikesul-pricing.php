@@ -272,8 +272,8 @@ function bikesul_procesar_datos_checkout_url() {
         $i++;
     }
     
-    // Agregar seguro si existe
-    if (isset($_GET['insurance_type']) && $_GET['insurance_type'] !== 'free') {
+    // Agregar seguro si existe (incluyendo el gratuito para que aparezca en el carrito)
+    if (isset($_GET['insurance_type'])) {
         bikesul_agregar_seguro_desde_url();
     }
 }
@@ -287,7 +287,7 @@ function bikesul_agregar_seguro_desde_url() {
     $insurance_total_bikes = intval($_GET['insurance_total_bikes'] ?? 0);
     $insurance_total_days = intval($_GET['insurance_total_days'] ?? 0);
     
-    if ($insurance_price_per_bike_per_day > 0 && $insurance_total_bikes > 0 && $insurance_total_days > 0) {
+    if ($insurance_price_per_bike_per_day >= 0 && $insurance_total_bikes > 0 && $insurance_total_days > 0) {
                 // Buscar producto de seguro usando función del handler de seguros
         $insurance_type = sanitize_text_field($_GET['insurance_type'] ?? 'premium');
         $insurance_product_id = bikesul_encontrar_producto_seguro($insurance_type);
@@ -308,13 +308,15 @@ function bikesul_agregar_seguro_desde_url() {
                 'insurance_total_days' => $insurance_total_days,
                 'rental_start_date' => sanitize_text_field($_GET['rental_start_date'] ?? ''),
                 'rental_end_date' => sanitize_text_field($_GET['rental_end_date'] ?? ''),
+                'insurance_force_visible' => 'yes', // Forzar que aparezca en carrito
             );
             
                         // IMPORTANTE: Para seguros, siempre usar cantidad 1
             // El precio total se calcula en el handler de seguros
             WC()->cart->add_to_cart($insurance_product_id, 1, 0, array(), $cart_item_data);
             
-            error_log("BIKESUL: Seguro añadido - €{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} bikes × {$insurance_total_days} días");
+            $total_price = $insurance_price_per_bike_per_day * $insurance_total_bikes * $insurance_total_days;
+            error_log("BIKESUL: Seguro añadido - €{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} bikes × {$insurance_total_days} días = €{$total_price}");
         }
     }
 }
