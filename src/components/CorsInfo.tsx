@@ -7,10 +7,11 @@ import { useState } from "react";
 export const CorsInfo = () => {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
-  
+
   const currentOrigin = window.location.origin;
   const targetDomain = "bikesultoursgest.com";
   const isCrossOrigin = !currentOrigin.includes(targetDomain);
+  const isInIframe = window.location !== window.parent.location;
   
   const htaccessConfig = `# CORS Configuration for WooCommerce API
 <IfModule mod_headers.c>
