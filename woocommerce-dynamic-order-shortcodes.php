@@ -49,7 +49,10 @@ function bikesul_display_order_info($atts) {
         return '<p class="error">Error: ID de pedido requerido</p>';
     }
 
-    $order = wc_get_order($atts['id']);
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) {
         return '<p class="error">Error: Pedido no encontrado</p>';
     }
@@ -74,13 +77,15 @@ function bikesul_display_order_info($atts) {
 }
 
 // ===============================================
-// 2. SHORTCODES ESPECÍFICOS
+// 2. SHORTCODES ESPECÍFICOS CON RESOLUCIÓN DINÁMICA
 // ===============================================
 
 /**
  * [bikesul_customer_name id="123"] - Nombre completo del cliente
  * [bikesul_customer_email id="123"] - Email del cliente
  * [bikesul_customer_phone id="123"] - Teléfono del cliente
+ *
+ * NOTA: También soportan placeholders dinámicos como [order_id]
  */
 add_shortcode('bikesul_customer_name', 'bikesul_get_customer_name');
 add_shortcode('bikesul_customer_email', 'bikesul_get_customer_email');
@@ -88,25 +93,37 @@ add_shortcode('bikesul_customer_phone', 'bikesul_get_customer_phone');
 
 function bikesul_get_customer_name($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     return $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
 }
 
 function bikesul_get_customer_email($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     return $order->get_billing_email();
 }
 
 function bikesul_get_customer_phone($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     return $order->get_billing_phone();
 }
 
@@ -121,41 +138,53 @@ add_shortcode('bikesul_rental_days', 'bikesul_get_rental_days');
 
 function bikesul_get_rental_dates($atts) {
     $atts = shortcode_atts(array('id' => 0, 'format' => 'd/m/Y'), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     $start_date = $order->get_meta('_rental_start_date');
     $end_date = $order->get_meta('_rental_end_date');
-    
+
     if ($start_date && $end_date) {
         $start = date($atts['format'], strtotime($start_date));
         $end = date($atts['format'], strtotime($end_date));
         return "Del $start al $end";
     }
-    
+
     return '';
 }
 
 function bikesul_get_rental_times($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     $pickup_time = $order->get_meta('_pickup_time');
     $return_time = $order->get_meta('_return_time');
-    
+
     if ($pickup_time && $return_time) {
         return "Recogida: $pickup_time | Devolución: $return_time";
     }
-    
+
     return '';
 }
 
 function bikesul_get_rental_days($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     return $order->get_meta('_rental_total_days') ?: $order->get_meta('_rental_days');
 }
 
@@ -172,8 +201,11 @@ function bikesul_get_bikes_list($atts) {
         'format' => 'list', // list, table, simple
         'show_price' => 'yes'
     ), $atts);
-    
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
     
     $bikes_html = '';
@@ -231,7 +263,11 @@ function bikesul_get_bikes_list($atts) {
 
 function bikesul_get_total_bikes($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
     
     $total = $order->get_meta('_total_bikes');
@@ -259,8 +295,11 @@ function bikesul_get_insurance_info($atts) {
         'field' => 'all', // all, name, price, type
         'show_calculation' => 'yes'
     ), $atts);
-    
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
     
     // Buscar producto de seguro en el pedido
@@ -296,7 +335,133 @@ function bikesul_get_insurance_info($atts) {
 }
 
 // ===============================================
-// 3. FUNCIONES AUXILIARES
+// 3. SISTEMA DE RESOLUÇÃO DINÂMICA
+// ===============================================
+
+/**
+ * Função para resolver placeholders dinâmicos como [order_id]
+ */
+function bikesul_resolve_dynamic_id($id_value) {
+    // Se já é um número, retorna diretamente
+    if (is_numeric($id_value)) {
+        return intval($id_value);
+    }
+
+    // Resolver placeholder [order_id] usando contexto global
+    if ($id_value === '[order_id]' || $id_value === 'order_id') {
+        // Tentar obter da sessão, cookie ou variável global
+        if (isset($_SESSION['current_order_id'])) {
+            return intval($_SESSION['current_order_id']);
+        }
+
+        if (isset($_COOKIE['bikesul_current_order'])) {
+            return intval($_COOKIE['bikesul_current_order']);
+        }
+
+        if (isset($GLOBALS['bikesul_current_order_id'])) {
+            return intval($GLOBALS['bikesul_current_order_id']);
+        }
+
+        // Tentar obter do parâmetro GET/POST
+        if (isset($_GET['order_id'])) {
+            return intval($_GET['order_id']);
+        }
+
+        if (isset($_POST['order_id'])) {
+            return intval($_POST['order_id']);
+        }
+
+        // Tentar obter da URL atual
+        $order_id = bikesul_extract_order_id_from_url();
+        if ($order_id) {
+            return $order_id;
+        }
+    }
+
+    return intval($id_value);
+}
+
+/**
+ * Função para extrair order_id da URL atual
+ */
+function bikesul_extract_order_id_from_url() {
+    $current_url = $_SERVER['REQUEST_URI'] ?? '';
+
+    // Buscar padrões como order_id=123 ou order-id=123
+    if (preg_match('/order[_-]?id[=:](\d+)/i', $current_url, $matches)) {
+        return intval($matches[1]);
+    }
+
+    // Buscar no contexto do WooCommerce
+    if (function_exists('is_wc_endpoint_url') && is_wc_endpoint_url('view-order')) {
+        global $wp;
+        if (isset($wp->query_vars['view-order'])) {
+            return intval($wp->query_vars['view-order']);
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Hook para processar shortcodes com placeholders dinâmicos
+ */
+add_filter('the_content', 'bikesul_process_dynamic_shortcodes', 9);
+add_filter('widget_text', 'bikesul_process_dynamic_shortcodes', 9);
+
+function bikesul_process_dynamic_shortcodes($content) {
+    // Buscar por shortcodes bikesul que contenham [order_id]
+    $pattern = '/\[bikesul_[^\]]*id=["\']?\[order_id\]["\']?[^\]]*\]/';
+
+    if (preg_match_all($pattern, $content, $matches)) {
+        foreach ($matches[0] as $shortcode) {
+            // Substituir [order_id] pelo ID real se possível
+            $order_id = bikesul_resolve_dynamic_id('[order_id]');
+            if ($order_id) {
+                $processed_shortcode = str_replace('[order_id]', $order_id, $shortcode);
+                $content = str_replace($shortcode, $processed_shortcode, $content);
+            }
+        }
+    }
+
+    return $content;
+}
+
+/**
+ * Função auxiliar para definir o ID da ordem atual (para integração com FluentCRM)
+ */
+function bikesul_set_current_order_id($order_id) {
+    $GLOBALS['bikesul_current_order_id'] = intval($order_id);
+
+    // Também definir em sessão se disponível
+    if (session_status() === PHP_SESSION_NONE) {
+        @session_start();
+    }
+    $_SESSION['current_order_id'] = intval($order_id);
+
+    // Definir cookie com validade de 1 hora
+    @setcookie('bikesul_current_order', intval($order_id), time() + 3600, '/');
+}
+
+/**
+ * Hook para capturar order_id em ações do WooCommerce
+ */
+add_action('woocommerce_order_status_changed', 'bikesul_capture_order_context', 10, 3);
+add_action('woocommerce_new_order', 'bikesul_capture_order_context_simple', 10, 1);
+add_action('woocommerce_thankyou', 'bikesul_capture_order_context_simple', 10, 1);
+
+function bikesul_capture_order_context($order_id, $old_status, $new_status) {
+    bikesul_set_current_order_id($order_id);
+}
+
+function bikesul_capture_order_context_simple($order_id) {
+    if ($order_id) {
+        bikesul_set_current_order_id($order_id);
+    }
+}
+
+// ===============================================
+// 4. FUNCIONES AUXILIARES
 // ===============================================
 
 function bikesul_extract_order_data($order) {
@@ -505,7 +670,7 @@ function bikesul_format_complete_info($data, $atts) {
 }
 
 // ===============================================
-// 4. ESTILOS CSS BÁSICOS
+// 5. ESTILOS CSS BÁSICOS
 // ===============================================
 
 add_action('wp_head', 'bikesul_shortcode_styles');
@@ -523,14 +688,53 @@ function bikesul_shortcode_styles() {
     </style>';
 }
 
+/**
+ * Função de debug para testar resolução de order_id
+ */
+add_shortcode('bikesul_debug_order_id', 'bikesul_debug_order_id');
+
+function bikesul_debug_order_id($atts) {
+    $atts = shortcode_atts(array('id' => '[order_id]'), $atts);
+
+    $debug_info = array(
+        'input_id' => $atts['id'],
+        'resolved_id' => bikesul_resolve_dynamic_id($atts['id']),
+        'session_order' => $_SESSION['current_order_id'] ?? 'não definido',
+        'cookie_order' => $_COOKIE['bikesul_current_order'] ?? 'não definido',
+        'global_order' => $GLOBALS['bikesul_current_order_id'] ?? 'não definido',
+        'get_order' => $_GET['order_id'] ?? 'não definido',
+        'post_order' => $_POST['order_id'] ?? 'não definido',
+        'url' => $_SERVER['REQUEST_URI'] ?? 'não definido'
+    );
+
+    return '<pre>' . print_r($debug_info, true) . '</pre>';
+}
+
+/**
+ * Função para definir order_id manualmente (útil para testes)
+ */
+add_shortcode('bikesul_set_order_id', 'bikesul_manual_set_order_id');
+
+function bikesul_manual_set_order_id($atts) {
+    $atts = shortcode_atts(array('id' => 0), $atts);
+
+    if ($atts['id']) {
+        bikesul_set_current_order_id($atts['id']);
+        return "Order ID {$atts['id']} definido com sucesso!";
+    }
+
+    return "Erro: ID necessário";
+}
+
 // Log para confirmar que el archivo se cargó
-error_log("BIKESUL: Sistema de shortcodes dinámicos cargado correctamente");
+error_log("BIKESUL: Sistema de shortcodes dinámicos cargado correctamente com suporte a placeholders dinâmicos");
 
 ?>
 
-<!-- 
+<!--
 EJEMPLOS DE USO:
 
+==== USO CON ID ESPECÍFICO ====
 1. Información completa de un pedido:
 [bikesul_order_info id="123"]
 
@@ -551,11 +755,52 @@ EJEMPLOS DE USO:
 [bikesul_total_bikes id="123"]
 [bikesul_insurance_info id="123" field="name"]
 
-6. Datos en formato JSON (para desarrolladores):
+==== USO CON PLACEHOLDERS DINÁMICOS (PARA FLUENTCRM/AUTOMACIONES) ====
+6. Nome do cliente (dinâmico):
+[bikesul_customer_name id="[order_id]"]
+
+7. Datas de aluguel (dinâmico):
+[bikesul_rental_dates id="[order_id]"]
+
+8. Lista de bicicletas em formato tabela (dinâmico):
+[bikesul_bikes_list id="[order_id]" format="table"]
+
+9. Informações do seguro (dinâmico):
+[bikesul_insurance_info id="[order_id]"]
+
+10. Total de dias (dinâmico):
+[bikesul_rental_days id="[order_id]"]
+
+11. Horários (dinâmico):
+[bikesul_rental_times id="[order_id]"]
+
+==== PARA FLUENTCRM - TEXTO COMPLETO DE EXEMPLO ====
+Encomenda Confirmada!
+Olá [bikesul_customer_name id="[order_id]"]
+A sua reserva foi confirmada para [bikesul_rental_dates id="[order_id]"]
+
+Detalhes do seu Aluguer:
+[bikesul_bikes_list id="[order_id]" format="table"]
+
+Informações do Seguro:
+[bikesul_insurance_info id="[order_id]"]
+
+Total de dias: [bikesul_rental_days id="[order_id]"] dias
+
+Horários: [bikesul_rental_times id="[order_id]"]
+
+==== OUTROS FORMATOS ====
+12. Dados em formato JSON (para desenvolvedores):
 [bikesul_order_info id="123" format="json"]
 
-PERSONALIZACIÓN:
-- Todos los shortcodes admiten el parámetro 'class' para CSS personalizado
-- El formato puede ser 'table', 'list', 'simple' o 'json'
-- Puedes agregar más campos y funcionalidades según necesites
+PERSONALIZAÇÃO:
+- Todos os shortcodes admitem o parâmetro 'class' para CSS personalizado
+- O formato pode ser 'table', 'list', 'simple' ou 'json'
+- Suporta placeholders dinâmicos como [order_id] para automações
+- Pode capturar order_id de URLs, sessões, cookies e hooks do WooCommerce
+
+INTEGRAÇÃO COM FLUENTCRM:
+1. Use os shortcodes com id="[order_id]" em suas automações
+2. O sistema resolverá automaticamente o ID da ordem no contexto correto
+3. Funciona com triggers de mudança de status de pedido
 -->
