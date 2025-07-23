@@ -335,7 +335,133 @@ function bikesul_get_insurance_info($atts) {
 }
 
 // ===============================================
-// 3. FUNCIONES AUXILIARES
+// 3. SISTEMA DE RESOLUÇÃO DINÂMICA
+// ===============================================
+
+/**
+ * Função para resolver placeholders dinâmicos como [order_id]
+ */
+function bikesul_resolve_dynamic_id($id_value) {
+    // Se já é um número, retorna diretamente
+    if (is_numeric($id_value)) {
+        return intval($id_value);
+    }
+
+    // Resolver placeholder [order_id] usando contexto global
+    if ($id_value === '[order_id]' || $id_value === 'order_id') {
+        // Tentar obter da sessão, cookie ou variável global
+        if (isset($_SESSION['current_order_id'])) {
+            return intval($_SESSION['current_order_id']);
+        }
+
+        if (isset($_COOKIE['bikesul_current_order'])) {
+            return intval($_COOKIE['bikesul_current_order']);
+        }
+
+        if (isset($GLOBALS['bikesul_current_order_id'])) {
+            return intval($GLOBALS['bikesul_current_order_id']);
+        }
+
+        // Tentar obter do parâmetro GET/POST
+        if (isset($_GET['order_id'])) {
+            return intval($_GET['order_id']);
+        }
+
+        if (isset($_POST['order_id'])) {
+            return intval($_POST['order_id']);
+        }
+
+        // Tentar obter da URL atual
+        $order_id = bikesul_extract_order_id_from_url();
+        if ($order_id) {
+            return $order_id;
+        }
+    }
+
+    return intval($id_value);
+}
+
+/**
+ * Função para extrair order_id da URL atual
+ */
+function bikesul_extract_order_id_from_url() {
+    $current_url = $_SERVER['REQUEST_URI'] ?? '';
+
+    // Buscar padrões como order_id=123 ou order-id=123
+    if (preg_match('/order[_-]?id[=:](\d+)/i', $current_url, $matches)) {
+        return intval($matches[1]);
+    }
+
+    // Buscar no contexto do WooCommerce
+    if (function_exists('is_wc_endpoint_url') && is_wc_endpoint_url('view-order')) {
+        global $wp;
+        if (isset($wp->query_vars['view-order'])) {
+            return intval($wp->query_vars['view-order']);
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Hook para processar shortcodes com placeholders dinâmicos
+ */
+add_filter('the_content', 'bikesul_process_dynamic_shortcodes', 9);
+add_filter('widget_text', 'bikesul_process_dynamic_shortcodes', 9);
+
+function bikesul_process_dynamic_shortcodes($content) {
+    // Buscar por shortcodes bikesul que contenham [order_id]
+    $pattern = '/\[bikesul_[^\]]*id=["\']?\[order_id\]["\']?[^\]]*\]/';
+
+    if (preg_match_all($pattern, $content, $matches)) {
+        foreach ($matches[0] as $shortcode) {
+            // Substituir [order_id] pelo ID real se possível
+            $order_id = bikesul_resolve_dynamic_id('[order_id]');
+            if ($order_id) {
+                $processed_shortcode = str_replace('[order_id]', $order_id, $shortcode);
+                $content = str_replace($shortcode, $processed_shortcode, $content);
+            }
+        }
+    }
+
+    return $content;
+}
+
+/**
+ * Função auxiliar para definir o ID da ordem atual (para integração com FluentCRM)
+ */
+function bikesul_set_current_order_id($order_id) {
+    $GLOBALS['bikesul_current_order_id'] = intval($order_id);
+
+    // Também definir em sessão se disponível
+    if (session_status() === PHP_SESSION_NONE) {
+        @session_start();
+    }
+    $_SESSION['current_order_id'] = intval($order_id);
+
+    // Definir cookie com validade de 1 hora
+    @setcookie('bikesul_current_order', intval($order_id), time() + 3600, '/');
+}
+
+/**
+ * Hook para capturar order_id em ações do WooCommerce
+ */
+add_action('woocommerce_order_status_changed', 'bikesul_capture_order_context', 10, 3);
+add_action('woocommerce_new_order', 'bikesul_capture_order_context_simple', 10, 1);
+add_action('woocommerce_thankyou', 'bikesul_capture_order_context_simple', 10, 1);
+
+function bikesul_capture_order_context($order_id, $old_status, $new_status) {
+    bikesul_set_current_order_id($order_id);
+}
+
+function bikesul_capture_order_context_simple($order_id) {
+    if ($order_id) {
+        bikesul_set_current_order_id($order_id);
+    }
+}
+
+// ===============================================
+// 4. FUNCIONES AUXILIARES
 // ===============================================
 
 function bikesul_extract_order_data($order) {
