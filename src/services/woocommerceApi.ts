@@ -320,6 +320,7 @@ const fetchWithRetry = async (
             ...apiHeaders,
             ...options.headers,
           },
+          mode: "cors", // Explicitly set CORS mode
         }),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("Request timeout")), timeout),
