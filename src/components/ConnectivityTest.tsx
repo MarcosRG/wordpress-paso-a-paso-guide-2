@@ -351,12 +351,21 @@ export const ConnectivityTest = () => {
           
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <h4 className="font-medium text-blue-900 mb-2">💡 Troubleshooting Tips</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• If CORS tests fail, the WooCommerce server needs CORS configuration</li>
-              <li>• Check if your browser is blocking mixed content (HTTP/HTTPS)</li>
-              <li>• Verify WooCommerce REST API is enabled in WordPress admin</li>
-              <li>• Ensure API credentials have proper permissions</li>
+            <ul className="text-sm text-blue-800 space-y-2">
+              <li>• <strong>CORS Errors:</strong> Add the provided .htaccess configuration to your WordPress root directory</li>
+              <li>• <strong>Server Unreachable:</strong> Check DNS, firewall settings, and ensure bikesultoursgest.com is accessible</li>
+              <li>• <strong>Authentication Fails:</strong> Verify WooCommerce REST API is enabled in WP Admin → Settings → API</li>
+              <li>• <strong>Slow Responses:</strong> Check server performance, hosting resources, and CDN configuration</li>
+              <li>• <strong>Mixed Content:</strong> Ensure all requests use HTTPS in production</li>
             </ul>
+
+            <div className="mt-4 p-3 bg-white rounded border-l-4 border-blue-400">
+              <h5 className="font-medium text-blue-900 mb-1">Quick Fix for CORS:</h5>
+              <p className="text-sm text-blue-800">
+                Add the CORS configuration from the provided .htaccess file to your WordPress server.
+                This should resolve most "Failed to fetch" errors.
+              </p>
+            </div>
           </div>
         </div>
       )}
