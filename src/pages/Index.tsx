@@ -339,7 +339,8 @@ const Index = () => {
 
       {/* Development-only debug tools */}
       {import.meta.env.DEV && (
-        <div className="max-w-6xl mx-auto mt-8">
+        <div className="max-w-6xl mx-auto mt-8 space-y-4">
+          <SimpleCorsCheck />
           <ConnectivityTest />
         </div>
       )}
