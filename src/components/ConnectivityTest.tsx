@@ -18,37 +18,64 @@ export const ConnectivityTest = () => {
   const runConnectivityTests = async () => {
     setIsRunning(true);
     setResults([]);
-    
+
     const testResults: TestResult[] = [];
 
     // Test 1: Basic WooCommerce API accessibility
     try {
+      console.log("🧪 Testing basic WooCommerce API accessibility...");
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch("https://bikesultoursgest.com/wp-json/wc/v3", {
         method: "HEAD",
         mode: "cors",
+        signal: controller.signal,
+        cache: "no-cache"
       });
-      
+
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         testResults.push({
           test: "WooCommerce API Base",
           status: "success",
           message: "API endpoint is accessible",
-          details: `Status: ${response.status}`
+          details: `Status: ${response.status} - CORS headers present`
         });
       } else {
         testResults.push({
           test: "WooCommerce API Base",
           status: "error",
           message: `HTTP Error: ${response.status}`,
-          details: response.statusText
+          details: `${response.statusText} - Check server configuration`
         });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      let details = errorMessage;
+      let status: TestResult['status'] = 'error';
+      let message = "Failed to reach API";
+
+      // Analyze specific error types
+      if (errorMessage.includes("Failed to fetch")) {
+        message = "CORS Error Detected";
+        details = "The server is not configured to allow cross-origin requests. Need to configure CORS headers in WordPress .htaccess or server configuration.";
+        status = 'warning';
+      } else if (errorMessage.includes("AbortError") || errorMessage.includes("aborted")) {
+        message = "Request Timeout";
+        details = "Request took longer than 10 seconds. Check network connectivity or server performance.";
+      } else if (errorMessage.includes("NetworkError") || errorMessage.includes("net::")) {
+        message = "Network Error";
+        details = "Cannot reach the server. Check if the domain is accessible and DNS is working.";
+      }
+
       testResults.push({
         test: "WooCommerce API Base",
-        status: "error",
-        message: "Failed to reach API",
-        details: error instanceof Error ? error.message : String(error)
+        status,
+        message,
+        details
       });
     }
 
