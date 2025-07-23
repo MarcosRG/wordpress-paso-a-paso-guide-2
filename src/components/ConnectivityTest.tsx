@@ -159,40 +159,52 @@ export const ConnectivityTest = () => {
       });
     }
 
-    // Test 4: Network timing (simplified to avoid additional CORS errors)
+    // Test 4: Network timing (safe method using image loading)
     const startTime = Date.now();
     try {
       console.log("🧪 Testing network timing...");
 
-      // Use a simple image request to test timing without CORS issues
       const img = new Image();
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timing test timeout")), 10000)
-      );
-
-      const loadPromise = new Promise((resolve) => {
-        img.onload = () => resolve(true);
-        img.onerror = () => resolve(false); // Still count as "completed" for timing
-        img.src = "https://bikesultoursgest.com/favicon.ico?" + Date.now(); // Cache bust
+      const loadPromise = new Promise<boolean>((resolve) => {
+        const timeout = setTimeout(() => resolve(false), 10000);
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve(true);
+        };
+        img.onerror = () => {
+          clearTimeout(timeout);
+          resolve(false);
+        };
+        img.src = "https://bikesultoursgest.com/favicon.ico?" + Date.now();
       });
 
-      await Promise.race([loadPromise, timeoutPromise]);
+      const loaded = await loadPromise;
       const duration = Date.now() - startTime;
 
-      testResults.push({
-        test: "Network Timing",
-        status: duration < 2000 ? "success" : "warning",
-        message: `Response time: ${duration}ms`,
-        details: duration > 5000 ? "Very slow connection detected" :
-                duration > 2000 ? "Slow connection detected" : "Connection speed is good"
-      });
+      if (loaded) {
+        testResults.push({
+          test: "Network Timing",
+          status: duration < 2000 ? "success" : duration < 5000 ? "warning" : "error",
+          message: `Response time: ${duration}ms`,
+          details: duration > 5000 ? "Very slow connection - may affect API performance" :
+                  duration > 2000 ? "Moderate latency - API calls may be slower" :
+                  "Good connection speed for API calls"
+        });
+      } else {
+        testResults.push({
+          test: "Network Timing",
+          status: "error",
+          message: `No response after ${duration}ms`,
+          details: "Could not load basic assets from server. This indicates connectivity issues."
+        });
+      }
     } catch (error) {
       const duration = Date.now() - startTime;
       testResults.push({
         test: "Network Timing",
         status: "error",
         message: `Timing test failed after ${duration}ms`,
-        details: "Could not measure network timing to the server. This may indicate connectivity issues."
+        details: "Unexpected error during timing test."
       });
     }
 
