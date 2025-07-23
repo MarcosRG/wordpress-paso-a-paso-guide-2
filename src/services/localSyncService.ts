@@ -47,11 +47,28 @@ export class LocalSyncService {
     try {
       console.log("🔄 Iniciando sincronización WooCommerce → Cache Local...");
 
-      // 1. Obtener productos de WooCommerce
-      const wooProducts = await wooCommerceApi.getProducts();
-      console.log(
-        `📦 Obtenidos ${wooProducts.length} productos de WooCommerce`,
-      );
+      // 1. Obtener productos de WooCommerce (with CORS error handling)
+      let wooProducts: any[] = [];
+      try {
+        wooProducts = await wooCommerceApi.getProducts();
+        console.log(
+          `📦 Obtenidos ${wooProducts.length} productos de WooCommerce`,
+        );
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        if (errorMessage.includes("Failed to fetch")) {
+          console.warn("⚠️ CORS Error: No se pueden obtener productos de WooCommerce");
+          console.warn("💡 Solución: Configurar CORS en el servidor WordPress");
+          console.log("🔄 Continuando con productos locales en cache...");
+
+          // Continue with cached products only
+          wooProducts = [];
+        } else {
+          console.error("❌ Error obteniendo productos de WooCommerce:", error);
+          throw error; // Re-throw non-CORS errors
+        }
+      }
 
       const neonProducts: NeonProduct[] = [];
       const neonVariations: NeonVariation[] = [];
