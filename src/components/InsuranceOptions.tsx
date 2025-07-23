@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -123,6 +123,23 @@ export const InsuranceOptions = ({
     "free" | "premium"
   >("free");
   const { language, t } = useLanguage();
+
+  // Asegurar que el seguro básico esté seleccionado por defecto si no hay seguro seleccionado
+  React.useEffect(() => {
+    if (!reservation.insurance) {
+      const basicInsurance = INSURANCE_OPTIONS.find((opt) => opt.id === "free");
+      if (basicInsurance) {
+        setReservation({
+          ...reservation,
+          insurance: {
+            id: basicInsurance.id,
+            name: basicInsurance.name[language],
+            price: basicInsurance.price,
+          },
+        });
+      }
+    }
+  }, [reservation, setReservation, language]);
 
   const handleInsuranceSelect = (insuranceId: "free" | "premium") => {
     setSelectedInsurance(insuranceId);

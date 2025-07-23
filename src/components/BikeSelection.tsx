@@ -48,9 +48,20 @@ export const BikeSelection = ({
     await Promise.all([refetchBikes(), refetchCategories()]);
   };
 
-  // Filter bikes by category using WooCommerce slugs
+  // Filter bikes by category using WooCommerce slugs and exclude insurance products
   const filteredBikes = bikes
     ? bikes.filter((bike) => {
+        // Excluir productos de seguro de la etapa 2
+        if (bike.wooCommerceData?.product?.categories) {
+          const hasInsuranceCategory = bike.wooCommerceData.product.categories.some(
+            (category) => category.slug === "seguro" || category.slug === "insurance" || category.name?.toLowerCase().includes("segur"),
+          );
+          if (hasInsuranceCategory) {
+            return false;
+          }
+        }
+
+        // Filtrar por categoría seleccionada
         if (selectedCategory === "all") return true;
 
         // Check if product has the selected category
