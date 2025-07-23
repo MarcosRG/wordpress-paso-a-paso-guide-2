@@ -246,22 +246,24 @@ export const BikeSelection = ({
           const isSimpleProduct =
             bike.wooCommerceData?.product?.type === "simple";
 
-          return isSimpleProduct ? (
-            <SimpleBikeCard
-              key={bike.id}
-              bike={bike}
-              getQuantityForBike={getQuantityForBike}
-              updateBikeQuantity={updateSimpleBikeQuantity}
-              totalDays={reservation.totalDays}
-            />
-          ) : (
-            <BikeCard
-              key={bike.id}
-              bike={bike}
-              getQuantityForBikeAndSize={getQuantityForBikeAndSize}
-              updateBikeQuantity={updateBikeQuantity}
-              totalDays={reservation.totalDays}
-            />
+          return (
+            <ErrorBoundary key={bike.id}>
+              {isSimpleProduct ? (
+                <SimpleBikeCard
+                  bike={bike}
+                  getQuantityForBike={getQuantityForBike}
+                  updateBikeQuantity={updateSimpleBikeQuantity}
+                  totalDays={reservation.totalDays}
+                />
+              ) : (
+                <BikeCard
+                  bike={bike}
+                  getQuantityForBikeAndSize={getQuantityForBikeAndSize}
+                  updateBikeQuantity={updateBikeQuantity}
+                  totalDays={reservation.totalDays}
+                />
+              )}
+            </ErrorBoundary>
           );
         })}
       </div>
