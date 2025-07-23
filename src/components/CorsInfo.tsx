@@ -33,11 +33,39 @@ export const CorsInfo = () => {
 
   const copyToClipboard = async () => {
     try {
+      // Try modern clipboard API first
       await navigator.clipboard.writeText(htaccessConfig);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
+
+      // Fallback: Try legacy method for iframe environments
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = htaccessConfig;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        if (successful) {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } else {
+          throw new Error('Legacy copy failed');
+        }
+      } catch (fallbackErr) {
+        console.error("Fallback copy also failed:", fallbackErr);
+
+        // Final fallback: Show alert with text to copy manually
+        alert(`Copy this configuration manually:\n\n${htaccessConfig}`);
+      }
     }
   };
 
