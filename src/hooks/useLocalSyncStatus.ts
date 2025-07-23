@@ -40,17 +40,17 @@ export const useLocalSyncStatus = () => {
   const updateSyncStatus = useCallback(async () => {
     try {
       const syncService = await getSyncService();
-      const serviceStatus = syncService.getStatus();
+      const lastSyncTime = syncService.getLastSyncTime();
       const cacheStats = syncService.getCacheStats();
 
       setSyncStatus((prev) => ({
         ...prev,
-        isRunning: serviceStatus.isRunning,
-        lastSyncTime: serviceStatus.lastSyncTime,
-        status: serviceStatus.isRunning
-          ? SyncStatus.SYNCING
-          : cacheStats.products > 0
-            ? SyncStatus.SUCCESS
+        isRunning: false, // LocalSyncService doesn't expose isRunning status
+        lastSyncTime: lastSyncTime,
+        status: cacheStats.products > 0
+          ? SyncStatus.SUCCESS
+          : lastSyncTime
+            ? SyncStatus.ERROR
             : SyncStatus.IDLE,
         cacheStats,
       }));

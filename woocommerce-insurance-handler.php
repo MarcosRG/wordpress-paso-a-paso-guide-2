@@ -114,40 +114,64 @@ function bikesul_find_insurance_product($type) {
 }
 
 function bikesul_create_insurance_product($type) {
+    // Ensure 'seguro' category exists under 'alugueres'
+    $seguro_category = bikesul_ensure_seguro_category();
+
     if ($type === 'premium') {
         $product_data = array(
             'post_title' => 'Seguro Premium Bikesul',
-            'post_content' => 'Seguro premium para bicicletas - €5 por bicicleta por día',
+            'post_content' => 'Cobertura completa para máxima tranquilidade. Inclui seguro de acidentes pessoais, seguro de terceiros, danos acidentais menores até €200 e câmara de ar incluída em caso de furo.',
+            'post_excerpt' => 'Cobertura completa para máxima tranquilidade',
             'post_status' => 'publish',
             'post_type' => 'product'
         );
         $price = '5.00';
+        $coverage = [
+            'Inclui seguro de acidentes pessoais',
+            'Seguro de terceiros',
+            'Danos acidentais menores: até €200',
+            'Câmara de ar incluída em caso de furo'
+        ];
     } else {
         $product_data = array(
-            'post_title' => 'Seguro Básico & Responsabilidad Civil',
-            'post_content' => 'Seguro básico gratuito incluye responsabilidad civil. Se muestra en el carrito para registro completo de la reserva.',
+            'post_title' => 'Seguro Básico & Responsabilidade Civil',
+            'post_content' => 'Cobertura básica incluída sem custo adicional. Morte ou Invalidez Permanente: 20.000,00 EUR, Despesas de Tratamento Médico: 3.500,00 EUR, Responsabilidade Civil: 50.000,00 EUR.',
+            'post_excerpt' => 'Cobertura básica incluída sem custo adicional',
             'post_status' => 'publish',
             'post_type' => 'product'
         );
         $price = '0.00';
+        $coverage = [
+            'Morte ou Invalidez Permanente: 20.000,00 EUR',
+            'Despesas de Tratamento Médico: 3.500,00 EUR',
+            'Responsabilidade Civil: 50.000,00 EUR'
+        ];
     }
-    
+
     $product_id = wp_insert_post($product_data);
-    
+
     if ($product_id) {
-        // Configurar como producto simple
+        // Configurar como produto simple
         wp_set_object_terms($product_id, 'simple', 'product_type');
-        
+
+        // Assign to 'seguro' category
+        if ($seguro_category) {
+            wp_set_object_terms($product_id, array($seguro_category), 'product_cat');
+        }
+
         // Configurar precio
         update_post_meta($product_id, '_price', $price);
         update_post_meta($product_id, '_regular_price', $price);
-        
+
         // Marcar como virtual (no requiere envío)
         update_post_meta($product_id, '_virtual', 'yes');
-        
-        // Marcar como producto de seguro
+
+        // Marcar como produto de seguro
         update_post_meta($product_id, '_is_insurance_product', 'yes');
         update_post_meta($product_id, '_insurance_type', $type);
+
+        // Store coverage information in ACF custom field
+        update_post_meta($product_id, 'coverage', $coverage);
         
         // Configurar stock
         update_post_meta($product_id, '_manage_stock', 'no');
@@ -276,7 +300,7 @@ function bikesul_procesar_seguro_en_orden_v2($item, $cart_item_key, $values, $or
                 $item->add_meta_data('Total días', $insurance_total_days, true);
                 $item->add_meta_data('Cálculo', "€{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} bicis × {$insurance_total_days} días", true);
             } else {
-                $item->add_meta_data('Tipo de seguro', 'Básico - Incluido sin costo', true);
+                $item->add_meta_data('Tipo de seguro', 'B��sico - Incluido sin costo', true);
                 $item->add_meta_data('Total bicicletas', $insurance_total_bikes, true);
                 $item->add_meta_data('Total días', $insurance_total_days, true);
             }

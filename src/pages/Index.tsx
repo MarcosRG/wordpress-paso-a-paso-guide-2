@@ -5,6 +5,8 @@ import { InsuranceOptions } from "@/components/InsuranceOptions";
 import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { ConnectivityTest } from "@/components/ConnectivityTest";
+import { CorsInfo } from "@/components/CorsInfo";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -334,6 +336,14 @@ const Index = () => {
           )}
         </div>
       </div>
+
+      {/* Development-only debug tools */}
+      {import.meta.env.DEV && (
+        <div className="max-w-6xl mx-auto mt-8 space-y-6">
+          <CorsInfo />
+          <ConnectivityTest />
+        </div>
+      )}
     </div>
   );
 };

@@ -125,7 +125,9 @@ export const ProductDiagnostics = () => {
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
                       Categorías:{" "}
-                      {product.categories.map((c) => c.name).join(", ")}
+                      {Array.isArray(product.categories)
+                        ? product.categories.map((c) => c?.name || "Unknown").join(", ")
+                        : "No categories"}
                     </div>
                   </div>
                 ))}

@@ -131,37 +131,55 @@ export const calcularPrecioAlquiler = (
 export const extractACFPricing = (
   product: WooCommerceProduct,
 ): ACFPricing | null => {
-  // Check if product has ACF data directly
-  if (
-    product.acf &&
-    product.acf.precio_1_2 &&
-    product.acf.precio_3_6 &&
-    product.acf.precio_7_mais
-  ) {
-    return {
-      precio_1_2: parseFloat(product.acf.precio_1_2.toString()),
-      precio_3_6: parseFloat(product.acf.precio_3_6.toString()),
-      precio_7_mais: parseFloat(product.acf.precio_7_mais.toString()),
-    };
+  try {
+    // Validate product input
+    if (!product || typeof product !== 'object') {
+      return null;
+    }
+
+    // Check if product has ACF data directly
+    if (
+      product.acf &&
+      product.acf.precio_1_2 &&
+      product.acf.precio_3_6 &&
+      product.acf.precio_7_mais
+    ) {
+      return {
+        precio_1_2: parseFloat(product.acf.precio_1_2.toString()),
+        precio_3_6: parseFloat(product.acf.precio_3_6.toString()),
+        precio_7_mais: parseFloat(product.acf.precio_7_mais.toString()),
+      };
+    }
+  } catch (error) {
+    console.warn("Error extracting ACF pricing:", error);
+    return null;
   }
 
-  // Check in meta_data for ACF fields
-  const precio_1_2 = product.meta_data?.find(
-    (meta) => meta.key === "precio_1_2" || meta.key === "_precio_1_2",
-  );
-  const precio_3_6 = product.meta_data?.find(
-    (meta) => meta.key === "precio_3_6" || meta.key === "_precio_3_6",
-  );
-  const precio_7_mais = product.meta_data?.find(
-    (meta) => meta.key === "precio_7_mais" || meta.key === "_precio_7_mais",
-  );
+  try {
+    // Check in meta_data for ACF fields (ensure meta_data is an array)
+    if (!Array.isArray(product.meta_data)) {
+      return null;
+    }
 
-  if (precio_1_2 && precio_3_6 && precio_7_mais) {
-    return {
-      precio_1_2: parseFloat(precio_1_2.value.toString()),
-      precio_3_6: parseFloat(precio_3_6.value.toString()),
-      precio_7_mais: parseFloat(precio_7_mais.value.toString()),
-    };
+    const precio_1_2 = product.meta_data.find(
+      (meta) => meta && meta.key && (meta.key === "precio_1_2" || meta.key === "_precio_1_2"),
+    );
+    const precio_3_6 = product.meta_data.find(
+      (meta) => meta && meta.key && (meta.key === "precio_3_6" || meta.key === "_precio_3_6"),
+    );
+    const precio_7_mais = product.meta_data.find(
+      (meta) => meta && meta.key && (meta.key === "precio_7_mais" || meta.key === "_precio_7_mais"),
+    );
+
+    if (precio_1_2 && precio_3_6 && precio_7_mais) {
+      return {
+        precio_1_2: parseFloat(precio_1_2.value?.toString() || "0"),
+        precio_3_6: parseFloat(precio_3_6.value?.toString() || "0"),
+        precio_7_mais: parseFloat(precio_7_mais.value?.toString() || "0"),
+      };
+    }
+  } catch (error) {
+    console.warn("Error processing meta_data for ACF pricing:", error);
   }
 
   return null;
@@ -182,29 +200,44 @@ export const convertACFToPriceRanges = (
 export const extractDayBasedPricing = (
   product: WooCommerceProduct,
 ): PriceRange[] => {
-  // First try to get ACF pricing
-  const acfPricing = extractACFPricing(product);
-  if (acfPricing) {
-    return convertACFToPriceRanges(acfPricing);
-  }
-
-  // Look for day-based pricing in meta_data (legacy format)
-  const pricingMeta = product.meta_data?.find(
-    (meta) => meta.key === "_day_pricing" || meta.key === "day_pricing",
-  );
-
-  if (pricingMeta && pricingMeta.value) {
-    try {
-      // Expected format: [{"minDays": 1, "maxDays": 3, "pricePerDay": 60}, ...]
-      return JSON.parse(pricingMeta.value);
-    } catch (e) {
-      // Error parsing day-based pricing, will use fallback
+  try {
+    // Validate input
+    if (!product || typeof product !== 'object') {
+      return [];
     }
-  }
 
-  // Fallback: create default pricing based on regular price
-  const basePrice = parseFloat(product.regular_price || product.price || "0");
-  return [{ minDays: 1, maxDays: 999, pricePerDay: basePrice }];
+    // First try to get ACF pricing
+    const acfPricing = extractACFPricing(product);
+    if (acfPricing) {
+      return convertACFToPriceRanges(acfPricing);
+    }
+
+    // Look for day-based pricing in meta_data (legacy format)
+    if (Array.isArray(product.meta_data)) {
+      const pricingMeta = product.meta_data.find(
+        (meta) => meta && meta.key && (meta.key === "_day_pricing" || meta.key === "day_pricing"),
+      );
+
+      if (pricingMeta && pricingMeta.value) {
+        try {
+          // Expected format: [{"minDays": 1, "maxDays": 3, "pricePerDay": 60}, ...]
+          const parsed = JSON.parse(pricingMeta.value);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        } catch (e) {
+          console.warn("Error parsing day-based pricing:", e);
+        }
+      }
+    }
+
+    // Fallback: create default pricing based on regular price
+    const basePrice = parseFloat(product.regular_price || product.price || "0");
+    return [{ minDays: 1, maxDays: 999, pricePerDay: basePrice }];
+  } catch (error) {
+    console.warn("Error in extractDayBasedPricing:", error);
+    return [];
+  }
 };
 
 // Function to get price for specific number of days
@@ -320,6 +353,7 @@ const fetchWithRetry = async (
             ...apiHeaders,
             ...options.headers,
           },
+          mode: "cors", // Explicitly set CORS mode
         }),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("Request timeout")), timeout),
@@ -373,9 +407,11 @@ const fetchWithRetry = async (
 
       // Solo registrar error si es el último intento (todos fallaron)
       if (attempt === maxRetries) {
-        // Only register failure in circuit breaker for non-network errors or after all retries
-        if (!isNetworkError || attempt === maxRetries) {
-          recordWooCommerceFailure(); // Register failure in circuit breaker
+        // Don't register CORS/network errors in circuit breaker as they are configuration issues, not service failures
+        if (!isNetworkError) {
+          recordWooCommerceFailure(); // Register failure in circuit breaker only for non-network errors
+        } else {
+          console.log("🔄 Network/CORS error detected - not triggering circuit breaker");
         }
 
         if (error instanceof Error) {
@@ -724,7 +760,7 @@ export const wooCommerceApi = {
           mode: "cors",
         },
         TIMEOUT_CONFIG.short,
-        1,
+        1, // Reduced retries for ACF data
       );
 
       if (!response.ok) {
