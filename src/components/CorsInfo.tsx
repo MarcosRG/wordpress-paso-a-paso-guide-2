@@ -142,10 +142,12 @@ export const CorsInfo = () => {
                   variant="outline"
                   size="sm"
                   onClick={copyToClipboard}
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 ${
+                    copyError ? "border-red-300 text-red-600" : ""
+                  }`}
                 >
                   <Copy className="h-4 w-4" />
-                  {copied ? "Copied!" : "Copy"}
+                  {copied ? "Copied!" : copyError ? "Select Text" : "Copy"}
                 </Button>
               </div>
               
