@@ -36,21 +36,61 @@ function bikesul_ensure_insurance_products_exist() {
 }
 
 function bikesul_find_insurance_product($type) {
-    $search_terms = $type === 'premium' ? 
-        ['premium', 'bikesul'] : 
+    // First try to find by exact slug (most reliable)
+    if ($type === 'premium') {
+        $product = get_page_by_path('seguro-premium-bikesul', OBJECT, 'product');
+        if ($product && get_post_status($product->ID) === 'publish') {
+            return $product->ID;
+        }
+        // Try hardcoded ID
+        if (get_post(21815) && get_post_status(21815) === 'publish') {
+            return 21815;
+        }
+    } else {
+        $product = get_page_by_path('seguro-basico-bikesul', OBJECT, 'product');
+        if ($product && get_post_status($product->ID) === 'publish') {
+            return $product->ID;
+        }
+        // Try hardcoded ID
+        if (get_post(21819) && get_post_status(21819) === 'publish') {
+            return 21819;
+        }
+    }
+
+    // Fallback to original search method
+    $search_terms = $type === 'premium' ?
+        ['premium', 'bikesul'] :
         ['basic', 'básico', 'basico', 'gratis', 'free', 'responsabilidad'];
-    
+
+    // Search in insurance category (ID: 370)
     $products = get_posts(array(
         'post_type' => 'product',
-        's' => 'seguro',
+        'tax_query' => array(
+            array(
+                'taxonomy' => 'product_cat',
+                'field' => 'term_id',
+                'terms' => 370,
+                'operator' => 'IN'
+            )
+        ),
         'posts_per_page' => -1,
         'post_status' => 'publish'
     ));
-    
+
+    if (empty($products)) {
+        // If no products in category, search by text
+        $products = get_posts(array(
+            'post_type' => 'product',
+            's' => 'seguro',
+            'posts_per_page' => -1,
+            'post_status' => 'publish'
+        ));
+    }
+
     foreach ($products as $product) {
         $title = strtolower($product->post_title);
         $price = get_post_meta($product->ID, '_price', true);
-        
+
         if ($type === 'premium') {
             // Premium debe tener precio > 0 y contener palabras clave
             if ($price > 0) {
@@ -69,7 +109,7 @@ function bikesul_find_insurance_product($type) {
             }
         }
     }
-    
+
     return false;
 }
 
@@ -218,7 +258,7 @@ function bikesul_procesar_seguro_en_orden_v2($item, $cart_item_key, $values, $or
             $item->set_subtotal($total_insurance_price);
             
             // Meta data visible para el cliente
-            $item->add_meta_data('Precio por bici/día', '���' . number_format($insurance_price_per_bike_per_day, 2), true);
+            $item->add_meta_data('Precio por bici/día', '€' . number_format($insurance_price_per_bike_per_day, 2), true);
             $item->add_meta_data('Total bicicletas', $insurance_total_bikes, true);
             $item->add_meta_data('Total días', $insurance_total_days, true);
             $item->add_meta_data('Cálculo', "€{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} bicis × {$insurance_total_days} días", true);
