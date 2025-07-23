@@ -260,7 +260,11 @@ function bikesul_get_bikes_list($atts) {
 
 function bikesul_get_total_bikes($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
     
     $total = $order->get_meta('_total_bikes');
