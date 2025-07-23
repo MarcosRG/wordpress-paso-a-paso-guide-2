@@ -49,7 +49,10 @@ function bikesul_display_order_info($atts) {
         return '<p class="error">Error: ID de pedido requerido</p>';
     }
 
-    $order = wc_get_order($atts['id']);
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) {
         return '<p class="error">Error: Pedido no encontrado</p>';
     }
