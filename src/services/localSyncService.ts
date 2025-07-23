@@ -19,7 +19,15 @@ export class LocalSyncService {
           console.log("✅ Sincronización inicial completada");
         })
         .catch((error) => {
-          console.error("❌ Error en sincronización inicial:", error);
+          const isCorsError = error instanceof TypeError &&
+            error.message.includes("Failed to fetch");
+
+          if (isCorsError && import.meta.env.DEV) {
+            console.warn("⚠️ CORS Error en desarrollo - La app continuará con datos mock/cache");
+            console.warn("💡 Para corregir: Configurar CORS en WordPress o usar datos locales");
+          } else {
+            console.error("❌ Error en sincronización inicial:", error);
+          }
         });
     }
 
