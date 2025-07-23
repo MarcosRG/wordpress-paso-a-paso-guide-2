@@ -33,6 +33,9 @@ export const CorsInfo = () => {
 </IfModule>`;
 
   const copyToClipboard = async () => {
+    // Reset states
+    setCopyError(false);
+
     try {
       // Try modern clipboard API first
       await navigator.clipboard.writeText(htaccessConfig);
@@ -64,8 +67,9 @@ export const CorsInfo = () => {
       } catch (fallbackErr) {
         console.error("Fallback copy also failed:", fallbackErr);
 
-        // Final fallback: Show alert with text to copy manually
-        alert(`Copy this configuration manually:\n\n${htaccessConfig}`);
+        // Show error state and provide manual copy option
+        setCopyError(true);
+        setTimeout(() => setCopyError(false), 3000);
       }
     }
   };
