@@ -22,61 +22,48 @@ export const ConnectivityTest = () => {
 
     const testResults: TestResult[] = [];
 
-    // Test 1: Basic WooCommerce API accessibility
+    // Test 1: Basic server reachability (no CORS issues)
     try {
-      console.log("🧪 Testing basic WooCommerce API accessibility...");
+      console.log("🧪 Testing basic server reachability...");
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-      const response = await fetch("https://bikesultoursgest.com/wp-json/wc/v3", {
-        method: "HEAD",
-        mode: "cors",
-        signal: controller.signal,
-        cache: "no-cache"
+      const img = new Image();
+      const testPromise = new Promise<boolean>((resolve) => {
+        const timeout = setTimeout(() => resolve(false), 8000);
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve(true);
+        };
+        img.onerror = () => {
+          clearTimeout(timeout);
+          resolve(false);
+        };
+        // Test with a common WordPress asset
+        img.src = "https://bikesultoursgest.com/wp-includes/images/media/default.png?" + Date.now();
       });
 
-      clearTimeout(timeoutId);
+      const canReachServer = await testPromise;
 
-      if (response.ok) {
+      if (canReachServer) {
         testResults.push({
-          test: "WooCommerce API Base",
+          test: "Server Reachability",
           status: "success",
-          message: "API endpoint is accessible",
-          details: `Status: ${response.status} - CORS headers present`
+          message: "WordPress server is reachable",
+          details: "Basic connectivity works. CORS configuration is the only remaining issue."
         });
       } else {
         testResults.push({
-          test: "WooCommerce API Base",
+          test: "Server Reachability",
           status: "error",
-          message: `HTTP Error: ${response.status}`,
-          details: `${response.statusText} - Check server configuration`
+          message: "Cannot reach WordPress server",
+          details: "Check DNS settings, server status, or network connectivity."
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      let details = errorMessage;
-      let status: TestResult['status'] = 'error';
-      let message = "Failed to reach API";
-
-      // Analyze specific error types
-      if (errorMessage.includes("Failed to fetch")) {
-        message = "CORS Error Detected";
-        details = "The server is not configured to allow cross-origin requests. Need to configure CORS headers in WordPress .htaccess or server configuration.";
-        status = 'warning';
-      } else if (errorMessage.includes("AbortError") || errorMessage.includes("aborted")) {
-        message = "Request Timeout";
-        details = "Request took longer than 10 seconds. Check network connectivity or server performance.";
-      } else if (errorMessage.includes("NetworkError") || errorMessage.includes("net::")) {
-        message = "Network Error";
-        details = "Cannot reach the server. Check if the domain is accessible and DNS is working.";
-      }
-
       testResults.push({
-        test: "WooCommerce API Base",
-        status,
-        message,
-        details
+        test: "Server Reachability",
+        status: "error",
+        message: "Connectivity test failed",
+        details: "Unexpected error during basic connectivity test."
       });
     }
 
