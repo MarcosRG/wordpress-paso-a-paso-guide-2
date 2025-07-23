@@ -293,9 +293,12 @@ export class WooCommerceCartService {
         console.log(`  Insurance type: ${reservation.insurance.id}`);
 
         try {
+          // Importar el servicio corregido
+          const { fixedInsuranceProductService } = await import('./insuranceProductService.fixed');
+
           // Buscar automáticamente un producto de seguro válido
           const insuranceProduct =
-            await insuranceProductService.findValidInsuranceProduct(
+            await fixedInsuranceProductService.findValidInsuranceProduct(
               reservation.insurance.id as "premium" | "basic" | "free",
             );
 
