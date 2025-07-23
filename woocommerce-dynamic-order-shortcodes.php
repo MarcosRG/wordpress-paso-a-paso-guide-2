@@ -135,41 +135,53 @@ add_shortcode('bikesul_rental_days', 'bikesul_get_rental_days');
 
 function bikesul_get_rental_dates($atts) {
     $atts = shortcode_atts(array('id' => 0, 'format' => 'd/m/Y'), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     $start_date = $order->get_meta('_rental_start_date');
     $end_date = $order->get_meta('_rental_end_date');
-    
+
     if ($start_date && $end_date) {
         $start = date($atts['format'], strtotime($start_date));
         $end = date($atts['format'], strtotime($end_date));
         return "Del $start al $end";
     }
-    
+
     return '';
 }
 
 function bikesul_get_rental_times($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     $pickup_time = $order->get_meta('_pickup_time');
     $return_time = $order->get_meta('_return_time');
-    
+
     if ($pickup_time && $return_time) {
         return "Recogida: $pickup_time | Devolución: $return_time";
     }
-    
+
     return '';
 }
 
 function bikesul_get_rental_days($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     return $order->get_meta('_rental_total_days') ?: $order->get_meta('_rental_days');
 }
 
@@ -223,7 +235,7 @@ function bikesul_get_bikes_list($atts) {
             $bikes_html .= "<li>";
             $bikes_html .= "<strong>$product_name</strong> - Cantidad: $quantity, Talla: $size";
             if ($atts['show_price'] === 'yes') {
-                $bikes_html .= ", Precio: ���" . number_format($price, 2);
+                $bikes_html .= ", Precio: €" . number_format($price, 2);
             }
             $bikes_html .= "</li>";
         }
