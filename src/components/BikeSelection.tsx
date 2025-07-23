@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,7 +13,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
 import SimpleBikeCard from "./SimpleBikeCard";
-import { ErrorBoundary } from "./ErrorBoundary";
 import {
   getPriceForDays,
   extractDayBasedPricing,
@@ -50,37 +49,25 @@ export const BikeSelection = ({
   };
 
   // Filter bikes by category using WooCommerce slugs
-  const filteredBikes = React.useMemo(() => {
-    try {
-      return bikes
-        ? bikes.filter((bike) => {
-            try {
-              if (selectedCategory === "all") return true;
+  const filteredBikes = bikes
+    ? bikes.filter((bike) => {
+        if (selectedCategory === "all") return true;
 
-              // Check if product has the selected category
-              if (bike.wooCommerceData?.product?.categories && Array.isArray(bike.wooCommerceData.product.categories)) {
-                const hasCategory = bike.wooCommerceData.product.categories.some(
-                  (category) => category && typeof category === 'object' && category.slug === selectedCategory,
-                );
+        // Check if product has the selected category
+        if (bike.wooCommerceData?.product?.categories) {
+          const hasCategory = bike.wooCommerceData.product.categories.some(
+            (category) => category.slug === selectedCategory,
+          );
 
-                if (hasCategory) {
-                  return true;
-                }
-              }
+          if (hasCategory) {
+            return true;
+          }
+        }
 
-              // Fallback to bike type
-              return bike.type === selectedCategory;
-            } catch (error) {
-              console.warn(`Error filtering bike ${bike.id}:`, error);
-              return selectedCategory === "all"; // Show bike if "all" selected, hide if specific category
-            }
-          })
-        : [];
-    } catch (error) {
-      console.error("Error filtering bikes:", error);
-      return [];
-    }
-  }, [bikes, selectedCategory]);
+        // Fallback to bike type
+        return bike.type === selectedCategory;
+      })
+    : [];
 
   const getQuantityForBikeAndSize = (bikeId: string, size: string) => {
     const selectedBike = reservation.selectedBikes.find(
@@ -258,24 +245,22 @@ export const BikeSelection = ({
           const isSimpleProduct =
             bike.wooCommerceData?.product?.type === "simple";
 
-          return (
-            <ErrorBoundary key={bike.id}>
-              {isSimpleProduct ? (
-                <SimpleBikeCard
-                  bike={bike}
-                  getQuantityForBike={getQuantityForBike}
-                  updateBikeQuantity={updateSimpleBikeQuantity}
-                  totalDays={reservation.totalDays}
-                />
-              ) : (
-                <BikeCard
-                  bike={bike}
-                  getQuantityForBikeAndSize={getQuantityForBikeAndSize}
-                  updateBikeQuantity={updateBikeQuantity}
-                  totalDays={reservation.totalDays}
-                />
-              )}
-            </ErrorBoundary>
+          return isSimpleProduct ? (
+            <SimpleBikeCard
+              key={bike.id}
+              bike={bike}
+              getQuantityForBike={getQuantityForBike}
+              updateBikeQuantity={updateSimpleBikeQuantity}
+              totalDays={reservation.totalDays}
+            />
+          ) : (
+            <BikeCard
+              key={bike.id}
+              bike={bike}
+              getQuantityForBikeAndSize={getQuantityForBikeAndSize}
+              updateBikeQuantity={updateBikeQuantity}
+              totalDays={reservation.totalDays}
+            />
           );
         })}
       </div>

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { ConnectivityTest } from "./ConnectivityTest";
 
 export const ApiTest = () => {
   const [testResult, setTestResult] = useState<string>("");
@@ -52,29 +51,25 @@ export const ApiTest = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="w-full max-w-2xl mx-auto mt-4">
-        <CardHeader>
-          <CardTitle>API Connection Test (Legacy)</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            onClick={testApiConnection}
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? "Testing..." : "Test WooCommerce API Connection"}
-          </Button>
+    <Card className="w-full max-w-2xl mx-auto mt-4">
+      <CardHeader>
+        <CardTitle>API Connection Test</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Button
+          onClick={testApiConnection}
+          disabled={loading}
+          className="w-full"
+        >
+          {loading ? "Testing..." : "Test WooCommerce API Connection"}
+        </Button>
 
-          {testResult && (
-            <div className="p-4 bg-gray-100 rounded-md">
-              <pre className="whitespace-pre-wrap text-sm">{testResult}</pre>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <ConnectivityTest />
-    </div>
+        {testResult && (
+          <div className="p-4 bg-gray-100 rounded-md">
+            <pre className="whitespace-pre-wrap text-sm">{testResult}</pre>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

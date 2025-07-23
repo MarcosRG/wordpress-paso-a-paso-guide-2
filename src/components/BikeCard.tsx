@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
@@ -40,16 +39,9 @@ const BikeCard = ({
   );
 
   // Extract ACF pricing first, then fallback to day-based pricing
-  const acfPricing: ACFPricing | null = React.useMemo(() => {
-    try {
-      return bike.wooCommerceData?.product
-        ? extractACFPricing(bike.wooCommerceData.product)
-        : null;
-    } catch (error) {
-      console.warn(`Error extracting ACF pricing for bike ${bike.id}:`, error);
-      return null;
-    }
-  }, [bike.wooCommerceData?.product, bike.id]);
+  const acfPricing: ACFPricing | null = bike.wooCommerceData?.product
+    ? extractACFPricing(bike.wooCommerceData.product)
+    : null;
 
   const priceRanges: PriceRange[] = bike.wooCommerceData?.product
     ? extractDayBasedPricing(bike.wooCommerceData.product)
