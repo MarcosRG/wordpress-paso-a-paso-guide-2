@@ -146,6 +146,13 @@ export const CorsInfo = () => {
                   className={`flex items-center gap-2 ${
                     copyError ? "border-red-300 text-red-600" : ""
                   }`}
+                  title={
+                    copyError
+                      ? "Click to select text for manual copying"
+                      : copied
+                        ? "Copied to clipboard!"
+                        : "Copy to clipboard"
+                  }
                 >
                   <Copy className="h-4 w-4" />
                   {copied ? "Copied!" : copyError ? "Select Text" : "Copy"}
