@@ -10,9 +10,25 @@ export const InsuranceVerifier: React.FC = () => {
   const handleVerify = async () => {
     setIsVerifying(true);
     setVerificationComplete(false);
-    
+
     try {
+      console.log("=".repeat(60));
+      console.log("🔧 DIAGNÓSTICO COMPLETO DE SEGUROS");
+      console.log("=".repeat(60));
+
+      // 1. Verificación detallada
       await verifyInsuranceProducts();
+
+      console.log("\n" + "=".repeat(60));
+      console.log("🛠️ GENERANDO SOLUCIÓN AUTOMÁTICA");
+      console.log("=".repeat(60));
+
+      // 2. Encontrar productos reales y generar código de fix
+      const realProducts = await findRealInsuranceProducts();
+      const fixCode = generateFixCode(realProducts.premium, realProducts.basic);
+
+      console.log(fixCode);
+
       setVerificationComplete(true);
     } catch (error) {
       console.error('Error durante la verificación:', error);
