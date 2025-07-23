@@ -125,7 +125,7 @@ function bikesul_create_insurance_product($type) {
     } else {
         $product_data = array(
             'post_title' => 'Seguro Básico & Responsabilidad Civil',
-            'post_content' => 'Seguro básico gratuito incluye responsabilidad civil',
+            'post_content' => 'Seguro básico gratuito incluye responsabilidad civil. Se muestra en el carrito para registro completo de la reserva.',
             'post_status' => 'publish',
             'post_type' => 'product'
         );
@@ -251,17 +251,35 @@ function bikesul_procesar_seguro_en_orden_v2($item, $cart_item_key, $values, $or
         if ($insurance_price_per_bike_per_day >= 0 && $insurance_total_bikes > 0 && $insurance_total_days > 0) {
             // CÁLCULO CORRECTO: precio_por_bici_por_día × bicis × días
             $total_insurance_price = $insurance_price_per_bike_per_day * $insurance_total_bikes * $insurance_total_days;
-            
+
+            // MODIFICAR NOMBRE DEL PRODUCTO para mostrar cálculo completo
+            $product_title = $item->get_name();
+            if ($insurance_price_per_bike_per_day > 0) {
+                // Para seguro premium: mostrar cálculo en el nombre
+                $new_product_name = "{$product_title} x {$insurance_total_bikes} bicis x {$insurance_total_days} días";
+                $item->set_name($new_product_name);
+            } else {
+                // Para seguro básico: agregar "(Incluido)" al nombre
+                $new_product_name = "{$product_title} (Incluido)";
+                $item->set_name($new_product_name);
+            }
+
             // Forzar cantidad a 1 y precio total correcto
             $item->set_quantity(1);
             $item->set_total($total_insurance_price);
             $item->set_subtotal($total_insurance_price);
-            
+
             // Meta data visible para el cliente
-            $item->add_meta_data('Precio por bici/día', '€' . number_format($insurance_price_per_bike_per_day, 2), true);
-            $item->add_meta_data('Total bicicletas', $insurance_total_bikes, true);
-            $item->add_meta_data('Total días', $insurance_total_days, true);
-            $item->add_meta_data('Cálculo', "€{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} bicis × {$insurance_total_days} días", true);
+            if ($insurance_price_per_bike_per_day > 0) {
+                $item->add_meta_data('Precio por bici/día', '€' . number_format($insurance_price_per_bike_per_day, 2), true);
+                $item->add_meta_data('Total bicicletas', $insurance_total_bikes, true);
+                $item->add_meta_data('Total días', $insurance_total_days, true);
+                $item->add_meta_data('Cálculo', "€{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} bicis × {$insurance_total_days} días", true);
+            } else {
+                $item->add_meta_data('Tipo de seguro', 'Básico - Incluido sin costo', true);
+                $item->add_meta_data('Total bicicletas', $insurance_total_bikes, true);
+                $item->add_meta_data('Total días', $insurance_total_days, true);
+            }
             
             error_log("BIKESUL SEGURO CALCULADO: €{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} bicis × {$insurance_total_days} días = €{$total_insurance_price}");
         } else {
