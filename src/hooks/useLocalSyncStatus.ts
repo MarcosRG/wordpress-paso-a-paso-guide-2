@@ -47,10 +47,10 @@ export const useLocalSyncStatus = () => {
         ...prev,
         isRunning: false, // LocalSyncService doesn't expose isRunning status
         lastSyncTime: lastSyncTime,
-        status: lastSyncTime
-          ? SyncStatus.SYNCING
-          : cacheStats.products > 0
-            ? SyncStatus.SUCCESS
+        status: cacheStats.products > 0
+          ? SyncStatus.SUCCESS
+          : lastSyncTime
+            ? SyncStatus.ERROR
             : SyncStatus.IDLE,
         cacheStats,
       }));
