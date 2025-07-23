@@ -142,40 +142,72 @@ export const ConnectivityTest = () => {
       });
     }
 
-    // Test 3: Authenticated request test
-    try {
-      const auth = btoa("ck_d702f875c82d5973562a62579cfa284db06e3a87:cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71");
-      const response = await fetch("https://bikesultoursgest.com/wp-json/wc/v3/products?per_page=1", {
-        mode: "cors",
-        headers: {
-          "Authorization": `Basic ${auth}`,
-          "Content-Type": "application/json",
-        }
+    // Test 3: Authenticated request test (only if previous tests show some connectivity)
+    const hasBasicConnectivity = testResults.some(r => r.status === 'success');
+
+    if (!hasBasicConnectivity) {
+      testResults.push({
+        test: "Authenticated Request",
+        status: "warning",
+        message: "Skipped due to connectivity issues",
+        details: "Basic connectivity failed, so authentication test was skipped to avoid additional errors."
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        testResults.push({
-          test: "Authenticated Request",
-          status: "success",
-          message: "Authentication successful",
-          details: `Retrieved ${Array.isArray(data) ? data.length : 0} product(s)`
+    } else {
+      try {
+        console.log("🧪 Testing authenticated request...");
+
+        const auth = btoa("ck_d702f875c82d5973562a62579cfa284db06e3a87:cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71");
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        const response = await fetch("https://bikesultoursgest.com/wp-json/wc/v3/products?per_page=1", {
+          mode: "cors",
+          signal: controller.signal,
+          headers: {
+            "Authorization": `Basic ${auth}`,
+            "Content-Type": "application/json",
+          },
+          cache: "no-cache"
         });
-      } else {
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          testResults.push({
+            test: "Authenticated Request",
+            status: "success",
+            message: "Authentication successful",
+            details: `Retrieved ${Array.isArray(data) ? data.length : 0} product(s). WooCommerce API is fully functional!`
+          });
+        } else {
+          testResults.push({
+            test: "Authenticated Request",
+            status: "error",
+            message: `Authentication failed: ${response.status}`,
+            details: `${response.statusText}. Check API credentials or WooCommerce REST API settings.`
+          });
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        let details = errorMessage;
+        let message = "Request failed";
+
+        if (errorMessage.includes("Failed to fetch")) {
+          message = "CORS blocking authenticated requests";
+          details = "Even with proper authentication, CORS is blocking the request. Server CORS configuration must be fixed.";
+        } else if (errorMessage.includes("AbortError")) {
+          message = "Authentication request timeout";
+          details = "Request timed out after 15 seconds. Server may be slow or overloaded.";
+        }
+
         testResults.push({
           test: "Authenticated Request",
           status: "error",
-          message: `Authentication failed: ${response.status}`,
-          details: response.statusText
+          message,
+          details
         });
       }
-    } catch (error) {
-      testResults.push({
-        test: "Authenticated Request",
-        status: "error",
-        message: "Request failed",
-        details: error instanceof Error ? error.message : String(error)
-      });
     }
 
     // Test 4: Network timing
@@ -270,7 +302,7 @@ export const ConnectivityTest = () => {
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <h4 className="font-medium text-blue-900 mb-2">💡 Troubleshooting Tips</h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>�� If CORS tests fail, the WooCommerce server needs CORS configuration</li>
+              <li>• If CORS tests fail, the WooCommerce server needs CORS configuration</li>
               <li>• Check if your browser is blocking mixed content (HTTP/HTTPS)</li>
               <li>• Verify WooCommerce REST API is enabled in WordPress admin</li>
               <li>• Ensure API credentials have proper permissions</li>
