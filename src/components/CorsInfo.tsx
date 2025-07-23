@@ -176,7 +176,11 @@ export const CorsInfo = () => {
                 {copyError && (
                   <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
                     <strong>Copy manually:</strong> Select the text above and use Ctrl+C (or Cmd+C on Mac) to copy.
-                    Clipboard access is restricted in this environment.
+                    {isInIframe ? (
+                      <span> Clipboard access is restricted in iframe environments like Builder.io.</span>
+                    ) : (
+                      <span> Clipboard access is restricted in this environment.</span>
+                    )}
                   </div>
                 )}
               </div>
