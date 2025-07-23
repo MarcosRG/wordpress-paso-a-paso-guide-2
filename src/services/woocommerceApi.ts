@@ -155,27 +155,31 @@ export const extractACFPricing = (
     return null;
   }
 
-  // Check in meta_data for ACF fields (ensure meta_data is an array)
-  if (!Array.isArray(product.meta_data)) {
-    return null;
-  }
+  try {
+    // Check in meta_data for ACF fields (ensure meta_data is an array)
+    if (!Array.isArray(product.meta_data)) {
+      return null;
+    }
 
-  const precio_1_2 = product.meta_data.find(
-    (meta) => meta && meta.key && (meta.key === "precio_1_2" || meta.key === "_precio_1_2"),
-  );
-  const precio_3_6 = product.meta_data.find(
-    (meta) => meta && meta.key && (meta.key === "precio_3_6" || meta.key === "_precio_3_6"),
-  );
-  const precio_7_mais = product.meta_data.find(
-    (meta) => meta && meta.key && (meta.key === "precio_7_mais" || meta.key === "_precio_7_mais"),
-  );
+    const precio_1_2 = product.meta_data.find(
+      (meta) => meta && meta.key && (meta.key === "precio_1_2" || meta.key === "_precio_1_2"),
+    );
+    const precio_3_6 = product.meta_data.find(
+      (meta) => meta && meta.key && (meta.key === "precio_3_6" || meta.key === "_precio_3_6"),
+    );
+    const precio_7_mais = product.meta_data.find(
+      (meta) => meta && meta.key && (meta.key === "precio_7_mais" || meta.key === "_precio_7_mais"),
+    );
 
-  if (precio_1_2 && precio_3_6 && precio_7_mais) {
-    return {
-      precio_1_2: parseFloat(precio_1_2.value.toString()),
-      precio_3_6: parseFloat(precio_3_6.value.toString()),
-      precio_7_mais: parseFloat(precio_7_mais.value.toString()),
-    };
+    if (precio_1_2 && precio_3_6 && precio_7_mais) {
+      return {
+        precio_1_2: parseFloat(precio_1_2.value?.toString() || "0"),
+        precio_3_6: parseFloat(precio_3_6.value?.toString() || "0"),
+        precio_7_mais: parseFloat(precio_7_mais.value?.toString() || "0"),
+      };
+    }
+  } catch (error) {
+    console.warn("Error processing meta_data for ACF pricing:", error);
   }
 
   return null;
