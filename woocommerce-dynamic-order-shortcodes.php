@@ -688,8 +688,46 @@ function bikesul_shortcode_styles() {
     </style>';
 }
 
+/**
+ * Função de debug para testar resolução de order_id
+ */
+add_shortcode('bikesul_debug_order_id', 'bikesul_debug_order_id');
+
+function bikesul_debug_order_id($atts) {
+    $atts = shortcode_atts(array('id' => '[order_id]'), $atts);
+
+    $debug_info = array(
+        'input_id' => $atts['id'],
+        'resolved_id' => bikesul_resolve_dynamic_id($atts['id']),
+        'session_order' => $_SESSION['current_order_id'] ?? 'não definido',
+        'cookie_order' => $_COOKIE['bikesul_current_order'] ?? 'não definido',
+        'global_order' => $GLOBALS['bikesul_current_order_id'] ?? 'não definido',
+        'get_order' => $_GET['order_id'] ?? 'não definido',
+        'post_order' => $_POST['order_id'] ?? 'não definido',
+        'url' => $_SERVER['REQUEST_URI'] ?? 'não definido'
+    );
+
+    return '<pre>' . print_r($debug_info, true) . '</pre>';
+}
+
+/**
+ * Função para definir order_id manualmente (útil para testes)
+ */
+add_shortcode('bikesul_set_order_id', 'bikesul_manual_set_order_id');
+
+function bikesul_manual_set_order_id($atts) {
+    $atts = shortcode_atts(array('id' => 0), $atts);
+
+    if ($atts['id']) {
+        bikesul_set_current_order_id($atts['id']);
+        return "Order ID {$atts['id']} definido com sucesso!";
+    }
+
+    return "Erro: ID necessário";
+}
+
 // Log para confirmar que el archivo se cargó
-error_log("BIKESUL: Sistema de shortcodes dinámicos cargado correctamente");
+error_log("BIKESUL: Sistema de shortcodes dinámicos cargado correctamente com suporte a placeholders dinâmicos");
 
 ?>
 
