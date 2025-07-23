@@ -72,7 +72,19 @@ export class LocalSyncService {
           try {
             acfData = await wooCommerceApi.getProductWithACF(product.id);
           } catch (error) {
-            // ACF data is optional
+            console.warn(
+              `⚠️ Error obteniendo ACF para producto ${product.id}:`,
+              error,
+            );
+
+            // Check if it's a CORS or network error
+            const isCorsError = error instanceof TypeError &&
+              error.message.includes("Failed to fetch");
+
+            if (isCorsError) {
+              console.log("🔄 CORS error detected, skipping ACF data for this product");
+            }
+            // ACF data is optional - continue without it
           }
 
           // Convertir producto a formato Neon
