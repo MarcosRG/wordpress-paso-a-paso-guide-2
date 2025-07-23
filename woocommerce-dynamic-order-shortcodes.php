@@ -670,7 +670,7 @@ function bikesul_format_complete_info($data, $atts) {
 }
 
 // ===============================================
-// 4. ESTILOS CSS BÁSICOS
+// 5. ESTILOS CSS BÁSICOS
 // ===============================================
 
 add_action('wp_head', 'bikesul_shortcode_styles');
