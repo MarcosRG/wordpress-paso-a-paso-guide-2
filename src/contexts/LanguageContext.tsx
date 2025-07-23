@@ -25,7 +25,7 @@ const translations = {
     "gravel-alugueres": "Gravel",
     "junior-alugueres": "Junior",
     "touring-alugueres": "Touring",
-    availableSizes: "Tamanhos dispon��veis",
+    availableSizes: "Tamanhos disponíveis",
     available: "disponível",
     availables: "disponíveis",
     selectionSummary: "Resumo da sua seleção",
