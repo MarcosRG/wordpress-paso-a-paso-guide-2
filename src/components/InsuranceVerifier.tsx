@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { verifyInsuranceProducts } from '../utils/verifyInsuranceProducts';
+import { findRealInsuranceProducts, generateFixCode } from '../services/insuranceTemporaryFix';
 
 export const InsuranceVerifier: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState(false);
