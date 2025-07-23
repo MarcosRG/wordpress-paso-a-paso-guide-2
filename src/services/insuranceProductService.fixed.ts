@@ -46,25 +46,21 @@ export class FixedInsuranceProductService {
     }
 
     try {
-      console.log("🔍 Obteniendo IDs reales de productos de seguro...");
-      
-      const response = await fetch('https://bikesultoursgest.com/wp-json/bikesul/v1/insurance-products');
-      
-      if (response.ok) {
-        const data = await response.json();
-        
+      const data = await this.getProductDataFromPHPEndpoint();
+
+      if (data) {
         this.realProductIds = {
           premium: data.premium?.id || null,
           basic: data.basic?.id || null
         };
-        
+
         console.log("✅ IDs de seguros obtenidos:");
         console.log(`   Premium: ID ${this.realProductIds.premium} - ${data.premium?.name}`);
         console.log(`   Basic: ID ${this.realProductIds.basic} - ${data.basic?.name}`);
-        
+
         return this.realProductIds;
       } else {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        throw new Error("No data received from PHP endpoint");
       }
     } catch (error) {
       console.error("❌ Error obteniendo IDs de seguros:", error);
