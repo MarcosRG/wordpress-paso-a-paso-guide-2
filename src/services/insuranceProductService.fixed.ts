@@ -105,13 +105,37 @@ export class FixedInsuranceProductService {
         return null;
       }
 
-      // Obtener datos del producto
-      console.log(`🔍 Verificando producto ID ${targetId}...`);
+      // Primary approach: Get data from PHP endpoint (more reliable)
+      console.log(`🔍 Getting product data for ${insuranceType} from PHP endpoint...`);
+      const data = await this.getProductDataFromPHPEndpoint();
+
+      if (data && data[insuranceType]) {
+        console.log(`✅ Product data found in PHP endpoint for ${insuranceType}`);
+        const productInfo: InsuranceProductInfo = {
+          id: data[insuranceType].id,
+          name: data[insuranceType].name,
+          price: parseFloat(data[insuranceType].price || "0"),
+          exists: true, // Mark as existing since we have data from PHP
+        };
+
+        this.productCache.set(cacheKey, productInfo);
+
+        console.log(`✅ Producto de seguro ${insuranceType} encontrado:`);
+        console.log(`   ID: ${productInfo.id}`);
+        console.log(`   Nombre: "${productInfo.name}"`);
+        console.log(`   Precio base: €${productInfo.price}`);
+
+        return productInfo;
+      }
+
+      // Secondary approach: Try WooCommerce API if PHP endpoint fails
+      console.log(`⚠️ PHP endpoint failed, trying WooCommerce API for product ID ${targetId}...`);
 
       try {
         const product = await wooCommerceApi.getProduct(targetId);
 
-        if (product && product.status === 'publish') {
+        if (product) {
+          // Accept any product status, not just 'publish'
           const productInfo: InsuranceProductInfo = {
             id: product.id,
             name: product.name,
@@ -121,82 +145,37 @@ export class FixedInsuranceProductService {
 
           this.productCache.set(cacheKey, productInfo);
 
-          console.log(`✅ Producto de seguro ${insuranceType} encontrado:`);
+          console.log(`✅ Producto de seguro ${insuranceType} encontrado via WooCommerce API:`);
           console.log(`   ID: ${productInfo.id}`);
           console.log(`   Nombre: "${productInfo.name}"`);
+          console.log(`   Status: ${product.status}`);
           console.log(`   Precio base: €${productInfo.price}`);
 
           return productInfo;
         } else {
-          console.error(`❌ Producto ID ${targetId} no encontrado o no publicado`);
-
-          // Fallback: Create a virtual product with correct info from PHP endpoint
-          const realIds = await this.getRealProductIds();
-          const data = await this.getProductDataFromPHPEndpoint();
-
-          if (data && data[insuranceType]) {
-            console.log(`🔄 Using product data from PHP endpoint for ${insuranceType}`);
-            const productInfo: InsuranceProductInfo = {
-              id: data[insuranceType].id,
-              name: data[insuranceType].name,
-              price: parseFloat(data[insuranceType].price || "0"),
-              exists: true, // Mark as existing since we have data
-            };
-
-            this.productCache.set(cacheKey, productInfo);
-            return productInfo;
-          }
-
-          // Final fallback para seguro básico
-          if (insuranceType === "basic" || insuranceType === "free") {
-            const fallbackProduct: InsuranceProductInfo = {
-              id: 0,
-              name: "Basic Insurance & Liability",
-              price: 0,
-              exists: false,
-            };
-            this.productCache.set(cacheKey, fallbackProduct);
-            return fallbackProduct;
-          }
-
-          this.productCache.set(cacheKey, null);
-          return null;
+          console.warn(`⚠️ Producto ID ${targetId} no encontrado en WooCommerce API`);
         }
       } catch (apiError) {
-        console.error(`❌ Error calling WooCommerce API for product ${targetId}:`, apiError);
-
-        // Fallback: Try to get product data from PHP endpoint directly
-        console.log(`🔄 Fallback: Getting product data from PHP endpoint for ${insuranceType}`);
-        const data = await this.getProductDataFromPHPEndpoint();
-
-        if (data && data[insuranceType]) {
-          console.log(`✅ Using PHP endpoint data as fallback for ${insuranceType}`);
-          const productInfo: InsuranceProductInfo = {
-            id: data[insuranceType].id,
-            name: data[insuranceType].name,
-            price: parseFloat(data[insuranceType].price || "0"),
-            exists: true, // Mark as existing since we have data
-          };
-
-          this.productCache.set(cacheKey, productInfo);
-          return productInfo;
-        }
-
-        // Final fallback para seguro básico
-        if (insuranceType === "basic" || insuranceType === "free") {
-          const fallbackProduct: InsuranceProductInfo = {
-            id: 0,
-            name: "Basic Insurance & Liability",
-            price: 0,
-            exists: false,
-          };
-          this.productCache.set(cacheKey, fallbackProduct);
-          return fallbackProduct;
-        }
-
-        this.productCache.set(cacheKey, null);
-        return null;
+        console.warn(`⚠️ Error calling WooCommerce API for product ${targetId}:`, apiError);
       }
+
+      // Final fallback para seguro básico
+      if (insuranceType === "basic" || insuranceType === "free") {
+        console.log(`🔄 Creating fallback basic insurance product`);
+        const fallbackProduct: InsuranceProductInfo = {
+          id: 0,
+          name: "Basic Insurance & Liability",
+          price: 0,
+          exists: false,
+        };
+        this.productCache.set(cacheKey, fallbackProduct);
+        return fallbackProduct;
+      }
+
+      // No valid product found
+      console.error(`❌ No valid ${insuranceType} insurance product found`);
+      this.productCache.set(cacheKey, null);
+      return null;
 
     } catch (error) {
       console.error(`❌ Error buscando producto de seguro ${insuranceType}:`, error);
