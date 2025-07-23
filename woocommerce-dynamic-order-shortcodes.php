@@ -90,25 +90,37 @@ add_shortcode('bikesul_customer_phone', 'bikesul_get_customer_phone');
 
 function bikesul_get_customer_name($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     return $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
 }
 
 function bikesul_get_customer_email($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     return $order->get_billing_email();
 }
 
 function bikesul_get_customer_phone($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    $order = wc_get_order($atts['id']);
+
+    // Resolver placeholders dinâmicos
+    $order_id = bikesul_resolve_dynamic_id($atts['id']);
+
+    $order = wc_get_order($order_id);
     if (!$order) return '';
-    
+
     return $order->get_billing_phone();
 }
 
@@ -211,7 +223,7 @@ function bikesul_get_bikes_list($atts) {
             $bikes_html .= "<li>";
             $bikes_html .= "<strong>$product_name</strong> - Cantidad: $quantity, Talla: $size";
             if ($atts['show_price'] === 'yes') {
-                $bikes_html .= ", Precio: €" . number_format($price, 2);
+                $bikes_html .= ", Precio: ���" . number_format($price, 2);
             }
             $bikes_html .= "</li>";
         }
