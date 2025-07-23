@@ -89,15 +89,16 @@ export class FixedInsuranceProductService {
       if (!targetId) {
         console.error(`❌ No se pudo obtener ID para seguro ${insuranceType}`);
         
-        // Fallback para seguro básico
+        // Fallback para seguro básico con ID conocido
         if (insuranceType === "basic" || insuranceType === "free") {
           const fallbackProduct: InsuranceProductInfo = {
-            id: 0,
-            name: "Basic Insurance & Liability",
+            id: 21819, // ID conocido del producto básico
+            name: "Seguro Básico & Responsabilidad Civil",
             price: 0,
-            exists: false,
+            exists: true, // Marcamos como existente para que aparezca en el carrito
           };
           this.productCache.set(cacheKey, fallbackProduct);
+          console.log(`⚠️ Usando producto básico fallback (ID: 21819)`);
           return fallbackProduct;
         }
         
@@ -163,10 +164,10 @@ export class FixedInsuranceProductService {
       if (insuranceType === "basic" || insuranceType === "free") {
         console.log(`🔄 Creating fallback basic insurance product`);
         const fallbackProduct: InsuranceProductInfo = {
-          id: 0,
-          name: "Basic Insurance & Liability",
+          id: 21819, // ID conocido del producto básico
+          name: "Seguro Básico & Responsabilidad Civil",
           price: 0,
-          exists: false,
+          exists: true, // Marcamos como existente para que aparezca en el carrito
         };
         this.productCache.set(cacheKey, fallbackProduct);
         return fallbackProduct;
@@ -183,10 +184,10 @@ export class FixedInsuranceProductService {
       // Fallback para seguro básico
       if (insuranceType === "basic" || insuranceType === "free") {
         const fallbackProduct: InsuranceProductInfo = {
-          id: 0,
-          name: "Basic Insurance & Liability",
+          id: 21819, // ID conocido del producto básico
+          name: "Seguro Básico & Responsabilidad Civil",
           price: 0,
-          exists: false,
+          exists: true, // Marcamos como existente para que aparezca en el carrito
         };
         this.productCache.set(cacheKey, fallbackProduct);
         return fallbackProduct;
