@@ -354,7 +354,11 @@ export class WooCommerceCartService {
                 ],
               });
 
-              console.log(`✅ Seguro ${reservation.insurance.id} agregado al carrito (ID: ${productId}, precio: €${totalInsurancePrice})`);
+              console.log(`✅ Seguro ${reservation.insurance.id} agregado al carrito:`);
+              console.log(`  - Product ID: ${productId}`);
+              console.log(`  - Quantity: ${totalQuantity} (${totalBikes} bikes × ${reservation.totalDays} days)`);
+              console.log(`  - Price per unit: €${reservation.insurance.price}`);
+              console.log(`  - Total price: €${totalInsurancePrice}`);
             } else {
               console.log(`📋 Error: No se pudo determinar ID para seguro ${reservation.insurance.id}`);
             }
