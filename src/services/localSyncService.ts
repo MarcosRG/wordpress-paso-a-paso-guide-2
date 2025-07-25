@@ -56,19 +56,7 @@ export class LocalSyncService {
       const neonProducts: NeonProduct[] = [];
       const neonVariations: NeonVariation[] = [];
 
-      // En modo simulación, saltar el procesamiento de productos
-      if (wooProducts.length === 0) {
-        console.log("✅ Modo simulación - sincronización completada sin errores");
-
-        const duration = Date.now() - startTime;
-        console.log(
-          `⚡ Sincronización simulada completada en ${duration}ms`,
-        );
-
-        return; // Salir temprano para evitar más procesamientos
-      }
-
-      // 2. Procesar cada producto (solo si hay productos reales)
+      // 2. Procesar cada producto
       for (const product of wooProducts) {
         try {
           // Solo procesar productos activos con stock
