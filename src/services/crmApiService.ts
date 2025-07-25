@@ -53,8 +53,8 @@ class CRMApiService {
     // Crear header de autenticación básica
     this.authHeader = btoa(`${this.credentials.username}:${this.credentials.password}`);
 
-    // Activar modo simulación por defecto en frontend para evitar CORS
-    this.simulationMode = true;
+    // Inicialmente intentar conexión real (CORS corregido)
+    this.simulationMode = false;
   }
 
   /**
@@ -149,7 +149,7 @@ class CRMApiService {
    * Registrar/actualizar datos de smartcode para un pedido
    */
   async registerSmartCodeData(orderData: OrderSmartCodeData): Promise<CRMResponse<any>> {
-    console.log(`📝 Registering SmartCode data for order ${orderData.order_id}`);
+    console.log(`�� Registering SmartCode data for order ${orderData.order_id}`);
 
     // En modo simulación, devolver éxito inmediatamente
     if (this.simulationMode) {
