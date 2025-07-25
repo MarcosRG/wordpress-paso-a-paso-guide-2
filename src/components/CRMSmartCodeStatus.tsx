@@ -166,15 +166,23 @@ export const CRMSmartCodeStatus: React.FC = () => {
       
       // Intentar registrar datos de prueba
       const registerResult = await crmApiService.registerSmartCodeData(smartCodeData);
-      
+
+      // Verificar si se activó modo simulación
+      const isSimulationActive = crmApiService.isSimulationMode();
+      const simulationIcon = isSimulationActive ? '🔄' : '✅';
+
       if (registerResult.success) {
         // Actualizar resultados como exitosos
         const updatedResults = results.map(result => ({
           ...result,
           status: 'success' as const,
-          value: `✅ Valor de prueba para ${result.code}`
+          value: `${simulationIcon} Valor de prueba para ${result.code}${isSimulationActive ? ' (simulación)' : ''}`
         }));
         setTestResults(updatedResults);
+
+        if (registerResult.data?.cors_error) {
+          console.log('🔄 Test completed in simulation mode due to CORS issues');
+        }
       } else {
         // Marcar como error
         const errorResults = results.map(result => ({
