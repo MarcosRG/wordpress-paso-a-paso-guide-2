@@ -828,6 +828,10 @@ export const wooCommerceApi = {
   async getProductVariations(
     productId: number,
   ): Promise<WooCommerceVariation[]> {
+    // Temporalmente deshabilitado para evitar errores CORS
+    console.log(`⚠️ getProductVariations temporalmente deshabilitado para producto ${productId} (evitando CORS)`);
+    return [];
+
     // Check circuit breaker first
     if (!canMakeWooCommerceRequest()) {
       console.warn(
