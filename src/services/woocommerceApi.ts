@@ -649,6 +649,93 @@ const handleNetworkError = async (): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 2000));
 };
 
+// Mock products for development fallback
+const getMockProducts = (): WooCommerceProduct[] => {
+  return [
+    {
+      id: 1,
+      name: "Bicicleta BTT Mountain",
+      type: "simple",
+      status: "publish",
+      price: "25.00",
+      regular_price: "25.00",
+      sale_price: "",
+      description: "Bicicleta de montaña perfecta para senderos",
+      short_description: "BTT de alta calidad",
+      categories: [{ id: 319, name: "ALUGUERES", slug: "alugueres" }],
+      images: [{ id: 1, src: "/placeholder.svg", alt: "BTT Mountain" }],
+      attributes: [],
+      variations: [],
+      stock_quantity: 5,
+      stock_status: "instock",
+      meta_data: [
+        { id: 1, key: "precio_1_2", value: 25 },
+        { id: 2, key: "precio_3_6", value: 20 },
+        { id: 3, key: "precio_7_mais", value: 15 }
+      ],
+      acf: {
+        precio_1_2: 25,
+        precio_3_6: 20,
+        precio_7_mais: 15
+      }
+    },
+    {
+      id: 2,
+      name: "E-Bike Elétrica",
+      type: "simple",
+      status: "publish",
+      price: "45.00",
+      regular_price: "45.00",
+      sale_price: "",
+      description: "Bicicleta elétrica para passeios confortáveis",
+      short_description: "E-bike moderna",
+      categories: [{ id: 319, name: "ALUGUERES", slug: "alugueres" }],
+      images: [{ id: 2, src: "/placeholder.svg", alt: "E-Bike" }],
+      attributes: [],
+      variations: [],
+      stock_quantity: 3,
+      stock_status: "instock",
+      meta_data: [
+        { id: 4, key: "precio_1_2", value: 45 },
+        { id: 5, key: "precio_3_6", value: 40 },
+        { id: 6, key: "precio_7_mais", value: 35 }
+      ],
+      acf: {
+        precio_1_2: 45,
+        precio_3_6: 40,
+        precio_7_mais: 35
+      }
+    },
+    {
+      id: 3,
+      name: "Bicicleta de Estrada",
+      type: "simple",
+      status: "publish",
+      price: "30.00",
+      regular_price: "30.00",
+      sale_price: "",
+      description: "Bicicleta de estrada para velocidade",
+      short_description: "Estrada racing",
+      categories: [{ id: 319, name: "ALUGUERES", slug: "alugueres" }],
+      images: [{ id: 3, src: "/placeholder.svg", alt: "Estrada" }],
+      attributes: [],
+      variations: [],
+      stock_quantity: 4,
+      stock_status: "instock",
+      meta_data: [
+        { id: 7, key: "precio_1_2", value: 30 },
+        { id: 8, key: "precio_3_6", value: 25 },
+        { id: 9, key: "precio_7_mais", value: 20 }
+      ],
+      acf: {
+        precio_1_2: 30,
+        precio_3_6: 25,
+        precio_7_mais: 20
+      }
+    }
+  ];
+};
+
 export const wooCommerceApi = {
   // Get all products from ALUGUERES category (ID: 319)
   async getProducts(): Promise<WooCommerceProduct[]> {
