@@ -746,6 +746,6 @@ function bikesul_fluentcrm_smartcodes_init() {
 }
 
 // Log final
-error_log("BIKESUL: Sistema de Smart Codes para FluentCRM cargado - " . current_time('mysql'));
+error_log("BIKESUL: Sistema MEJORADO de Smart Codes para FluentCRM cargado - " . current_time('mysql'));
 
 ?>
