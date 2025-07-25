@@ -45,12 +45,15 @@ export class LocalSyncService {
     const startTime = Date.now();
 
     try {
-      console.log("🔄 Iniciando sincronización WooCommerce → Cache Local...");
+      console.log("🔄 Modo simulación - Evitando sincronización WooCommerce para evitar errores CORS...");
 
-      // 1. Obtener productos de WooCommerce
-      const wooProducts = await wooCommerceApi.getProducts();
+      // Temporalmente deshabilitado para evitar errores CORS en desarrollo
+      console.log("⚠️ Sincronización WooCommerce deshabilitada temporalmente");
+
+      // Simular productos para demostración
+      const wooProducts: any[] = [];
       console.log(
-        `📦 Obtenidos ${wooProducts.length} productos de WooCommerce`,
+        `📦 Simulando ${wooProducts.length} productos (modo desarrollo)`,
       );
 
       const neonProducts: NeonProduct[] = [];
