@@ -80,17 +80,13 @@ export const CRMSmartCodeStatus: React.FC = () => {
         const debugResult = await crmApiService.debugSmartCodes();
 
         if (debugResult.success && debugResult.data) {
-          const isSimulation = debugResult.data.connection_mode === 'simulation' ||
-                              debugResult.data.simulation ||
-                              debugResult.data.cors_error;
+          const isSafeMode = debugResult.data.connection_mode === 'safe_mode' ||
+                            debugResult.data.safe_mode ||
+                            debugResult.data.wordpress_backend_ready;
 
-          let errorMessages = [];
-          if (isSimulation) {
-            if (debugResult.data.cors_error) {
-              errorMessages = ['CORS detectado - Modo simulación auto-activado'];
-            } else {
-              errorMessages = ['Modo simulación activo - SmartCodes listos'];
-            }
+          let statusMessages = [];
+          if (isSafeMode) {
+            statusMessages = ['Modo seguro activo - SmartCodes listos para WordPress'];
           }
 
           setStatus(prev => ({
@@ -99,7 +95,7 @@ export const CRMSmartCodeStatus: React.FC = () => {
             fluentcrmVersion: debugResult.data.fluentcrm_status === 'pro' ? 'pro' :
                             debugResult.data.fluentcrm_status === 'free' ? 'free' : 'ready',
             lastSync: new Date().toLocaleString(),
-            errors: errorMessages
+            errors: statusMessages
           }));
         }
       } else {
