@@ -48,23 +48,15 @@ export class LocalSyncService {
       console.log("🔄 Iniciando sincronización WooCommerce → Cache Local...");
 
       // 1. Obtener productos de WooCommerce
-      let wooProducts = [];
-      try {
-        wooProducts = await wooCommerceApi.getProducts();
-        console.log(
-          `📦 Obtenidos ${wooProducts.length} productos de WooCommerce`,
-        );
-      } catch (error) {
-        // Handle network connectivity issues gracefully
-        if (
-          error instanceof Error &&
-          (error.message.includes("Network connectivity issue") ||
-            error.message.includes("Failed to fetch"))
-        ) {
-          console.warn("🌐 Network issue during product fetch, skipping sync");
-          return; // Exit gracefully without throwing
-        }
-        throw error; // Re-throw other errors
+      const wooProducts = await wooCommerceApi.getProducts();
+      console.log(
+        `📦 Obtenidos ${wooProducts.length} productos de WooCommerce`,
+      );
+
+      // If no products were returned (likely due to network issues), skip sync
+      if (wooProducts.length === 0) {
+        console.warn("⚠️ No products retrieved, skipping sync (likely network issue)");
+        return;
       }
 
       const neonProducts: NeonProduct[] = [];
