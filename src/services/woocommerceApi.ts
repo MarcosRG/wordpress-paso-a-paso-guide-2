@@ -79,6 +79,9 @@ export interface WooCommerceVariation {
   };
 }
 
+// Check if API is disabled for development
+const IS_API_DISABLED = import.meta.env.VITE_DISABLE_API === 'true';
+
 // Configuración segura usando variables de entorno
 export const WOOCOMMERCE_API_BASE =
   import.meta.env.VITE_WOOCOMMERCE_API_BASE ||
@@ -92,8 +95,12 @@ const CONSUMER_SECRET =
   "cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71";
 
 // Validar que las credenciales estén configuradas
-if (!CONSUMER_KEY || !CONSUMER_SECRET) {
+if (!IS_API_DISABLED && (!CONSUMER_KEY || !CONSUMER_SECRET)) {
   console.error("❌ WooCommerce credentials not properly configured");
+}
+
+if (IS_API_DISABLED) {
+  console.warn("⚠️ API calls are disabled in development mode");
 }
 
 // Crear las credenciales en base64 para la autenticación
