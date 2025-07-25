@@ -255,6 +255,11 @@ export const ApiTestDiagnostic: React.FC = () => {
             </div>
           )}
 
+          {/* Teste específico de carregamento de bicicletas */}
+          <div className="border-t pt-4">
+            <BikeLoadingTest />
+          </div>
+
           <div className="border-t pt-4">
             <h3 className="font-semibold mb-2">Informações do Sistema:</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
