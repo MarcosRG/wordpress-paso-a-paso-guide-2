@@ -7,6 +7,7 @@ import { wooCommerceApi } from '../services/woocommerceApi';
 import { localSyncService } from '../services/localSyncService';
 import { neonHttpService } from '../services/neonHttpService';
 import { BikeLoadingTest } from './BikeLoadingTest';
+import { LocalStorageTest } from './LocalStorageTest';
 
 interface TestResult {
   name: string;
