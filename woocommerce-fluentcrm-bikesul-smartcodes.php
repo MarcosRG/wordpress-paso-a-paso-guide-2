@@ -71,7 +71,7 @@ function bikesul_register_smart_codes($smart_codes) {
 }
 
 /**
- * Procesar Smart Codes personalizados de Bikesul
+ * FUNCIÓN MEJORADA: Procesar Smart Codes personalizados de Bikesul
  */
 add_filter('fluentcrm/parse_campaign_email_text', 'bikesul_parse_smart_codes', 10, 3);
 add_filter('fluentcrm/parse_email_text', 'bikesul_parse_smart_codes', 10, 3);
@@ -81,22 +81,40 @@ function bikesul_parse_smart_codes($content, $subscriber, $email_body = null) {
     if (strpos($content, '{{order.') === false) {
         return $content;
     }
-    
-    // Obtener order_id del contexto
+
+    // LOG: Para debug
+    error_log("BIKESUL: Procesando SmartCodes para subscriber: " . ($subscriber->email ?? 'sin email'));
+
+    // MÉTODO MEJORADO: Obtener order_id con múltiples estrategias
     $order_id = bikesul_get_order_id_for_subscriber($subscriber);
-    
+
+    error_log("BIKESUL: Order ID obtenido: " . ($order_id ?: 'NULL'));
+
     if (!$order_id) {
-        // Si no hay order_id, reemplazar con placeholders vacíos
-        $content = preg_replace('/\{\{order\.[^}]+\}\}/', '', $content);
+        // Log detallado del problema
+        error_log("BIKESUL: No se pudo obtener order_id. Subscriber data: " . print_r($subscriber, true));
+
+        // NUEVA ESTRATEGIA: Buscar por último pedido del cliente
+        if (isset($subscriber->email)) {
+            $order_id = bikesul_get_latest_order_by_email($subscriber->email);
+            error_log("BIKESUL: Último pedido encontrado: " . ($order_id ?: 'NULL'));
+        }
+    }
+
+    if (!$order_id) {
+        // Reemplazar con mensaje informativo en lugar de vacío
+        $content = preg_replace('/\{\{order\.[^}]+\}\}/', '[Pedido no encontrado]', $content);
+        error_log("BIKESUL: SmartCodes reemplazados con placeholder por falta de order_id");
         return $content;
     }
-    
+
     // Obtener datos del pedido
     $order_data = bikesul_get_order_data_for_smartcodes($order_id);
-    
+    error_log("BIKESUL: Datos obtenidos para orden $order_id: " . count($order_data) . " campos");
+
     // Reemplazar Smart Codes con datos reales
     $content = bikesul_replace_order_smartcodes($content, $order_data);
-    
+
     return $content;
 }
 
