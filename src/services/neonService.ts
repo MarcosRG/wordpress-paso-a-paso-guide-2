@@ -53,10 +53,10 @@ export interface AtumStock {
 }
 
 export class NeonService {
-  private client: Client | null = null;
+  // private client: Client | null = null; // Temporarily disabled for frontend build
 
   constructor() {
-    this.connect();
+    // this.connect(); // Temporarily disabled for frontend build
   }
 
   private async connect() {
