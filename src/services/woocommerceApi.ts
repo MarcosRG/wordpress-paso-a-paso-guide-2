@@ -481,6 +481,10 @@ export const checkAtumAvailability = async (
   productId: number,
   variationId?: number,
 ): Promise<number> => {
+  // Temporalmente deshabilitado para evitar errores CORS
+  console.log(`⚠️ checkAtumAvailability temporalmente deshabilitado para producto ${productId} (evitando CORS)`);
+  return 5; // Return default stock
+
   // Check network availability first
   if (!(await checkNetworkAvailability())) {
     console.warn(
