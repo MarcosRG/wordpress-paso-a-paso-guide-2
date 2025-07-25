@@ -333,7 +333,7 @@ export const CRMSmartCodeStatus: React.FC = () => {
                       {result.status === 'success' && <CheckCircle className="h-4 w-4 text-green-500" />}
                       {result.status === 'error' && <XCircle className="h-4 w-4 text-red-500" />}
                       {result.status === 'pending' && <RefreshCw className="h-4 w-4 text-gray-400 animate-spin" />}
-                      <code className="text-sm">{{`{${result.code}}`}}</code>
+                      <code className="text-sm">{`{{${result.code}}}`}</code>
                     </div>
                     <div className="text-sm text-gray-600">
                       {result.status === 'success' && '✅ OK'}
@@ -387,7 +387,7 @@ export const CRMSmartCodeStatus: React.FC = () => {
               <AlertTitle>✅ SmartCodes Listos para Usar</AlertTitle>
               <AlertDescription>
                 Los SmartCodes están funcionando correctamente. Puedes usarlos en tus automatizaciones de FluentCRM.
-                Ejemplo: <code>Hola {{`{bikesul_order.customer_name}`}}, tu reserva para {{`{bikesul_order.rental_dates}`}} está confirmada.</code>
+                Ejemplo: <code>Hola {`{{bikesul_order.customer_name}}`}, tu reserva para {`{{bikesul_order.rental_dates}}`} está confirmada.</code>
               </AlertDescription>
             </Alert>
           )}
