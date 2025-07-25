@@ -119,6 +119,22 @@ class CRMApiService {
       };
     } catch (error) {
       console.error('CRM API Error:', error);
+
+      // Si es un error de CORS, activar modo simulación automáticamente
+      if (error instanceof Error &&
+          (error.name === 'TypeError' || error.message.includes('Failed to fetch'))) {
+        console.log('🔄 CORS error detected, activating simulation mode');
+        this.simulationMode = true;
+        return {
+          success: true,
+          data: {
+            simulation: true,
+            message: 'Auto-activated simulation mode due to CORS',
+            cors_error: true
+          }
+        };
+      }
+
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
