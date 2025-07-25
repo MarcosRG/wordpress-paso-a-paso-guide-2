@@ -116,13 +116,19 @@ function bikesul_fluentcrm_diagnostic() {
  */
 function bikesul_fluentcrm_auto_repair() {
     $repairs = array();
-    
+
     // 1. Re-registrar shortcodes si faltan
     if (!shortcode_exists('bikesul_debug_fluentcrm')) {
         add_shortcode('bikesul_debug_fluentcrm', 'bikesul_debug_fluentcrm_fixed');
         $repairs[] = 'Shortcode bikesul_debug_fluentcrm re-registrado';
     }
-    
+
+    // NUEVO: Re-registrar bikesul_test_smartcodes si falta
+    if (!shortcode_exists('bikesul_test_smartcodes')) {
+        add_shortcode('bikesul_test_smartcodes', 'bikesul_test_smartcodes_fixed');
+        $repairs[] = 'Shortcode bikesul_test_smartcodes re-registrado';
+    }
+
     // 2. Re-registrar filtros de FluentCRM si faltan
     if (!has_filter('fluentcrm/smart_codes', 'bikesul_register_smart_codes')) {
         add_filter('fluentcrm/smart_codes', 'bikesul_register_smart_codes_fixed');
