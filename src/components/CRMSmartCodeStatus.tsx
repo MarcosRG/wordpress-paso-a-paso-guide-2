@@ -383,6 +383,7 @@ export const CRMSmartCodeStatus: React.FC = () => {
                 <div className="text-sm space-y-1 text-gray-600">
                   <div>• Usuario API: marcosg2</div>
                   <div>• Credenciales: {CRMUtils.validateCredentials() ? '✅ Configuradas' : '❌ Faltantes'}</div>
+                  <div>• Modo de Operación: {status.errors.some(err => err.includes('simulación')) ? '🔄 Simulación' : status.connected ? '🌐 En Línea' : '📴 Offline'}</div>
                   <div>• Endpoint Base: {import.meta.env.VITE_WOOCOMMERCE_API_BASE || 'No configurado'}</div>
                   <div>• SmartCodes Registrados: {status.smartcodesActive ? '✅ Sí' : '❌ No'}</div>
                   <div>• Tipo FluentCRM: {status.fluentcrmVersion}</div>
