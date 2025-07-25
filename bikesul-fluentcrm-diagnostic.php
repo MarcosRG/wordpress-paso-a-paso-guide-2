@@ -204,6 +204,53 @@ function bikesul_debug_fluentcrm_fixed($atts) {
 }
 
 /**
+ * Versión corregida del shortcode bikesul_test_smartcodes
+ */
+function bikesul_test_smartcodes_fixed($atts) {
+    $atts = shortcode_atts(array('order_id' => 0), $atts);
+
+    if (!$atts['order_id']) {
+        return '<p style="color: red;">❌ Error: order_id requerido. Uso: [bikesul_test_smartcodes order_id="123"]</p>';
+    }
+
+    if (!function_exists('wc_get_order')) {
+        return '<p style="color: red;">❌ Error: WooCommerce no está activo</p>';
+    }
+
+    $order = wc_get_order($atts['order_id']);
+    if (!$order) {
+        return '<p style="color: orange;">⚠️ No se encontró el pedido #' . $atts['order_id'] . '</p>';
+    }
+
+    // Datos básicos para probar
+    $order_data = array(
+        'id' => $order->get_id(),
+        'customer_name' => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
+        'customer_email' => $order->get_billing_email(),
+        'customer_phone' => $order->get_billing_phone(),
+        'total_amount' => '€' . number_format($order->get_total(), 2),
+        'status' => wc_get_order_status_name($order->get_status())
+    );
+
+    $output = '<div style="background: #f9f9f9; padding: 15px; margin: 10px 0; border-left: 4px solid #0073aa;">';
+    $output .= '<h4>📋 Smart Codes disponibles para el pedido #' . $atts['order_id'] . ':</h4>';
+    $output .= '<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">';
+    $output .= '<tr style="background: #e1f5fe;"><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Smart Code</th><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Valor</th></tr>';
+
+    foreach ($order_data as $key => $value) {
+        $smart_code = '{{order.' . $key . '}}';
+        $display_value = is_string($value) ? htmlspecialchars($value) : json_encode($value);
+        $output .= '<tr><td style="border: 1px solid #ddd; padding: 8px;"><code style="background: #fff; padding: 2px 4px;">' . $smart_code . '</code></td><td style="border: 1px solid #ddd; padding: 8px;">' . $display_value . '</td></tr>';
+    }
+
+    $output .= '</table>';
+    $output .= '<p style="margin-top: 10px; font-size: 12px; color: #666;">💡 Sistema BIKESUL SmartCodes funcionando correctamente</p>';
+    $output .= '</div>';
+
+    return $output;
+}
+
+/**
  * Versión corregida del registro de smart codes
  */
 function bikesul_register_smart_codes_fixed($smart_codes) {
@@ -232,7 +279,7 @@ function bikesul_register_smart_codes_fixed($smart_codes) {
         '{{order.status}}' => 'Estado del pedido',
         '{{order.summary}}' => 'Resumen completo del pedido'
     );
-    
+
     return array_merge($smart_codes, $bikesul_codes);
 }
 
