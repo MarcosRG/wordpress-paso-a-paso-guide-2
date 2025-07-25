@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  neonService,
-  NeonProduct,
-  NeonVariation,
-} from "@/services/neonService";
+// import {
+//   neonService,
+//   NeonProduct,
+//   NeonVariation,
+// } from "@/services/neonService"; // Temporarily disabled for frontend build
 import { Bike } from "@/pages/Index";
 import { extractACFPricing } from "@/services/woocommerceApi";
 
