@@ -396,7 +396,7 @@ const fetchWithRetry = async (
 
       // Calcular delay para el siguiente intento
       const delay = calculateRetryDelay(attempt);
-      console.log(`⏱��� Reintentando en ${delay}ms...`);
+      console.log(`⏱️ Reintentando en ${delay}ms...`);
       await sleep(delay);
     }
   }
@@ -481,10 +481,6 @@ export const checkAtumAvailability = async (
   productId: number,
   variationId?: number,
 ): Promise<number> => {
-  // Temporalmente deshabilitado para evitar errores CORS
-  console.log(`⚠️ checkAtumAvailability temporalmente deshabilitado para producto ${productId} (evitando CORS)`);
-  return 5; // Return default stock
-
   // Check network availability first
   if (!(await checkNetworkAvailability())) {
     console.warn(
@@ -676,7 +672,7 @@ export const wooCommerceApi = {
 
       const products = await response.json();
 
-      // Log para debug - mostrar cuántos productos se obtuvieron
+      // Log para debug - mostrar cu��ntos productos se obtuvieron
       console.log(`Productos obtenidos de WooCommerce: ${products.length}`);
       console.log("Headers de respuesta:", response.headers.get("X-WP-Total"));
 
