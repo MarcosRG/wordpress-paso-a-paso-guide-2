@@ -324,7 +324,7 @@ function bikesul_get_insurance_info($atts) {
                     $info = "<strong>Seguro:</strong> $insurance_name<br>";
                     $info .= "<strong>Precio:</strong> €" . number_format($insurance_price, 2) . "<br>";
                     if ($atts['show_calculation'] === 'yes' && $price_per_day && $total_bikes && $total_days) {
-                        $info .= "<strong>Cálculo:</strong> €$price_per_day x $total_bikes bicis x $total_days días<br>";
+                        $info .= "<strong>Cálculo:</strong> ���$price_per_day x $total_bikes bicis x $total_days días<br>";
                     }
                     return $info;
             }
@@ -408,6 +408,8 @@ function bikesul_extract_order_id_from_url() {
  */
 add_filter('the_content', 'bikesul_process_dynamic_shortcodes', 9);
 add_filter('widget_text', 'bikesul_process_dynamic_shortcodes', 9);
+add_filter('fluentcrm/parse_campaign_email_text', 'bikesul_process_dynamic_shortcodes', 5);
+add_filter('fluentcrm/parse_email_text', 'bikesul_process_dynamic_shortcodes', 5);
 
 function bikesul_process_dynamic_shortcodes($content) {
     // Buscar por shortcodes bikesul que contenham [order_id]
