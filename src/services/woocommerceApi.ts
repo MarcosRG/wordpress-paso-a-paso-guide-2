@@ -315,15 +315,23 @@ const fetchWithRetry = async (
 
       // Add additional error handling for fetch
       let fetchPromise: Promise<Response>;
+      let abortController: AbortController | undefined;
+
       try {
+        // Create abort controller for timeout if AbortSignal.timeout is not available
+        if (typeof AbortController !== 'undefined') {
+          abortController = new AbortController();
+          setTimeout(() => abortController?.abort(), timeout);
+        }
+
         fetchPromise = fetch(url, {
           ...options,
           headers: {
             ...apiHeaders,
             ...options.headers,
           },
-          // Add signal for abort timeout if supported
-          signal: AbortSignal.timeout ? AbortSignal.timeout(timeout) : undefined,
+          // Use AbortSignal.timeout if available, otherwise use AbortController
+          signal: AbortSignal.timeout ? AbortSignal.timeout(timeout) : abortController?.signal,
         });
       } catch (fetchError) {
         // Handle immediate fetch errors (like invalid URL)
