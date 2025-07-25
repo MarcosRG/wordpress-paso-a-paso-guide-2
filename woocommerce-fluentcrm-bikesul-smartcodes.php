@@ -465,7 +465,42 @@ function bikesul_update_fluentcrm_contact_order_data($order) {
 }
 
 // ===============================================
-// 3. FILTROS PARA PROCESAR CONTENIDO LEGACY
+// 3. HOOKS ADICIONALES PARA CAPTURAR CONTEXTO
+// ===============================================
+
+/**
+ * NUEVO: Capturar contexto en más eventos de WooCommerce
+ */
+add_action('woocommerce_new_order', 'bikesul_set_order_context', 10, 1);
+add_action('woocommerce_thankyou', 'bikesul_set_order_context', 10, 1);
+add_action('woocommerce_order_details_after_order_table', 'bikesul_set_order_context', 10, 1);
+
+function bikesul_set_order_context($order_id) {
+    if ($order_id) {
+        $GLOBALS['bikesul_current_order_id'] = intval($order_id);
+        error_log("BIKESUL: Contexto establecido desde hook - Order ID: $order_id");
+    }
+}
+
+/**
+ * NUEVO: Hook específico para automatizaciones de FluentCRM
+ */
+add_action('fluentcrm/process_automation', 'bikesul_capture_automation_context', 5, 2);
+
+function bikesul_capture_automation_context($automation, $subscriber) {
+    if (!$subscriber || !isset($subscriber->email)) return;
+
+    // Intentar obtener el order_id más reciente para este subscriber
+    $order_id = bikesul_get_latest_order_by_email($subscriber->email);
+
+    if ($order_id) {
+        $GLOBALS['bikesul_current_order_id'] = $order_id;
+        error_log("BIKESUL: Contexto establecido en automatización - Order ID: $order_id para " . $subscriber->email);
+    }
+}
+
+// ===============================================
+// 4. FILTROS PARA PROCESAR CONTENIDO LEGACY
 // ===============================================
 
 /**
