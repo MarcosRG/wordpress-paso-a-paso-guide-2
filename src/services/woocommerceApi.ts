@@ -426,7 +426,7 @@ const fetchWithRetry = async (
 
   // Solo mostrar reporte si realmente hay errores consecutivos
   const shortUrl = url.length > 50 ? `...${url.slice(-47)}` : url;
-  console.error(`�� Falló después de ${maxRetries + 1} intentos: ${shortUrl}`);
+  console.error(`�� Falló despu��s de ${maxRetries + 1} intentos: ${shortUrl}`);
 
   // Solo mostrar reporte detallado si hay patrones de error
   const status = getConnectivityStatus();
@@ -493,6 +493,15 @@ const checkNetworkAvailability = async (): Promise<boolean> => {
 
   // If we recently determined network is unavailable, don't check again immediately
   if (now - networkCheckTime < 30000 && !isNetworkAvailable) {
+    console.log("⚠️ Network recently unavailable, skipping check");
+    return false;
+  }
+
+  // Use browser's online status as first check
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    console.log("🌐 Browser reports offline");
+    isNetworkAvailable = false;
+    networkCheckTime = now;
     return false;
   }
 
@@ -500,7 +509,12 @@ const checkNetworkAvailability = async (): Promise<boolean> => {
   if (now - networkCheckTime > 60000) {
     // Check every minute
     networkCheckTime = now;
-    isNetworkAvailable = await performHealthCheck();
+    try {
+      isNetworkAvailable = await performHealthCheck();
+    } catch (error) {
+      console.warn("Health check failed:", error);
+      isNetworkAvailable = false;
+    }
   }
 
   return isNetworkAvailable;
