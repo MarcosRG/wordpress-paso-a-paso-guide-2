@@ -157,7 +157,7 @@ function bikesul_debug_fluentcrm_fixed($atts) {
     $diagnostic = bikesul_fluentcrm_diagnostic();
     
     $output = '<div style="background: #f9f9f9; padding: 15px; margin: 10px 0; border: 1px solid #ddd;">';
-    $output .= '<h3>🔍 DIAGNÓSTICO BIKESUL FLUENTCRM</h3>';
+    $output .= '<h3>��� DIAGNÓSTICO BIKESUL FLUENTCRM</h3>';
     
     // Mostrar errores
     if (!empty($diagnostic['errors'])) {
@@ -356,8 +356,18 @@ function bikesul_repair_fluentcrm_system($atts) {
 // Auto-registrar el shortcode de diagnóstico mejorado
 add_shortcode('bikesul_debug_fluentcrm', 'bikesul_debug_fluentcrm_fixed');
 
+// NUEVO: Auto-registrar bikesul_test_smartcodes si no existe
+if (!shortcode_exists('bikesul_test_smartcodes')) {
+    add_shortcode('bikesul_test_smartcodes', 'bikesul_test_smartcodes_fixed');
+}
+
 // Auto-ejecutar reparaciones básicas al cargar
 add_action('init', function() {
+    // Asegurar que bikesul_test_smartcodes esté siempre registrado
+    if (!shortcode_exists('bikesul_test_smartcodes')) {
+        add_shortcode('bikesul_test_smartcodes', 'bikesul_test_smartcodes_fixed');
+    }
+
     if (is_admin() || (isset($_GET['bikesul_repair']) && $_GET['bikesul_repair'] === '1')) {
         bikesul_fluentcrm_auto_repair();
     }
