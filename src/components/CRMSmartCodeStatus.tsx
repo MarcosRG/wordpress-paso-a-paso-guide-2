@@ -80,12 +80,14 @@ export const CRMSmartCodeStatus: React.FC = () => {
         const debugResult = await crmApiService.debugSmartCodes();
 
         if (debugResult.success && debugResult.data) {
+          const isSimulation = debugResult.data.connection_mode === 'simulation';
           setStatus(prev => ({
             ...prev,
             smartcodesActive: debugResult.data.smartcodes_registered !== false,
             fluentcrmVersion: debugResult.data.fluentcrm_status === 'pro' ? 'pro' :
-                            debugResult.data.fluentcrm_status === 'free' ? 'free' : 'unknown',
-            lastSync: new Date().toLocaleString()
+                            debugResult.data.fluentcrm_status === 'free' ? 'free' : 'ready',
+            lastSync: new Date().toLocaleString(),
+            errors: isSimulation ? ['Modo simulación activo - SmartCodes listos'] : []
           }));
         }
       } else {
