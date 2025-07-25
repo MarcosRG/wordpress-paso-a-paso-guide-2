@@ -136,7 +136,7 @@ export const ApiConnectionTest: React.FC = () => {
               Verificación de Conexiones API
             </CardTitle>
             <CardDescription>
-              Prueba de conectividad después de corrección CORS
+              Verificación de sistemas en modo seguro (sin errores CORS)
             </CardDescription>
           </div>
           <Button
