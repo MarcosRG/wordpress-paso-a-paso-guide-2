@@ -229,6 +229,26 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-12">
       <div className="max-w-6xl mx-auto">
+        {/* Botão de diagnóstico temporário */}
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-blue-800">Diagnóstico de Conectividade</h3>
+              <p className="text-sm text-blue-600">Verificar se as bicicletas não estão carregando</p>
+            </div>
+            <Button
+              onClick={() => setShowDiagnostic(!showDiagnostic)}
+              variant={showDiagnostic ? "destructive" : "default"}
+            >
+              {showDiagnostic ? "Fechar Diagnóstico" : "Abrir Diagnóstico"}
+            </Button>
+          </div>
+          {showDiagnostic && (
+            <div className="mt-4">
+              <ApiTestDiagnostic />
+            </div>
+          )}
+        </div>
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-black mb-2">
             {t("bikeRental")}
