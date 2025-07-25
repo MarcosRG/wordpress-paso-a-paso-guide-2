@@ -1,4 +1,4 @@
-import { Client } from "pg";
+// import { Client } from "pg"; // Temporarily disabled for frontend build
 import { NEON_CONFIG } from "../config/neon";
 
 // Interface para productos en Neon
