@@ -238,9 +238,9 @@ export const CRMSmartCodeStatus: React.FC = () => {
 
   const getStatusText = (connected: boolean, active: boolean) => {
     if (connected && active) {
-      // Verificar si hay mensajes de simulación en errors
-      const hasSimulationMsg = status.errors.some(err => err.includes('simulación'));
-      return hasSimulationMsg ? 'Modo Simulación - Activo' : 'Conectado y Activo';
+      // Verificar si hay mensajes de modo seguro en errors
+      const hasSafeModeMsg = status.errors.some(err => err.includes('seguro'));
+      return hasSafeModeMsg ? 'Modo Seguro - Activo' : 'Conectado y Activo';
     }
     if (connected && !active) return 'Conectado - SmartCodes Inactivos';
     return 'Modo Offline';
