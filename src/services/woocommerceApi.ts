@@ -381,7 +381,8 @@ const fetchWithRetry = async (
       const isTimeoutError =
         error.message === "Request timeout" ||
         error.message.includes("timeout") ||
-        error.name === "AbortError";
+        error.name === "AbortError" ||
+        error.message.includes("aborted");
 
       const isCorsError =
         error.message.includes("CORS") ||
