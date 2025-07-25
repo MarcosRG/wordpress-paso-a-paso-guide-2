@@ -313,14 +313,25 @@ const fetchWithRetry = async (
     try {
       console.log(`🔄 Intento ${attempt + 1}/${maxRetries + 1} para: ${url}`);
 
-      const response = await Promise.race([
-        fetch(url, {
+      // Add additional error handling for fetch
+      let fetchPromise: Promise<Response>;
+      try {
+        fetchPromise = fetch(url, {
           ...options,
           headers: {
             ...apiHeaders,
             ...options.headers,
           },
-        }),
+          // Add signal for abort timeout if supported
+          signal: AbortSignal.timeout ? AbortSignal.timeout(timeout) : undefined,
+        });
+      } catch (fetchError) {
+        // Handle immediate fetch errors (like invalid URL)
+        throw new Error(`Fetch initialization failed: ${fetchError.message}`);
+      }
+
+      const response = await Promise.race([
+        fetchPromise,
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("Request timeout")), timeout),
         ),
@@ -343,30 +354,47 @@ const fetchWithRetry = async (
       console.log(`✅ Éxito en intento ${attempt + 1}`);
       recordApiSuccess();
       recordWooCommerceSuccess(); // Register success in circuit breaker
+      isNetworkAvailable = true; // Mark network as available on success
       return response;
     } catch (error) {
       lastError = error as Error;
       console.warn(`⚠️ Intento ${attempt + 1} falló:`, error);
 
-      // Handle network errors vs other errors differently
+      // Enhanced network error detection
       const isNetworkError =
         error instanceof TypeError &&
         (error.message.includes("Failed to fetch") ||
           error.message.includes("fetch") ||
-          error.message.includes("Network request failed"));
+          error.message.includes("Network request failed") ||
+          error.message.includes("NetworkError") ||
+          error.message.includes("net::") ||
+          error.name === "TypeError");
 
-      const isTimeoutError = error.message === "Request timeout";
+      const isTimeoutError =
+        error.message === "Request timeout" ||
+        error.message.includes("timeout") ||
+        error.name === "AbortError";
+
+      const isCorsError =
+        error.message.includes("CORS") ||
+        error.message.includes("cross-origin");
+
+      // Handle different error types
+      if (isNetworkError || isCorsError) {
+        console.warn(`🌐 Network/CORS error detected: ${error.message}`);
+        isNetworkAvailable = false;
+      }
 
       // For network errors, wait longer before next attempt
-      if (attempt < maxRetries && (isNetworkError || isTimeoutError)) {
-        const waitTime = Math.min(1000 * Math.pow(2, attempt), 5000); // Exponential backoff up to 5s
+      if (attempt < maxRetries && (isNetworkError || isTimeoutError || isCorsError)) {
+        const waitTime = Math.min(1000 * Math.pow(2, attempt), 8000); // Increased max wait to 8s
         console.log(
           `⏳ Esperando ${waitTime}ms antes del siguiente intento...`,
         );
         await new Promise((resolve) => setTimeout(resolve, waitTime));
 
         // Reset circuit breaker check for network errors to allow retry
-        if (isNetworkError) {
+        if (isNetworkError || isCorsError) {
           circuitBreakerChecked = false;
         }
       }
@@ -379,14 +407,9 @@ const fetchWithRetry = async (
         }
 
         if (error instanceof Error) {
-          if (error.message === "Request timeout") {
+          if (isTimeoutError) {
             recordApiTimeout();
-          } else if (
-            error.message.includes("Failed to fetch") ||
-            error.message.includes("fetch") ||
-            error.message.includes("network") ||
-            error.name === "TypeError"
-          ) {
+          } else if (isNetworkError || isCorsError) {
             recordApiNetworkError();
             isNetworkAvailable = false; // Mark network as unavailable
           }
@@ -409,6 +432,13 @@ const fetchWithRetry = async (
   const status = getConnectivityStatus();
   if (status.consecutiveErrors > 2 || status.successRate < 80) {
     console.error(generateConnectivityReport());
+  }
+
+  // Create a more descriptive error for network issues
+  if (lastError instanceof TypeError && lastError.message.includes("Failed to fetch")) {
+    throw new Error(
+      `Network connectivity issue: Unable to connect to WooCommerce API. Please check your internet connection and CORS settings.`
+    );
   }
 
   throw (
