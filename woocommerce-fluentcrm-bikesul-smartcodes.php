@@ -641,8 +641,88 @@ function bikesul_debug_fluentcrm($atts) {
         'smart_codes_registered' => count(bikesul_register_smart_codes(array())),
         'timestamp' => current_time('mysql')
     );
-    
+
     return '<pre style="background: #f0f0f0; padding: 10px; margin: 10px 0;">BIKESUL FluentCRM Debug:\n' . print_r($debug_info, true) . '</pre>';
+}
+
+/**
+ * NUEVO: Shortcode mejorado para debug de SmartCodes
+ */
+add_shortcode('bikesul_debug_smartcodes_improved', 'bikesul_debug_smartcodes_improved');
+
+function bikesul_debug_smartcodes_improved($atts) {
+    $atts = shortcode_atts(array(
+        'email' => '',
+        'order_id' => 0
+    ), $atts);
+
+    $debug_info = array();
+
+    // 1. Estado general
+    $debug_info['timestamp'] = current_time('mysql');
+    $debug_info['global_order_id'] = $GLOBALS['bikesul_current_order_id'] ?? 'No definido';
+
+    // 2. Si se proporciona email, buscar subscriber
+    if ($atts['email']) {
+        try {
+            $subscriber = \FluentCrm\App\Models\Subscriber::where('email', $atts['email'])->first();
+            if ($subscriber) {
+                $debug_info['subscriber_found'] = 'Sí';
+                $debug_info['subscriber_id'] = $subscriber->id;
+
+                // Obtener meta order_id
+                $meta_order_id = \FluentCrm\App\Models\SubscriberMeta::where('subscriber_id', $subscriber->id)
+                    ->where('key', 'order_id')
+                    ->value('value');
+                $debug_info['meta_order_id'] = $meta_order_id ?: 'No definido';
+
+                // Probar métodos de obtención de order_id
+                $resolved_order_id = bikesul_get_order_id_for_subscriber($subscriber);
+                $debug_info['resolved_order_id'] = $resolved_order_id ?: 'No obtenido';
+
+                // Buscar último pedido
+                $latest_order = bikesul_get_latest_order_by_email($atts['email']);
+                $debug_info['latest_order'] = $latest_order ?: 'No encontrado';
+
+            } else {
+                $debug_info['subscriber_found'] = 'No';
+            }
+        } catch (Exception $e) {
+            $debug_info['error'] = $e->getMessage();
+        }
+    }
+
+    // 3. Si se proporciona order_id, probar procesamiento
+    if ($atts['order_id']) {
+        $test_content = "Hola {{order.customer_name}}, tu pedido {{order.id}} por {{order.total_amount}}";
+
+        // Simular subscriber
+        $mock_subscriber = (object) array(
+            'email' => $atts['email'] ?: 'test@test.com',
+            'custom_values' => array('order_id' => $atts['order_id'])
+        );
+
+        $processed_content = bikesul_parse_smart_codes($test_content, $mock_subscriber);
+        $debug_info['test_input'] = $test_content;
+        $debug_info['test_output'] = $processed_content;
+    }
+
+    $output = '<div style="background: #f9f9f9; padding: 15px; margin: 10px 0; border: 1px solid #ddd;">';
+    $output .= '<h3>🔍 DEBUG SMARTCODES MEJORADO</h3>';
+    $output .= '<pre style="background: white; padding: 10px; margin: 5px 0; font-size: 12px; overflow-x: auto;">';
+    $output .= print_r($debug_info, true);
+    $output .= '</pre>';
+
+    // Instrucciones de uso
+    $output .= '<div style="background: #e5f5ff; padding: 10px; margin: 10px 0; border-left: 4px solid #0073aa;">';
+    $output .= '<strong>💡 USO:</strong><br>';
+    $output .= '<code>[bikesul_debug_smartcodes_improved email="cliente@email.com"]</code><br>';
+    $output .= '<code>[bikesul_debug_smartcodes_improved email="cliente@email.com" order_id="123"]</code>';
+    $output .= '</div>';
+
+    $output .= '</div>';
+
+    return $output;
 }
 
 // ===============================================
