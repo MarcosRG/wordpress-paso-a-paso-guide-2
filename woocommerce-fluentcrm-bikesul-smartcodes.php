@@ -398,12 +398,12 @@ function bikesul_capture_order_context_for_fluentcrm($order_id, $old_status, $ne
 }
 
 /**
- * Actualizar datos del contacto en FluentCRM con información del pedido
+ * MEJORADO: Actualizar datos del contacto en FluentCRM
  */
 function bikesul_update_fluentcrm_contact_order_data($order) {
     $email = $order->get_billing_email();
     if (!$email) return;
-    
+
     try {
         // Buscar o crear contacto en FluentCRM
         $contact = \FluentCrm\App\Models\Subscriber::where('email', $email)->first();
@@ -414,14 +414,29 @@ function bikesul_update_fluentcrm_contact_order_data($order) {
                 'last_name' => $order->get_billing_last_name(),
                 'status' => 'subscribed'
             ]);
+            error_log("BIKESUL: Contacto creado en FluentCRM: $email");
         }
-        
+
+        // MEJORADO: Actualizar SIEMPRE el order_id más reciente
+        \FluentCrm\App\Models\SubscriberMeta::updateOrCreate([
+            'subscriber_id' => $contact->id,
+            'key' => 'order_id'
+        ], [
+            'value' => $order->get_id()
+        ]);
+
+        // Actualizar fecha del último pedido
+        \FluentCrm\App\Models\SubscriberMeta::updateOrCreate([
+            'subscriber_id' => $contact->id,
+            'key' => 'last_order_date'
+        ], [
+            'value' => current_time('mysql')
+        ]);
+
         // Actualizar campos personalizados con datos del último pedido
         $order_data = bikesul_get_order_data_for_smartcodes($order->get_id());
-        
+
         $custom_values = array(
-            'order_id' => $order->get_id(),
-            'last_order_date' => date('Y-m-d H:i:s'),
             'last_rental_start' => $order_data['rental_start_date'],
             'last_rental_end' => $order_data['rental_end_date'],
             'last_rental_days' => $order_data['rental_days'],
@@ -429,7 +444,7 @@ function bikesul_update_fluentcrm_contact_order_data($order) {
             'last_insurance_type' => $order_data['insurance_type'],
             'last_order_total' => $order_data['total_amount']
         );
-        
+
         // Actualizar campos personalizados
         foreach ($custom_values as $key => $value) {
             if ($value) {
@@ -441,11 +456,11 @@ function bikesul_update_fluentcrm_contact_order_data($order) {
                 ]);
             }
         }
-        
-        error_log("BIKESUL FluentCRM: Datos actualizados para contacto {$email} con pedido #{$order->get_id()}");
-        
+
+        error_log("BIKESUL: Datos actualizados en FluentCRM para $email con pedido #{$order->get_id()}");
+
     } catch (Exception $e) {
-        error_log("BIKESUL FluentCRM: Error actualizando contacto: " . $e->getMessage());
+        error_log("BIKESUL: Error actualizando contacto FluentCRM: " . $e->getMessage());
     }
 }
 
