@@ -923,6 +923,10 @@ export const wooCommerceApi = {
 
   // Get a single product by ID
   async getProduct(productId: number): Promise<WooCommerceProduct | null> {
+    // Temporalmente deshabilitado para evitar errores CORS
+    console.log(`⚠️ getProduct temporalmente deshabilitado para producto ${productId} (evitando CORS)`);
+    return null;
+
     // Check circuit breaker first
     if (!canMakeWooCommerceRequest()) {
       console.warn(`⚠️ Request blocked for product ${productId} - circuit breaker or rate limit`);
