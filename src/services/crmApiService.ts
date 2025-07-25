@@ -58,6 +58,37 @@ class CRMApiService {
   }
 
   /**
+   * Test rápido de configuración CORS
+   */
+  private async testCorsConfiguration(): Promise<boolean> {
+    try {
+      // Test simple con timeout corto para detectar CORS
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos timeout
+
+      const response = await fetch(`${this.credentials.baseUrl}/wp/v2/types`, {
+        method: 'HEAD',
+        headers: {
+          'Authorization': `Basic ${this.authHeader}`,
+        },
+        signal: controller.signal,
+        mode: 'cors'
+      });
+
+      clearTimeout(timeoutId);
+      return response.status < 500; // Cualquier respuesta no-server-error indica CORS OK
+    } catch (error) {
+      if (error instanceof Error &&
+          (error.name === 'TypeError' || error.message.includes('Failed to fetch'))) {
+        // Error típico de CORS
+        return false;
+      }
+      // Otros errores pueden indicar que CORS funciona pero hay otros problemas
+      return true;
+    }
+  }
+
+  /**
    * Hacer una petición autenticada a la API
    */
   private async makeAuthenticatedRequest<T>(
