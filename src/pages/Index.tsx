@@ -5,6 +5,7 @@ import { InsuranceOptions } from "@/components/InsuranceOptions";
 import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { ApiTestDiagnostic } from "@/components/ApiTestDiagnostic";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
