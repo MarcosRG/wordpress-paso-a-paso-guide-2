@@ -80,14 +80,26 @@ export const CRMSmartCodeStatus: React.FC = () => {
         const debugResult = await crmApiService.debugSmartCodes();
 
         if (debugResult.success && debugResult.data) {
-          const isSimulation = debugResult.data.connection_mode === 'simulation';
+          const isSimulation = debugResult.data.connection_mode === 'simulation' ||
+                              debugResult.data.simulation ||
+                              debugResult.data.cors_error;
+
+          let errorMessages = [];
+          if (isSimulation) {
+            if (debugResult.data.cors_error) {
+              errorMessages = ['CORS detectado - Modo simulación auto-activado'];
+            } else {
+              errorMessages = ['Modo simulación activo - SmartCodes listos'];
+            }
+          }
+
           setStatus(prev => ({
             ...prev,
             smartcodesActive: debugResult.data.smartcodes_registered !== false,
             fluentcrmVersion: debugResult.data.fluentcrm_status === 'pro' ? 'pro' :
                             debugResult.data.fluentcrm_status === 'free' ? 'free' : 'ready',
             lastSync: new Date().toLocaleString(),
-            errors: isSimulation ? ['Modo simulación activo - SmartCodes listos'] : []
+            errors: errorMessages
           }));
         }
       } else {
