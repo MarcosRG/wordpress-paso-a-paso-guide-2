@@ -231,9 +231,13 @@ export const CRMSmartCodeStatus: React.FC = () => {
   };
 
   const getStatusColor = (connected: boolean, active: boolean) => {
-    if (connected && active) return 'bg-green-100 text-green-800';
+    if (connected && active) {
+      // Verificar si hay mensajes de simulación en errors
+      const hasSimulationMsg = status.errors.some(err => err.includes('simulación'));
+      return hasSimulationMsg ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+    }
     if (connected && !active) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+    return 'bg-gray-100 text-gray-800';
   };
 
   return (
