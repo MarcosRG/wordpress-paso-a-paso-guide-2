@@ -376,7 +376,10 @@ const fetchWithRetry = async (
           error.message.includes("Network request failed") ||
           error.message.includes("NetworkError") ||
           error.message.includes("net::") ||
-          error.name === "TypeError");
+          error.name === "TypeError") ||
+        // Handle third-party script interference (like FullStory)
+        (error.stack && error.stack.includes("fullstory.com")) ||
+        (error.stack && error.stack.includes("edge.fullstory.com"));
 
       const isTimeoutError =
         error.message === "Request timeout" ||
