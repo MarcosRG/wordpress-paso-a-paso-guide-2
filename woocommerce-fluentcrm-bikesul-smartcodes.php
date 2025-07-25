@@ -119,40 +119,77 @@ function bikesul_parse_smart_codes($content, $subscriber, $email_body = null) {
 }
 
 /**
- * Obtener order_id para un subscriber específico
+ * FUNCIÓN MEJORADA: Obtener order_id para un subscriber específico
  */
 function bikesul_get_order_id_for_subscriber($subscriber) {
     // 1. Verificar si hay un order_id en el contexto global
-    if (isset($GLOBALS['bikesul_current_order_id'])) {
+    if (isset($GLOBALS['bikesul_current_order_id']) && $GLOBALS['bikesul_current_order_id']) {
+        error_log("BIKESUL: Order ID desde global: " . $GLOBALS['bikesul_current_order_id']);
         return intval($GLOBALS['bikesul_current_order_id']);
     }
-    
+
     // 2. Verificar si el subscriber tiene un order_id en sus datos personalizados
-    if (isset($subscriber->custom_values['order_id'])) {
+    if (isset($subscriber->custom_values['order_id']) && $subscriber->custom_values['order_id']) {
+        error_log("BIKESUL: Order ID desde custom_values: " . $subscriber->custom_values['order_id']);
         return intval($subscriber->custom_values['order_id']);
     }
-    
-    // 3. Buscar el pedido más reciente por email
+
+    // 3. NUEVO: Verificar meta data del subscriber
+    if (isset($subscriber->id)) {
+        try {
+            $meta_order_id = \FluentCrm\App\Models\SubscriberMeta::where('subscriber_id', $subscriber->id)
+                ->where('key', 'order_id')
+                ->value('value');
+            if ($meta_order_id) {
+                error_log("BIKESUL: Order ID desde meta: " . $meta_order_id);
+                return intval($meta_order_id);
+            }
+        } catch (Exception $e) {
+            error_log("BIKESUL: Error obteniendo meta order_id: " . $e->getMessage());
+        }
+    }
+
+    // 4. Buscar el pedido más reciente por email
     if (isset($subscriber->email)) {
+        $order_id = bikesul_get_latest_order_by_email($subscriber->email);
+        if ($order_id) {
+            error_log("BIKESUL: Order ID desde último pedido: " . $order_id);
+            return $order_id;
+        }
+    }
+
+    error_log("BIKESUL: No se pudo obtener order_id por ningún método");
+    return null;
+}
+
+/**
+ * NUEVA FUNCIÓN: Buscar último pedido por email
+ */
+function bikesul_get_latest_order_by_email($email) {
+    if (!$email) return null;
+
+    try {
         $orders = wc_get_orders(array(
             'meta_query' => array(
                 array(
                     'key' => '_billing_email',
-                    'value' => $subscriber->email,
+                    'value' => $email,
                     'compare' => '='
                 )
             ),
             'limit' => 1,
             'orderby' => 'date',
             'order' => 'DESC',
-            'date_created' => '>' . (time() - 90 * 24 * 60 * 60) // Últimos 90 días
+            'date_created' => '>' . (time() - 180 * 24 * 60 * 60) // Últimos 6 meses
         ));
-        
+
         if (!empty($orders)) {
             return $orders[0]->get_id();
         }
+    } catch (Exception $e) {
+        error_log("BIKESUL: Error buscando pedido por email: " . $e->getMessage());
     }
-    
+
     return null;
 }
 
