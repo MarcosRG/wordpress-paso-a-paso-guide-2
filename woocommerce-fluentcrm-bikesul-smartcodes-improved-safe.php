@@ -256,6 +256,77 @@ function bikesul_load_smartcodes_functionality() {
         return $content;
     }
     
+    // ===============================================
+    // SHORTCODES DE TESTING Y DEBUG
+    // ===============================================
+
+    /**
+     * Shortcode para probar Smart Codes con un pedido específico
+     */
+    add_shortcode('bikesul_test_smartcodes', 'bikesul_test_smartcodes');
+
+    function bikesul_test_smartcodes($atts) {
+        $atts = shortcode_atts(array('order_id' => 0), $atts);
+
+        if (!$atts['order_id']) {
+            return '<p style="color: red;">❌ Error: order_id requerido. Uso: [bikesul_test_smartcodes order_id="123"]</p>';
+        }
+
+        if (!function_exists('wc_get_order')) {
+            return '<p style="color: red;">❌ Error: WooCommerce no está activo</p>';
+        }
+
+        $order_data = bikesul_get_order_data_for_smartcodes($atts['order_id']);
+
+        if (empty($order_data)) {
+            return '<p style="color: orange;">⚠️ No se encontraron datos para el pedido #' . $atts['order_id'] . '</p>';
+        }
+
+        $output = '<div style="background: #f9f9f9; padding: 15px; margin: 10px 0; border-left: 4px solid #0073aa;">';
+        $output .= '<h4>📋 Smart Codes disponibles para el pedido #' . $atts['order_id'] . ':</h4>';
+        $output .= '<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">';
+        $output .= '<tr style="background: #e1f5fe;"><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Smart Code</th><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Valor</th></tr>';
+
+        foreach ($order_data as $key => $value) {
+            $smart_code = '{{order.' . $key . '}}';
+            $display_value = is_string($value) ? htmlspecialchars($value) : json_encode($value);
+            if (strlen($display_value) > 100) {
+                $display_value = substr($display_value, 0, 100) . '...';
+            }
+            $output .= '<tr><td style="border: 1px solid #ddd; padding: 8px;"><code style="background: #fff; padding: 2px 4px;">' . $smart_code . '</code></td><td style="border: 1px solid #ddd; padding: 8px;">' . $display_value . '</td></tr>';
+        }
+
+        $output .= '</table>';
+        $output .= '<p style="margin-top: 10px; font-size: 12px; color: #666;">💡 Copia y pega estos Smart Codes en tus emails de FluentCRM</p>';
+        $output .= '</div>';
+
+        return $output;
+    }
+
+    /**
+     * Shortcode para debug general de FluentCRM
+     */
+    add_shortcode('bikesul_debug_fluentcrm', 'bikesul_debug_fluentcrm');
+
+    function bikesul_debug_fluentcrm($atts) {
+        $debug_info = array(
+            'fluentcrm_active' => function_exists('fluentCrmApi') ? '✅ Sí' : '❌ No',
+            'woocommerce_active' => function_exists('wc_get_order') ? '✅ Sí' : '❌ No',
+            'current_order_id' => $GLOBALS['bikesul_current_order_id'] ?? '⚠️ No definido',
+            'timestamp' => current_time('mysql')
+        );
+
+        $output = '<div style="background: #f0f0f0; padding: 15px; margin: 10px 0; border: 1px solid #ccc;">';
+        $output .= '<h4>🔍 BIKESUL FluentCRM Debug:</h4>';
+        $output .= '<pre style="background: white; padding: 10px; margin: 5px 0; font-size: 12px; overflow-x: auto;">';
+        $output .= print_r($debug_info, true);
+        $output .= '</pre>';
+        $output .= '<p style="font-size: 12px; margin-top: 10px;"><strong>Uso:</strong> [bikesul_test_smartcodes order_id="123"] para probar Smart Codes</p>';
+        $output .= '</div>';
+
+        return $output;
+    }
+
     // Log de inicialización exitosa
     error_log('BIKESUL SmartCodes: Sistema cargado correctamente con verificaciones de seguridad');
 }
