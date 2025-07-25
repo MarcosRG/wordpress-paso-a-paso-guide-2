@@ -690,6 +690,12 @@ export const wooCommerceApi = {
   // Get all products from ALUGUERES category (ID: 319)
   async getProducts(): Promise<WooCommerceProduct[]> {
     try {
+      // Check network availability first
+      if (!(await checkNetworkAvailability())) {
+        console.warn("🌐 Network unavailable, returning empty products array");
+        return [];
+      }
+
       // Get products from ALUGUERES category (ID: 319) and all its subcategories
       // Parámetros necesarios para obtener todos los productos completos:
       // - per_page=100: Máximo productos por p��gina
