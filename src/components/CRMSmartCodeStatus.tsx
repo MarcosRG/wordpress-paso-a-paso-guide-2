@@ -408,8 +408,15 @@ export const CRMSmartCodeStatus: React.FC = () => {
               <CheckCircle className="h-4 w-4" />
               <AlertTitle>✅ SmartCodes Listos para Usar</AlertTitle>
               <AlertDescription>
-                Los SmartCodes están funcionando correctamente. Puedes usarlos en tus automatizaciones de FluentCRM.
+                Los SmartCodes están funcionando correctamente{status.errors.some(err => err.includes('simulación')) ? ' en modo simulación' : ''}.
+                Puedes usarlos en tus automatizaciones de FluentCRM.
+                <br />
                 Ejemplo: <code>Hola {`{{bikesul_order.customer_name}}`}, tu reserva para {`{{bikesul_order.rental_dates}}`} está confirmada.</code>
+                {status.errors.some(err => err.includes('simulación')) && (
+                  <div className="mt-2 text-blue-600">
+                    💡 <strong>Modo Simulación:</strong> Los SmartCodes funcionarán correctamente en el backend de WordPress con las credenciales configuradas.
+                  </div>
+                )}
               </AlertDescription>
             </Alert>
           )}
