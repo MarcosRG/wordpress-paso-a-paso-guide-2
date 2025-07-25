@@ -672,7 +672,7 @@ export const wooCommerceApi = {
 
       const products = await response.json();
 
-      // Log para debug - mostrar cu��ntos productos se obtuvieron
+      // Log para debug - mostrar cuántos productos se obtuvieron
       console.log(`Productos obtenidos de WooCommerce: ${products.length}`);
       console.log("Headers de respuesta:", response.headers.get("X-WP-Total"));
 
@@ -711,10 +711,6 @@ export const wooCommerceApi = {
   async getProductWithACF(
     productId: number,
   ): Promise<Record<string, unknown> | null> {
-    // Temporalmente deshabilitado para evitar errores CORS en desarrollo
-    console.log(`⚠️ getProductWithACF temporalmente deshabilitado para producto ${productId} (evitando CORS)`);
-    return null;
-
     // Use WooCommerce API to extract ACF data from meta_data
     if (!canMakeWooCommerceRequest()) {
       console.warn(`⚠️ Request blocked for product ${productId} ACF data`);
