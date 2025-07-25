@@ -380,21 +380,21 @@ function bikesul_replace_order_smartcodes($content, $order_data) {
 // ===============================================
 
 /**
- * Capturar order_id cuando WooCommerce cambia estado del pedido
+ * MEJORADO: Capturar order_id cuando WooCommerce cambia estado del pedido
  */
 add_action('woocommerce_order_status_changed', 'bikesul_capture_order_context_for_fluentcrm', 5, 3);
 
 function bikesul_capture_order_context_for_fluentcrm($order_id, $old_status, $new_status) {
     // Definir order_id globalmente
     $GLOBALS['bikesul_current_order_id'] = $order_id;
-    
+
+    error_log("BIKESUL: Contexto capturado - Order ID $order_id, cambio: $old_status -> $new_status");
+
     // También actualizar campos personalizados del contacto en FluentCRM
     $order = wc_get_order($order_id);
     if ($order && function_exists('fluentCrmApi')) {
         bikesul_update_fluentcrm_contact_order_data($order);
     }
-    
-    error_log("BIKESUL FluentCRM: Order ID $order_id capturado para cambio de estado $old_status -> $new_status");
 }
 
 /**
