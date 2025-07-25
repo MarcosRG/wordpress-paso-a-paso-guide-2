@@ -69,12 +69,11 @@ export class LocalSyncService {
 
           // Obtener datos ACF si están disponibles
           let acfData = null;
-          // Temporalmente deshabilitado para evitar errores CORS
-          // try {
-          //   acfData = await wooCommerceApi.getProductWithACF(product.id);
-          // } catch (error) {
-          //   // ACF data is optional
-          // }
+          try {
+            acfData = await wooCommerceApi.getProductWithACF(product.id);
+          } catch (error) {
+            // ACF data is optional
+          }
 
           // Convertir producto a formato Neon
           const neonProduct = convertToNeonProduct(product, acfData);
