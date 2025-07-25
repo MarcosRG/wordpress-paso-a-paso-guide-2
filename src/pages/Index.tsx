@@ -334,13 +334,7 @@ const Index = () => {
           )}
         </div>
 
-        {/* CRM Integration Status - Solo visible para administradores */}
-        {import.meta.env.VITE_CRM_API_USERNAME && (
-          <div className="mt-8 max-w-4xl mx-auto space-y-6">
-            <CRMSmartCodeStatus />
-            <ApiConnectionTest />
-          </div>
-        )}
+
       </div>
     </div>
   );
