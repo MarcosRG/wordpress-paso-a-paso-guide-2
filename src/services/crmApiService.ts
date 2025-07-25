@@ -41,6 +41,7 @@ export interface OrderSmartCodeData {
 class CRMApiService {
   private credentials: CRMCredentials;
   private authHeader: string;
+  private simulationMode: boolean;
 
   constructor() {
     this.credentials = {
@@ -51,6 +52,9 @@ class CRMApiService {
 
     // Crear header de autenticación básica
     this.authHeader = btoa(`${this.credentials.username}:${this.credentials.password}`);
+
+    // Activar modo simulación por defecto en frontend para evitar CORS
+    this.simulationMode = true;
   }
 
   /**
