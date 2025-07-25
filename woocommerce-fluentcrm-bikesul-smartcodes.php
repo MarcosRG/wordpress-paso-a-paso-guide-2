@@ -1,21 +1,26 @@
 <?php
 /**
- * BIKESUL: Sistema de Smart Codes para FluentCRM
- * 
- * Este archivo resuelve el problema de los shortcodes Bikesul no siendo procesados
- * en FluentCRM convirtiendo los datos en Smart Codes nativos de FluentCRM.
- * 
+ * BIKESUL: Sistema MEJORADO de Smart Codes para FluentCRM
+ *
+ * MEJORAS INCLUIDAS:
+ * - Mejor captura de order_id en automatizaciones
+ * - Múltiples métodos de resolución de contexto
+ * - Debug mejorado para identificar problemas
+ * - Compatibilidad con triggers de FluentCRM
+ *
  * PROBLEMA SOLUCIONADO:
  * - FluentCRM no procesa shortcodes de WordPress como [bikesul_customer_name]
  * - FluentCRM usa su propio sistema de plantillas con {{contact.custom.*}}
  * - Los shortcodes aparecen como texto literal en emails y automatizaciones
- * 
+ * - Falta de contexto order_id en automatizaciones
+ *
  * SOLUCIÓN IMPLEMENTADA:
  * - Smart Codes nativos: {{order.customer_name}}, {{order.rental_dates}}, etc.
  * - Captura automática de contexto order_id desde WooCommerce
  * - Campos personalizados del contacto con datos de pedidos
  * - Filtros para procesar contenido antes del envío
- * 
+ * - Múltiples estrategias para resolver order_id
+ *
  * INSTALACIÓN:
  * 1. Incluir en functions.php: include_once('woocommerce-fluentcrm-bikesul-smartcodes.php');
  * 2. Configurar automatizaciones usando {{order.*}} en lugar de [bikesul_*]
