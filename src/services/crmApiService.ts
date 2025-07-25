@@ -115,6 +115,22 @@ class CRMApiService {
       };
     }
 
+    // Primero hacer un test CORS simple para detectar si está configurado
+    const corsTestResult = await this.testCorsConfiguration();
+    if (!corsTestResult) {
+      console.log('❌ CORS not configured properly, activating simulation mode');
+      this.simulationMode = true;
+      return {
+        success: true,
+        data: {
+          simulation: true,
+          message: 'CORS issues detected - Simulation mode activated',
+          credentials_configured: true,
+          username: this.credentials.username
+        }
+      };
+    }
+
     // Intentar endpoints en orden de preferencia (solo si no está en modo simulación)
     const endpoints = [
       '/wp/v2/users/me',        // WordPress REST API
