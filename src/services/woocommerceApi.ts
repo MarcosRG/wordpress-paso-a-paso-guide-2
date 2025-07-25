@@ -712,23 +712,17 @@ export const wooCommerceApi = {
 
       // Handle network errors specifically
       if (
-        error instanceof TypeError &&
-        error.message.includes("Failed to fetch")
+        error instanceof Error &&
+        (error.message.includes("Network connectivity issue") ||
+          error.message.includes("Failed to fetch") ||
+          error.message.includes("fetch") ||
+          error.message.includes("CORS"))
       ) {
         console.warn("🌐 Network connectivity issue detected");
         await handleNetworkError();
 
         // Return empty array instead of throwing to allow app to continue
         console.warn("⚠️ Returning empty products array due to network error");
-        return [];
-      }
-
-      // Si es un error de red/CORS, proporcionar información útil
-      if (error instanceof TypeError && error.message.includes("fetch")) {
-        console.warn(
-          "No se puede conectar a la API de WooCommerce. Verificar CORS y conectividad.",
-        );
-        // Return empty array for connectivity issues
         return [];
       }
 
