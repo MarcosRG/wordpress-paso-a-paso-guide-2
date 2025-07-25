@@ -645,6 +645,10 @@ const handleNetworkError = async (): Promise<void> => {
 export const wooCommerceApi = {
   // Get all products from ALUGUERES category (ID: 319)
   async getProducts(): Promise<WooCommerceProduct[]> {
+    // Temporalmente deshabilitado para evitar errores CORS en desarrollo
+    console.log("⚠️ getProducts temporalmente deshabilitado (evitando CORS) - retornando array vacío");
+    return [];
+
     try {
       // Get products from ALUGUERES category (ID: 319) and all its subcategories
       // Parámetros necesarios para obtener todos los productos completos:
