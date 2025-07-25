@@ -83,9 +83,10 @@ export interface WooCommerceVariation {
 const IS_API_DISABLED = import.meta.env.VITE_DISABLE_API === 'true';
 
 // Configuración segura usando variables de entorno
-export const WOOCOMMERCE_API_BASE =
-  import.meta.env.VITE_WOOCOMMERCE_API_BASE ||
-  "https://bikesultoursgest.com/wp-json/wc/v3";
+// En desarrollo usa proxy local, en producción usa URL directa
+export const WOOCOMMERCE_API_BASE = import.meta.env.DEV
+  ? "/api/wc/v3"  // Usa proxy local en desarrollo
+  : (import.meta.env.VITE_WOOCOMMERCE_API_BASE || "https://bikesultoursgest.com/wp-json/wc/v3");
 
 const CONSUMER_KEY =
   import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY ||
