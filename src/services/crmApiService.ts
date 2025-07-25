@@ -53,8 +53,9 @@ class CRMApiService {
     // Crear header de autenticación básica
     this.authHeader = btoa(`${this.credentials.username}:${this.credentials.password}`);
 
-    // Inicialmente intentar conexión real (CORS corregido)
-    this.simulationMode = false;
+    // Iniciar en modo simulación por defecto para evitar errores CORS
+    // Se puede cambiar a conexión real después si CORS está configurado
+    this.simulationMode = true;
   }
 
   /**
