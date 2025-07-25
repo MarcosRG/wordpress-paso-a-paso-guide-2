@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle, Loader2, Wifi, WifiOff } from 'lucide-react';
 import { wooCommerceApi } from '../services/woocommerceApi';
 import { localSyncService } from '../services/localSyncService';
 import { neonHttpService } from '../services/neonHttpService';
+import { BikeLoadingTest } from './BikeLoadingTest';
 
 interface TestResult {
   name: string;
