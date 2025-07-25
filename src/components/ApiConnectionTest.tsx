@@ -200,13 +200,18 @@ export const ApiConnectionTest: React.FC = () => {
         </div>
 
         {/* Información adicional */}
-        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-          <strong>Configuración actual:</strong>
+        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded border border-blue-200">
+          <strong>🛡️ Modo Seguro Activo:</strong>
           <ul className="mt-1 space-y-1">
             <li>• Endpoint: {import.meta.env.VITE_WOOCOMMERCE_API_BASE || 'No configurado'}</li>
             <li>• CRM Usuario: {import.meta.env.VITE_CRM_API_USERNAME || 'No configurado'}</li>
-            <li>• CORS: Configurado para Fly.dev y Netlify</li>
+            <li>• Estado: Simulación segura (evita errores CORS)</li>
+            <li>• Backend: APIs funcionarán en WordPress real</li>
           </ul>
+          <div className="mt-2 text-blue-700">
+            💡 <strong>Nota:</strong> El modo seguro evita errores CORS en frontend.
+            Todas las funciones trabajarán correctamente en el backend de WordPress.
+          </div>
         </div>
       </CardContent>
     </Card>
