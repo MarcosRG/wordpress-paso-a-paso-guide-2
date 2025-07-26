@@ -131,6 +131,12 @@ export const ConnectivityAlert: React.FC = () => {
               {status.totalRequests > 3 && status.successRate < 60 && (
                 <div>• Low success rate: {status.successRate.toFixed(1)}%</div>
               )}
+              {status.networkErrors > 0 && (
+                <div>• Network errors detected</div>
+              )}
+              {status.timeoutErrors > 0 && (
+                <div>• Request timeouts occurred</div>
+              )}
             </div>
             
             <div className="flex gap-2 pt-2">
