@@ -73,13 +73,13 @@ export class NeonHttpService {
       const { getConnectivityStatus } = await import("../services/connectivityMonitor");
       const connectivityStatus = getConnectivityStatus();
 
-      if (connectivityStatus.consecutiveErrors < 2) {
+      if (connectivityStatus.consecutiveErrors === 0) {
         console.log("🔄 Activando sincronización automática...");
         this.triggerBackgroundSync().catch((error) => {
           console.error("Error activando sincronización:", error);
         });
       } else {
-        console.warn(`⚠️ Skipping auto-sync due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
+        console.warn(`🚫 Blocking auto-sync due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
       }
 
       return [];
