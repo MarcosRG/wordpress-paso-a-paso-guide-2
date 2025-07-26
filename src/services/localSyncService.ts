@@ -47,7 +47,14 @@ export class LocalSyncService {
     }
 
     // Import connectivity monitor to check network status
-    const { getConnectivityStatus } = await import("../services/connectivityMonitor");
+    const { getConnectivityStatus, isEmergencyStopActive } = await import("../services/connectivityMonitor");
+
+    // Check emergency stop first
+    if (isEmergencyStopActive()) {
+      console.warn(`🚨 EMERGENCY STOP: Sync completely blocked`);
+      return;
+    }
+
     const connectivityStatus = getConnectivityStatus();
 
     // If we have any consecutive errors, skip sync completely
