@@ -12,6 +12,7 @@ import {
   getConnectivityStatus,
 } from "./connectivityMonitor";
 import { isThirdPartyInterference } from "../utils/fetchInterceptor";
+import { shouldAllowApiRequest } from "../utils/apiHealthCheck";
 import {
   canMakeWooCommerceRequest,
   recordWooCommerceSuccess,
@@ -794,6 +795,12 @@ export const wooCommerceApi = {
       const connectivityStatus = getConnectivityStatus();
       if (connectivityStatus.consecutiveErrors >= 1) {
         console.warn(`🚫 Blocking getProducts due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
+        return [];
+      }
+
+      // Quick API health check
+      if (!(await shouldAllowApiRequest())) {
+        console.warn("🏥 API health check failed, returning empty products array");
         return [];
       }
 
