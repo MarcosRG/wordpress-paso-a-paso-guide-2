@@ -1,135 +1,86 @@
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Wifi, WifiOff, AlertTriangle } from "lucide-react";
-import {
-  getConnectivityStatus,
-  generateConnectivityReport,
-  connectivityMonitor,
-} from "@/services/connectivityMonitor";
-import { useLanguage } from "@/contexts/LanguageContext";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { getConnectivityStatus, resetConnectivityMetrics } from '../services/connectivityMonitor';
+import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 
-export const ConnectivityStatus = () => {
-  const { t } = useLanguage();
+export const ConnectivityStatus: React.FC = () => {
   const [status, setStatus] = useState(getConnectivityStatus());
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
-    // Actualizar estado cada 5 segundos
-    const interval = setInterval(() => {
+    const updateStatus = () => {
       setStatus(getConnectivityStatus());
-    }, 5000);
+      setIsOnline(navigator.onLine);
+    };
 
-    return () => clearInterval(interval);
+    // Update every 5 seconds
+    const interval = setInterval(updateStatus, 5000);
+
+    // Listen for online/offline events
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-
-    // Forzar una verificación de estado
-    try {
-      // Aquí podrías hacer una llamada de prueba a la API
-      await fetch(
-        "https://bikesultoursgest.com/wp-json/wc/v3/products?per_page=1",
-        {
-          method: "HEAD",
-          headers: {
-            Authorization:
-              "Basic " +
-              btoa(
-                "ck_d702f875c82d5973562a62579cfa284db06e3a87:cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71",
-              ),
-          },
-        },
-      );
-    } catch (error) {
-      console.warn("Test de conectividad falló:", error);
-    }
-
+  const handleReset = () => {
+    resetConnectivityMetrics();
     setStatus(getConnectivityStatus());
-    setTimeout(() => setIsRefreshing(false), 1000);
   };
 
   const getStatusIcon = () => {
-    if (status.isHealthy) {
-      return <Wifi className="w-4 h-4 text-green-600" />;
-    } else if (status.consecutiveErrors > 0) {
-      return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
-    } else {
-      return <WifiOff className="w-4 h-4 text-red-600" />;
-    }
+    if (!isOnline) return <WifiOff className="h-4 w-4 text-red-500" />;
+    if (status.consecutiveErrors >= 3) return <WifiOff className="h-4 w-4 text-red-500" />;
+    if (status.successRate < 50 && status.totalRequests > 0) return <WifiOff className="h-4 w-4 text-yellow-500" />;
+    return <Wifi className="h-4 w-4 text-green-500" />;
   };
 
-  const getStatusColor = () => {
-    if (status.isHealthy) return "bg-green-100 text-green-800 border-green-200";
-    if (status.consecutiveErrors > 0)
-      return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    return "bg-red-100 text-red-800 border-red-200";
-  };
-
-  const getStatusText = () => {
-    if (status.isHealthy) return "Conectado";
-    if (status.consecutiveErrors > 0) return t("connectionProblems");
-    return t("disconnected");
+  const getStatusBadge = () => {
+    if (!isOnline) return <Badge variant="destructive">Offline</Badge>;
+    if (status.consecutiveErrors >= 3) return <Badge variant="destructive">Bloqueado</Badge>;
+    if (status.consecutiveErrors >= 1) return <Badge variant="secondary">Problemas</Badge>;
+    return <Badge variant="default">Online</Badge>;
   };
 
   return (
-    <Card className="p-4 border-l-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          {getStatusIcon()}
-          <span className="font-medium text-sm">Estado WooCommerce</span>
-          <Badge variant="outline" className={getStatusColor()}>
-            {getStatusText()}
-          </Badge>
+    <Card className="w-full">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {getStatusIcon()}
+            <span className="font-medium">Status de Conectividade</span>
+            {getStatusBadge()}
+          </div>
+          
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={handleReset}
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Reset
+          </Button>
         </div>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="h-8 w-8 p-0"
-        >
-          <RefreshCw
-            className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
-          />
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 text-xs text-gray-600 mb-2">
-        <div>
-          <span className="font-medium">Tasa de éxito:</span>{" "}
-          {status.successRate.toFixed(1)}%
-        </div>
-        <div>
-          <span className="font-medium">Total solicitudes:</span>{" "}
-          {status.totalRequests}
-        </div>
-      </div>
-
-      {status.consecutiveErrors > 0 && (
-        <div className="text-xs text-orange-600 mb-2">
-          {t("consecutiveErrors").replace("{count}", status.consecutiveErrors.toString())}
-        </div>
-      )}
-
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setShowDetails(!showDetails)}
-        className="text-xs h-6 p-1"
-      >
-        {showDetails ? "Ocultar" : "Ver"} detalles
-      </Button>
-
-      {showDetails && (
-        <div className="mt-3 p-3 bg-gray-50 rounded text-xs font-mono whitespace-pre-wrap">
-          {generateConnectivityReport()}
-        </div>
-      )}
+        
+        {status.totalRequests > 0 && (
+          <div className="mt-2 text-xs text-gray-600 grid grid-cols-2 gap-1">
+            <div>Taxa de sucesso: {status.successRate.toFixed(1)}%</div>
+            <div>Erros consecutivos: {status.consecutiveErrors}</div>
+            <div>Total de requests: {status.totalRequests}</div>
+            <div>Navegador: {isOnline ? 'Online' : 'Offline'}</div>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 };
