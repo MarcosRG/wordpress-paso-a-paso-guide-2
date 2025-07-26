@@ -202,20 +202,34 @@ export const ApiTestDiagnostic: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Button 
-            onClick={runAllTests} 
-            disabled={isRunning}
-            className="w-full"
-          >
-            {isRunning ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Executando Testes...
-              </>
-            ) : (
-              'Executar Diagnóstico Completo'
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={runAllTests}
+              disabled={isRunning}
+              className="flex-1"
+            >
+              {isRunning ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Executando Testes...
+                </>
+              ) : (
+                'Executar Diagnóstico Completo'
+              )}
+            </Button>
+
+            <Button
+              onClick={() => {
+                resetConnectivityMetrics();
+                const status = getConnectivityStatus();
+                console.log('🔄 Connectivity reset:', status);
+              }}
+              variant="outline"
+              disabled={isRunning}
+            >
+              Reset Conectividade
+            </Button>
+          </div>
 
           {tests.length > 0 && (
             <div className="space-y-2">
