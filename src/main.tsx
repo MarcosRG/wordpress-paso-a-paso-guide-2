@@ -2,6 +2,9 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
+// Initialize fetch interceptor early to handle third-party script conflicts
+import "./utils/fetchInterceptor";
+
 // Inicializar servicios de sincronización local
 import "./services/localSyncService";
 
