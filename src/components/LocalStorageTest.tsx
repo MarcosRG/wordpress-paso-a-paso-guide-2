@@ -125,7 +125,7 @@ export const LocalStorageTest: React.FC = () => {
               <h4 className="font-semibold mb-2">Status de Sincronização</h4>
               <div className="space-y-1 text-sm">
                 <div>Em execução: {localStorageData.syncStatus.isRunning ? 'Sim' : 'Não'}</div>
-                <div>Última sync: {localStorageData.syncStatus.lastSyncTime || 'Nunca'}</div>
+                <div>Última sync: {localStorageData.syncStatus.lastSyncTime ? new Date(localStorageData.syncStatus.lastSyncTime).toLocaleString() : 'Nunca'}</div>
                 <div>Tem dados: {localStorageData.hasData ? 'Sim' : 'Não'}</div>
               </div>
             </div>
