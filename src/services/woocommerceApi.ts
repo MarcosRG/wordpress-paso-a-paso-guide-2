@@ -729,8 +729,8 @@ export const wooCommerceApi = {
     try {
       // Check circuit breaker status first
       const connectivityStatus = getConnectivityStatus();
-      if (connectivityStatus.consecutiveErrors >= 2) {
-        console.warn(`🚫 Skipping getProducts due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
+      if (connectivityStatus.consecutiveErrors >= 1) {
+        console.warn(`🚫 Blocking getProducts due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
         return [];
       }
 
