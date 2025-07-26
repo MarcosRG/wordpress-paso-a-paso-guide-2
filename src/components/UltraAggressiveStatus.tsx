@@ -7,9 +7,11 @@ import { ShieldAlert, ShieldCheck, RotateCcw } from 'lucide-react';
 
 export const UltraAggressiveStatus: React.FC = () => {
   const [status, setStatus] = useState(getConnectivityStatus());
+  const [emergencyStop, setEmergencyStop] = useState(isEmergencyStopActive());
 
   const updateStatus = () => {
     setStatus(getConnectivityStatus());
+    setEmergencyStop(isEmergencyStopActive());
   };
 
   useEffect(() => {
