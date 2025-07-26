@@ -302,9 +302,9 @@ const fetchWithRetry = async (
 
   // Check connectivity status before attempting any requests
   const connectivityStatus = getConnectivityStatus();
-  if (connectivityStatus.consecutiveErrors >= 5) {
+  if (connectivityStatus.consecutiveErrors >= 3) {
     console.warn(`🚫 Blocking request due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
-    throw new Error("Request blocked due to persistent network issues. Please check your connection.");
+    throw new Error("Request blocked due to persistent network issues. Please reset connectivity to retry.");
   }
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -445,7 +445,7 @@ const fetchWithRetry = async (
 
   // Solo mostrar reporte si realmente hay errores consecutivos
   const shortUrl = url.length > 50 ? `...${url.slice(-47)}` : url;
-  console.error(`��� Falló despu��s de ${maxRetries + 1} intentos: ${shortUrl}`);
+  console.error(`�� Falló despu��s de ${maxRetries + 1} intentos: ${shortUrl}`);
 
   // Solo mostrar reporte detallado si hay patrones de error
   const status = getConnectivityStatus();
