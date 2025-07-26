@@ -252,7 +252,23 @@ export class NeonHttpService {
   // Verificar si necesita sincronización
   needsSync(): boolean {
     const status = this.getSyncStatus();
-    if (!status.lastSyncTime) return true;
+    if (!status.lastSyncTime) {
+      // For first sync, check connectivity
+      try {
+        const { getConnectivityStatus } = require("../services/connectivityMonitor");
+        const connectivityStatus = getConnectivityStatus();
+
+        // Don't sync if we have connectivity issues
+        if (connectivityStatus.consecutiveErrors >= 2) {
+          console.warn(`⚠️ Sync needed but skipped due to ${connectivityStatus.consecutiveErrors} connectivity errors`);
+          return false;
+        }
+      } catch (error) {
+        // If connectivity monitor is not available, be conservative
+        console.warn("Could not check connectivity status, allowing sync");
+      }
+      return true;
+    }
 
     // Sincronizar si han pasado más de 10 minutos
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
