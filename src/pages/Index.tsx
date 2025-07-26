@@ -231,6 +231,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-12">
       <div className="max-w-6xl mx-auto">
+        {/* Status ultra-agressivo do circuit breaker */}
+        <div className="mb-4">
+          <UltraAggressiveStatus />
+        </div>
+
         {/* Status de conectividade */}
         <div className="mb-4">
           <ConnectivityStatus />
