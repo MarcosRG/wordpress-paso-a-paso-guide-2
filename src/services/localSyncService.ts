@@ -34,7 +34,7 @@ export class LocalSyncService {
           if (status.consecutiveErrors < 3) {
             this.performSync();
           } else {
-            console.log(`⚠️ Skipping auto-sync due to ${status.consecutiveErrors} consecutive errors`);
+            console.log(`⚠��� Skipping auto-sync due to ${status.consecutiveErrors} consecutive errors`);
           }
         }
       },
@@ -53,7 +53,7 @@ export class LocalSyncService {
     const connectivityStatus = getConnectivityStatus();
 
     // If we have too many consecutive errors, skip sync completely
-    if (connectivityStatus.consecutiveErrors >= 5) {
+    if (connectivityStatus.consecutiveErrors >= 3) {
       console.warn(`🚫 Skipping sync due to ${connectivityStatus.consecutiveErrors} consecutive network errors`);
       return;
     }
