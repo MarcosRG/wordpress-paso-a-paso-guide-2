@@ -69,8 +69,14 @@ export class NeonHttpService {
       // Si no hay cache, devolver array vacío y activar sincronización solo si hay buena conectividad
       console.log("⚠️ No hay cache local...");
 
-      // Check connectivity before auto-triggering sync
-      const { getConnectivityStatus } = await import("../services/connectivityMonitor");
+      // Check emergency stop and connectivity before auto-triggering sync
+      const { getConnectivityStatus, isEmergencyStopActive } = await import("../services/connectivityMonitor");
+
+      if (isEmergencyStopActive()) {
+        console.warn(`🚨 EMERGENCY STOP: Auto-sync blocked`);
+        return [];
+      }
+
       const connectivityStatus = getConnectivityStatus();
 
       if (connectivityStatus.consecutiveErrors === 0) {
