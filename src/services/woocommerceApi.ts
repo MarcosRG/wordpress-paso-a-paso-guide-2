@@ -300,6 +300,13 @@ const fetchWithRetry = async (
   let lastError: Error | null = null;
   let circuitBreakerChecked = false;
 
+  // Check emergency stop first
+  const { isEmergencyStopActive } = await import("../services/connectivityMonitor");
+  if (isEmergencyStopActive()) {
+    console.warn(`🚨 EMERGENCY STOP: Request blocked by emergency stop mechanism`);
+    throw new Error("🚨 All network operations are blocked due to emergency stop. Please reset connectivity.");
+  }
+
   // Check connectivity status before attempting any requests
   const connectivityStatus = getConnectivityStatus();
   if (connectivityStatus.consecutiveErrors >= 1) {
