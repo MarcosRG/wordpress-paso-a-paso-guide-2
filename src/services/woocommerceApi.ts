@@ -502,6 +502,16 @@ const performHealthCheck = async (): Promise<boolean> => {
 // Function to check if network is available
 const checkNetworkAvailability = async (): Promise<boolean> => {
   const now = Date.now();
+  const status = getConnectivityStatus();
+
+  // If we have multiple consecutive errors (more than 3), block for longer
+  if (status.consecutiveErrors >= 3) {
+    const blockTime = Math.min(status.consecutiveErrors * 30000, 300000); // Max 5 minutes
+    if (now - networkCheckTime < blockTime) {
+      console.log(`🚫 Network blocked due to ${status.consecutiveErrors} consecutive errors. Blocked for ${Math.round((blockTime - (now - networkCheckTime)) / 1000)}s more`);
+      return false;
+    }
+  }
 
   // If we recently determined network is unavailable, don't check again immediately
   if (now - networkCheckTime < 30000 && !isNetworkAvailable) {
@@ -512,6 +522,14 @@ const checkNetworkAvailability = async (): Promise<boolean> => {
   // Use browser's online status as first check
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
     console.log("🌐 Browser reports offline");
+    isNetworkAvailable = false;
+    networkCheckTime = now;
+    return false;
+  }
+
+  // If success rate is too low, consider network unavailable
+  if (status.totalRequests > 5 && status.successRate < 10) {
+    console.log(`🚫 Success rate too low (${status.successRate.toFixed(1)}%), treating as network unavailable`);
     isNetworkAvailable = false;
     networkCheckTime = now;
     return false;
