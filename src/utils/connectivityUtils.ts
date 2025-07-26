@@ -9,8 +9,8 @@ export const shouldAllowAutoSync = async (): Promise<boolean> => {
     const { getConnectivityStatus } = await import("../services/connectivityMonitor");
     const status = getConnectivityStatus();
     
-    // Don't allow auto sync if we have multiple consecutive errors
-    if (status.consecutiveErrors >= 2) {
+    // Don't allow auto sync if we have any consecutive errors
+    if (status.consecutiveErrors >= 1) {
       return false;
     }
     
