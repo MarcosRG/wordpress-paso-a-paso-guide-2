@@ -187,16 +187,40 @@ export class LocalSyncService {
     } catch (error) {
       console.error("❌ Error durante la sincronización:", error);
 
-      // Handle network errors gracefully - don't crash the app
-      if (
-        error instanceof TypeError &&
-        error.message.includes("Failed to fetch")
-      ) {
-        console.warn(
-          "🌐 Network connectivity issue during sync, will retry later",
-        );
-        // Don't throw - let the app continue with cached data
-        return;
+      // Handle specific error types gracefully
+      if (error instanceof Error) {
+        // Handle authentication errors (403)
+        if (error.message.includes("Authentication failed (403)") ||
+            error.message.includes("HTTP 403")) {
+          console.warn("🔒 Authentication issue during sync - will retry later with fresh credentials");
+          // Don't throw - let the app continue with cached data
+          return;
+        }
+
+        // Handle third-party script conflicts
+        if (error.message.includes("Failed to fetch") &&
+            (error.stack?.includes("messageHandler") ||
+             error.stack?.includes("fullstory"))) {
+          console.warn("🔧 Third-party script conflict during sync - will retry later");
+          // Don't throw - let the app continue with cached data
+          return;
+        }
+
+        // Handle socket/connection errors
+        if (error.message.includes("socket hang up") ||
+            error.message.includes("ECONNRESET") ||
+            error.message.includes("Network connectivity issue")) {
+          console.warn("🔌 Network connection issue during sync - will retry later");
+          // Don't throw - let the app continue with cached data
+          return;
+        }
+
+        // Handle general network errors
+        if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
+          console.warn("🌐 Network connectivity issue during sync, will retry later");
+          // Don't throw - let the app continue with cached data
+          return;
+        }
       }
 
       // For other errors, still throw
