@@ -219,6 +219,16 @@ export class NeonHttpService {
     console.log("🔄 Activando sincronización real...");
 
     try {
+      // Check connectivity before triggering background sync
+      const { getConnectivityStatus } = await import("../services/connectivityMonitor");
+      const connectivityStatus = getConnectivityStatus();
+
+      // Don't trigger background sync if we have connectivity issues
+      if (connectivityStatus.consecutiveErrors >= 2) {
+        console.warn(`⚠️ Skipping background sync due to ${connectivityStatus.consecutiveErrors} consecutive network errors`);
+        return;
+      }
+
       // Importar el servicio de sincronización local de forma async para evitar circular deps
       const { localSyncService } = await import("./localSyncService");
       await localSyncService.performSync();
