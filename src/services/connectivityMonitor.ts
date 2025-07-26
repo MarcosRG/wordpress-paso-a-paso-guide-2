@@ -60,9 +60,12 @@ class ConnectivityMonitor {
     this.metrics.lastErrorTime = Date.now();
     this.metrics.consecutiveErrors++;
 
+    // Activate emergency stop immediately on any network error
+    this.enableEmergencyStop();
+
     this.logMetrics("🌐 Error de red");
 
-    if (this.metrics.consecutiveErrors >= 5) {
+    if (this.metrics.consecutiveErrors >= 3) {
       this.reportCriticalIssue("Múltiples errores de red consecutivos");
     }
   }
