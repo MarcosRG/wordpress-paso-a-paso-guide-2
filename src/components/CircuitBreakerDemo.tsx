@@ -117,16 +117,17 @@ export const CircuitBreakerDemo: React.FC = () => {
         {/* Behavior Explanation */}
         <Alert>
           <AlertDescription>
-            <strong>Como funciona:</strong><br/>
-            • 0-1 erros: ✅ CLOSED - Permite todas as requisições<br/>
-            • 2 erros: ⚠️ HALF-OPEN - Limita algumas requisições<br/>
-            • 3+ erros: 🚫 OPEN - Bloqueia todas as requisições<br/><br/>
-            
+            <strong>Como funciona (ULTRA-AGRESSIVO):</strong><br/>
+            • 0 erros: ✅ CLOSED - Permite todas as operações<br/>
+            • 1+ erros: 🚫 OPEN - Bloqueia TODAS as operações automáticas<br/><br/>
+
             <strong>Thresholds atuais:</strong><br/>
-            • getProducts(): Bloqueado com 2+ erros<br/>
-            • fetchWithRetry(): Bloqueado com 3+ erros<br/>
-            • performSync(): Saltado com 3+ erros<br/>
-            • forceSync(): Bloqueado com 10+ erros
+            • getProducts(): Bloqueado com 1+ erros<br/>
+            • fetchWithRetry(): Bloqueado com 1+ erros<br/>
+            • performSync(): Saltado com 1+ erros<br/>
+            • Background sync: Saltado com 1+ erros<br/>
+            • Auto sync: Saltado com 1+ erros<br/>
+            • forceSync(): Bloqueado com 10+ erros (apenas manual)
           </AlertDescription>
         </Alert>
       </CardContent>
