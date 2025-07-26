@@ -40,6 +40,7 @@ export const ConnectivityStatus: React.FC = () => {
   const getStatusIcon = () => {
     if (!isOnline) return <WifiOff className="h-4 w-4 text-red-500" />;
     if (status.consecutiveErrors >= 3) return <WifiOff className="h-4 w-4 text-red-500" />;
+    if (status.consecutiveErrors >= 2) return <WifiOff className="h-4 w-4 text-yellow-500" />;
     if (status.successRate < 50 && status.totalRequests > 0) return <WifiOff className="h-4 w-4 text-yellow-500" />;
     return <Wifi className="h-4 w-4 text-green-500" />;
   };
@@ -47,6 +48,7 @@ export const ConnectivityStatus: React.FC = () => {
   const getStatusBadge = () => {
     if (!isOnline) return <Badge variant="destructive">Offline</Badge>;
     if (status.consecutiveErrors >= 3) return <Badge variant="destructive">Bloqueado</Badge>;
+    if (status.consecutiveErrors >= 2) return <Badge variant="secondary">Limitado</Badge>;
     if (status.consecutiveErrors >= 1) return <Badge variant="secondary">Problemas</Badge>;
     return <Badge variant="default">Online</Badge>;
   };
