@@ -165,3 +165,4 @@ export const recordApiNetworkError = () =>
 export const getConnectivityStatus = () => connectivityMonitor.getMetrics();
 export const generateConnectivityReport = () =>
   connectivityMonitor.generateStatusReport();
+export const resetConnectivityMetrics = () => connectivityMonitor.resetMetrics();
