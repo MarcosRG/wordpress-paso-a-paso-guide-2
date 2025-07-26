@@ -27,21 +27,13 @@ export const CircuitBreakerDemo: React.FC = () => {
   };
 
   const getCircuitBreakerState = () => {
-    if (status.consecutiveErrors >= 3) {
+    if (status.consecutiveErrors >= 1) {
       return {
         state: 'OPEN',
         color: 'text-red-600',
         bg: 'bg-red-50',
         icon: <ShieldAlert className="h-5 w-5 text-red-600" />,
-        description: 'Circuit breaker is OPEN - blocking all requests'
-      };
-    } else if (status.consecutiveErrors >= 2) {
-      return {
-        state: 'HALF-OPEN',
-        color: 'text-yellow-600',
-        bg: 'bg-yellow-50',
-        icon: <Shield className="h-5 w-5 text-yellow-600" />,
-        description: 'Circuit breaker is HALF-OPEN - limiting requests'
+        description: 'Circuit breaker is OPEN - blocking all automatic operations'
       };
     } else {
       return {
