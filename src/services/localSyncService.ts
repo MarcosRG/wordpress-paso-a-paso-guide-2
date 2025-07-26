@@ -27,14 +27,12 @@ export class LocalSyncService {
     setInterval(
       async () => {
         if (neonHttpService.needsSync()) {
-          const { getConnectivityStatus } = await import("../services/connectivityMonitor");
-          const status = getConnectivityStatus();
+          const { shouldAllowAutoSync } = await import("../utils/connectivityUtils");
 
-          // Only auto-sync if we don't have too many consecutive errors
-          if (status.consecutiveErrors < 3) {
+          if (await shouldAllowAutoSync()) {
             this.performSync();
           } else {
-            console.log(`⚠��� Skipping auto-sync due to ${status.consecutiveErrors} consecutive errors`);
+            console.log(`⚠️ Skipping auto-sync due to connectivity issues`);
           }
         }
       },
