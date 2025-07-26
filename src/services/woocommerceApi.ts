@@ -445,7 +445,7 @@ const fetchWithRetry = async (
 
   // Solo mostrar reporte si realmente hay errores consecutivos
   const shortUrl = url.length > 50 ? `...${url.slice(-47)}` : url;
-  console.error(`�� Falló despu��s de ${maxRetries + 1} intentos: ${shortUrl}`);
+  console.error(`��� Falló despu��s de ${maxRetries + 1} intentos: ${shortUrl}`);
 
   // Solo mostrar reporte detallado si hay patrones de error
   const status = getConnectivityStatus();
@@ -727,7 +727,14 @@ export const wooCommerceApi = {
   // Get all products from ALUGUERES category (ID: 319)
   async getProducts(): Promise<WooCommerceProduct[]> {
     try {
-      // Check network availability first
+      // Check circuit breaker status first
+      const connectivityStatus = getConnectivityStatus();
+      if (connectivityStatus.consecutiveErrors >= 3) {
+        console.warn(`🚫 Skipping getProducts due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
+        return [];
+      }
+
+      // Check network availability
       if (!(await checkNetworkAvailability())) {
         console.warn("🌐 Network unavailable, returning empty products array");
         return [];
