@@ -117,6 +117,20 @@ class ConnectivityMonitor {
     }
   }
 
+  // Reset connectivity metrics (useful when user manually retries)
+  resetMetrics(): void {
+    this.metrics = {
+      totalRequests: 0,
+      successfulRequests: 0,
+      timeoutErrors: 0,
+      networkErrors: 0,
+      lastSuccessTime: 0,
+      lastErrorTime: 0,
+      consecutiveErrors: 0,
+    };
+    console.log("🔄 Connectivity metrics reset");
+  }
+
   // Reportar problema crítico
   private reportCriticalIssue(issue: string): void {
     console.error(`🚨 PROBLEMA CRÍTICO DE CONECTIVIDAD: ${issue}`);
