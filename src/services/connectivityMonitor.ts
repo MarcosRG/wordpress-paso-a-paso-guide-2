@@ -117,6 +117,26 @@ class ConnectivityMonitor {
     }
   }
 
+  // Emergency stop flag to completely disable all automatic operations
+  private emergencyStop = false;
+
+  // Enable emergency stop mode
+  enableEmergencyStop(): void {
+    this.emergencyStop = true;
+    console.log("🚨 EMERGENCY STOP ACTIVATED - All automatic operations disabled");
+  }
+
+  // Disable emergency stop mode
+  disableEmergencyStop(): void {
+    this.emergencyStop = false;
+    console.log("✅ Emergency stop deactivated");
+  }
+
+  // Check if emergency stop is active
+  isEmergencyStopActive(): boolean {
+    return this.emergencyStop;
+  }
+
   // Reset connectivity metrics (useful when user manually retries)
   resetMetrics(): void {
     this.metrics = {
@@ -128,7 +148,8 @@ class ConnectivityMonitor {
       lastErrorTime: 0,
       consecutiveErrors: 0,
     };
-    console.log("🔄 Connectivity metrics reset");
+    this.emergencyStop = false; // Also disable emergency stop
+    console.log("🔄 Connectivity metrics reset and emergency stop deactivated");
   }
 
   // Reportar problema crítico
