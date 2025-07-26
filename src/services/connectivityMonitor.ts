@@ -166,6 +166,14 @@ class ConnectivityMonitor {
       consecutiveErrors: 0,
     };
     this.emergencyStop = false; // Also disable emergency stop
+
+    // Restore fetch functionality
+    import("../utils/emergencyFetchBlock").then(({ disableFetchBlock }) => {
+      disableFetchBlock();
+    }).catch(() => {
+      console.warn("Could not disable fetch block");
+    });
+
     console.log("🔄 Connectivity metrics reset and emergency stop deactivated");
   }
 
