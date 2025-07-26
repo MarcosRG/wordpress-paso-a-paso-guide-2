@@ -258,9 +258,9 @@ export class NeonHttpService {
         const { getConnectivityStatus } = require("../services/connectivityMonitor");
         const connectivityStatus = getConnectivityStatus();
 
-        // Don't sync if we have connectivity issues
-        if (connectivityStatus.consecutiveErrors >= 2) {
-          console.warn(`⚠️ Sync needed but skipped due to ${connectivityStatus.consecutiveErrors} connectivity errors`);
+        // Don't sync if we have any connectivity issues
+        if (connectivityStatus.consecutiveErrors >= 1) {
+          console.warn(`🚫 Sync needed but blocked due to ${connectivityStatus.consecutiveErrors} connectivity errors`);
           return false;
         }
       } catch (error) {
