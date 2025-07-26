@@ -1,4 +1,3 @@
-
 import { Bike } from '@/pages/Index';
 
 export const mockBikes: Bike[] = [
@@ -59,3 +58,13 @@ export const mockBikes: Bike[] = [
 ];
 
 export const mockCategories = ['mountain', 'road', 'hybrid', 'electric'];
+
+// Hook para usar dados mock
+export const useMockBikes = () => {
+  return {
+    data: mockBikes,
+    loading: false,
+    error: null,
+    refetch: () => Promise.resolve()
+  };
+};

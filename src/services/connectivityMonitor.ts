@@ -60,9 +60,12 @@ class ConnectivityMonitor {
     this.metrics.lastErrorTime = Date.now();
     this.metrics.consecutiveErrors++;
 
+    // Activate emergency stop immediately on any network error
+    this.enableEmergencyStop();
+
     this.logMetrics("🌐 Error de red");
 
-    if (this.metrics.consecutiveErrors >= 5) {
+    if (this.metrics.consecutiveErrors >= 3) {
       this.reportCriticalIssue("Múltiples errores de red consecutivos");
     }
   }
@@ -117,6 +120,63 @@ class ConnectivityMonitor {
     }
   }
 
+  // Emergency stop flag to completely disable all automatic operations
+  private emergencyStop = false;
+
+  // Enable emergency stop mode
+  enableEmergencyStop(): void {
+    this.emergencyStop = true;
+    console.log("🚨 EMERGENCY STOP ACTIVATED - All automatic operations disabled");
+
+    // Also block fetch at the browser level
+    import("../utils/emergencyFetchBlock").then(({ enableFetchBlock }) => {
+      enableFetchBlock();
+    }).catch(() => {
+      console.warn("Could not enable fetch block");
+    });
+  }
+
+  // Disable emergency stop mode
+  disableEmergencyStop(): void {
+    this.emergencyStop = false;
+    console.log("✅ Emergency stop deactivated");
+
+    // Also restore fetch at the browser level
+    import("../utils/emergencyFetchBlock").then(({ disableFetchBlock }) => {
+      disableFetchBlock();
+    }).catch(() => {
+      console.warn("Could not disable fetch block");
+    });
+  }
+
+  // Check if emergency stop is active
+  isEmergencyStopActive(): boolean {
+    return this.emergencyStop;
+  }
+
+  // Reset connectivity metrics (useful when user manually retries)
+  resetMetrics(): void {
+    this.metrics = {
+      totalRequests: 0,
+      successfulRequests: 0,
+      timeoutErrors: 0,
+      networkErrors: 0,
+      lastSuccessTime: 0,
+      lastErrorTime: 0,
+      consecutiveErrors: 0,
+    };
+    this.emergencyStop = false; // Also disable emergency stop
+
+    // Restore fetch functionality
+    import("../utils/emergencyFetchBlock").then(({ disableFetchBlock }) => {
+      disableFetchBlock();
+    }).catch(() => {
+      console.warn("Could not disable fetch block");
+    });
+
+    console.log("🔄 Connectivity metrics reset and emergency stop deactivated");
+  }
+
   // Reportar problema crítico
   private reportCriticalIssue(issue: string): void {
     console.error(`🚨 PROBLEMA CRÍTICO DE CONECTIVIDAD: ${issue}`);
@@ -151,3 +211,7 @@ export const recordApiNetworkError = () =>
 export const getConnectivityStatus = () => connectivityMonitor.getMetrics();
 export const generateConnectivityReport = () =>
   connectivityMonitor.generateStatusReport();
+export const resetConnectivityMetrics = () => connectivityMonitor.resetMetrics();
+export const isEmergencyStopActive = () => connectivityMonitor.isEmergencyStopActive();
+export const enableEmergencyStop = () => connectivityMonitor.enableEmergencyStop();
+export const disableEmergencyStop = () => connectivityMonitor.disableEmergencyStop();

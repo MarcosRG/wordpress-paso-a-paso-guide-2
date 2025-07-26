@@ -23,11 +23,24 @@ export class LocalSyncService {
         });
     }
 
-    // Programar sincronización cada 10 minutos
+    // Programar sincronização cada 10 minutos, pero solo si la conectividad es buena
     setInterval(
-      () => {
+      async () => {
+        // Check emergency stop first
+        const { isEmergencyStopActive } = await import("../services/connectivityMonitor");
+        if (isEmergencyStopActive()) {
+          console.log(`🚨 EMERGENCY STOP: Interval sync blocked`);
+          return;
+        }
+
         if (neonHttpService.needsSync()) {
-          this.performSync();
+          const { shouldAllowAutoSync } = await import("../utils/connectivityUtils");
+
+          if (await shouldAllowAutoSync()) {
+            this.performSync();
+          } else {
+            console.log(`⚠️ Skipping auto-sync due to connectivity issues`);
+          }
         }
       },
       10 * 60 * 1000,
@@ -37,6 +50,29 @@ export class LocalSyncService {
   async performSync(): Promise<void> {
     if (this.isRunning) {
       console.log("⏳ Sincronización ya en curso, esperando...");
+      return;
+    }
+
+    // Import connectivity monitor to check network status
+    const { getConnectivityStatus, isEmergencyStopActive } = await import("../services/connectivityMonitor");
+
+    // Check emergency stop first
+    if (isEmergencyStopActive()) {
+      console.warn(`🚨 EMERGENCY STOP: Sync completely blocked`);
+      return;
+    }
+
+    const connectivityStatus = getConnectivityStatus();
+
+    // If we have any consecutive errors, skip sync completely
+    if (connectivityStatus.consecutiveErrors >= 1) {
+      console.warn(`🚫 Blocking sync due to ${connectivityStatus.consecutiveErrors} consecutive network errors`);
+      return;
+    }
+
+    // If success rate is too low, skip sync
+    if (connectivityStatus.totalRequests > 1 && connectivityStatus.successRate < 50) {
+      console.warn(`🚫 Blocking sync due to low success rate: ${connectivityStatus.successRate.toFixed(1)}%`);
       return;
     }
 
@@ -52,6 +88,12 @@ export class LocalSyncService {
       console.log(
         `📦 Obtenidos ${wooProducts.length} productos de WooCommerce`,
       );
+
+      // If no products were returned (likely due to network issues), skip sync
+      if (wooProducts.length === 0) {
+        console.warn("⚠️ No products retrieved, skipping sync (likely network issue)");
+        return;
+      }
 
       const neonProducts: NeonProduct[] = [];
       const neonVariations: NeonVariation[] = [];
@@ -169,6 +211,20 @@ export class LocalSyncService {
   async forceSync(): Promise<void> {
     if (this.isRunning) {
       throw new Error("Sincronización ya en curso");
+    }
+
+    // Check connectivity status even for force sync
+    const { getConnectivityStatus } = await import("../services/connectivityMonitor");
+    const connectivityStatus = getConnectivityStatus();
+
+    // Only allow force sync if we don't have too many consecutive errors
+    if (connectivityStatus.consecutiveErrors >= 10) {
+      throw new Error(`Force sync blocked due to ${connectivityStatus.consecutiveErrors} consecutive network errors. Try resetting connectivity first.`);
+    }
+
+    // Warn about poor connectivity but allow force sync
+    if (connectivityStatus.consecutiveErrors >= 3) {
+      console.warn(`⚠️ Force sync attempted with ${connectivityStatus.consecutiveErrors} consecutive errors - this may fail`);
     }
 
     // Limpiar cache para forzar recarga completa

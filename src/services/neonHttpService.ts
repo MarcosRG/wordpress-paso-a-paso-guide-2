@@ -66,11 +66,28 @@ export class NeonHttpService {
         return products;
       }
 
-      // Si no hay cache, devolver array vacío y activar sincronización
-      console.log("⚠️ No hay cache local, activando sincronización...");
-      this.triggerBackgroundSync().catch((error) => {
-        console.error("Error activando sincronización:", error);
-      });
+      // Si no hay cache, devolver array vacío y activar sincronización solo si hay buena conectividad
+      console.log("⚠️ No hay cache local...");
+
+      // Check emergency stop and connectivity before auto-triggering sync
+      const { getConnectivityStatus, isEmergencyStopActive } = await import("../services/connectivityMonitor");
+
+      if (isEmergencyStopActive()) {
+        console.warn(`🚨 EMERGENCY STOP: Auto-sync blocked`);
+        return [];
+      }
+
+      const connectivityStatus = getConnectivityStatus();
+
+      if (connectivityStatus.consecutiveErrors === 0) {
+        console.log("🔄 Activando sincronización automática...");
+        this.triggerBackgroundSync().catch((error) => {
+          console.error("Error activando sincronización:", error);
+        });
+      } else {
+        console.warn(`🚫 Blocking auto-sync due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
+      }
+
       return [];
     } catch (error) {
       console.error("Error cargando productos desde cache:", error);
@@ -219,6 +236,22 @@ export class NeonHttpService {
     console.log("🔄 Activando sincronización real...");
 
     try {
+      // Check emergency stop first
+      const { getConnectivityStatus, isEmergencyStopActive } = await import("../services/connectivityMonitor");
+
+      if (isEmergencyStopActive()) {
+        console.warn(`🚨 EMERGENCY STOP: Background sync blocked`);
+        return;
+      }
+
+      const connectivityStatus = getConnectivityStatus();
+
+      // Don't trigger background sync if we have connectivity issues
+      if (connectivityStatus.consecutiveErrors >= 2) {
+        console.warn(`⚠️ Skipping background sync due to ${connectivityStatus.consecutiveErrors} consecutive network errors`);
+        return;
+      }
+
       // Importar el servicio de sincronización local de forma async para evitar circular deps
       const { localSyncService } = await import("./localSyncService");
       await localSyncService.performSync();
@@ -231,7 +264,23 @@ export class NeonHttpService {
   // Verificar si necesita sincronización
   needsSync(): boolean {
     const status = this.getSyncStatus();
-    if (!status.lastSyncTime) return true;
+    if (!status.lastSyncTime) {
+      // For first sync, check connectivity
+      try {
+        const { getConnectivityStatus } = require("../services/connectivityMonitor");
+        const connectivityStatus = getConnectivityStatus();
+
+        // Don't sync if we have any connectivity issues
+        if (connectivityStatus.consecutiveErrors >= 1) {
+          console.warn(`🚫 Sync needed but blocked due to ${connectivityStatus.consecutiveErrors} connectivity errors`);
+          return false;
+        }
+      } catch (error) {
+        // If connectivity monitor is not available, be conservative
+        console.warn("Could not check connectivity status, allowing sync");
+      }
+      return true;
+    }
 
     // Sincronizar si han pasado más de 10 minutos
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);

@@ -1,5 +1,5 @@
 import { wooCommerceApi, checkAtumAvailability } from "./woocommerceApi";
-import { neonService } from "./neonService";
+// import { neonService } from "./neonService"; // Temporarily disabled for frontend build
 
 export class SyncService {
   private isRunning = false;
