@@ -273,6 +273,11 @@ export const ApiTestDiagnostic: React.FC = () => {
             </div>
           )}
 
+          {/* Circuit Breaker Demo */}
+          <div className="border-t pt-4">
+            <CircuitBreakerDemo />
+          </div>
+
           {/* Testes manuais de conectividade */}
           <div className="border-t pt-4">
             <NetworkTestButtons />
