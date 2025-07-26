@@ -140,6 +140,13 @@ class ConnectivityMonitor {
   disableEmergencyStop(): void {
     this.emergencyStop = false;
     console.log("✅ Emergency stop deactivated");
+
+    // Also restore fetch at the browser level
+    import("../utils/emergencyFetchBlock").then(({ disableFetchBlock }) => {
+      disableFetchBlock();
+    }).catch(() => {
+      console.warn("Could not disable fetch block");
+    });
   }
 
   // Check if emergency stop is active
