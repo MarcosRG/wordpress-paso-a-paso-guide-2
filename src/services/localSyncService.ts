@@ -57,8 +57,8 @@ export class LocalSyncService {
     }
 
     // If success rate is too low, skip sync
-    if (connectivityStatus.totalRequests > 3 && connectivityStatus.successRate < 20) {
-      console.warn(`🚫 Skipping sync due to low success rate: ${connectivityStatus.successRate.toFixed(1)}%`);
+    if (connectivityStatus.totalRequests > 1 && connectivityStatus.successRate < 50) {
+      console.warn(`🚫 Blocking sync due to low success rate: ${connectivityStatus.successRate.toFixed(1)}%`);
       return;
     }
 
