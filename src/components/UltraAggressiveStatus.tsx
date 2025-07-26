@@ -24,7 +24,7 @@ export const UltraAggressiveStatus: React.FC = () => {
     updateStatus();
   };
 
-  const isBlocked = status.consecutiveErrors >= 1;
+  const isBlocked = status.consecutiveErrors >= 1 || emergencyStop;
 
   return (
     <Alert className={isBlocked ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'}>
