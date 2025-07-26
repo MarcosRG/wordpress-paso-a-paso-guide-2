@@ -230,8 +230,14 @@ export class NeonHttpService {
     console.log("🔄 Activando sincronización real...");
 
     try {
-      // Check connectivity before triggering background sync
-      const { getConnectivityStatus } = await import("../services/connectivityMonitor");
+      // Check emergency stop first
+      const { getConnectivityStatus, isEmergencyStopActive } = await import("../services/connectivityMonitor");
+
+      if (isEmergencyStopActive()) {
+        console.warn(`🚨 EMERGENCY STOP: Background sync blocked`);
+        return;
+      }
+
       const connectivityStatus = getConnectivityStatus();
 
       // Don't trigger background sync if we have connectivity issues
