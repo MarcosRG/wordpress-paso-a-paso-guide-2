@@ -234,7 +234,7 @@ const Index = () => {
           <p className="text-lg text-gray-700">{t("subtitle")}</p>
         </div>
 
-        {/* Diagnóstico removido temporalmente por errores CORS */}
+
 
         {/* Progress Indicator */}
         <div className="flex justify-center mb-8">
@@ -333,6 +333,8 @@ const Index = () => {
             </Button>
           )}
         </div>
+
+
       </div>
     </div>
   );
