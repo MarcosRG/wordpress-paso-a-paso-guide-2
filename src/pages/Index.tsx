@@ -7,6 +7,7 @@ import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { ApiTestDiagnostic } from "@/components/ApiTestDiagnostic";
 import { ConnectivityStatus } from "@/components/ConnectivityStatus";
+import { UltraAggressiveStatus } from "@/components/UltraAggressiveStatus";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
