@@ -66,11 +66,22 @@ export class NeonHttpService {
         return products;
       }
 
-      // Si no hay cache, devolver array vacío y activar sincronización
-      console.log("⚠️ No hay cache local, activando sincronización...");
-      this.triggerBackgroundSync().catch((error) => {
-        console.error("Error activando sincronización:", error);
-      });
+      // Si no hay cache, devolver array vacío y activar sincronización solo si hay buena conectividad
+      console.log("⚠️ No hay cache local...");
+
+      // Check connectivity before auto-triggering sync
+      const { getConnectivityStatus } = await import("../services/connectivityMonitor");
+      const connectivityStatus = getConnectivityStatus();
+
+      if (connectivityStatus.consecutiveErrors < 2) {
+        console.log("🔄 Activando sincronización automática...");
+        this.triggerBackgroundSync().catch((error) => {
+          console.error("Error activando sincronización:", error);
+        });
+      } else {
+        console.warn(`⚠️ Skipping auto-sync due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
+      }
+
       return [];
     } catch (error) {
       console.error("Error cargando productos desde cache:", error);
