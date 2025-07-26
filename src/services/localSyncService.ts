@@ -50,9 +50,9 @@ export class LocalSyncService {
     const { getConnectivityStatus } = await import("../services/connectivityMonitor");
     const connectivityStatus = getConnectivityStatus();
 
-    // If we have too many consecutive errors, skip sync completely
-    if (connectivityStatus.consecutiveErrors >= 3) {
-      console.warn(`🚫 Skipping sync due to ${connectivityStatus.consecutiveErrors} consecutive network errors`);
+    // If we have any consecutive errors, skip sync completely
+    if (connectivityStatus.consecutiveErrors >= 1) {
+      console.warn(`🚫 Blocking sync due to ${connectivityStatus.consecutiveErrors} consecutive network errors`);
       return;
     }
 
