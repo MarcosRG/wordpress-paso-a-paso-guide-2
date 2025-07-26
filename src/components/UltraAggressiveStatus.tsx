@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { getConnectivityStatus, resetConnectivityMetrics } from '../services/connectivityMonitor';
+import { getConnectivityStatus, resetConnectivityMetrics, isEmergencyStopActive } from '../services/connectivityMonitor';
 import { ShieldAlert, ShieldCheck, RotateCcw } from 'lucide-react';
 
 export const UltraAggressiveStatus: React.FC = () => {
