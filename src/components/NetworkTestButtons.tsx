@@ -82,11 +82,9 @@ export const NetworkTestButtons: React.FC = () => {
             <div>Taxa de sucesso: {status.successRate.toFixed(1)}%</div>
             <div>Erros consecutivos: {status.consecutiveErrors}</div>
             <div className={`font-medium ${
-              status.consecutiveErrors >= 3 ? 'text-red-600' :
-              status.consecutiveErrors >= 2 ? 'text-yellow-600' : 'text-green-600'
+              status.consecutiveErrors >= 1 ? 'text-red-600' : 'text-green-600'
             }`}>
-              {status.consecutiveErrors >= 3 ? '🚫 BLOQUEADO' :
-               status.consecutiveErrors >= 2 ? '⚠️ LIMITADO' : '✅ DISPONÍVEL'}
+              {status.consecutiveErrors >= 1 ? '🚫 BLOQUEADO' : '✅ DISPONÍVEL'}
             </div>
           </div>
         </div>
