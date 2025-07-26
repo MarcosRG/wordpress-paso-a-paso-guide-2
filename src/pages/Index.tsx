@@ -230,6 +230,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-12">
       <div className="max-w-6xl mx-auto">
+        {/* Status de conectividade */}
+        <div className="mb-4">
+          <ConnectivityStatus />
+        </div>
+
         {/* Botão de diagnóstico temporário */}
         <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
           <div className="flex items-center justify-between">
