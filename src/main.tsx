@@ -5,6 +5,11 @@ import "./index.css";
 // Initialize fetch interceptor early to handle third-party script conflicts
 import "./utils/fetchInterceptor";
 
+// Initialize connectivity debugger in development
+if (import.meta.env.DEV) {
+  import("./utils/connectivityDebugger");
+}
+
 // Inicializar servicios de sincronización local
 import "./services/localSyncService";
 
