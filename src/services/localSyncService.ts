@@ -40,6 +40,22 @@ export class LocalSyncService {
       return;
     }
 
+    // Import connectivity monitor to check network status
+    const { getConnectivityStatus } = await import("../services/connectivityMonitor");
+    const connectivityStatus = getConnectivityStatus();
+
+    // If we have too many consecutive errors, skip sync completely
+    if (connectivityStatus.consecutiveErrors >= 5) {
+      console.warn(`🚫 Skipping sync due to ${connectivityStatus.consecutiveErrors} consecutive network errors`);
+      return;
+    }
+
+    // If success rate is too low, skip sync
+    if (connectivityStatus.totalRequests > 3 && connectivityStatus.successRate < 20) {
+      console.warn(`🚫 Skipping sync due to low success rate: ${connectivityStatus.successRate.toFixed(1)}%`);
+      return;
+    }
+
     this.isRunning = true;
     neonHttpService.setSyncStatus(true);
     const startTime = Date.now();
