@@ -36,10 +36,15 @@ export const UltraAggressiveStatus: React.FC = () => {
           }
           <div>
             <div className="font-semibold">
-              Circuit Breaker Ultra-Agressivo
+              {emergencyStop ? 'EMERGENCY STOP ATIVO' : 'Circuit Breaker Ultra-Agressivo'}
             </div>
             <AlertDescription className="mt-1">
-              {isBlocked ? (
+              {emergencyStop ? (
+                <>
+                  🚨 <strong>EMERGENCY STOP ATIVO</strong> - Todas as operações automáticas foram completamente desabilitadas.
+                  Nenhuma requisição de rede será feita até o reset manual.
+                </>
+              ) : isBlocked ? (
                 <>
                   🚫 <strong>TODAS as operações automáticas estão BLOQUEADAS</strong> após {status.consecutiveErrors} erro(s).
                   Includes: API calls, sync automático, background sync, cache refresh.
