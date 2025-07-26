@@ -10,6 +10,7 @@ import { BikeLoadingTest } from './BikeLoadingTest';
 import { LocalStorageTest } from './LocalStorageTest';
 import { NetworkTestButtons } from './NetworkTestButtons';
 import { CircuitBreakerDemo } from './CircuitBreakerDemo';
+import { BackgroundSyncMonitor } from './BackgroundSyncMonitor';
 import { resetConnectivityMetrics, getConnectivityStatus } from '../services/connectivityMonitor';
 
 interface TestResult {
