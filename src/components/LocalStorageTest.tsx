@@ -69,8 +69,20 @@ export const LocalStorageTest: React.FC = () => {
     try {
       await localSyncService.forceSync();
       checkLocalStorage();
+      console.log('✅ Force sync completed successfully');
     } catch (error) {
-      console.error('Error forcing sync:', error);
+      console.error('❌ Error forcing sync:', error);
+
+      // Show user-friendly error message
+      if (error instanceof Error) {
+        if (error.message.includes('consecutive network errors')) {
+          alert('❌ Force sync blocked due to network connectivity issues. Please use "Reset Connectivity" first.');
+        } else if (error.message.includes('Network connectivity issue')) {
+          alert('❌ Unable to connect to WooCommerce API. Please check your internet connection.');
+        } else {
+          alert(`❌ Sync failed: ${error.message}`);
+        }
+      }
     }
     setIsLoading(false);
   };
@@ -134,7 +146,7 @@ export const LocalStorageTest: React.FC = () => {
               <h4 className="font-semibold mb-2">Estatísticas do Cache</h4>
               <div className="space-y-1 text-sm">
                 <div>Produtos: {localStorageData.cacheStats.products}</div>
-                <div>Variações: {localStorageData.cacheStats.variations}</div>
+                <div>Varia��ões: {localStorageData.cacheStats.variations}</div>
                 <div>Última sync: {localStorageData.cacheStats.lastSync ? new Date(localStorageData.cacheStats.lastSync).toLocaleString() : 'Nunca'}</div>
               </div>
             </div>
