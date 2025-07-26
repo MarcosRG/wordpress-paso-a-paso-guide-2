@@ -23,9 +23,16 @@ export class LocalSyncService {
         });
     }
 
-    // Programar sincronización cada 10 minutos, pero solo si la conectividad es buena
+    // Programar sincronização cada 10 minutos, pero solo si la conectividad es buena
     setInterval(
       async () => {
+        // Check emergency stop first
+        const { isEmergencyStopActive } = await import("../services/connectivityMonitor");
+        if (isEmergencyStopActive()) {
+          console.log(`🚨 EMERGENCY STOP: Interval sync blocked`);
+          return;
+        }
+
         if (neonHttpService.needsSync()) {
           const { shouldAllowAutoSync } = await import("../utils/connectivityUtils");
 
