@@ -190,3 +190,6 @@ export const getConnectivityStatus = () => connectivityMonitor.getMetrics();
 export const generateConnectivityReport = () =>
   connectivityMonitor.generateStatusReport();
 export const resetConnectivityMetrics = () => connectivityMonitor.resetMetrics();
+export const isEmergencyStopActive = () => connectivityMonitor.isEmergencyStopActive();
+export const enableEmergencyStop = () => connectivityMonitor.enableEmergencyStop();
+export const disableEmergencyStop = () => connectivityMonitor.disableEmergencyStop();
