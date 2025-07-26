@@ -23,11 +23,19 @@ export class LocalSyncService {
         });
     }
 
-    // Programar sincronización cada 10 minutos
+    // Programar sincronización cada 10 minutos, pero solo si la conectividad es buena
     setInterval(
-      () => {
+      async () => {
         if (neonHttpService.needsSync()) {
-          this.performSync();
+          const { getConnectivityStatus } = await import("../services/connectivityMonitor");
+          const status = getConnectivityStatus();
+
+          // Only auto-sync if we don't have too many consecutive errors
+          if (status.consecutiveErrors < 3) {
+            this.performSync();
+          } else {
+            console.log(`⚠️ Skipping auto-sync due to ${status.consecutiveErrors} consecutive errors`);
+          }
         }
       },
       10 * 60 * 1000,
