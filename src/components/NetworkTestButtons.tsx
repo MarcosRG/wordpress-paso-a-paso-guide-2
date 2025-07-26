@@ -160,12 +160,28 @@ export const NetworkTestButtons: React.FC = () => {
         )}
 
         {/* Instructions */}
-        <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
-          <strong>Como usar:</strong><br/>
-          • Se estiver BLOQUEADO, use "Reset & Retry" primeiro<br/>
-          • "Testar API Call" testa uma chamada direta à API<br/>
-          • "Testar Sync" testa o processo de sincronização (respeitará bloqueios)<br/>
-          • "Force Sync" força sincronização (ignora alguns bloqueios)
+        <div className={`text-xs p-2 rounded ${
+          status.consecutiveErrors >= 3 ? 'bg-red-50 text-red-700' :
+          status.consecutiveErrors >= 2 ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-gray-600'
+        }`}>
+          <strong>Status: {
+            status.consecutiveErrors >= 3 ? '🚫 BLOQUEADO - ' :
+            status.consecutiveErrors >= 2 ? '⚠️ LIMITADO - ' : '✅ Normal - '
+          }</strong><br/>
+
+          {status.consecutiveErrors >= 3 ? (
+            <>• Use "Reset & Retry" para resetar conectividade<br/>
+            • Verifique sua conexão com a internet<br/>
+            • API calls estão temporariamente bloqueadas</>
+          ) : status.consecutiveErrors >= 2 ? (
+            <>• Conectividade limitada devido a erros<br/>
+            • API calls podem falhar<br/>
+            • Use "Reset & Retry" se necessário</>
+          ) : (
+            <>• "Testar API Call" testa uma chamada direta à API<br/>
+            • "Testar Sync" testa o processo de sincronização<br/>
+            • "Force Sync" força sincronização (use com cuidado)</>
+          )}
         </div>
       </CardContent>
     </Card>
