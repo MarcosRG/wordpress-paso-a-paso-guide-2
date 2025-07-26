@@ -279,6 +279,11 @@ export const ApiTestDiagnostic: React.FC = () => {
             <CircuitBreakerDemo />
           </div>
 
+          {/* Background Sync Monitor */}
+          <div className="border-t pt-4">
+            <BackgroundSyncMonitor />
+          </div>
+
           {/* Testes manuais de conectividade */}
           <div className="border-t pt-4">
             <NetworkTestButtons />
