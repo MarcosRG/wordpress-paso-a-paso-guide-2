@@ -135,7 +135,7 @@ export const LocalStorageTest: React.FC = () => {
               <div className="space-y-1 text-sm">
                 <div>Produtos: {localStorageData.cacheStats.products}</div>
                 <div>Variações: {localStorageData.cacheStats.variations}</div>
-                <div>Última sync: {localStorageData.cacheStats.lastSync || 'Nunca'}</div>
+                <div>Última sync: {localStorageData.cacheStats.lastSync ? new Date(localStorageData.cacheStats.lastSync).toLocaleString() : 'Nunca'}</div>
               </div>
             </div>
 
