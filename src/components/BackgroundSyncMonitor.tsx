@@ -121,9 +121,9 @@ export const BackgroundSyncMonitor: React.FC = () => {
           <div className="text-xs space-y-1">
             <div>✅ triggerBackgroundSync(): Checks connectivity before sync</div>
             <div>✅ getActiveProducts(): Checks connectivity before auto-trigger</div>
-            <div>✅ needsSync(): Blocks when errors >= 2</div>
+            <div>✅ needsSync(): Blocks when errors &gt;= 2</div>
             <div>✅ Interval sync: Uses shouldAllowAutoSync()</div>
-            <div>✅ fetchWithRetry(): Blocks when errors >= 3</div>
+            <div>✅ fetchWithRetry(): Blocks when errors &gt;= 3</div>
           </div>
         </div>
 
