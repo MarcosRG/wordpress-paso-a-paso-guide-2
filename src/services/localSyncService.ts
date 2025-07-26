@@ -201,6 +201,20 @@ export class LocalSyncService {
       throw new Error("Sincronización ya en curso");
     }
 
+    // Check connectivity status even for force sync
+    const { getConnectivityStatus } = await import("../services/connectivityMonitor");
+    const connectivityStatus = getConnectivityStatus();
+
+    // Only allow force sync if we don't have too many consecutive errors
+    if (connectivityStatus.consecutiveErrors >= 10) {
+      throw new Error(`Force sync blocked due to ${connectivityStatus.consecutiveErrors} consecutive network errors. Try resetting connectivity first.`);
+    }
+
+    // Warn about poor connectivity but allow force sync
+    if (connectivityStatus.consecutiveErrors >= 3) {
+      console.warn(`⚠️ Force sync attempted with ${connectivityStatus.consecutiveErrors} consecutive errors - this may fail`);
+    }
+
     // Limpiar cache para forzar recarga completa
     neonHttpService.clearCache();
 
