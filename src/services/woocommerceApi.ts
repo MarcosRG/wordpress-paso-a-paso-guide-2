@@ -300,6 +300,13 @@ const fetchWithRetry = async (
   let lastError: Error | null = null;
   let circuitBreakerChecked = false;
 
+  // Check connectivity status before attempting any requests
+  const connectivityStatus = getConnectivityStatus();
+  if (connectivityStatus.consecutiveErrors >= 5) {
+    console.warn(`🚫 Blocking request due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
+    throw new Error("Request blocked due to persistent network issues. Please check your connection.");
+  }
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     // Check circuit breaker on first attempt or after reset
     if (attempt === 0 || !circuitBreakerChecked) {
