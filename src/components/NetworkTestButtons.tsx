@@ -159,26 +159,22 @@ export const NetworkTestButtons: React.FC = () => {
 
         {/* Instructions */}
         <div className={`text-xs p-2 rounded ${
-          status.consecutiveErrors >= 3 ? 'bg-red-50 text-red-700' :
-          status.consecutiveErrors >= 2 ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-gray-600'
+          status.consecutiveErrors >= 1 ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-gray-600'
         }`}>
           <strong>Status: {
-            status.consecutiveErrors >= 3 ? '🚫 BLOQUEADO - ' :
-            status.consecutiveErrors >= 2 ? '⚠️ LIMITADO - ' : '✅ Normal - '
+            status.consecutiveErrors >= 1 ? '🚫 BLOQUEADO - ' : '✅ Normal - '
           }</strong><br/>
 
-          {status.consecutiveErrors >= 3 ? (
+          {status.consecutiveErrors >= 1 ? (
             <>• Use "Reset & Retry" para resetar conectividade<br/>
             • Verifique sua conexão com a internet<br/>
-            • API calls estão temporariamente bloqueadas</>
-          ) : status.consecutiveErrors >= 2 ? (
-            <>• Conectividade limitada devido a erros<br/>
-            • API calls podem falhar<br/>
-            • Use "Reset & Retry" se necessário</>
+            • Todas as operações automáticas estão bloqueadas<br/>
+            • Circuit breaker ativo após primeiro erro</>
           ) : (
             <>• "Testar API Call" testa uma chamada direta à API<br/>
             • "Testar Sync" testa o processo de sincronização<br/>
-            • "Force Sync" força sincronização (use com cuidado)</>
+            • "Force Sync" força sincronização (use com cuidado)<br/>
+            • Circuit breaker permite operações normais</>
           )}
         </div>
       </CardContent>
