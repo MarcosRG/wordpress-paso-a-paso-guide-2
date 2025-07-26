@@ -377,6 +377,17 @@ const fetchWithRetry = async (
         } else if (response.status === 404) {
           console.warn(`⚠️ Resource not found: ${url}`);
           return response; // Return 404 responses for handling upstream
+        } else if (response.status === 403) {
+          // Handle 403 authentication errors with specific retry logic
+          console.warn(`🔒 Authentication error (403) for: ${url} - attempt ${attempt + 1}`);
+          if (attempt < maxRetries) {
+            // For 403 errors, wait longer before retry to handle rate limiting
+            const waitTime = Math.min(2000 * Math.pow(2, attempt), 10000);
+            console.log(`⏳ Waiting ${waitTime}ms before retrying authentication...`);
+            await new Promise((resolve) => setTimeout(resolve, waitTime));
+            continue; // Retry without throwing
+          }
+          throw new Error(`Authentication failed (403): Check API credentials and permissions`);
         } else {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -414,6 +425,16 @@ const fetchWithRetry = async (
         error.message.includes("CORS") ||
         error.message.includes("cross-origin");
 
+      const isSocketError =
+        error.message.includes("socket hang up") ||
+        error.message.includes("ECONNRESET") ||
+        error.message.includes("ENOTFOUND") ||
+        error.message.includes("connection reset");
+
+      const isAuthTemporaryFailure =
+        error.message.includes("Authentication failed (403)") ||
+        (error.message.includes("HTTP 403") && attempt === 0);
+
       // Handle different error types
       if (isThirdPartyConflict) {
         console.warn(`🔧 Third-party script conflict detected: ${error.message}`);
@@ -423,19 +444,27 @@ const fetchWithRetry = async (
         isNetworkAvailable = false;
       }
 
-      // For errors, wait before next attempt (shorter wait for third-party conflicts)
-      if (attempt < maxRetries && (isNetworkError || isTimeoutError || isCorsError || isThirdPartyConflict)) {
-        const waitTime = isThirdPartyConflict
-          ? Math.min(500 * Math.pow(2, attempt), 2000) // Shorter wait for third-party conflicts
-          : Math.min(1000 * Math.pow(2, attempt), 8000); // Normal wait for network errors
+      // For errors, wait before next attempt (different wait times based on error type)
+      if (attempt < maxRetries && (isNetworkError || isTimeoutError || isCorsError || isThirdPartyConflict || isSocketError || isAuthTemporaryFailure)) {
+        let waitTime;
+
+        if (isThirdPartyConflict) {
+          waitTime = Math.min(300 * Math.pow(2, attempt), 1500); // Very short wait for script conflicts
+        } else if (isAuthTemporaryFailure) {
+          waitTime = Math.min(3000 * Math.pow(2, attempt), 15000); // Longer wait for auth issues
+        } else if (isSocketError) {
+          waitTime = Math.min(2000 * Math.pow(2, attempt), 10000); // Medium wait for socket issues
+        } else {
+          waitTime = Math.min(1000 * Math.pow(2, attempt), 8000); // Normal wait for other errors
+        }
 
         console.log(
-          `⏳ Esperando ${waitTime}ms antes del siguiente intento...`,
+          `⏳ Esperando ${waitTime}ms antes del siguiente intento (${isThirdPartyConflict ? 'script conflict' : isAuthTemporaryFailure ? 'auth retry' : isSocketError ? 'socket error' : 'network error'})...`,
         );
         await new Promise((resolve) => setTimeout(resolve, waitTime));
 
-        // Reset circuit breaker check for errors to allow retry
-        if (isNetworkError || isCorsError || isThirdPartyConflict) {
+        // Reset circuit breaker check for retryable errors
+        if (isNetworkError || isCorsError || isThirdPartyConflict || isSocketError || isAuthTemporaryFailure) {
           circuitBreakerChecked = false;
         }
       }
@@ -453,6 +482,13 @@ const fetchWithRetry = async (
           } else if (isThirdPartyConflict) {
             recordApiNetworkError(true); // Pass true for third-party conflict
             console.warn(`🔧 Third-party script conflict in fetchWithRetry after all retries`);
+          } else if (isAuthTemporaryFailure) {
+            console.warn(`🔒 Authentication issues persist after retries - check API credentials`);
+            // Don't record as network error for auth issues
+          } else if (isSocketError) {
+            recordApiNetworkError(false); // Socket errors are network issues
+            isNetworkAvailable = false;
+            console.warn(`🔌 Socket connection issues detected`);
           } else if (isNetworkError || isCorsError) {
             recordApiNetworkError(false); // Pass false for genuine network error
             isNetworkAvailable = false; // Mark network as unavailable
