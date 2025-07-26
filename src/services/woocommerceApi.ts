@@ -11,6 +11,7 @@ import {
   generateConnectivityReport,
   getConnectivityStatus,
 } from "./connectivityMonitor";
+import { isThirdPartyInterference } from "../utils/fetchInterceptor";
 import {
   canMakeWooCommerceRequest,
   recordWooCommerceSuccess,
@@ -390,7 +391,9 @@ const fetchWithRetry = async (
       lastError = error as Error;
       console.warn(`⚠️ Intento ${attempt + 1} falló:`, error);
 
-      // Enhanced network error detection
+      // Enhanced error detection with third-party script handling
+      const isThirdPartyConflict = error instanceof Error && isThirdPartyInterference(error);
+
       const isNetworkError =
         error instanceof TypeError &&
         (error.message.includes("Failed to fetch") ||
@@ -398,10 +401,8 @@ const fetchWithRetry = async (
           error.message.includes("Network request failed") ||
           error.message.includes("NetworkError") ||
           error.message.includes("net::") ||
-          error.name === "TypeError") ||
-        // Handle third-party script interference (like FullStory)
-        (error.stack && error.stack.includes("fullstory.com")) ||
-        (error.stack && error.stack.includes("edge.fullstory.com"));
+          error.name === "TypeError") &&
+        !isThirdPartyConflict; // Exclude third-party conflicts from network errors
 
       const isTimeoutError =
         error.message === "Request timeout" ||
@@ -414,21 +415,27 @@ const fetchWithRetry = async (
         error.message.includes("cross-origin");
 
       // Handle different error types
-      if (isNetworkError || isCorsError) {
+      if (isThirdPartyConflict) {
+        console.warn(`🔧 Third-party script conflict detected: ${error.message}`);
+        // Don't mark network as unavailable for third-party conflicts
+      } else if (isNetworkError || isCorsError) {
         console.warn(`🌐 Network/CORS error detected: ${error.message}`);
         isNetworkAvailable = false;
       }
 
-      // For network errors, wait longer before next attempt
-      if (attempt < maxRetries && (isNetworkError || isTimeoutError || isCorsError)) {
-        const waitTime = Math.min(1000 * Math.pow(2, attempt), 8000); // Increased max wait to 8s
+      // For errors, wait before next attempt (shorter wait for third-party conflicts)
+      if (attempt < maxRetries && (isNetworkError || isTimeoutError || isCorsError || isThirdPartyConflict)) {
+        const waitTime = isThirdPartyConflict
+          ? Math.min(500 * Math.pow(2, attempt), 2000) // Shorter wait for third-party conflicts
+          : Math.min(1000 * Math.pow(2, attempt), 8000); // Normal wait for network errors
+
         console.log(
           `⏳ Esperando ${waitTime}ms antes del siguiente intento...`,
         );
         await new Promise((resolve) => setTimeout(resolve, waitTime));
 
-        // Reset circuit breaker check for network errors to allow retry
-        if (isNetworkError || isCorsError) {
+        // Reset circuit breaker check for errors to allow retry
+        if (isNetworkError || isCorsError || isThirdPartyConflict) {
           circuitBreakerChecked = false;
         }
       }
@@ -443,8 +450,11 @@ const fetchWithRetry = async (
         if (error instanceof Error) {
           if (isTimeoutError) {
             recordApiTimeout();
+          } else if (isThirdPartyConflict) {
+            recordApiNetworkError(true); // Pass true for third-party conflict
+            console.warn(`🔧 Third-party script conflict in fetchWithRetry after all retries`);
           } else if (isNetworkError || isCorsError) {
-            recordApiNetworkError();
+            recordApiNetworkError(false); // Pass false for genuine network error
             isNetworkAvailable = false; // Mark network as unavailable
           }
         }
