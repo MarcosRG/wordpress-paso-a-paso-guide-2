@@ -394,18 +394,40 @@ export const FluentCrmWebhookTest: React.FC = () => {
                   </div>
                 </div>
                 
-                <Button 
-                  onClick={() => sendWebhookTest()} 
-                  disabled={isLoading}
-                  className="w-full"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4 mr-2" />
-                  )}
-                  Crear Reserva y Enviar Test
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => sendWebhookTest()}
+                    disabled={isLoading}
+                    className="flex-1"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Enviar Real
+                  </Button>
+                  <Button
+                    onClick={() => simulateWebhookTest()}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <TestTube className="h-4 w-4 mr-2" />
+                    )}
+                    Simular
+                  </Button>
+                </div>
+
+                <Alert>
+                  <AlertDescription className="text-sm">
+                    <strong>Enviar Real:</strong> Intenta enviar al webhook real (puede fallar por CORS en desarrollo)<br/>
+                    <strong>Simular:</strong> Simula la respuesta y verifica que el payload es correcto
+                  </AlertDescription>
+                </Alert>
               </div>
             </CardContent>
           </Card>
