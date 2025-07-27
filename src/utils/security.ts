@@ -162,18 +162,8 @@ export const sanitizeForLog = (data: any): any => {
 // Encriptar datos para localStorage (simple)
 export const encryptData = (data: any): string => {
   try {
-    const key = import.meta.env.VITE_ENCRYPTION_KEY;
-
-    if (!key) {
-      console.error('❌ VITE_ENCRYPTION_KEY no está configurada. Ver .env.example');
-      throw new Error('Encryption key not configured');
-    }
-
-    if (key.length < 32) {
-      console.error('❌ VITE_ENCRYPTION_KEY debe tener al menos 32 caracteres');
-      throw new Error('Encryption key too short');
-    }
-
+    const key =
+      import.meta.env.VITE_ENCRYPTION_KEY || "default-key-change-in-production";
     const jsonString = JSON.stringify(data);
 
     // Simple XOR encryption (para datos no críticos)
@@ -194,13 +184,8 @@ export const encryptData = (data: any): string => {
 // Desencriptar datos de localStorage
 export const decryptData = (encryptedData: string): any => {
   try {
-    const key = import.meta.env.VITE_ENCRYPTION_KEY;
-
-    if (!key) {
-      console.error('❌ VITE_ENCRYPTION_KEY no está configurada');
-      return null;
-    }
-
+    const key =
+      import.meta.env.VITE_ENCRYPTION_KEY || "default-key-change-in-production";
     const encrypted = atob(encryptedData);
 
     let decrypted = "";

@@ -90,13 +90,16 @@ export const WOOCOMMERCE_API_BASE = import.meta.env.DEV
   ? "/api/wc/v3"  // Usa proxy local en desarrollo
   : (import.meta.env.VITE_WOOCOMMERCE_API_BASE || "https://bikesultoursgest.com/wp-json/wc/v3");
 
-const CONSUMER_KEY = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY;
-const CONSUMER_SECRET = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET;
+const CONSUMER_KEY =
+  import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY ||
+  "ck_d702f875c82d5973562a62579cfa284db06e3a87";
+const CONSUMER_SECRET =
+  import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET ||
+  "cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71";
 
 // Validar que las credenciales estén configuradas
 if (!IS_API_DISABLED && (!CONSUMER_KEY || !CONSUMER_SECRET)) {
-  console.error("❌ WooCommerce credentials not properly configured. Check .env file.");
-  console.error("📋 Required variables: VITE_WOOCOMMERCE_CONSUMER_KEY, VITE_WOOCOMMERCE_CONSUMER_SECRET");
+  console.error("❌ WooCommerce credentials not properly configured");
 }
 
 if (IS_API_DISABLED) {
@@ -778,7 +781,7 @@ export const checkAtumAvailability = async (
       hasAtumMultiInventory: !!atumMultiStock,
       hasAtumStandardStock: !!atumStock,
       finalStockValue: wooStock,
-      recommendedAction: wooStock === 0 ? 'REVISAR CONFIGURACI��N ATUM' : 'OK'
+      recommendedAction: wooStock === 0 ? 'REVISAR CONFIGURACIÓN ATUM' : 'OK'
     });
 
     return wooStock;
