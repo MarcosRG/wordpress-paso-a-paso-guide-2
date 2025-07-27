@@ -535,18 +535,33 @@ export const FluentCrmWebhookTest: React.FC = () => {
                     className="font-mono text-sm"
                   />
                 </div>
-                <Button 
-                  onClick={() => sendWebhookTest()} 
-                  disabled={isLoading || !customPayload.trim()}
-                  className="w-full"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4 mr-2" />
-                  )}
-                  Enviar Payload Custom
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => sendWebhookTest()}
+                    disabled={isLoading || !customPayload.trim()}
+                    className="flex-1"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Enviar Real
+                  </Button>
+                  <Button
+                    onClick={() => simulateWebhookTest()}
+                    disabled={isLoading || !customPayload.trim()}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <TestTube className="h-4 w-4 mr-2" />
+                    )}
+                    Simular
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
