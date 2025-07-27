@@ -821,6 +821,73 @@ const handleNetworkError = async (): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 2000));
 };
 
+// Function to generate ATUM configuration report
+export const generateAtumReport = (products: WooCommerceProduct[]): void => {
+  console.log("\n" + "=".repeat(80));
+  console.log("📊 REPORTE CONSOLIDADO DE CONFIGURACIÓN ATUM");
+  console.log("=".repeat(80));
+
+  const report = {
+    totalProducts: products.length,
+    withAtumMultiInventory: 0,
+    withAtumStandardStock: 0,
+    withoutAtumData: 0,
+    onlyWooCommerceStock: 0,
+    productsDetails: [] as any[]
+  };
+
+  products.forEach(product => {
+    const hasAtumMulti = product.meta_data?.some((m: any) =>
+      m.key === "_atum_multi_inventory" ||
+      m.key === "atum_multi_inventory" ||
+      m.key === "_multi_inventory"
+    );
+
+    const hasAtumStandard = product.meta_data?.some((m: any) =>
+      m.key === "_atum_stock_quantity" ||
+      m.key === "atum_stock_quantity" ||
+      m.key === "_atum_stock"
+    );
+
+    if (hasAtumMulti) report.withAtumMultiInventory++;
+    if (hasAtumStandard) report.withAtumStandardStock++;
+    if (!hasAtumMulti && !hasAtumStandard) {
+      report.withoutAtumData++;
+      if (product.stock_quantity > 0) report.onlyWooCommerceStock++;
+    }
+
+    report.productsDetails.push({
+      id: product.id,
+      name: product.name,
+      hasAtumMulti,
+      hasAtumStandard,
+      wooStock: product.stock_quantity,
+      status: hasAtumMulti ? 'ATUM Multi' : hasAtumStandard ? 'ATUM Standard' : 'Solo WooCommerce'
+    });
+  });
+
+  console.log(`\n📈 ESTADÍSTICAS GENERALES:`);
+  console.log(`• Total de productos analizados: ${report.totalProducts}`);
+  console.log(`• Con ATUM Multi-Inventory: ${report.withAtumMultiInventory}`);
+  console.log(`• Con ATUM Stock estándar: ${report.withAtumStandardStock}`);
+  console.log(`• Sin datos ATUM: ${report.withoutAtumData}`);
+  console.log(`• Solo con stock WooCommerce: ${report.onlyWooCommerceStock}`);
+
+  console.log(`\n🔧 PRODUCTOS QUE NECESITAN CONFIGURACIÓN ATUM:`);
+  const problematicProducts = report.productsDetails.filter(p => !p.hasAtumMulti && !p.hasAtumStandard);
+  problematicProducts.forEach(product => {
+    console.log(`  • ID ${product.id}: ${product.name} (Stock WooCommerce: ${product.wooStock})`);
+  });
+
+  if (problematicProducts.length === 0) {
+    console.log(`  ✅ ¡Todos los productos tienen configuración ATUM!`);
+  } else {
+    console.log(`\n⚠️ RECOMENDACIÓN: Configurar ATUM Multi-Inventory en WordPress para ${problematicProducts.length} productos`);
+  }
+
+  console.log("=".repeat(80) + "\n");
+};
+
 
 
 export const wooCommerceApi = {
