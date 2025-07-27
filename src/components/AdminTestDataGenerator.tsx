@@ -185,7 +185,23 @@ export const AdminTestDataGenerator: React.FC = () => {
       let created = 0;
       for (const reservationData of sampleReservations) {
         try {
-          await reservationService.createReservation(reservationData);
+          // Crear reserva directamente sin verificación de disponibilidad para datos de prueba
+          const completeReservation: Reservation = {
+            ...reservationData,
+            id: Date.now() + created, // ID único
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            bikes: reservationData.bikes.map((bike, index) => ({
+              ...bike,
+              bike_woocommerce_id: bike.bike_woocommerce_id + Date.now() + index // Evitar conflictos
+            }))
+          };
+
+          // Guardar directamente en localStorage
+          const existingReservations = JSON.parse(localStorage.getItem('neon_reservations') || '[]');
+          existingReservations.push(completeReservation);
+          localStorage.setItem('neon_reservations', JSON.stringify(existingReservations));
+
           created++;
         } catch (error) {
           console.error('Error creating sample reservation:', error);
