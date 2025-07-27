@@ -43,7 +43,11 @@ class WordPressSyncService {
     }
     
     this.syncInterval = setInterval(async () => {
-      await this.performBidirectionalSync();
+      try {
+        await this.performBidirectionalSync();
+      } catch (error) {
+        console.error('❌ Error en sincronización automática:', error instanceof Error ? error.message : 'Error desconocido');
+      }
     }, this.config.syncInterval);
     
     console.log(`🔄 Sincronización automática activada cada ${this.config.syncInterval / 1000}s`);
@@ -80,7 +84,7 @@ class WordPressSyncService {
       // 2. Sincronizar datos WordPress → Neon
       const wpToNeonResult = await this.syncDataFromWordPress();
       if (!wpToNeonResult.success) {
-        errors.push(`WP→Neon: ${wpToNeonResult.error}`);
+        errors.push(`WP��Neon: ${wpToNeonResult.error}`);
       }
       
       // 3. Registrar resultado
