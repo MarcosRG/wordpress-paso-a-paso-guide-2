@@ -3,13 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Calendar, 
-  Users, 
-  Bike, 
-  TrendingUp, 
-  RefreshCw, 
-  Settings, 
+import {
+  Calendar,
+  Users,
+  Bike,
+  TrendingUp,
+  RefreshCw,
+  Settings,
   LogOut,
   AlertCircle,
   CheckCircle,
@@ -19,6 +19,7 @@ import {
 import { adminAuthService } from '../../services/adminAuthService';
 import { reservationService, Reservation } from '../../services/reservationService';
 import { wordPressSyncService } from '../../services/wordpressSyncService';
+import { SystemSettings } from './SystemSettings';
 
 interface AdminDashboardProps {
   onLogout: () => void;
