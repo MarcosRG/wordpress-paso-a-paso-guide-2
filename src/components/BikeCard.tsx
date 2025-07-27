@@ -35,14 +35,19 @@ const BikeCard = ({
   getQuantityForBikeAndSize,
   updateBikeQuantity,
   totalDays,
+  batchStockData,
 }: BikeCardProps) => {
   const { t } = useLanguage();
 
-  // Obtener stock real de ATUM por tamaño
-  const { data: atumStockBySize = {} } = useAtumStockBySize(
+  // Usar stock do batch se disponível, senão usar hook individual como fallback
+  const individualStockQuery = useAtumStockBySize(
     parseInt(bike.id),
-    bike.wooCommerceData?.product?.type === "variable",
+    bike.wooCommerceData?.product?.type === "variable" && !batchStockData,
   );
+
+  const atumStockBySize = batchStockData?.stockBySize || individualStockQuery.data || {};
+  const isAtumLoading = batchStockData?.isLoading || individualStockQuery.isLoading || false;
+  const hasAtumData = batchStockData?.hasAtumData || (Object.keys(atumStockBySize).length > 0);
 
   // Extract ACF pricing first, then fallback to day-based pricing
   const acfPricing: ACFPricing | null = bike.wooCommerceData?.product
