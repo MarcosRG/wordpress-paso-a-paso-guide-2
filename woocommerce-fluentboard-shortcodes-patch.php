@@ -373,8 +373,9 @@ function bikesul_fluentboard_patch_init() {
 
 /**
  * Hook de debug para mostrar quando shortcodes são processados
+ * DESACTIVADO para evitar debug automático en producción
  */
-add_action('wp_footer', 'bikesul_debug_shortcode_processing');
+// add_action('wp_footer', 'bikesul_debug_shortcode_processing');
 
 function bikesul_debug_shortcode_processing() {
     if (defined('WP_DEBUG') && WP_DEBUG && current_user_can('manage_options')) {
