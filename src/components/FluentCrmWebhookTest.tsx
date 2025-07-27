@@ -167,8 +167,8 @@ export const FluentCrmWebhookTest: React.FC = () => {
             return;
           }
         } else {
-          // Crear una reserva de prueba y usar sus datos
-          const reservation = await createSampleReservation();
+          // Generar reserva simple sin validación de disponibilidad
+          const reservation = generateSimpleReservation();
           dataToSend = generateWebhookPayload(reservation);
         }
       }
