@@ -1,4 +1,9 @@
 import React from "react";
+
+// Debug: verificar que React está disponible
+if (!React) {
+  console.error('❌ React is null or undefined!');
+}
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
