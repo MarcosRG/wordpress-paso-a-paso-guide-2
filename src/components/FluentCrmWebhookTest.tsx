@@ -617,23 +617,17 @@ export const FluentCrmWebhookTest: React.FC = () => {
                     className="font-mono text-sm"
                   />
                 </div>
+                <Alert className="bg-yellow-50 border-yellow-200 mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Recomendado:</strong> Usa "Simular" para validar tu JSON sin errores CORS
+                  </AlertDescription>
+                </Alert>
+
                 <div className="flex gap-2">
-                  <Button
-                    onClick={() => sendWebhookTest()}
-                    disabled={isLoading || !customPayload.trim()}
-                    className="flex-1"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Enviar Real
-                  </Button>
                   <Button
                     onClick={() => simulateWebhookTest()}
                     disabled={isLoading || !customPayload.trim()}
-                    variant="outline"
                     className="flex-1"
                   >
                     {isLoading ? (
@@ -641,7 +635,20 @@ export const FluentCrmWebhookTest: React.FC = () => {
                     ) : (
                       <TestTube className="h-4 w-4 mr-2" />
                     )}
-                    Simular
+                    Simular (Recomendado)
+                  </Button>
+                  <Button
+                    onClick={() => sendWebhookTest()}
+                    disabled={isLoading || !customPayload.trim()}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Enviar Real (CORS Error)
                   </Button>
                 </div>
               </div>
