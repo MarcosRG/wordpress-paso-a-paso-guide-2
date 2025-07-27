@@ -12,6 +12,7 @@ import {
   getPricePerDayFromACF,
 } from "@/services/woocommerceApi";
 import { useAtumStockBySize } from "@/hooks/useAtumStock";
+import { useAtumStockFromBatch, StockBySize } from "@/hooks/useBatchAtumStock";
 
 interface BikeCardProps {
   bike: Bike;
