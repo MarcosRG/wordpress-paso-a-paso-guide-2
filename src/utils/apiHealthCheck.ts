@@ -25,15 +25,26 @@ class ApiHealthChecker {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      const response = await fetch('/api/wc/v3/', {
-        method: 'HEAD',
-        signal: controller.signal,
-        headers: {
-          'Accept': 'application/json',
-        }
-      });
+      let response: Response;
+      try {
+        response = await fetch('/api/wc/v3/', {
+          method: 'HEAD',
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+        clearTimeout(timeoutId);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
 
-      clearTimeout(timeoutId);
+        // Handle AbortError specifically
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          throw new Error('Health check timeout');
+        }
+        throw fetchError;
+      }
+
       const responseTime = Date.now() - startTime;
 
       const result: HealthCheckResult = {
@@ -49,8 +60,19 @@ class ApiHealthChecker {
 
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+      let errorMessage = 'Unknown error';
+
+      if (error instanceof Error) {
+        // Provide more specific error messages
+        if (error.name === 'AbortError' || error.message === 'Health check timeout') {
+          errorMessage = 'Request timeout';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Network unavailable';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
       const result: HealthCheckResult = {
         isHealthy: false,
         responseTime,
