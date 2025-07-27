@@ -257,6 +257,46 @@ export const FluentCrmWebhookTest: React.FC = () => {
     setCustomPayload(payload);
   };
 
+  const generateSimpleReservation = (): Reservation => {
+    const now = Date.now();
+    return {
+      id: now,
+      customer_name: testOrderData.customer_name,
+      customer_email: testOrderData.customer_email,
+      customer_phone: testOrderData.customer_phone,
+      start_date: testOrderData.start_date,
+      end_date: testOrderData.end_date,
+      pickup_time: testOrderData.pickup_time,
+      return_time: testOrderData.return_time,
+      total_days: testOrderData.total_days,
+      total_price: testOrderData.total_price,
+      status: 'confirmed',
+      notes: testOrderData.notes,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      bikes: [
+        {
+          bike_woocommerce_id: now + 1,
+          bike_name: 'Bicicleta Eléctrica Mountain',
+          bike_model: 'Electric MTB Pro',
+          quantity: 1,
+          price_per_day: 35,
+          insurance_type: 'premium',
+          insurance_price: 15
+        },
+        {
+          bike_woocommerce_id: now + 2,
+          bike_name: 'Bicicleta Urban Classic',
+          bike_model: 'City Bike Standard',
+          quantity: 1,
+          price_per_day: 20,
+          insurance_type: 'free',
+          insurance_price: 0
+        }
+      ]
+    };
+  };
+
   const simulateWebhookTest = async (payload?: any) => {
     setIsLoading(true);
     setWebhookResponse(null);
@@ -268,7 +308,8 @@ export const FluentCrmWebhookTest: React.FC = () => {
         if (customPayload.trim()) {
           dataToSend = JSON.parse(customPayload);
         } else {
-          const reservation = await createSampleReservation();
+          // Generar reserva simple sin guardar en localStorage
+          const reservation = generateSimpleReservation();
           dataToSend = generateWebhookPayload(reservation);
         }
       }
