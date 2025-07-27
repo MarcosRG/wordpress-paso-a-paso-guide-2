@@ -7,17 +7,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Send, 
-  Copy, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Send,
+  Copy,
+  CheckCircle,
+  XCircle,
   Loader2,
   Plus,
   Database,
   Webhook,
   TestTube,
-  ShoppingCart
+  ShoppingCart,
+  AlertCircle
 } from 'lucide-react';
 import { reservationService, Reservation } from '../services/reservationService';
 
