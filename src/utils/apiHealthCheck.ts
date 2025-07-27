@@ -33,7 +33,12 @@ class ApiHealthChecker {
           // Set up timeout with proper cleanup
           timeoutId = setTimeout(() => {
             isAborted = true;
-            controller.abort();
+            try {
+              controller.abort();
+            } catch (abortError) {
+              // Ignore abort errors on timeout
+              console.warn('Abort controller error:', abortError);
+            }
           }, timeout);
 
           response = await fetch('/api/wc/v3/', {
@@ -45,15 +50,21 @@ class ApiHealthChecker {
           });
 
           // Clear timeout if request completed successfully
-          clearTimeout(timeoutId);
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
 
         } catch (fetchError) {
           // Always clear timeout on error
-          clearTimeout(timeoutId);
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
 
-          // Handle AbortError specifically
+          // Handle AbortError specifically - these are expected for timeouts
           if (fetchError instanceof Error &&
-              (fetchError.name === 'AbortError' || isAborted)) {
+              (fetchError.name === 'AbortError' ||
+               fetchError.message.includes('aborted') ||
+               isAborted)) {
             throw new Error('Health check timeout');
           }
           throw fetchError;
