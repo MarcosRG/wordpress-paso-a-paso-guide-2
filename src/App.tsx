@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ConnectivityAlert } from "@/components/ConnectivityAlert";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import AdminPanel from "./pages/AdminPanel";
 
 import { networkRecoveryService } from "./services/networkRecovery";
 import "./wordpress-embed.css";
@@ -41,6 +42,7 @@ const App = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/admin" element={<AdminPanel />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
