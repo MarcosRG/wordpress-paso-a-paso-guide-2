@@ -275,6 +275,15 @@ export const BikeSelection = ({
               getQuantityForBikeAndSize={getQuantityForBikeAndSize}
               updateBikeQuantity={updateBikeQuantity}
               totalDays={reservation.totalDays}
+              batchStockData={
+                batchAtumStock.stockMap.get(bike.id)
+                  ? {
+                      stockBySize: batchAtumStock.stockMap.get(bike.id)!.stockBySize,
+                      isLoading: batchAtumStock.stockMap.get(bike.id)!.isLoading,
+                      hasAtumData: batchAtumStock.stockMap.get(bike.id)!.hasAtumData,
+                    }
+                  : undefined
+              }
             />
           );
         })}
