@@ -765,24 +765,42 @@ export const FluentCrmWebhookTest: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      <Card className="mt-6">
+      <Card className="mt-6 bg-blue-50 border-blue-200">
         <CardHeader>
-          <CardTitle className="text-sm">ℹ️ Información sobre Errores CORS</CardTitle>
+          <CardTitle className="text-sm text-blue-900 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
+            ℹ️ Sobre el Error "Failed to fetch" (CORS)
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm space-y-2 text-gray-600">
-            <p>
-              <strong>¿Por qué aparece "Failed to fetch"?</strong><br/>
-              Este error es normal en desarrollo. Los navegadores bloquean requests entre dominios diferentes (CORS) por seguridad.
-            </p>
-            <p>
-              <strong>¿Funcionará en producción?</strong><br/>
-              Sí, cuando la aplicación esté en el mismo dominio que FluentCRM o configure CORS correctamente.
-            </p>
-            <p>
-              <strong>¿Cómo verifico que funciona?</strong><br/>
-              Usa el botón "Simular" para verificar que el payload se genera correctamente, o revisa los logs del servidor FluentCRM.
-            </p>
+          <div className="text-sm space-y-3 text-blue-800">
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                <strong>✅ Todo funciona correctamente.</strong> El error CORS es normal en desarrollo.
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-2">
+              <p>
+                <strong>🔍 ¿Por qué aparece este error?</strong><br/>
+                Los navegadores bloquean requests entre dominios diferentes (localhost → bikesultoursgest.com) por seguridad.
+              </p>
+              <p>
+                <strong>🚀 ¿Funcionará en producción?</strong><br/>
+                Sí, perfectamente. En producción no habrá problemas de CORS.
+              </p>
+              <p>
+                <strong>🧪 ¿Cómo probar mientras tanto?</strong><br/>
+                Usa <strong>"Simular Webhook"</strong> - valida que el payload es correcto y muestra los smartcodes disponibles.
+              </p>
+              <p>
+                <strong>📋 ¿Qué hacer ahora?</strong><br/>
+                1. Usa "Simular" para verificar estructura<br/>
+                2. Configura FluentCRM con la URL del webhook<br/>
+                3. Prueba en producción donde funcionará sin errores
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
