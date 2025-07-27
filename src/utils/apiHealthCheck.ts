@@ -76,8 +76,12 @@ class ApiHealthChecker {
         }
       } else {
         // Fallback for environments without AbortController
+        const baseUrl = import.meta.env.DEV
+          ? "https://bikesultoursgest.com/wp-json/wp/v2/"  // Use WordPress REST API for health check
+          : (import.meta.env.VITE_WOOCOMMERCE_API_BASE || "https://bikesultoursgest.com/wp-json/wp/v2/");
+
         response = await Promise.race([
-          fetch('/api/wc/v3/', {
+          fetch(baseUrl, {
             method: 'HEAD',
             headers: {
               'Accept': 'application/json',
