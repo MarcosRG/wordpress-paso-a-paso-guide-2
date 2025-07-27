@@ -55,12 +55,16 @@ export const FluentCrmWebhookTest: React.FC = () => {
 
   const createSampleReservation = async () => {
     try {
-      const newReservation: Omit<Reservation, 'id' | 'created_at' | 'updated_at'> = {
+      // Crear reserva directamente sin verificación de disponibilidad para testing
+      const newReservation: Reservation = {
         ...testOrderData,
+        id: Date.now(), // ID temporal único
         status: 'confirmed',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         bikes: [
           {
-            bike_woocommerce_id: 101,
+            bike_woocommerce_id: Date.now() + 1, // ID único para evitar conflictos
             bike_name: 'Bicicleta Eléctrica Mountain',
             bike_model: 'Electric MTB Pro',
             quantity: 1,
@@ -69,7 +73,7 @@ export const FluentCrmWebhookTest: React.FC = () => {
             insurance_price: 15
           },
           {
-            bike_woocommerce_id: 102,
+            bike_woocommerce_id: Date.now() + 2, // ID único para evitar conflictos
             bike_name: 'Bicicleta Urban Classic',
             bike_model: 'City Bike Standard',
             quantity: 1,
@@ -80,10 +84,14 @@ export const FluentCrmWebhookTest: React.FC = () => {
         ]
       };
 
-      const created = await reservationService.createReservation(newReservation);
-      console.log('✅ Reserva de prueba creada:', created);
+      // Guardar directamente en localStorage para evitar validación de disponibilidad
+      const reservations = JSON.parse(localStorage.getItem('neon_reservations') || '[]');
+      reservations.push(newReservation);
+      localStorage.setItem('neon_reservations', JSON.stringify(reservations));
+
+      console.log('✅ Reserva de prueba creada:', newReservation);
       await loadRecentReservations();
-      return created;
+      return newReservation;
     } catch (error) {
       console.error('❌ Error creando reserva de prueba:', error);
       throw error;
