@@ -22,17 +22,23 @@ export interface SyncLog {
 
 class WordPressSyncService {
   private config: WordPressSyncConfig = {
-    autoSync: true,
-    syncInterval: 5 * 60 * 1000, // 5 minutos
+    autoSync: false, // Deshabilitado por defecto para evitar duplicados
+    syncInterval: 30 * 60 * 1000, // 30 minutos (era cada 5)
   };
-  
+
   private syncInterval: NodeJS.Timeout | null = null;
   private lastSyncTime: Date | null = null;
-  
+
   constructor() {
     this.loadConfig();
+    console.log('🔄 WordPressSyncService iniciado (auto-sync deshabilitado por defecto)');
+
+    // Solo iniciar auto-sync si está explícitamente habilitado en configuración
     if (this.config.autoSync) {
+      console.log('⚠️ Auto-sync está habilitado - iniciando...');
       this.startAutoSync();
+    } else {
+      console.log('✅ Auto-sync deshabilitado - usa sincronización manual desde el panel de admin');
     }
   }
   
