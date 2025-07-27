@@ -21,7 +21,7 @@ class AdminAuthService {
   // Credenciales desde variables de entorno
   private defaultCredentials = {
     username: import.meta.env.VITE_ADMIN_USERNAME || 'admin_bikesul_pt',
-    password: import.meta.env.VITE_ADMIN_PASSWORD, // Requerida desde .env
+    password: import.meta.env.VITE_ADMIN_PASSWORD || (import.meta.env.DEV ? 'BikeSlPt2024!Dev' : ''),
     email: 'admin@bikesul.com',
     role: 'super_admin' as const
   };
@@ -29,8 +29,14 @@ class AdminAuthService {
   // Validar configuración en constructor
   private validateConfig() {
     if (!this.defaultCredentials.password) {
-      console.error('❌ VITE_ADMIN_PASSWORD no está configurada. Ver .env.example');
-      throw new Error('Admin password not configured');
+      if (import.meta.env.PROD) {
+        console.error('❌ VITE_ADMIN_PASSWORD no está configurada en producción');
+        throw new Error('Admin password not configured');
+      } else {
+        console.warn('⚠️ Usando contraseña por defecto en desarrollo. Configura VITE_ADMIN_PASSWORD en .env');
+      }
+    } else if (import.meta.env.DEV && this.defaultCredentials.password === 'BikeSlPt2024!Dev') {
+      console.warn('⚠️ Usando contraseña por defecto en desarrollo. Recomendado configurar VITE_ADMIN_PASSWORD en .env');
     }
   }
   
