@@ -457,24 +457,19 @@ export const FluentCrmWebhookTest: React.FC = () => {
                   </div>
                 </div>
                 
+                <Alert className="bg-yellow-50 border-yellow-200 mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>🚨 Recomendado para desarrollo:</strong> Usa <strong>"Simular Webhook"</strong> para evitar errores CORS.<br/>
+                    <strong>"Enviar Real"</strong> fallará en localhost pero funcionará en producción.
+                  </AlertDescription>
+                </Alert>
+
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => sendWebhookTest()}
-                      disabled={isLoading}
-                      className="flex-1"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Send className="h-4 w-4 mr-2" />
-                      )}
-                      Enviar Real
-                    </Button>
-                    <Button
                       onClick={() => simulateWebhookTest()}
                       disabled={isLoading}
-                      variant="outline"
                       className="flex-1"
                     >
                       {isLoading ? (
@@ -482,7 +477,20 @@ export const FluentCrmWebhookTest: React.FC = () => {
                       ) : (
                         <TestTube className="h-4 w-4 mr-2" />
                       )}
-                      Simular
+                      Simular Webhook (Recomendado)
+                    </Button>
+                    <Button
+                      onClick={() => sendWebhookTest()}
+                      disabled={isLoading}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4 mr-2" />
+                      )}
+                      Enviar Real (CORS Error)
                     </Button>
                   </div>
                   <Button
@@ -502,13 +510,6 @@ export const FluentCrmWebhookTest: React.FC = () => {
                     Crear Reserva en Sistema
                   </Button>
                 </div>
-
-                <Alert>
-                  <AlertDescription className="text-sm">
-                    <strong>Enviar Real:</strong> Intenta enviar al webhook real (puede fallar por CORS en desarrollo)<br/>
-                    <strong>Simular:</strong> Simula la respuesta y verifica que el payload es correcto
-                  </AlertDescription>
-                </Alert>
               </div>
             </CardContent>
           </Card>
