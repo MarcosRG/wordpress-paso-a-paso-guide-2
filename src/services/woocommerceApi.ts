@@ -653,16 +653,24 @@ export const checkAtumAvailability = async (
 
     const data = await response.json();
 
-    // Log all meta_data keys for debugging (only for specific product)
-    if (productId === 18915) {
-      console.log(
-        `🔍 Meta data keys para KTM Chicago (ID: ${productId}):`,
-        data.meta_data?.map((m: any) => ({
+    // Log all meta_data keys for debugging (TODOS los productos para diagnóstico ATUM)
+    console.log(
+      `🔍 ATUM Debug - Producto ID ${productId} (${data.name || 'Sin nombre'}):`,
+      {
+        totalMetaFields: data.meta_data?.length || 0,
+        metaKeys: data.meta_data?.map((m: any) => ({
           key: m.key,
           hasValue: !!m.value,
+          valueType: typeof m.value,
+          valuePreview: typeof m.value === 'string' ? m.value.substring(0, 50) + '...' : m.value
         })) || [],
-      );
-    }
+        stockInfo: {
+          woocommerce_stock: data.stock_quantity,
+          stock_status: data.stock_status,
+          manage_stock: data.manage_stock
+        }
+      }
+    );
 
     // Check for ATUM Multi-Inventory data in meta_data
     const atumMultiStock = data.meta_data?.find(
@@ -676,28 +684,43 @@ export const checkAtumAvailability = async (
     );
 
     if (atumMultiStock && atumMultiStock.value) {
+      console.log(`📦 ATUM Multi-Inventory encontrado para producto ${productId}:`, {
+        key: atumMultiStock.key,
+        valueType: typeof atumMultiStock.value,
+        rawValue: atumMultiStock.value
+      });
+
       try {
         const multiInventory =
           typeof atumMultiStock.value === "string"
             ? JSON.parse(atumMultiStock.value)
             : atumMultiStock.value;
 
+        console.log(`🏪 ATUM Multi-Inventory parsed para ${productId}:`, multiInventory);
+
         // If it's an object, get the total stock across all inventories
         if (typeof multiInventory === "object" && multiInventory !== null) {
-          const totalStock = Object.values(multiInventory).reduce(
-            (sum: number, stock: unknown) => {
-              return sum + (parseInt(String(stock)) || 0);
-            },
-            0,
-          );
+          const stockDetails = Object.entries(multiInventory).map(([location, stock]) => ({
+            location,
+            stock: parseInt(String(stock)) || 0
+          }));
+
+          const totalStock = stockDetails.reduce((sum, item) => sum + item.stock, 0);
+
+          console.log(`✅ ATUM Multi-Inventory calculado para ${productId}:`, {
+            stockByLocation: stockDetails,
+            totalStock: totalStock
+          });
 
           if (totalStock > 0) {
             return totalStock;
           }
         }
       } catch (e) {
-        console.warn(`Error parsing ATUM multi-inventory for ${productId}:`, e);
+        console.error(`❌ Error parsing ATUM multi-inventory para ${productId}:`, e);
       }
+    } else {
+      console.log(`❌ NO se encontró ATUM Multi-Inventory para producto ${productId}`);
     }
 
     // Check for standard ATUM inventory data in meta_data
@@ -714,16 +737,22 @@ export const checkAtumAvailability = async (
     if (atumStock) {
       const stockValue = parseInt(atumStock.value) || 0;
 
-      // Log stock info for specific product
-      if (productId === 18915) {
-        console.log(
-          `📦 ATUM stock para KTM Chicago: key="${atumStock.key}", value="${atumStock.value}", parsed=${stockValue}`,
-        );
-      }
+      console.log(
+        `📦 ATUM Stock estándar para producto ${productId}:`,
+        {
+          key: atumStock.key,
+          rawValue: atumStock.value,
+          parsedValue: stockValue,
+          productName: data.name || 'Sin nombre'
+        }
+      );
 
       if (stockValue > 0) {
+        console.log(`✅ ATUM Stock válido encontrado para ${productId}: ${stockValue} unidades`);
         return stockValue;
       }
+    } else {
+      console.log(`❌ NO se encontró ATUM Stock estándar para producto ${productId}`);
     }
 
     // Check for ATUM manage stock setting
@@ -740,13 +769,20 @@ export const checkAtumAvailability = async (
     // Fallback to regular WooCommerce stock
     const wooStock = data.stock_quantity || 0;
 
-    // Log stock info for specific product
-    if (productId === 18915) {
-      console.log(`🛒 WooCommerce stock para KTM Chicago: ${wooStock}`);
-      console.log(
-        `📋 Stock status: ${data.stock_status}, manage_stock: ${data.manage_stock}`,
-      );
-    }
+    console.log(`🛒 WooCommerce Stock fallback para producto ${productId}:`, {
+      stock_quantity: wooStock,
+      stock_status: data.stock_status,
+      manage_stock: data.manage_stock,
+      productName: data.name || 'Sin nombre'
+    });
+
+    // Final summary for this product
+    console.log(`📊 RESUMEN FINAL para producto ${productId} (${data.name || 'Sin nombre'}):`, {
+      hasAtumMultiInventory: !!atumMultiStock,
+      hasAtumStandardStock: !!atumStock,
+      finalStockValue: wooStock,
+      recommendedAction: wooStock === 0 ? 'REVISAR CONFIGURACIÓN ATUM' : 'OK'
+    });
 
     return wooStock;
   } catch (error) {
