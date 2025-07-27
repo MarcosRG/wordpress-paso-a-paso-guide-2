@@ -12,6 +12,7 @@ import {
   getPricePerDayFromACF,
 } from "@/services/woocommerceApi";
 import { useAtumStockBySize } from "@/hooks/useAtumStock";
+import { useAtumStockFromBatch, StockBySize } from "@/hooks/useBatchAtumStock";
 
 interface BikeCardProps {
   bike: Bike;
@@ -22,6 +23,11 @@ interface BikeCardProps {
     change: number,
   ) => void;
   totalDays: number;
+  batchStockData?: {
+    stockBySize: StockBySize;
+    isLoading: boolean;
+    hasAtumData: boolean;
+  };
 }
 
 const BikeCard = ({
@@ -29,14 +35,19 @@ const BikeCard = ({
   getQuantityForBikeAndSize,
   updateBikeQuantity,
   totalDays,
+  batchStockData,
 }: BikeCardProps) => {
   const { t } = useLanguage();
 
-  // Obtener stock real de ATUM por tamaño
-  const { data: atumStockBySize = {} } = useAtumStockBySize(
+  // Usar stock do batch se disponível, senão usar hook individual como fallback
+  const individualStockQuery = useAtumStockBySize(
     parseInt(bike.id),
-    bike.wooCommerceData?.product?.type === "variable",
+    bike.wooCommerceData?.product?.type === "variable" && !batchStockData,
   );
+
+  const atumStockBySize = batchStockData?.stockBySize || individualStockQuery.data || {};
+  const isAtumLoading = batchStockData?.isLoading || individualStockQuery.isLoading || false;
+  const hasAtumData = batchStockData?.hasAtumData || (Object.keys(atumStockBySize).length > 0);
 
   // Extract ACF pricing first, then fallback to day-based pricing
   const acfPricing: ACFPricing | null = bike.wooCommerceData?.product
@@ -212,8 +223,14 @@ const BikeCard = ({
                   <span className="text-xs text-gray-500">
                     ({availableForSize}{" "}
                     {availableForSize === 1 ? t("available") : t("availables")})
-                    {atumStockBySize[size] !== undefined && (
+                    {isAtumLoading && (
+                      <span className="text-blue-600 font-medium"> ⏳ATUM</span>
+                    )}
+                    {!isAtumLoading && atumStockBySize[size] !== undefined && (
                       <span className="text-green-600 font-medium"> ✓ATUM</span>
+                    )}
+                    {!isAtumLoading && !hasAtumData && (
+                      <span className="text-orange-600 font-medium"> ⚠️EST</span>
                     )}
                   </span>
                 </div>

@@ -18,6 +18,7 @@ import {
   extractDayBasedPricing,
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
+import { useBatchAtumStock } from "@/hooks/useBatchAtumStock";
 
 interface BikeSelectionProps {
   reservation: ReservationData;
@@ -39,6 +40,9 @@ export const BikeSelection = ({
   const { data: categories = [], refetch: refetchCategories } =
     useLocalNeonCategories();
   const { language, setLanguage, t } = useLanguage();
+
+  // Verificação Atum em lote para todas as bicicletas
+  const batchAtumStock = useBatchAtumStock(bikes || []);
 
   // Manual refresh function
   const handleRefresh = async () => {
@@ -232,6 +236,26 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
         <div className="flex items-center gap-4">
           <SyncStatusIndicator showDetails={false} />
+
+          {/* Indicador de status Atum */}
+          {batchAtumStock.totalProducts > 0 && (
+            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-gray-100 text-sm">
+              {batchAtumStock.isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Verificando ATUM...</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-green-600">✓</span>
+                  <span>
+                    ATUM: {batchAtumStock.totalAtumProducts}/{batchAtumStock.totalProducts} ({batchAtumStock.atumCoverage}%)
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -271,6 +295,15 @@ export const BikeSelection = ({
               getQuantityForBikeAndSize={getQuantityForBikeAndSize}
               updateBikeQuantity={updateBikeQuantity}
               totalDays={reservation.totalDays}
+              batchStockData={
+                batchAtumStock.stockMap.get(bike.id)
+                  ? {
+                      stockBySize: batchAtumStock.stockMap.get(bike.id)!.stockBySize,
+                      isLoading: batchAtumStock.stockMap.get(bike.id)!.isLoading,
+                      hasAtumData: batchAtumStock.stockMap.get(bike.id)!.hasAtumData,
+                    }
+                  : undefined
+              }
             />
           );
         })}
