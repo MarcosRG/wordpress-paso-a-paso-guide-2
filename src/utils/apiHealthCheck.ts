@@ -21,28 +21,42 @@ class ApiHealthChecker {
     const startTime = Date.now();
 
     try {
-      // Use a simple endpoint that should always be available
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-
+      // Try modern AbortController approach first
       let response: Response;
-      try {
-        response = await fetch('/api/wc/v3/', {
-          method: 'HEAD',
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-          }
-        });
-        clearTimeout(timeoutId);
-      } catch (fetchError) {
-        clearTimeout(timeoutId);
 
-        // Handle AbortError specifically
-        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-          throw new Error('Health check timeout');
+      if (typeof AbortController !== 'undefined') {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+          response = await fetch('/api/wc/v3/', {
+            method: 'HEAD',
+            signal: controller.signal,
+            headers: {
+              'Accept': 'application/json',
+            }
+          });
+          clearTimeout(timeoutId);
+        } catch (fetchError) {
+          // Handle AbortError specifically
+          if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+            throw new Error('Health check timeout');
+          }
+          throw fetchError;
         }
-        throw fetchError;
+      } else {
+        // Fallback for environments without AbortController
+        response = await Promise.race([
+          fetch('/api/wc/v3/', {
+            method: 'HEAD',
+            headers: {
+              'Accept': 'application/json',
+            }
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Health check timeout')), timeout)
+          )
+        ]);
       }
 
       const responseTime = Date.now() - startTime;
