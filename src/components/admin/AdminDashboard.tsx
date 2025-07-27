@@ -3,13 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Calendar, 
-  Users, 
-  Bike, 
-  TrendingUp, 
-  RefreshCw, 
-  Settings, 
+import {
+  Calendar,
+  Users,
+  Bike,
+  TrendingUp,
+  RefreshCw,
+  Settings,
   LogOut,
   AlertCircle,
   CheckCircle,
@@ -19,6 +19,7 @@ import {
 import { adminAuthService } from '../../services/adminAuthService';
 import { reservationService, Reservation } from '../../services/reservationService';
 import { wordPressSyncService } from '../../services/wordpressSyncService';
+import { SystemSettings } from './SystemSettings';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -329,23 +330,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
           {/* Settings Tab */}
           <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Configuración del Sistema</CardTitle>
-                <CardDescription>
-                  Configuración general y herramientas administrativas
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center py-8 text-gray-500">
-                    <Settings className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p>Panel de configuración en desarrollo</p>
-                    <p className="text-sm">Próximamente: configuración de días bloqueados, tarifas, etc.</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <SystemSettings />
           </TabsContent>
         </Tabs>
       </main>
