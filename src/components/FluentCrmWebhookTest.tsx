@@ -302,6 +302,7 @@ export const FluentCrmWebhookTest: React.FC = () => {
   const simulateWebhookTest = async (payload?: any) => {
     setIsLoading(true);
     setWebhookResponse(null);
+    setMessage(null);
 
     try {
       let dataToSend = payload;
