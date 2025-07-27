@@ -11,6 +11,8 @@ import {
   generateConnectivityReport,
   getConnectivityStatus,
 } from "./connectivityMonitor";
+import { isThirdPartyInterference } from "../utils/fetchInterceptor";
+import { shouldAllowApiRequest } from "../utils/apiHealthCheck";
 import {
   canMakeWooCommerceRequest,
   recordWooCommerceSuccess,
@@ -376,6 +378,17 @@ const fetchWithRetry = async (
         } else if (response.status === 404) {
           console.warn(`⚠️ Resource not found: ${url}`);
           return response; // Return 404 responses for handling upstream
+        } else if (response.status === 403) {
+          // Handle 403 authentication errors with specific retry logic
+          console.warn(`🔒 Authentication error (403) for: ${url} - attempt ${attempt + 1}`);
+          if (attempt < maxRetries) {
+            // For 403 errors, wait longer before retry to handle rate limiting
+            const waitTime = Math.min(2000 * Math.pow(2, attempt), 10000);
+            console.log(`⏳ Waiting ${waitTime}ms before retrying authentication...`);
+            await new Promise((resolve) => setTimeout(resolve, waitTime));
+            continue; // Retry without throwing
+          }
+          throw new Error(`Authentication failed (403): Check API credentials and permissions`);
         } else {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -390,7 +403,9 @@ const fetchWithRetry = async (
       lastError = error as Error;
       console.warn(`⚠️ Intento ${attempt + 1} falló:`, error);
 
-      // Enhanced network error detection
+      // Enhanced error detection with third-party script handling
+      const isThirdPartyConflict = error instanceof Error && isThirdPartyInterference(error);
+
       const isNetworkError =
         error instanceof TypeError &&
         (error.message.includes("Failed to fetch") ||
@@ -398,10 +413,8 @@ const fetchWithRetry = async (
           error.message.includes("Network request failed") ||
           error.message.includes("NetworkError") ||
           error.message.includes("net::") ||
-          error.name === "TypeError") ||
-        // Handle third-party script interference (like FullStory)
-        (error.stack && error.stack.includes("fullstory.com")) ||
-        (error.stack && error.stack.includes("edge.fullstory.com"));
+          error.name === "TypeError") &&
+        !isThirdPartyConflict; // Exclude third-party conflicts from network errors
 
       const isTimeoutError =
         error.message === "Request timeout" ||
@@ -413,22 +426,46 @@ const fetchWithRetry = async (
         error.message.includes("CORS") ||
         error.message.includes("cross-origin");
 
+      const isSocketError =
+        error.message.includes("socket hang up") ||
+        error.message.includes("ECONNRESET") ||
+        error.message.includes("ENOTFOUND") ||
+        error.message.includes("connection reset");
+
+      const isAuthTemporaryFailure =
+        error.message.includes("Authentication failed (403)") ||
+        (error.message.includes("HTTP 403") && attempt === 0);
+
       // Handle different error types
-      if (isNetworkError || isCorsError) {
+      if (isThirdPartyConflict) {
+        console.warn(`🔧 Third-party script conflict detected: ${error.message}`);
+        // Don't mark network as unavailable for third-party conflicts
+      } else if (isNetworkError || isCorsError) {
         console.warn(`🌐 Network/CORS error detected: ${error.message}`);
         isNetworkAvailable = false;
       }
 
-      // For network errors, wait longer before next attempt
-      if (attempt < maxRetries && (isNetworkError || isTimeoutError || isCorsError)) {
-        const waitTime = Math.min(1000 * Math.pow(2, attempt), 8000); // Increased max wait to 8s
+      // For errors, wait before next attempt (different wait times based on error type)
+      if (attempt < maxRetries && (isNetworkError || isTimeoutError || isCorsError || isThirdPartyConflict || isSocketError || isAuthTemporaryFailure)) {
+        let waitTime;
+
+        if (isThirdPartyConflict) {
+          waitTime = Math.min(300 * Math.pow(2, attempt), 1500); // Very short wait for script conflicts
+        } else if (isAuthTemporaryFailure) {
+          waitTime = Math.min(3000 * Math.pow(2, attempt), 15000); // Longer wait for auth issues
+        } else if (isSocketError) {
+          waitTime = Math.min(2000 * Math.pow(2, attempt), 10000); // Medium wait for socket issues
+        } else {
+          waitTime = Math.min(1000 * Math.pow(2, attempt), 8000); // Normal wait for other errors
+        }
+
         console.log(
-          `⏳ Esperando ${waitTime}ms antes del siguiente intento...`,
+          `⏳ Esperando ${waitTime}ms antes del siguiente intento (${isThirdPartyConflict ? 'script conflict' : isAuthTemporaryFailure ? 'auth retry' : isSocketError ? 'socket error' : 'network error'})...`,
         );
         await new Promise((resolve) => setTimeout(resolve, waitTime));
 
-        // Reset circuit breaker check for network errors to allow retry
-        if (isNetworkError || isCorsError) {
+        // Reset circuit breaker check for retryable errors
+        if (isNetworkError || isCorsError || isThirdPartyConflict || isSocketError || isAuthTemporaryFailure) {
           circuitBreakerChecked = false;
         }
       }
@@ -443,8 +480,18 @@ const fetchWithRetry = async (
         if (error instanceof Error) {
           if (isTimeoutError) {
             recordApiTimeout();
+          } else if (isThirdPartyConflict) {
+            recordApiNetworkError(true); // Pass true for third-party conflict
+            console.warn(`🔧 Third-party script conflict in fetchWithRetry after all retries`);
+          } else if (isAuthTemporaryFailure) {
+            console.warn(`🔒 Authentication issues persist after retries - check API credentials`);
+            // Don't record as network error for auth issues
+          } else if (isSocketError) {
+            recordApiNetworkError(false); // Socket errors are network issues
+            isNetworkAvailable = false;
+            console.warn(`🔌 Socket connection issues detected`);
           } else if (isNetworkError || isCorsError) {
-            recordApiNetworkError();
+            recordApiNetworkError(false); // Pass false for genuine network error
             isNetworkAvailable = false; // Mark network as unavailable
           }
         }
@@ -606,16 +653,24 @@ export const checkAtumAvailability = async (
 
     const data = await response.json();
 
-    // Log all meta_data keys for debugging (only for specific product)
-    if (productId === 18915) {
-      console.log(
-        `🔍 Meta data keys para KTM Chicago (ID: ${productId}):`,
-        data.meta_data?.map((m: any) => ({
+    // Log all meta_data keys for debugging (TODOS los productos para diagnóstico ATUM)
+    console.log(
+      `🔍 ATUM Debug - Producto ID ${productId} (${data.name || 'Sin nombre'}):`,
+      {
+        totalMetaFields: data.meta_data?.length || 0,
+        metaKeys: data.meta_data?.map((m: any) => ({
           key: m.key,
           hasValue: !!m.value,
+          valueType: typeof m.value,
+          valuePreview: typeof m.value === 'string' ? m.value.substring(0, 50) + '...' : m.value
         })) || [],
-      );
-    }
+        stockInfo: {
+          woocommerce_stock: data.stock_quantity,
+          stock_status: data.stock_status,
+          manage_stock: data.manage_stock
+        }
+      }
+    );
 
     // Check for ATUM Multi-Inventory data in meta_data
     const atumMultiStock = data.meta_data?.find(
@@ -629,28 +684,43 @@ export const checkAtumAvailability = async (
     );
 
     if (atumMultiStock && atumMultiStock.value) {
+      console.log(`📦 ATUM Multi-Inventory encontrado para producto ${productId}:`, {
+        key: atumMultiStock.key,
+        valueType: typeof atumMultiStock.value,
+        rawValue: atumMultiStock.value
+      });
+
       try {
         const multiInventory =
           typeof atumMultiStock.value === "string"
             ? JSON.parse(atumMultiStock.value)
             : atumMultiStock.value;
 
+        console.log(`🏪 ATUM Multi-Inventory parsed para ${productId}:`, multiInventory);
+
         // If it's an object, get the total stock across all inventories
         if (typeof multiInventory === "object" && multiInventory !== null) {
-          const totalStock = Object.values(multiInventory).reduce(
-            (sum: number, stock: unknown) => {
-              return sum + (parseInt(String(stock)) || 0);
-            },
-            0,
-          );
+          const stockDetails = Object.entries(multiInventory).map(([location, stock]) => ({
+            location,
+            stock: parseInt(String(stock)) || 0
+          }));
+
+          const totalStock = stockDetails.reduce((sum, item) => sum + item.stock, 0);
+
+          console.log(`✅ ATUM Multi-Inventory calculado para ${productId}:`, {
+            stockByLocation: stockDetails,
+            totalStock: totalStock
+          });
 
           if (totalStock > 0) {
             return totalStock;
           }
         }
       } catch (e) {
-        console.warn(`Error parsing ATUM multi-inventory for ${productId}:`, e);
+        console.error(`❌ Error parsing ATUM multi-inventory para ${productId}:`, e);
       }
+    } else {
+      console.log(`❌ NO se encontró ATUM Multi-Inventory para producto ${productId}`);
     }
 
     // Check for standard ATUM inventory data in meta_data
@@ -667,16 +737,22 @@ export const checkAtumAvailability = async (
     if (atumStock) {
       const stockValue = parseInt(atumStock.value) || 0;
 
-      // Log stock info for specific product
-      if (productId === 18915) {
-        console.log(
-          `📦 ATUM stock para KTM Chicago: key="${atumStock.key}", value="${atumStock.value}", parsed=${stockValue}`,
-        );
-      }
+      console.log(
+        `📦 ATUM Stock estándar para producto ${productId}:`,
+        {
+          key: atumStock.key,
+          rawValue: atumStock.value,
+          parsedValue: stockValue,
+          productName: data.name || 'Sin nombre'
+        }
+      );
 
       if (stockValue > 0) {
+        console.log(`✅ ATUM Stock válido encontrado para ${productId}: ${stockValue} unidades`);
         return stockValue;
       }
+    } else {
+      console.log(`❌ NO se encontró ATUM Stock estándar para producto ${productId}`);
     }
 
     // Check for ATUM manage stock setting
@@ -693,13 +769,20 @@ export const checkAtumAvailability = async (
     // Fallback to regular WooCommerce stock
     const wooStock = data.stock_quantity || 0;
 
-    // Log stock info for specific product
-    if (productId === 18915) {
-      console.log(`🛒 WooCommerce stock para KTM Chicago: ${wooStock}`);
-      console.log(
-        `📋 Stock status: ${data.stock_status}, manage_stock: ${data.manage_stock}`,
-      );
-    }
+    console.log(`🛒 WooCommerce Stock fallback para producto ${productId}:`, {
+      stock_quantity: wooStock,
+      stock_status: data.stock_status,
+      manage_stock: data.manage_stock,
+      productName: data.name || 'Sin nombre'
+    });
+
+    // Final summary for this product
+    console.log(`📊 RESUMEN FINAL para producto ${productId} (${data.name || 'Sin nombre'}):`, {
+      hasAtumMultiInventory: !!atumMultiStock,
+      hasAtumStandardStock: !!atumStock,
+      finalStockValue: wooStock,
+      recommendedAction: wooStock === 0 ? 'REVISAR CONFIGURACIÓN ATUM' : 'OK'
+    });
 
     return wooStock;
   } catch (error) {
@@ -738,6 +821,73 @@ const handleNetworkError = async (): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 2000));
 };
 
+// Function to generate ATUM configuration report
+export const generateAtumReport = (products: WooCommerceProduct[]): void => {
+  console.log("\n" + "=".repeat(80));
+  console.log("📊 REPORTE CONSOLIDADO DE CONFIGURACIÓN ATUM");
+  console.log("=".repeat(80));
+
+  const report = {
+    totalProducts: products.length,
+    withAtumMultiInventory: 0,
+    withAtumStandardStock: 0,
+    withoutAtumData: 0,
+    onlyWooCommerceStock: 0,
+    productsDetails: [] as any[]
+  };
+
+  products.forEach(product => {
+    const hasAtumMulti = product.meta_data?.some((m: any) =>
+      m.key === "_atum_multi_inventory" ||
+      m.key === "atum_multi_inventory" ||
+      m.key === "_multi_inventory"
+    );
+
+    const hasAtumStandard = product.meta_data?.some((m: any) =>
+      m.key === "_atum_stock_quantity" ||
+      m.key === "atum_stock_quantity" ||
+      m.key === "_atum_stock"
+    );
+
+    if (hasAtumMulti) report.withAtumMultiInventory++;
+    if (hasAtumStandard) report.withAtumStandardStock++;
+    if (!hasAtumMulti && !hasAtumStandard) {
+      report.withoutAtumData++;
+      if (product.stock_quantity > 0) report.onlyWooCommerceStock++;
+    }
+
+    report.productsDetails.push({
+      id: product.id,
+      name: product.name,
+      hasAtumMulti,
+      hasAtumStandard,
+      wooStock: product.stock_quantity,
+      status: hasAtumMulti ? 'ATUM Multi' : hasAtumStandard ? 'ATUM Standard' : 'Solo WooCommerce'
+    });
+  });
+
+  console.log(`\n📈 ESTADÍSTICAS GENERALES:`);
+  console.log(`• Total de productos analizados: ${report.totalProducts}`);
+  console.log(`• Con ATUM Multi-Inventory: ${report.withAtumMultiInventory}`);
+  console.log(`• Con ATUM Stock estándar: ${report.withAtumStandardStock}`);
+  console.log(`• Sin datos ATUM: ${report.withoutAtumData}`);
+  console.log(`• Solo con stock WooCommerce: ${report.onlyWooCommerceStock}`);
+
+  console.log(`\n🔧 PRODUCTOS QUE NECESITAN CONFIGURACIÓN ATUM:`);
+  const problematicProducts = report.productsDetails.filter(p => !p.hasAtumMulti && !p.hasAtumStandard);
+  problematicProducts.forEach(product => {
+    console.log(`  • ID ${product.id}: ${product.name} (Stock WooCommerce: ${product.wooStock})`);
+  });
+
+  if (problematicProducts.length === 0) {
+    console.log(`  ✅ ¡Todos los productos tienen configuración ATUM!`);
+  } else {
+    console.log(`\n⚠️ RECOMENDACIÓN: Configurar ATUM Multi-Inventory en WordPress para ${problematicProducts.length} productos`);
+  }
+
+  console.log("=".repeat(80) + "\n");
+};
+
 
 
 export const wooCommerceApi = {
@@ -748,6 +898,12 @@ export const wooCommerceApi = {
       const connectivityStatus = getConnectivityStatus();
       if (connectivityStatus.consecutiveErrors >= 1) {
         console.warn(`🚫 Blocking getProducts due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
+        return [];
+      }
+
+      // Quick API health check
+      if (!(await shouldAllowApiRequest())) {
+        console.warn("🏥 API health check failed, returning empty products array");
         return [];
       }
 
@@ -786,6 +942,12 @@ export const wooCommerceApi = {
       // Log para debug - mostrar cuántos productos se obtuvieron
       console.log(`Productos obtenidos de WooCommerce: ${products.length}`);
       console.log("Headers de respuesta:", response.headers.get("X-WP-Total"));
+
+      // Generar reporte ATUM consolidado para todos los productos
+      if (products.length > 0) {
+        console.log(`\n🔍 INICIANDO ANÁLISIS ATUM DE ${products.length} PRODUCTOS...`);
+        generateAtumReport(products);
+      }
 
       return products;
     } catch (error) {

@@ -54,18 +54,25 @@ class ConnectivityMonitor {
   }
 
   // Registrar un error de red
-  recordNetworkError(): void {
+  recordNetworkError(isThirdPartyConflict = false): void {
     this.metrics.totalRequests++;
     this.metrics.networkErrors++;
     this.metrics.lastErrorTime = Date.now();
     this.metrics.consecutiveErrors++;
 
-    // Activate emergency stop immediately on any network error
-    this.enableEmergencyStop();
+    // Only activate emergency stop for genuine network errors, not third-party conflicts
+    if (!isThirdPartyConflict) {
+      // Only activate emergency stop after multiple genuine network errors
+      if (this.metrics.consecutiveErrors >= 3) {
+        this.enableEmergencyStop();
+      }
+    } else {
+      console.warn("🔧 Third-party script conflict detected, not activating emergency stop");
+    }
 
-    this.logMetrics("🌐 Error de red");
+    this.logMetrics(isThirdPartyConflict ? "🔧 Third-party conflict" : "🌐 Error de red");
 
-    if (this.metrics.consecutiveErrors >= 3) {
+    if (this.metrics.consecutiveErrors >= 5 && !isThirdPartyConflict) {
       this.reportCriticalIssue("Múltiples errores de red consecutivos");
     }
   }
@@ -206,8 +213,8 @@ export const connectivityMonitor = ConnectivityMonitor.getInstance();
 // Funciones de utilidad para usar en otros servicios
 export const recordApiSuccess = () => connectivityMonitor.recordSuccess();
 export const recordApiTimeout = () => connectivityMonitor.recordTimeout();
-export const recordApiNetworkError = () =>
-  connectivityMonitor.recordNetworkError();
+export const recordApiNetworkError = (isThirdPartyConflict = false) =>
+  connectivityMonitor.recordNetworkError(isThirdPartyConflict);
 export const getConnectivityStatus = () => connectivityMonitor.getMetrics();
 export const generateConnectivityReport = () =>
   connectivityMonitor.generateStatusReport();
