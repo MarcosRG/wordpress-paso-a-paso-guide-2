@@ -41,6 +41,9 @@ export const BikeSelection = ({
     useLocalNeonCategories();
   const { language, setLanguage, t } = useLanguage();
 
+  // Verificação Atum em lote para todas as bicicletas
+  const batchAtumStock = useBatchAtumStock(bikes || []);
+
   // Manual refresh function
   const handleRefresh = async () => {
     // Invalidar cache de React Query para forzar recarga desde cache local
