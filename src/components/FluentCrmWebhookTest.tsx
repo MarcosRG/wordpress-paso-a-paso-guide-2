@@ -249,6 +249,70 @@ export const FluentCrmWebhookTest: React.FC = () => {
     setCustomPayload(payload);
   };
 
+  const simulateWebhookTest = async (payload?: any) => {
+    setIsLoading(true);
+    setWebhookResponse(null);
+
+    try {
+      let dataToSend = payload;
+
+      if (!dataToSend) {
+        if (customPayload.trim()) {
+          dataToSend = JSON.parse(customPayload);
+        } else {
+          const reservation = await createSampleReservation();
+          dataToSend = generateWebhookPayload(reservation);
+        }
+      }
+
+      // Simular respuesta exitosa
+      const simulatedResult = {
+        status: 200,
+        statusText: 'OK (Simulado)',
+        headers: {
+          'content-type': 'application/json',
+          'x-simulated': 'true'
+        },
+        data: {
+          success: true,
+          message: 'Webhook simulado exitosamente',
+          received_data: Object.keys(dataToSend),
+          smartcodes_available: [
+            '{{bikesul_order.customer_name}}',
+            '{{bikesul_order.rental_dates}}',
+            '{{bikesul_order.total_bikes}}',
+            '{{bikesul_order.insurance_info}}',
+            '{{bikesul_order.total_amount}}'
+          ]
+        },
+        success: true,
+        timestamp: new Date().toISOString(),
+        isCors: false,
+        isSimulated: true,
+        payloadSent: dataToSend
+      };
+
+      setWebhookResponse(simulatedResult);
+      console.log('✅ Webhook simulado exitosamente:', simulatedResult);
+
+    } catch (error) {
+      const errorResult = {
+        status: 0,
+        statusText: 'Simulation Error',
+        error: error instanceof Error ? error.message : 'Error en simulación',
+        timestamp: new Date().toISOString(),
+        success: false,
+        isCors: false,
+        isSimulated: true
+      };
+
+      setWebhookResponse(errorResult);
+      console.error('❌ Error en simulación:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
