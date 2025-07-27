@@ -943,6 +943,12 @@ export const wooCommerceApi = {
       console.log(`Productos obtenidos de WooCommerce: ${products.length}`);
       console.log("Headers de respuesta:", response.headers.get("X-WP-Total"));
 
+      // Generar reporte ATUM consolidado para todos los productos
+      if (products.length > 0) {
+        console.log(`\n🔍 INICIANDO ANÁLISIS ATUM DE ${products.length} PRODUCTOS...`);
+        generateAtumReport(products);
+      }
+
       return products;
     } catch (error) {
       console.error("Error al obtener productos:", error);
