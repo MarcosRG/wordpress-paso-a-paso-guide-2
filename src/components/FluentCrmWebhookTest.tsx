@@ -39,6 +39,7 @@ export const FluentCrmWebhookTest: React.FC = () => {
   const [webhookResponse, setWebhookResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [recentReservations, setRecentReservations] = useState<Reservation[]>([]);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; content: string } | null>(null);
 
   React.useEffect(() => {
     loadRecentReservations();
