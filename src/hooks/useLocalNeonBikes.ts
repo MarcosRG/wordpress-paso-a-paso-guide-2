@@ -78,6 +78,19 @@ export const useLocalNeonBikes = () => {
           "🚀 HOOK EJECUTÁNDOSE: Cargando productos desde cache local...",
         );
 
+        // Verificar si hay datos en cache primero
+        const { localSyncService } = await import("@/services/localSyncService");
+        const hasCachedData = localSyncService.hasCachedData();
+
+        if (!hasCachedData) {
+          console.log("⚡ Sin datos en cache, iniciando sincronización rápida...");
+          try {
+            await localSyncService.forceSync();
+          } catch (error) {
+            console.warn("⚠️ Sincronización falló, usando datos por defecto:", error);
+          }
+        }
+
         // Obtener productos activos desde cache local
         const products = await neonHttpService.getActiveProducts();
         console.log(
@@ -123,11 +136,12 @@ export const useLocalNeonBikes = () => {
         return [];
       }
     },
-    staleTime: 1 * 60 * 1000, // 1 minuto (datos muy frescos desde cache)
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 30 * 1000, // 30 segundos (más agresivo para primera carga)
+    gcTime: 10 * 60 * 1000, // 10 minutos (mantener en memoria más tiempo)
     throwOnError: false,
-    retry: 1, // Solo un reintento
-    retryDelay: 1000,
+    retry: 0, // Sin reintentos para primera carga rápida
+    refetchOnWindowFocus: false, // Evitar refetch innecesarios
+    refetchOnMount: false, // Evitar refetch si ya hay datos
   });
 };
 
