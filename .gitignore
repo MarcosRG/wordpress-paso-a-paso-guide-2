@@ -22,3 +22,54 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 🔒 ARCHIVOS DE SEGURIDAD - NUNCA COMMITEAR
+# ============================================
+# Variables de entorno con credenciales reales
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de configuración con credenciales
+config.json
+secrets.json
+credentials.json
+.env.production
+
+# Claves privadas y certificados
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Archivos de backup que podrían contener datos sensibles
+*.backup
+*.bak
+*.sql
+*.dump
+
+# Archivos temporales con datos sensibles
+temp_credentials*
+*_credentials*
+api_keys*
+passwords*
+
+# Archivos de desarrollo que podrían contener datos sensibles
+.env.development
+.env.staging
+local.json
+
+# Directorios de configuración que podrían contener secretos
+config/production/
+secrets/
+credentials/
+
+# ============================================
+# RECORDATORIO: 
+# - Usar solo .env.example como plantilla
+# - Nunca commitear archivos .env con valores reales
+# - Rotar credenciales si se comitean accidentalmente
+# ============================================
