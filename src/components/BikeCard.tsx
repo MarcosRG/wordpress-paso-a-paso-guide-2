@@ -223,8 +223,14 @@ const BikeCard = ({
                   <span className="text-xs text-gray-500">
                     ({availableForSize}{" "}
                     {availableForSize === 1 ? t("available") : t("availables")})
-                    {atumStockBySize[size] !== undefined && (
+                    {isAtumLoading && (
+                      <span className="text-blue-600 font-medium"> ⏳ATUM</span>
+                    )}
+                    {!isAtumLoading && atumStockBySize[size] !== undefined && (
                       <span className="text-green-600 font-medium"> ✓ATUM</span>
+                    )}
+                    {!isAtumLoading && !hasAtumData && (
+                      <span className="text-orange-600 font-medium"> ⚠️EST</span>
                     )}
                   </span>
                 </div>
