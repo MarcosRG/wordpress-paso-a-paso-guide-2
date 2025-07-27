@@ -12,12 +12,7 @@
 
 ---
 
-## 🔐 Acceso al Panel de Administración
 
-### Credenciales de Acceso
-- **URL del Panel**: `https://tu-dominio.com/admin`
-- **Usuario**: `admin_bikesul_pt`
-- **Contraseña**: `BikeSlPt2024!Adm#Res7`
 
 ### Proceso de Login
 1. Navega a la URL del panel administrativo
