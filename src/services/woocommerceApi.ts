@@ -913,8 +913,13 @@ export const wooCommerceApi = {
       }
 
       // Check network availability
-      if (!(await checkNetworkAvailability())) {
-        console.warn("🌐 Network unavailable, returning empty products array");
+      try {
+        if (!(await checkNetworkAvailability())) {
+          console.warn("🌐 Network unavailable, returning empty products array");
+          return [];
+        }
+      } catch (error) {
+        console.warn("🌐 Network check error, assuming network unavailable:", error instanceof Error ? error.message : 'Unknown error');
         return [];
       }
 
