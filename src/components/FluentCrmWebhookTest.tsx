@@ -675,6 +675,28 @@ export const FluentCrmWebhookTest: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-sm">ℹ️ Información sobre Errores CORS</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm space-y-2 text-gray-600">
+            <p>
+              <strong>¿Por qué aparece "Failed to fetch"?</strong><br/>
+              Este error es normal en desarrollo. Los navegadores bloquean requests entre dominios diferentes (CORS) por seguridad.
+            </p>
+            <p>
+              <strong>¿Funcionará en producción?</strong><br/>
+              Sí, cuando la aplicación esté en el mismo dominio que FluentCRM o configure CORS correctamente.
+            </p>
+            <p>
+              <strong>¿Cómo verifico que funciona?</strong><br/>
+              Usa el botón "Simular" para verificar que el payload se genera correctamente, o revisa los logs del servidor FluentCRM.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
