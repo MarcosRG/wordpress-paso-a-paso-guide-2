@@ -25,9 +25,16 @@ class ApiHealthChecker {
       let response: Response;
 
       if (typeof AbortController !== 'undefined') {
+        const controller = new AbortController();
+        let timeoutId: NodeJS.Timeout;
+        let isAborted = false;
+
         try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), timeout);
+          // Set up timeout with proper cleanup
+          timeoutId = setTimeout(() => {
+            isAborted = true;
+            controller.abort();
+          }, timeout);
 
           response = await fetch('/api/wc/v3/', {
             method: 'HEAD',
@@ -36,10 +43,17 @@ class ApiHealthChecker {
               'Accept': 'application/json',
             }
           });
+
+          // Clear timeout if request completed successfully
           clearTimeout(timeoutId);
+
         } catch (fetchError) {
+          // Always clear timeout on error
+          clearTimeout(timeoutId);
+
           // Handle AbortError specifically
-          if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          if (fetchError instanceof Error &&
+              (fetchError.name === 'AbortError' || isAborted)) {
             throw new Error('Health check timeout');
           }
           throw fetchError;
