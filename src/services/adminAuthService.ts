@@ -18,16 +18,25 @@ class AdminAuthService {
   private currentUser: AdminUser | null = null;
   private sessionKey = 'bikesul_admin_session';
   
-  // Credenciales por defecto (en producción estarían en base de datos)
+  // Credenciales desde variables de entorno
   private defaultCredentials = {
-    username: 'admin_bikesul_pt',
-    password: 'BikeSlPt2024!Adm#Res7', // En producción sería hash
+    username: import.meta.env.VITE_ADMIN_USERNAME || 'admin_bikesul_pt',
+    password: import.meta.env.VITE_ADMIN_PASSWORD, // Requerida desde .env
     email: 'admin@bikesul.com',
     role: 'super_admin' as const
   };
+
+  // Validar configuración en constructor
+  private validateConfig() {
+    if (!this.defaultCredentials.password) {
+      console.error('❌ VITE_ADMIN_PASSWORD no está configurada. Ver .env.example');
+      throw new Error('Admin password not configured');
+    }
+  }
   
   // Inicializar sesión desde localStorage
   constructor() {
+    this.validateConfig();
     this.loadSession();
   }
   
@@ -239,7 +248,7 @@ export const adminAuthService = new AdminAuthService();
 if (typeof window !== 'undefined' && import.meta.env.DEV) {
   (window as any).adminAuthService = adminAuthService;
   console.log('🔐 Admin Auth Service disponible en window.adminAuthService');
-  console.log('👤 Credenciales de prueba:');
-  console.log('   Usuario: admin_bikesul_pt');
-  console.log('   Contraseña: BikeSlPt2024!Adm#Res7');
+  console.log('👤 Configurar credenciales en archivo .env:');
+  console.log('   VITE_ADMIN_USERNAME=admin_bikesul_pt');
+  console.log('   VITE_ADMIN_PASSWORD=tu_contraseña_segura');
 }
