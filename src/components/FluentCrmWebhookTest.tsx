@@ -139,10 +139,25 @@ export const FluentCrmWebhookTest: React.FC = () => {
 
     try {
       let dataToSend = payload;
-      
+
       if (!dataToSend) {
         if (customPayload.trim()) {
-          dataToSend = JSON.parse(customPayload);
+          try {
+            dataToSend = JSON.parse(customPayload);
+          } catch (parseError) {
+            const errorResult = {
+              status: 0,
+              statusText: 'JSON Parse Error',
+              error: 'El JSON personalizado no es válido',
+              timestamp: new Date().toISOString(),
+              success: false,
+              isCors: false,
+              parseError: parseError instanceof Error ? parseError.message : 'Error de parsing'
+            };
+            setWebhookResponse(errorResult);
+            setIsLoading(false);
+            return;
+          }
         } else {
           // Crear una reserva de prueba y usar sus datos
           const reservation = await createSampleReservation();
@@ -152,6 +167,10 @@ export const FluentCrmWebhookTest: React.FC = () => {
 
       console.log('📤 Enviando webhook a FluentCRM:', { url: webhookUrl, payload: dataToSend });
 
+      // Intento de envío con manejo mejorado de CORS
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
@@ -159,12 +178,16 @@ export const FluentCrmWebhookTest: React.FC = () => {
           'X-Source': 'BikeSul-Test',
           'User-Agent': 'BikeSul-Webhook-Test/1.0'
         },
-        body: JSON.stringify(dataToSend)
+        body: JSON.stringify(dataToSend),
+        signal: controller.signal,
+        mode: 'cors'
       });
+
+      clearTimeout(timeoutId);
 
       const responseText = await response.text();
       let responseData;
-      
+
       try {
         responseData = JSON.parse(responseText);
       } catch {
@@ -177,11 +200,13 @@ export const FluentCrmWebhookTest: React.FC = () => {
         headers: Object.fromEntries(response.headers.entries()),
         data: responseData,
         success: response.ok,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        isCors: false,
+        payloadSent: dataToSend
       };
 
       setWebhookResponse(result);
-      
+
       if (response.ok) {
         console.log('✅ Webhook enviado exitosamente:', result);
       } else {
@@ -189,14 +214,24 @@ export const FluentCrmWebhookTest: React.FC = () => {
       }
 
     } catch (error) {
+      // Detectar si es un error CORS
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      const isCorsError = errorMessage.includes('Failed to fetch') ||
+                         errorMessage.includes('CORS') ||
+                         errorMessage.includes('Network request failed') ||
+                         errorMessage.includes('AbortError');
+
       const errorResult = {
         status: 0,
-        statusText: 'Network Error',
-        error: error instanceof Error ? error.message : 'Error desconocido',
+        statusText: isCorsError ? 'CORS/Network Error' : 'Network Error',
+        error: errorMessage,
         timestamp: new Date().toISOString(),
-        success: false
+        success: false,
+        isCors: isCorsError,
+        payloadGenerated: payload || (customPayload.trim() ? 'custom' : 'auto-generated'),
+        corsHelp: isCorsError ? 'Este error es normal en desarrollo. El payload se generó correctamente.' : undefined
       };
-      
+
       setWebhookResponse(errorResult);
       console.error('❌ Error enviando webhook:', error);
     } finally {
