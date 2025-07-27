@@ -22,11 +22,19 @@ const App = () => {
 
   // Initialize network recovery service
   React.useEffect(() => {
-    networkRecoveryService.startMonitoring();
+    try {
+      networkRecoveryService.startMonitoring();
+    } catch (error) {
+      console.error('Error starting network recovery service:', error);
+    }
 
     // Cleanup on unmount
     return () => {
-      networkRecoveryService.stopMonitoring();
+      try {
+        networkRecoveryService.stopMonitoring();
+      } catch (error) {
+        console.error('Error stopping network recovery service:', error);
+      }
     };
   }, []);
 
