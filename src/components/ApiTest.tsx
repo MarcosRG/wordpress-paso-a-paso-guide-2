@@ -11,13 +11,9 @@ export const ApiTest = () => {
     setTestResult("Testing API connection...");
 
     try {
-      const API_BASE = import.meta.env.VITE_WOOCOMMERCE_API_BASE || "";
-      const CONSUMER_KEY = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY || "";
-      const CONSUMER_SECRET = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET || "";
-
-      if (!API_BASE || !CONSUMER_KEY || !CONSUMER_SECRET) {
-        throw new Error("API credentials not configured. Check .env file.");
-      }
+      const API_BASE = "https://bikesultoursgest.com/wp-json/wc/v3";
+      const CONSUMER_KEY = "ck_d702f875c82d5973562a62579cfa284db06e3a87";
+      const CONSUMER_SECRET = "cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71";
 
       const auth = btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`);
       const headers = {
@@ -40,7 +36,7 @@ export const ApiTest = () => {
 
       const data = await response.json();
       setTestResult(
-        `✅ API connection successful! Found ${data.length} products.`,
+        `✅ API connection successful! Found ${data.length} products. Response: ${JSON.stringify(data, null, 2)}`,
       );
     } catch (error) {
       if (error instanceof Error) {

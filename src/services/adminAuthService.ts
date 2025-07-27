@@ -18,31 +18,16 @@ class AdminAuthService {
   private currentUser: AdminUser | null = null;
   private sessionKey = 'bikesul_admin_session';
   
-  // Credenciales desde variables de entorno
+  // Credenciales por defecto (en producción estarían en base de datos)
   private defaultCredentials = {
-    username: import.meta.env.VITE_ADMIN_USERNAME || 'admin_bikesul_pt',
-    password: import.meta.env.VITE_ADMIN_PASSWORD || (import.meta.env.DEV ? 'BikeSlPt2024!Dev' : ''),
+    username: 'admin_bikesul_pt',
+    password: 'BikeSlPt2024!Adm#Res7', // En producción sería hash
     email: 'admin@bikesul.com',
     role: 'super_admin' as const
   };
-
-  // Validar configuración en constructor
-  private validateConfig() {
-    if (!this.defaultCredentials.password) {
-      if (import.meta.env.PROD) {
-        console.error('❌ VITE_ADMIN_PASSWORD no está configurada en producción');
-        throw new Error('Admin password not configured');
-      } else {
-        console.warn('⚠️ Usando contraseña por defecto en desarrollo. Configura VITE_ADMIN_PASSWORD en .env');
-      }
-    } else if (import.meta.env.DEV && this.defaultCredentials.password === 'BikeSlPt2024!Dev') {
-      console.warn('⚠️ Usando contraseña por defecto en desarrollo. Recomendado configurar VITE_ADMIN_PASSWORD en .env');
-    }
-  }
   
   // Inicializar sesión desde localStorage
   constructor() {
-    this.validateConfig();
     this.loadSession();
   }
   
@@ -254,7 +239,7 @@ export const adminAuthService = new AdminAuthService();
 if (typeof window !== 'undefined' && import.meta.env.DEV) {
   (window as any).adminAuthService = adminAuthService;
   console.log('🔐 Admin Auth Service disponible en window.adminAuthService');
-  console.log('👤 Configurar credenciales en archivo .env:');
-  console.log('   VITE_ADMIN_USERNAME=admin_bikesul_pt');
-  console.log('   VITE_ADMIN_PASSWORD=tu_contraseña_segura');
+  console.log('👤 Credenciales de prueba:');
+  console.log('   Usuario: admin_bikesul_pt');
+  console.log('   Contraseña: BikeSlPt2024!Adm#Res7');
 }

@@ -87,18 +87,11 @@ export const ApiTestDiagnostic: React.FC = () => {
 
       // Test 2: Verificar endpoint WooCommerce
       await runTest('WooCommerce Endpoint', async () => {
-        const baseUrl = import.meta.env.VITE_WOOCOMMERCE_API_BASE;
-        const consumerKey = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY;
-        const consumerSecret = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET;
-
-        if (!baseUrl || !consumerKey || !consumerSecret) {
-          throw new Error('WooCommerce credentials not configured');
-        }
-
+        const baseUrl = 'https://bikesultoursgest.com/wp-json/wc/v3';
         const response = await fetch(`${baseUrl}/system_status`, {
           method: 'HEAD',
           headers: {
-            'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
+            'Authorization': 'Basic ' + btoa('ck_d702f875c82d5973562a62579cfa284db06e3a87:cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71')
           }
         });
         

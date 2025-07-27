@@ -32,16 +32,10 @@ class CRMApiService {
 
   constructor() {
     this.credentials = {
-      username: import.meta.env.VITE_CRM_API_USERNAME || '',
-      password: import.meta.env.VITE_CRM_API_PASSWORD || '',
-      baseUrl: import.meta.env.VITE_WOOCOMMERCE_API_BASE || ''
+      username: import.meta.env.VITE_CRM_API_USERNAME || 'marcosg2',
+      password: import.meta.env.VITE_CRM_API_PASSWORD || 'sUAb Km0x 1jw1 dSDK SoI5 hEE6',
+      baseUrl: import.meta.env.VITE_WOOCOMMERCE_API_BASE || 'https://bikesultoursgest.com/wp-json'
     };
-
-    // Validar credenciales
-    if (!this.credentials.username || !this.credentials.password) {
-      console.error('❌ CRM credentials not configured. Check .env file.');
-      console.error('📋 Required variables: VITE_CRM_API_USERNAME, VITE_CRM_API_PASSWORD');
-    }
   }
 
   // Funciones mínimas para compatibilidad
