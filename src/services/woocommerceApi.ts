@@ -902,8 +902,13 @@ export const wooCommerceApi = {
       }
 
       // Quick API health check
-      if (!(await shouldAllowApiRequest())) {
-        console.warn("🏥 API health check failed, returning empty products array");
+      try {
+        if (!(await shouldAllowApiRequest())) {
+          console.warn("🏥 API health check failed, returning empty products array");
+          return [];
+        }
+      } catch (error) {
+        console.warn("🏥 API health check error, assuming API unavailable:", error instanceof Error ? error.message : 'Unknown error');
         return [];
       }
 
