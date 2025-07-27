@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 import {
   Calendar,
   Users,
@@ -14,7 +16,12 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  Trash2,
+  Eye,
+  PlayCircle,
+  StopCircle,
+  Download
 } from 'lucide-react';
 import { adminAuthService } from '../../services/adminAuthService';
 import { reservationService, Reservation } from '../../services/reservationService';
@@ -30,6 +37,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [syncStats, setSyncStats] = useState<any>(null);
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const { toast } = useToast();
 
   const currentUser = adminAuthService.getCurrentUser();
 
@@ -67,15 +77,124 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   const handleManualSync = async () => {
-    setIsLoading(true);
+    setIsSyncing(true);
     try {
-      await wordPressSyncService.performBidirectionalSync();
+      const result = await wordPressSyncService.performBidirectionalSync();
       await loadDashboardData();
+      
+      if (result.success) {
+        toast({
+          title: "Sincronización exitosa",
+          description: "Los datos se han sincronizado correctamente con WordPress."
+        });
+      } else {
+        toast({
+          title: "Sincronización con errores",
+          description: `Errores: ${result.errors?.join(', ')}`,
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('Error en sincronización manual:', error);
+      toast({
+        title: "Error de sincronización",
+        description: "No se pudo completar la sincronización.",
+        variant: "destructive"
+      });
     } finally {
-      setIsLoading(false);
+      setIsSyncing(false);
     }
+  };
+
+  const handleDeleteReservation = async (reservationId: number) => {
+    try {
+      const success = await reservationService.cancelReservation(reservationId, 'Eliminada por administrador');
+      if (success) {
+        await loadDashboardData();
+        toast({
+          title: "Reserva eliminada",
+          description: "La reserva ha sido eliminada correctamente."
+        });
+      } else {
+        throw new Error('No se pudo eliminar la reserva');
+      }
+    } catch (error) {
+      console.error('Error eliminando reserva:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la reserva.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteTestReservations = async () => {
+    try {
+      const testReservations = reservations.filter(r => 
+        r.customer_email.includes('test') || 
+        r.customer_email.includes('prueba') ||
+        r.customer_name.toLowerCase().includes('test') ||
+        r.customer_name.toLowerCase().includes('prueba')
+      );
+      
+      for (const reservation of testReservations) {
+        if (reservation.id) {
+          await reservationService.cancelReservation(reservation.id, 'Reserva de prueba eliminada');
+        }
+      }
+      
+      await loadDashboardData();
+      toast({
+        title: "Reservas de prueba eliminadas",
+        description: `Se eliminaron ${testReservations.length} reservas de prueba.`
+      });
+    } catch (error) {
+      console.error('Error eliminando reservas de prueba:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron eliminar todas las reservas de prueba.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleToggleAutoSync = () => {
+    const currentStats = wordPressSyncService.getSyncStats();
+    if (currentStats.isAutoSyncActive) {
+      wordPressSyncService.stopAutoSync();
+      toast({
+        title: "Auto-sincronización desactivada",
+        description: "La sincronización automática ha sido detenida."
+      });
+    } else {
+      wordPressSyncService.startAutoSync();
+      toast({
+        title: "Auto-sincronización activada",
+        description: "La sincronización automática ha sido iniciada."
+      });
+    }
+    
+    // Actualizar stats
+    const updatedStats = wordPressSyncService.getSyncStats();
+    setSyncStats(updatedStats);
+  };
+
+  const exportReservations = () => {
+    const dataStr = JSON.stringify(reservations, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `reservas_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Datos exportados",
+      description: "Las reservas han sido exportadas correctamente."
+    });
   };
 
   // Calcular estadísticas
@@ -223,10 +342,45 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <TabsContent value="reservations">
             <Card>
               <CardHeader>
-                <CardTitle>Reservas Recientes</CardTitle>
-                <CardDescription>
-                  Últimas reservas del sistema
-                </CardDescription>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>Reservas Recientes</CardTitle>
+                    <CardDescription>
+                      Últimas reservas del sistema
+                    </CardDescription>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm" onClick={exportReservations}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Exportar
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Eliminar Pruebas
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Eliminar reservas de prueba?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta acción eliminará todas las reservas que contengan "test" o "prueba" en el nombre o email.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={handleDeleteTestReservations}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Eliminar Todo
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -261,9 +415,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                         </div>
                         <div className="flex items-center space-x-2">
                           {getStatusBadge(reservation.status)}
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setSelectedReservation(reservation)}
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
                             Ver
                           </Button>
+                          {(reservation.customer_email.includes('test') || 
+                            reservation.customer_email.includes('prueba') ||
+                            reservation.customer_name.toLowerCase().includes('test') ||
+                            reservation.customer_name.toLowerCase().includes('prueba')) && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm">
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>¿Eliminar reserva?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta acción eliminará permanentemente la reserva de {reservation.customer_name}.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => reservation.id && handleDeleteReservation(reservation.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Eliminar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -306,14 +494,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       </div>
                     </div>
 
-                    <div className="flex justify-center">
+                    <div className="flex justify-center space-x-4">
                       <Button 
                         onClick={handleManualSync}
-                        disabled={isLoading}
+                        disabled={isSyncing}
                         className="w-full md:w-auto"
                       >
-                        <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
                         Sincronizar Ahora
+                      </Button>
+                      <Button 
+                        onClick={handleToggleAutoSync}
+                        variant={syncStats.isAutoSyncActive ? "destructive" : "default"}
+                        className="w-full md:w-auto"
+                      >
+                        {syncStats.isAutoSyncActive ? (
+                          <>
+                            <StopCircle className="h-4 w-4 mr-2" />
+                            Detener Auto-Sync
+                          </>
+                        ) : (
+                          <>
+                            <PlayCircle className="h-4 w-4 mr-2" />
+                            Iniciar Auto-Sync
+                          </>
+                        )}
                       </Button>
                     </div>
 
@@ -333,6 +538,80 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <SystemSettings />
           </TabsContent>
         </Tabs>
+
+        {/* Modal de detalle de reserva */}
+        {selectedReservation && (
+          <AlertDialog open={!!selectedReservation} onOpenChange={() => setSelectedReservation(null)}>
+            <AlertDialogContent className="max-w-2xl">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Detalle de Reserva #{selectedReservation.id}</AlertDialogTitle>
+                <AlertDialogDescription asChild>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <strong>Cliente:</strong> {selectedReservation.customer_name}
+                      </div>
+                      <div>
+                        <strong>Email:</strong> {selectedReservation.customer_email}
+                      </div>
+                      <div>
+                        <strong>Teléfono:</strong> {selectedReservation.customer_phone || 'N/A'}
+                      </div>
+                      <div>
+                        <strong>Estado:</strong> {getStatusBadge(selectedReservation.status)}
+                      </div>
+                      <div>
+                        <strong>Fecha inicio:</strong> {selectedReservation.start_date}
+                      </div>
+                      <div>
+                        <strong>Fecha fin:</strong> {selectedReservation.end_date}
+                      </div>
+                      <div>
+                        <strong>Días totales:</strong> {selectedReservation.total_days}
+                      </div>
+                      <div>
+                        <strong>Precio total:</strong> €{selectedReservation.total_price}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <strong>Bicicletas:</strong>
+                      <div className="mt-2 space-y-2">
+                        {selectedReservation.bikes.map((bike, index) => (
+                          <div key={index} className="p-2 border rounded">
+                            <div>{bike.bike_name} - Cantidad: {bike.quantity}</div>
+                            <div className="text-sm text-gray-500">
+                              €{bike.price_per_day}/día
+                              {bike.insurance_type && ` - Seguro: ${bike.insurance_type}`}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {selectedReservation.notes && (
+                      <div>
+                        <strong>Notas:</strong>
+                        <p className="mt-1 text-sm">{selectedReservation.notes}</p>
+                      </div>
+                    )}
+                    
+                    {selectedReservation.woocommerce_order_id && (
+                      <div>
+                        <strong>ID Orden WooCommerce:</strong> {selectedReservation.woocommerce_order_id}
+                      </div>
+                    )}
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogAction onClick={() => setSelectedReservation(null)}>
+                  Cerrar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </main>
     </div>
   );
