@@ -74,17 +74,35 @@ class WordPressSyncService {
     
     console.log('🔄 Iniciando sincronización bidireccional...');
     
+    // Variables para resultados
+    let neonToWpResult: any = { success: false, error: 'No ejecutado' };
+    let wpToNeonResult: any = { success: false, error: 'No ejecutado' };
+
     try {
       // 1. Sincronizar reservas Neon → WordPress
-      const neonToWpResult = await this.syncReservationsToWordPress();
-      if (!neonToWpResult.success) {
-        errors.push(`Neon→WP: ${neonToWpResult.error}`);
+      try {
+        neonToWpResult = await this.syncReservationsToWordPress();
+        if (!neonToWpResult.success) {
+          errors.push(`Neon→WP: ${neonToWpResult.error}`);
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+        errors.push(`Neon→WP: ${errorMsg}`);
+        neonToWpResult = { success: false, error: errorMsg };
+        console.error('❌ Error en sincronización Neon→WP:', errorMsg);
       }
-      
+
       // 2. Sincronizar datos WordPress → Neon
-      const wpToNeonResult = await this.syncDataFromWordPress();
-      if (!wpToNeonResult.success) {
-        errors.push(`WP��Neon: ${wpToNeonResult.error}`);
+      try {
+        wpToNeonResult = await this.syncDataFromWordPress();
+        if (!wpToNeonResult.success) {
+          errors.push(`WP→Neon: ${wpToNeonResult.error}`);
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+        errors.push(`WP→Neon: ${errorMsg}`);
+        wpToNeonResult = { success: false, error: errorMsg };
+        console.error('❌ Error en sincronización WP→Neon:', errorMsg);
       }
       
       // 3. Registrar resultado
