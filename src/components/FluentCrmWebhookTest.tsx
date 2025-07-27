@@ -578,7 +578,7 @@ export const FluentCrmWebhookTest: React.FC = () => {
             <CardContent>
               {webhookResponse ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {webhookResponse.success ? (
                       <CheckCircle className="h-5 w-5 text-green-500" />
                     ) : (
@@ -587,28 +587,82 @@ export const FluentCrmWebhookTest: React.FC = () => {
                     <Badge variant={webhookResponse.success ? 'default' : 'destructive'}>
                       {webhookResponse.status} {webhookResponse.statusText}
                     </Badge>
+                    {webhookResponse.isSimulated && (
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                        Simulado
+                      </Badge>
+                    )}
+                    {webhookResponse.isCors && (
+                      <Badge variant="outline" className="bg-orange-50 text-orange-700">
+                        Error CORS
+                      </Badge>
+                    )}
                     <span className="text-sm text-gray-500">
                       {new Date(webhookResponse.timestamp).toLocaleString()}
                     </span>
                   </div>
 
+                  {webhookResponse.isCors && (
+                    <Alert className="bg-orange-50 border-orange-200">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Error CORS esperado en desarrollo</strong><br/>
+                        Esto es normal cuando pruebas desde localhost. El payload se generó correctamente y funcionará en producción.
+                        {webhookResponse.corsHelp && <><br/><em>{webhookResponse.corsHelp}</em></>}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {webhookResponse.isSimulated && (
+                    <Alert className="bg-blue-50 border-blue-200">
+                      <CheckCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Simulación exitosa</strong><br/>
+                        El payload se generó correctamente y está listo para usar con FluentCRM smartcodes.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {webhookResponse.payloadSent && (
+                    <div>
+                      <Label>Payload Enviado</Label>
+                      <Textarea
+                        value={JSON.stringify(webhookResponse.payloadSent, null, 2)}
+                        readOnly
+                        rows={8}
+                        className="font-mono text-sm bg-gray-50"
+                      />
+                    </div>
+                  )}
+
                   <div>
-                    <Label>Respuesta del Servidor</Label>
+                    <Label>Respuesta Completa</Label>
                     <Textarea
                       value={JSON.stringify(webhookResponse, null, 2)}
                       readOnly
-                      rows={10}
+                      rows={6}
                       className="font-mono text-sm"
                     />
                   </div>
 
-                  <Button 
-                    variant="outline" 
-                    onClick={() => navigator.clipboard.writeText(JSON.stringify(webhookResponse, null, 2))}
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copiar Respuesta
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => navigator.clipboard.writeText(JSON.stringify(webhookResponse, null, 2))}
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copiar Respuesta
+                    </Button>
+                    {webhookResponse.payloadSent && (
+                      <Button
+                        variant="outline"
+                        onClick={() => navigator.clipboard.writeText(JSON.stringify(webhookResponse.payloadSent, null, 2))}
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copiar Payload
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <Alert>
