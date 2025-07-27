@@ -41,7 +41,12 @@ class ApiHealthChecker {
             }
           }, timeout);
 
-          response = await fetch('/api/wc/v3/', {
+          // Use the same endpoint logic as woocommerceApi
+          const baseUrl = import.meta.env.DEV
+            ? "https://bikesultoursgest.com/wp-json/wp/v2/"  // Use WordPress REST API for health check
+            : (import.meta.env.VITE_WOOCOMMERCE_API_BASE || "https://bikesultoursgest.com/wp-json/wp/v2/");
+
+          response = await fetch(baseUrl, {
             method: 'HEAD',
             signal: controller.signal,
             headers: {
