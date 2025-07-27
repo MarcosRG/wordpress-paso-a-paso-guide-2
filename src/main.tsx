@@ -13,6 +13,11 @@ if (import.meta.env.DEV) {
 // Inicializar servicios de sincronización local
 import "./services/localSyncService";
 
+// Inicializar nuevos servicios de reservas y administración
+import "./services/reservationService";
+import "./services/adminAuthService";
+import "./services/wordpressSyncService";
+
 // Inicializar interceptor de errores para debugging
 // import { initializeErrorInterceptor } from "./utils/errorInterceptor";
 
