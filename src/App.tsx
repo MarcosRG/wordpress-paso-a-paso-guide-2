@@ -56,7 +56,6 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/test" element={<TestPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
