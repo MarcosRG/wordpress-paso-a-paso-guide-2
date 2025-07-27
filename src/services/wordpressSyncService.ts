@@ -157,41 +157,48 @@ class WordPressSyncService {
     error?: string;
   }> {
     try {
-      console.log('📤 Sincronizando reservas Neon → WordPress...');
-      
-      // Obtener reservas pendientes de sincronización
+      console.log('📤 Verificando reservas para sincronizar con WordPress...');
+
+      // Obtener reservas confirmadas que NO han sido sincronizadas
       const reservations = await reservationService.getReservations({
         status: 'confirmed'
       });
-      
+
+      // Filtrar SOLO las reservas que no tienen orden WooCommerce asociada
       const unsyncedReservations = reservations.filter(r => !r.woocommerce_order_id);
-      
+
+      console.log(`🔍 Encontradas ${unsyncedReservations.length} reservas sin sincronizar de ${reservations.length} confirmadas`);
+
       if (unsyncedReservations.length === 0) {
+        console.log('✅ Todas las reservas confirmadas ya están sincronizadas');
         return {
           success: true,
           data: { message: 'No hay reservas pendientes de sincronización' }
         };
       }
-      
+
       const syncResults = [];
-      
+
       for (const reservation of unsyncedReservations) {
         try {
+          console.log(`🔄 Sincronizando reserva ${reservation.id} de ${reservation.customer_name}...`);
+
           const orderData = this.convertReservationToWooCommerceOrder(reservation);
-          
+
           // Crear orden en WooCommerce
           const wooOrder = await wooCommerceApi.createOrder(orderData);
-          
-          // Actualizar reserva con ID de orden WooCommerce
-          // En producción: actualizar en base de datos Neon
+
+          // IMPORTANTE: Actualizar la reserva para marcarla como sincronizada
+          await this.markReservationAsSynced(reservation.id!, wooOrder.id);
+
           console.log(`✅ Orden WooCommerce creada: ${wooOrder.id} para reserva ${reservation.id}`);
-          
+
           syncResults.push({
             reservation_id: reservation.id,
             woocommerce_order_id: wooOrder.id,
             status: 'success'
           });
-          
+
         } catch (error) {
           console.error(`❌ Error sincronizando reserva ${reservation.id}:`, error);
           syncResults.push({
@@ -201,17 +208,40 @@ class WordPressSyncService {
           });
         }
       }
-      
+
+      console.log(`📊 Sincronización completada: ${syncResults.filter(r => r.status === 'success').length} exitosas, ${syncResults.filter(r => r.status === 'error').length} con errores`);
+
       return {
         success: true,
         data: { synced_reservations: syncResults }
       };
-      
+
     } catch (error) {
+      console.error('❌ Error general en sincronización Neon → WordPress:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido'
       };
+    }
+  }
+
+  // Marcar reserva como sincronizada con WooCommerce
+  private async markReservationAsSynced(reservationId: number, woocommerceOrderId: number): Promise<void> {
+    try {
+      // Actualizar en localStorage por ahora (después será en Neon DB)
+      const reservations = JSON.parse(localStorage.getItem('neon_reservations') || '[]');
+      const index = reservations.findIndex((r: any) => r.id === reservationId);
+
+      if (index !== -1) {
+        reservations[index].woocommerce_order_id = woocommerceOrderId;
+        reservations[index].synced_at = new Date().toISOString();
+        reservations[index].updated_at = new Date().toISOString();
+        localStorage.setItem('neon_reservations', JSON.stringify(reservations));
+
+        console.log(`🔄 Reserva ${reservationId} marcada como sincronizada con orden WooCommerce ${woocommerceOrderId}`);
+      }
+    } catch (error) {
+      console.error(`❌ Error marcando reserva ${reservationId} como sincronizada:`, error);
     }
   }
   
