@@ -443,31 +443,49 @@ export const FluentCrmWebhookTest: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => sendWebhookTest()}
+                      disabled={isLoading}
+                      className="flex-1"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4 mr-2" />
+                      )}
+                      Enviar Real
+                    </Button>
+                    <Button
+                      onClick={() => simulateWebhookTest()}
+                      disabled={isLoading}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <TestTube className="h-4 w-4 mr-2" />
+                      )}
+                      Simular
+                    </Button>
+                  </div>
                   <Button
-                    onClick={() => sendWebhookTest()}
+                    onClick={async () => {
+                      try {
+                        await createSampleReservation();
+                        setMessage({ type: 'success', content: 'Reserva creada y guardada en el sistema' });
+                      } catch (error) {
+                        setMessage({ type: 'error', content: `Error: ${error instanceof Error ? error.message : 'Error desconocido'}` });
+                      }
+                    }}
                     disabled={isLoading}
-                    className="flex-1"
+                    variant="secondary"
+                    className="w-full"
                   >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Enviar Real
-                  </Button>
-                  <Button
-                    onClick={() => simulateWebhookTest()}
-                    disabled={isLoading}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <TestTube className="h-4 w-4 mr-2" />
-                    )}
-                    Simular
+                    <Plus className="h-4 w-4 mr-2" />
+                    Crear Reserva en Sistema
                   </Button>
                 </div>
 
