@@ -411,6 +411,16 @@ export const FluentCrmWebhookTest: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {message && (
+                  <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
+                    {message.type === 'success' ? (
+                      <CheckCircle className="h-4 w-4" />
+                    ) : (
+                      <XCircle className="h-4 w-4" />
+                    )}
+                    <AlertDescription>{message.content}</AlertDescription>
+                  </Alert>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Cliente</Label>
