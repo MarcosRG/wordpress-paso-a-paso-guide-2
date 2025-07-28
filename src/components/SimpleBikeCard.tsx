@@ -99,12 +99,15 @@ const SimpleBikeCard = ({
 
           {/* Stock info */}
           <div
-            className={`mt-2 p-2 rounded text-xs text-center ${bike.available === 0 ? "bg-red-100 border border-red-200 text-red-700" : "bg-gray-100 text-gray-700"}`}
+            className={`mt-2 p-2 rounded text-xs text-center ${wooCommerceStock === 0 ? "bg-red-100 border border-red-200 text-red-700" : "bg-gray-100 text-gray-700"}`}
           >
             <div className="font-medium">
-              {bike.available === 0
+              {wooCommerceStock === 0
                 ? t("outOfStock") || "Sin Stock"
-                : `${bike.available} ${bike.available === 1 ? t("available") : t("availables")}`}
+                : `${wooCommerceStock} ${wooCommerceStock === 1 ? t("available") : t("availables")}`}
+            </div>
+            <div className="text-xs text-blue-600 mt-1">
+              WooCommerce Stock
             </div>
           </div>
         </div>
