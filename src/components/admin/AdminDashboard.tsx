@@ -29,6 +29,7 @@ import { wordPressSyncService } from '../../services/wordpressSyncService';
 import { SystemSettings } from './SystemSettings';
 import { AtumInventoryDebugger } from '../AtumInventoryDebugger';
 import { AtumInventoryTester } from '../AtumInventoryTester';
+import { CircuitBreakerControl } from '../CircuitBreakerControl';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -411,7 +412,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                                 {reservation.start_date} - {reservation.end_date}
                               </p>
                               <p className="text-sm text-gray-500">
-                                {reservation.total_days} días · €{reservation.total_price}
+                                {reservation.total_days} d��as · €{reservation.total_price}
                               </p>
                             </div>
                           </div>
