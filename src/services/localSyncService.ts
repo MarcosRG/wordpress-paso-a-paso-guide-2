@@ -1,4 +1,5 @@
 import { wooCommerceApi, checkAtumAvailability } from "./woocommerceApi";
+import { wooCommerceCircuitBreaker, canMakeWooCommerceRequest } from "./circuitBreaker";
 import {
   neonHttpService,
   convertToNeonProduct,
@@ -24,7 +25,7 @@ export class LocalSyncService {
           console.log("✅ Sincronización inicial completada");
         })
         .catch((error) => {
-          console.error("❌ Error en sincronización inicial:", error);
+          console.error("��� Error en sincronización inicial:", error);
         });
     }
 
