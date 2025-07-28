@@ -63,6 +63,15 @@ export const SyncStatusIndicator = ({
 
   // Determinar icono y color basado en el estado
   const getStatusDisplay = () => {
+    if (circuitBreakerActive) {
+      return {
+        icon: AlertCircle,
+        color: "destructive",
+        text: "Circuit Breaker",
+        description: "API protegida - use reset no painel admin",
+      };
+    }
+
     if (!isConnected) {
       return {
         icon: WifiOff,
