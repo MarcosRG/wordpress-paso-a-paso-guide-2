@@ -401,7 +401,7 @@ const fetchWithRetry = async (
       return response;
     } catch (error) {
       lastError = error as Error;
-      console.warn(`⚠️ Intento ${attempt + 1} falló:`, error);
+      console.warn(`���️ Intento ${attempt + 1} falló:`, error);
 
       // Enhanced error detection with third-party script handling
       const isThirdPartyConflict = error instanceof Error && isThirdPartyInterference(error);
@@ -740,69 +740,31 @@ export const checkAtumAvailability = async (
     }
 
     // 2. SEGUNDA PRIORIDADE: Stock ATUM padrão
-    const standardAtumFields = allAtumFields.filter(field =>
+    const standardAtumField = realAtumFields.find(field =>
       field.key === "_atum_stock_quantity" ||
       field.key === "atum_stock_quantity" ||
-      field.key === "_atum_stock" ||
-      field.key === "_atum_stock_status" ||
-      field.key === "_atum_manage_stock" ||
-      field.key === "_stock_quantity" ||
-      field.key.includes('atum') && field.key.includes('stock') && !field.key.includes('status')
+      field.key === "_atum_stock"
     );
 
-    for (const stockField of standardAtumFields) {
-      const stockValue = parseInt(String(stockField.value)) || 0;
-
-      console.log(`📦 ATUM Stock campo "${stockField.key}" para producto ${productId}:`, {
-        key: stockField.key,
-        rawValue: stockField.value,
-        parsedValue: stockValue,
-        productName: data.name || 'Sin nombre'
-      });
-
-      if (stockValue > 0) {
-        console.log(`✅ ATUM Stock válido encontrado para ${productId}: ${stockValue} unidades (campo: ${stockField.key})`);
-        return stockValue;
-      }
+    if (standardAtumField) {
+      const stockValue = parseInt(String(standardAtumField.value)) || 0;
+      console.log(`✅ ATUM Stock padrão encontrado para ${productId}: ${stockValue} unidades (campo: ${standardAtumField.key})`);
+      return stockValue;
     }
 
-    if (standardAtumFields.length === 0) {
-      console.log(`❌ NO se encontró ATUM Stock estándar para producto ${productId}`);
-    } else {
-      console.log(`⚠️ ATUM Stock campos encontrados para ${productId}, pero todos en zero:`,
-        standardAtumFields.map(f => `${f.key}: ${f.value}`).join(', ')
-      );
-    }
-
-    // Check for ATUM manage stock setting
-    const atumManageStock = data.meta_data?.find(
-      (meta: any) =>
-        meta.key === "_atum_manage_stock" || meta.key === "atum_manage_stock",
+    // 3. Verificar se ATUM está configurado para gerenciar mas sem stock
+    const atumManageStock = realAtumFields.find(field =>
+      field.key === "_atum_manage_stock" || field.key === "atum_manage_stock"
     );
 
-    // If ATUM is managing stock but no specific stock value, use 0
     if (atumManageStock && atumManageStock.value === "yes") {
+      console.log(`⚠️ ATUM configurado para gerenciar ${productId} mas sem stock definido`);
       return 0;
     }
 
-    // Fallback to regular WooCommerce stock
+    // 4. Fallback final para WooCommerce stock
     const wooStock = data.stock_quantity || 0;
-
-    console.log(`🛒 WooCommerce Stock fallback para producto ${productId}:`, {
-      stock_quantity: wooStock,
-      stock_status: data.stock_status,
-      manage_stock: data.manage_stock,
-      productName: data.name || 'Sin nombre'
-    });
-
-    // Final summary for this product
-    console.log(`📊 RESUMEN FINAL para producto ${productId} (${data.name || 'Sin nombre'}):`, {
-      hasAtumMultiInventory: !!atumMultiStock,
-      hasAtumStandardStock: !!atumStock,
-      finalStockValue: wooStock,
-      recommendedAction: wooStock === 0 ? 'REVISAR CONFIGURACIÓN ATUM' : 'OK'
-    });
-
+    console.log(`🛒 Fallback para WooCommerce stock ${productId}: ${wooStock} unidades`);
     return wooStock;
   } catch (error) {
     // Handle different types of errors gracefully
