@@ -200,8 +200,9 @@ export const SyncStatusIndicator = ({
         variant="outline"
         size="sm"
         onClick={handleRefresh}
-        disabled={!canSync || isRefreshing}
+        disabled={!canSync || isRefreshing || circuitBreakerActive}
         className="h-7"
+        title={circuitBreakerActive ? "Circuit breaker ativo - use reset no painel admin" : ""}
       >
         <RefreshCw
           className={`h-3 w-3 mr-1 ${isRefreshing ? "animate-spin" : ""}`}
