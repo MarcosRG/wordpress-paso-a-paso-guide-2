@@ -15,6 +15,7 @@ import { useLocalNeonBikes } from '@/hooks/useLocalNeonBikes';
 import { useBatchAtumStock } from '@/hooks/useBatchAtumStock';
 import { localSyncService } from '@/services/localSyncService';
 import { checkAtumAvailability } from '@/services/woocommerceApi';
+import { getWooCommerceStockBySize, getStockDebugInfo } from '@/utils/stockUtils';
 
 interface ProductStockInfo {
   id: string;
