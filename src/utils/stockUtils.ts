@@ -104,8 +104,21 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
         sizeAttributeFound: !!sizeAttribute,
         sizeValue: sizeAttribute?.option,
         stock_quantity: variation.stock_quantity,
-        stock_status: variation.stock_status
+        stock_status: variation.stock_status,
+        attributeDetails: variation.attributes?.map((attr: any) => ({
+          name: attr.name,
+          option: attr.option,
+          nameIncludes: {
+            tama: attr.name?.toLowerCase().includes('tama'),
+            size: attr.name?.toLowerCase().includes('size'),
+            pa_size: attr.name?.toLowerCase().includes('pa_size')
+          }
+        }))
       });
+
+      if (!sizeAttribute) {
+        console.warn(`⚠️ KTM: Atributo de tamanho não encontrado para variação ${variation.id}`);
+      }
     }
 
     if (sizeAttribute && sizeAttribute.option) {
