@@ -227,17 +227,12 @@ const BikeCard = ({
               >
                 <div className="flex items-center gap-3">
                   <span className="font-medium w-6">{size}</span>
-                  <span className="text-xs text-gray-500">
+                  <span className={`text-xs ${isInStock ? 'text-green-600' : 'text-red-500'}`}>
                     ({availableForSize}{" "}
                     {availableForSize === 1 ? t("available") : t("availables")})
-                    {isAtumLoading && (
-                      <span className="text-blue-600 font-medium"> ⏳ATUM</span>
-                    )}
-                    {!isAtumLoading && atumStockBySize[size] !== undefined && (
-                      <span className="text-green-600 font-medium"> ✓ATUM</span>
-                    )}
-                    {!isAtumLoading && !hasAtumData && (
-                      <span className="text-orange-600 font-medium"> ⚠️EST</span>
+                    <span className="text-blue-600 font-medium"> WooCommerce</span>
+                    {atumStockBySize[size] !== undefined && (
+                      <span className="text-green-600 font-medium"> | ATUM: {atumStockBySize[size]}</span>
                     )}
                   </span>
                 </div>
