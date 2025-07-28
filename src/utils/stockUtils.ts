@@ -24,9 +24,11 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
     };
   });
 
-  // Debug especial para KTM MACINA CROSS 410
-  if (bike.name.includes('KTM MACINA CROSS 410') || bike.id === '19265') {
-    console.group('🚴‍♂️ DEBUG ESPECIAL KTM MACINA CROSS 410');
+  // Debug habilitado para todos los productos que tengan stock inconsistente
+  const enableDebug = bike.available > 0;
+
+  if (enableDebug) {
+    console.group(`🚴‍♂️ DEBUG STOCK GLOBAL - ${bike.name} (ID: ${bike.id})`);
     console.log('Dados básicos:', {
       bikeId: bike.id,
       bikeName: bike.name,
@@ -39,8 +41,7 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
 
     // Debug cada variação individualmente
     bike.wooCommerceData?.variations?.forEach((variation: any, index: number) => {
-      console.log(`🔎 KTM Variação ${index + 1} COMPLETA:`, {
-        TODOS_OS_CAMPOS: variation,
+      console.log(`🔎 Variação ${index + 1} COMPLETA:`, {
         id: variation.id,
         woocommerce_id: variation.woocommerce_id,
         stock_quantity: variation.stock_quantity,
@@ -48,20 +49,17 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
         stock_status: variation.stock_status,
         attributes: variation.attributes,
         attributesType: typeof variation.attributes,
-        attributesIsArray: Array.isArray(variation.attributes),
-        allKeys: Object.keys(variation)
+        attributesIsArray: Array.isArray(variation.attributes)
       });
 
       // Debug específico dos atributos
       if (variation.attributes) {
         variation.attributes.forEach((attr: any, attrIndex: number) => {
           console.log(`  📏 Atributo ${attrIndex + 1}:`, {
-            COMPLETO: attr,
             name: attr.name,
             option: attr.option,
             nameType: typeof attr.name,
-            optionType: typeof attr.option,
-            allAttrKeys: Object.keys(attr)
+            optionType: typeof attr.option
           });
         });
       }
@@ -71,8 +69,8 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
 
   // Se não há dados WooCommerce, retornar distribuição estimada
   if (!bike.wooCommerceData?.variations || !Array.isArray(bike.wooCommerceData.variations)) {
-    if (isKTMDebug) {
-      console.warn('🚨 KTM: Sem dados de variações, usando distribuição estimada');
+    if (enableDebug) {
+      console.warn('🚨 Sem dados de variações, usando distribuição estimada');
     }
     const estimatedStock = Math.floor(bike.available / 5);
     const remainder = bike.available % 5;
@@ -88,15 +86,14 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
   }
 
   // Processar variações reais para obter stock verdadeiro
-  const isKTMDebug = bike.name.includes('KTM MACINA CROSS 410') || bike.id === '19265';
-
-  if (isKTMDebug) {
+  if (enableDebug) {
     console.log(`🔍 Processando variações para ${bike.name} (ID: ${bike.id}):`, {
       totalVariations: bike.wooCommerceData.variations.length,
       bikeAvailable: bike.available,
       variations: bike.wooCommerceData.variations.map((v: any) => ({
         id: v.id,
         stock_quantity: v.stock_quantity,
+        atum_stock: v.atum_stock,
         stock_status: v.stock_status,
         attributes: v.attributes
       }))
@@ -132,12 +129,13 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
       });
     }
 
-    if (isKTMDebug) {
+    if (enableDebug) {
       console.log(`📏 Variação ${index + 1} (ID: ${variation.id}):`, {
         attributes: variation.attributes,
         sizeAttributeFound: !!sizeAttribute,
         sizeValue: sizeAttribute?.option,
         stock_quantity: variation.stock_quantity,
+        atum_stock: variation.atum_stock,
         stock_status: variation.stock_status,
         attributeDetails: variation.attributes?.map((attr: any) => ({
           name: attr.name,
@@ -151,28 +149,29 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
       });
 
       if (!sizeAttribute) {
-        console.warn(`⚠️ KTM: Atributo de tamanho não encontrado para variação ${variation.id}`);
+        console.warn(`⚠️ Atributo de tamanho não encontrado para variação ${variation.id}`);
       }
     }
 
     if (sizeAttribute && sizeAttribute.option) {
       const size = sizeAttribute.option.toUpperCase();
 
-      // Obter stock real da variação - pode ser WooCommerce, ATUM ou outro
-      const stock = parseInt(String(variation.stock_quantity)) || 0;
-      const status = variation.stock_status || (stock > 0 ? 'instock' : 'outofstock');
+      // Obter stock real da variação - priorizar stock_quantity se atum_stock é 0
+      const atumStock = parseInt(String(variation.atum_stock)) || 0;
+      const wooStock = parseInt(String(variation.stock_quantity)) || 0;
 
-      // Se o stock é maior que 0, usar esse valor
-      let finalStock = stock;
+      // LÓGICA CORRIGIDA: usar stock_quantity si atum_stock é 0, caso contrário usar atum_stock
+      const finalStock = atumStock > 0 ? atumStock : wooStock;
+      const status = variation.stock_status || (finalStock > 0 ? 'instock' : 'outofstock');
 
-      // Se status indica 'instock' mas stock é 0, usar o disponível como fallback
-      if (status === 'instock' && stock === 0 && bike.available > 0) {
-        // Usar fallback baseado no disponível total
-        finalStock = Math.floor(bike.available / 5);
-      }
-
-      if (isKTMDebug) {
-        console.log(`✅ Stock calculado para tamanho ${size}: ${finalStock} (original: ${stock}, status: ${status})`);
+      if (enableDebug) {
+        console.log(`✅ Stock calculado para tamanho ${size}:`, {
+          atumStock,
+          wooStock,
+          finalStock,
+          status,
+          logic: atumStock > 0 ? 'usando atum_stock' : 'usando stock_quantity'
+        });
       }
 
       stockBySize[size] = {
@@ -180,77 +179,57 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
         variationId: variation.id,
         stockStatus: finalStock > 0 ? 'instock' : 'outofstock'
       };
-    } else if (isKTMDebug) {
-      // Para KTM, tentar mapear com base nos IDs conhecidos das variações
-      console.warn(`⚠️ KTM: Atributo de tamanho não encontrado para variação ${variation.id || variation.woocommerce_id}`);
+    } else if (enableDebug) {
+      // Tentar mapear por padrão quando não encontra atributo de tamanho
+      console.warn(`⚠️ Atributo de tamanho não encontrado para variação ${variation.id || variation.woocommerce_id}`);
 
-      // Mapeamento específico baseado nos IDs das variações KTM conhecidos
-      const ktmVariationMap: { [key: string]: string } = {
-        '19266': 'S',
-        '19267': 'M',
-        '19268': 'L',
-        '19269': 'XL'
-      };
-
+      // Tentar mapear com fallback por posição ou ID conhecidos
       const variationId = String(variation.id || variation.woocommerce_id);
-      const size = ktmVariationMap[variationId];
 
-      if (size) {
-        const stock = parseInt(String(variation.stock_quantity)) || 0;
+      // Mapear por índice se não conseguimos detectar pelo atributo
+      const sizeOrder = ['XS', 'S', 'M', 'L', 'XL'];
+      const size = sizeOrder[index] || 'M'; // Default M se índice fora do range
 
-        console.log(`🎯 KTM: Mapeamento por ID - Variação ${variationId} = Tamanho ${size} = Stock ${stock}`);
+      const atumStock = parseInt(String(variation.atum_stock)) || 0;
+      const wooStock = parseInt(String(variation.stock_quantity)) || 0;
+      const finalStock = atumStock > 0 ? atumStock : wooStock;
 
-        stockBySize[size] = {
-          wooCommerceStock: stock,
-          variationId: variation.id,
-          stockStatus: stock > 0 ? 'instock' : 'outofstock'
-        };
-      }
+      console.log(`🎯 Mapeamento por posição - Variação ${variationId} = Tamanho ${size} = Stock ${finalStock}`);
+
+      stockBySize[size] = {
+        wooCommerceStock: finalStock,
+        variationId: variation.id,
+        stockStatus: finalStock > 0 ? 'instock' : 'outofstock'
+      };
     }
   });
 
-  if (isKTMDebug) {
+  if (enableDebug) {
     console.log(`📊 Stock final por tamanho para ${bike.name}:`, stockBySize);
   }
 
   // Verificação final: se não conseguimos nenhum stock mas o bike tem disponível
   const totalDetectedStock = Object.values(stockBySize).reduce((sum, size) => sum + size.wooCommerceStock, 0);
 
-  if (totalDetectedStock === 0) {
-    if (isKTMDebug) {
-      console.warn('🚨 KTM: Não foi detectado stock nas variações');
-
-      // BYPASS ESPECÍFICO PARA KTM com dados conhecidos do debugging
-      if (bike.name.includes('KTM MACINA CROSS 410') || bike.id === '19265') {
-        console.log('💫 APLICANDO BYPASS ESPECÍFICO PARA KTM MACINA CROSS 410');
-        stockBySize['XS'] = { wooCommerceStock: 0, stockStatus: 'outofstock' };
-        stockBySize['S'] = { wooCommerceStock: 5, stockStatus: 'instock' };
-        stockBySize['M'] = { wooCommerceStock: 5, stockStatus: 'instock' };
-        stockBySize['L'] = { wooCommerceStock: 5, stockStatus: 'instock' };
-        stockBySize['XL'] = { wooCommerceStock: 3, stockStatus: 'instock' };
-
-        console.log('✅ KTM BYPASS APLICADO:', stockBySize);
-        return stockBySize;
-      }
+  if (totalDetectedStock === 0 && bike.available > 0) {
+    if (enableDebug) {
+      console.warn('🚨 Não foi detectado stock nas variações, aplicando fallback');
     }
 
-    // Fallback geral para outros produtos
-    if (bike.available > 0) {
-      // Usar fallback baseado no total disponível
-      const estimatedStock = Math.floor(bike.available / 5);
-      const remainder = bike.available % 5;
+    // Usar fallback baseado no total disponível
+    const estimatedStock = Math.floor(bike.available / 5);
+    const remainder = bike.available % 5;
 
-      ['XS', 'S', 'M', 'L', 'XL'].forEach((size, index) => {
-        const stock = estimatedStock + (index < remainder ? 1 : 0);
-        stockBySize[size] = {
-          wooCommerceStock: stock,
-          stockStatus: stock > 0 ? 'instock' : 'outofstock'
-        };
-      });
+    ['XS', 'S', 'M', 'L', 'XL'].forEach((size, index) => {
+      const stock = estimatedStock + (index < remainder ? 1 : 0);
+      stockBySize[size] = {
+        wooCommerceStock: stock,
+        stockStatus: stock > 0 ? 'instock' : 'outofstock'
+      };
+    });
 
-      if (isKTMDebug) {
-        console.log(`📊 Stock corrigido com fallback geral:`, stockBySize);
-      }
+    if (enableDebug) {
+      console.log(`📊 Stock corrigido com fallback geral:`, stockBySize);
     }
   }
 
