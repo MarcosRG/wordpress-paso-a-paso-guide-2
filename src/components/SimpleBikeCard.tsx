@@ -178,6 +178,9 @@ const SimpleBikeCard = ({
         <div className="flex items-center justify-center gap-4 p-3 border rounded-lg">
           <div className="flex items-center gap-3">
             <span className="font-medium text-sm">{t("quantity")}:</span>
+            <span className="text-xs text-gray-500">
+              ({wooCommerceStock} {wooCommerceStock === 1 ? t("available") : t("availables")})
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
