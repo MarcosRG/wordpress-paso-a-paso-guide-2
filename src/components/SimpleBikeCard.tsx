@@ -80,6 +80,9 @@ const SimpleBikeCard = ({
 
   const quantity = getQuantityForBike(bike.id);
 
+  // Obter stock WooCommerce real para produto simples
+  const wooCommerceStock = getTotalWooCommerceStock(bike);
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-4">
