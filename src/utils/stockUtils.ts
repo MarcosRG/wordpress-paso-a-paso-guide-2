@@ -26,29 +26,47 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
 
   // Debug especial para KTM MACINA CROSS 410
   if (bike.name.includes('KTM MACINA CROSS 410') || bike.id === '19265') {
-    console.log('🚴‍♂️ DEBUG ESPECIAL KTM MACINA CROSS 410:', {
+    console.group('🚴‍♂️ DEBUG ESPECIAL KTM MACINA CROSS 410');
+    console.log('Dados básicos:', {
       bikeId: bike.id,
       bikeName: bike.name,
       bikeAvailable: bike.available,
       hasWooCommerceData: !!bike.wooCommerceData,
       hasVariations: !!(bike.wooCommerceData?.variations),
       variationsCount: bike.wooCommerceData?.variations?.length || 0,
-      productType: bike.wooCommerceData?.product?.type,
-      fullVariationsData: bike.wooCommerceData?.variations
+      productType: bike.wooCommerceData?.product?.type
     });
 
     // Debug cada variação individualmente
     bike.wooCommerceData?.variations?.forEach((variation: any, index: number) => {
-      console.log(`🔎 KTM Variação ${index + 1}:`, {
+      console.log(`🔎 KTM Variação ${index + 1} COMPLETA:`, {
+        TODOS_OS_CAMPOS: variation,
         id: variation.id,
         woocommerce_id: variation.woocommerce_id,
         stock_quantity: variation.stock_quantity,
         atum_stock: variation.atum_stock,
         stock_status: variation.stock_status,
         attributes: variation.attributes,
+        attributesType: typeof variation.attributes,
+        attributesIsArray: Array.isArray(variation.attributes),
         allKeys: Object.keys(variation)
       });
+
+      // Debug específico dos atributos
+      if (variation.attributes) {
+        variation.attributes.forEach((attr: any, attrIndex: number) => {
+          console.log(`  📏 Atributo ${attrIndex + 1}:`, {
+            COMPLETO: attr,
+            name: attr.name,
+            option: attr.option,
+            nameType: typeof attr.name,
+            optionType: typeof attr.option,
+            allAttrKeys: Object.keys(attr)
+          });
+        });
+      }
     });
+    console.groupEnd();
   }
 
   // Se não há dados WooCommerce, retornar distribuição estimada
