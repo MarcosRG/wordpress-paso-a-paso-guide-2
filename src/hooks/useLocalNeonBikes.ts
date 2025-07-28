@@ -16,11 +16,43 @@ const convertNeonProductToBike = (
   if (variations.length > 0) {
     // Para productos variables, sumar stock de todas las variaciones
     totalStock = variations.reduce((sum, variation) => {
-      return sum + (variation.atum_stock || variation.stock_quantity);
+      // LÓGICA UNIVERSAL: Priorizar stock_quantity se atum_stock é 0
+      const atumStock = parseInt(String(variation.atum_stock)) || 0;
+      const wooStock = parseInt(String(variation.stock_quantity)) || 0;
+      const stockToUse = atumStock > 0 ? atumStock : wooStock;
+
+      // Debug para productos con stock > 0 para detectar inconsistencias
+      if (wooStock > 0 || atumStock > 0) {
+        console.log(`🔧 Conversão ${neonProduct.name} - Variação ${variation.woocommerce_id}:`, {
+          atum_stock: atumStock,
+          stock_quantity: wooStock,
+          stockToUse,
+          logic: atumStock > 0 ? 'usando atum' : 'usando woo',
+          attributes: variation.attributes
+        });
+      }
+
+      return sum + stockToUse;
     }, 0);
   } else {
     // Para productos simples, usar stock directo
     totalStock = neonProduct.stock_quantity || 0;
+  }
+
+  // Debug final do total calculado para productos con stock
+  if (totalStock > 0) {
+    console.log(`🏆 Total Stock Calculado para ${neonProduct.name}:`, {
+      productName: neonProduct.name,
+      productId: neonProduct.woocommerce_id,
+      variationsCount: variations.length,
+      totalStock,
+      variationsStock: variations.map(v => ({
+        id: v.woocommerce_id,
+        atum: v.atum_stock,
+        woo: v.stock_quantity,
+        used: (v.atum_stock > 0 ? v.atum_stock : v.stock_quantity)
+      }))
+    });
   }
 
   // Obtener precio base
@@ -59,10 +91,27 @@ const convertNeonProductToBike = (
         id: neonProduct.woocommerce_id,
         acf: neonProduct.acf_data,
       },
-      variations: variations.map((v) => ({
-        ...v,
-        id: v.woocommerce_id,
-      })),
+      variations: variations.map((v) => {
+        // Debug para variaciones con stock para detectar problemas
+        const vAtumStock = parseInt(String(v.atum_stock)) || 0;
+        const vWooStock = parseInt(String(v.stock_quantity)) || 0;
+
+        if (vAtumStock > 0 || vWooStock > 0) {
+          console.log(`🔧 Mapeando variação ${neonProduct.name}:`, {
+            woocommerce_id: v.woocommerce_id,
+            stock_quantity: vWooStock,
+            atum_stock: vAtumStock,
+            finalStock: vAtumStock > 0 ? vAtumStock : vWooStock,
+            attributes: v.attributes,
+            attributesIsArray: Array.isArray(v.attributes)
+          });
+        }
+
+        return {
+          ...v,
+          id: v.woocommerce_id,
+        };
+      }),
       acfData: neonProduct.acf_data,
     },
   };

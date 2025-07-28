@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,6 +20,7 @@ import {
   useLocalSyncStatus,
   useLocalConnectivity,
 } from "@/hooks/useLocalSyncStatus";
+import { canMakeWooCommerceRequest } from "@/services/circuitBreaker";
 import { SyncStatus } from "@/config/neon";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -36,13 +37,27 @@ export const SyncStatusIndicator = ({
   const { syncStatus, forceSync, canSync } = useLocalSyncStatus();
   const { isConnected } = useLocalConnectivity();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [circuitBreakerActive, setCircuitBreakerActive] = useState(false);
+
+  // Check circuit breaker status
+  useEffect(() => {
+    const checkCircuitBreaker = () => {
+      setCircuitBreakerActive(!canMakeWooCommerceRequest());
+    };
+
+    checkCircuitBreaker();
+    const interval = setInterval(checkCircuitBreaker, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleRefresh = async () => {
-    if (!canSync) return;
+    if (!canSync || circuitBreakerActive) return;
 
     setIsRefreshing(true);
     try {
       await forceSync();
+    } catch (error) {
+      console.error('Erro no force sync:', error);
     } finally {
       setIsRefreshing(false);
     }
@@ -50,6 +65,15 @@ export const SyncStatusIndicator = ({
 
   // Determinar icono y color basado en el estado
   const getStatusDisplay = () => {
+    if (circuitBreakerActive) {
+      return {
+        icon: AlertCircle,
+        color: "destructive",
+        text: "Circuit Breaker",
+        description: "API protegida - use reset no painel admin",
+      };
+    }
+
     if (!isConnected) {
       return {
         icon: WifiOff,
@@ -130,8 +154,11 @@ export const SyncStatusIndicator = ({
               <div className="text-xs text-muted-foreground">
                 {statusDisplay.description}
               </div>
-              {canSync && (
+              {canSync && !circuitBreakerActive && (
                 <div className="text-xs mt-1">Haz clic para actualizar</div>
+              )}
+              {circuitBreakerActive && (
+                <div className="text-xs mt-1 text-red-400">Use reset no admin</div>
               )}
             </div>
           </TooltipContent>
@@ -173,8 +200,9 @@ export const SyncStatusIndicator = ({
         variant="outline"
         size="sm"
         onClick={handleRefresh}
-        disabled={!canSync || isRefreshing}
+        disabled={!canSync || isRefreshing || circuitBreakerActive}
         className="h-7"
+        title={circuitBreakerActive ? "Circuit breaker ativo - use reset no painel admin" : ""}
       >
         <RefreshCw
           className={`h-3 w-3 mr-1 ${isRefreshing ? "animate-spin" : ""}`}

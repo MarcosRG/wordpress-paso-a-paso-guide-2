@@ -1,4 +1,5 @@
 import { wooCommerceApi, checkAtumAvailability } from "./woocommerceApi";
+import { wooCommerceCircuitBreaker, canMakeWooCommerceRequest } from "./circuitBreaker";
 import {
   neonHttpService,
   convertToNeonProduct,
@@ -24,7 +25,7 @@ export class LocalSyncService {
           console.log("✅ Sincronización inicial completada");
         })
         .catch((error) => {
-          console.error("❌ Error en sincronización inicial:", error);
+          console.error("��� Error en sincronización inicial:", error);
         });
     }
 
@@ -57,6 +58,12 @@ export class LocalSyncService {
     if (this.isRunning) {
       console.log("⏳ Sincronización ya en curso, esperando...");
       return;
+    }
+
+    // Check circuit breaker first
+    if (!canMakeWooCommerceRequest()) {
+      console.warn("🚨 Circuit breaker ou rate limiter bloqueando sincronização");
+      throw new Error("Request blocked by circuit breaker or rate limiter");
     }
 
     // Import connectivity monitor to check network status
@@ -195,6 +202,15 @@ export class LocalSyncService {
 
       // Handle specific error types gracefully
       if (error instanceof Error) {
+        // Handle circuit breaker errors
+        if (error.message.includes("Request blocked by circuit breaker") ||
+            error.message.includes("circuit breaker") ||
+            error.message.includes("rate limiter")) {
+          console.warn("🚨 Circuit breaker or rate limiter blocked sync - check admin panel for reset options");
+          // Don't throw - let the app continue with cached data
+          return;
+        }
+
         // Handle authentication errors (403)
         if (error.message.includes("Authentication failed (403)") ||
             error.message.includes("HTTP 403")) {
@@ -241,6 +257,13 @@ export class LocalSyncService {
   async forceSync(): Promise<void> {
     if (this.isRunning) {
       throw new Error("Sincronización ya en curso");
+    }
+
+    // Check circuit breaker status for force sync
+    if (!canMakeWooCommerceRequest()) {
+      console.warn("🚨 Circuit breaker or rate limiter blocking force sync");
+      console.warn("💡 Suggestão: Use o painel admin (aba Circuit Breaker) para resetar");
+      throw new Error("Request blocked by circuit breaker or rate limiter");
     }
 
     // Check connectivity status even for force sync

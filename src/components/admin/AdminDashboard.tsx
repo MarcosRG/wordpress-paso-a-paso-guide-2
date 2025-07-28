@@ -27,6 +27,7 @@ import { adminAuthService } from '../../services/adminAuthService';
 import { reservationService, Reservation } from '../../services/reservationService';
 import { wordPressSyncService } from '../../services/wordpressSyncService';
 import { SystemSettings } from './SystemSettings';
+import { DebuggingCenter } from './DebuggingCenter';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -334,6 +335,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         <Tabs defaultValue="reservations" className="space-y-6">
           <TabsList>
             <TabsTrigger value="reservations">Reservas</TabsTrigger>
+            <TabsTrigger value="debugging">Debugging & Cache</TabsTrigger>
             <TabsTrigger value="sync">Sincronización</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
@@ -408,7 +410,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                                 {reservation.start_date} - {reservation.end_date}
                               </p>
                               <p className="text-sm text-gray-500">
-                                {reservation.total_days} días · €{reservation.total_price}
+                                {reservation.total_days} d��as · €{reservation.total_price}
                               </p>
                             </div>
                           </div>
@@ -531,6 +533,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Debugging Center Tab */}
+          <TabsContent value="debugging">
+            <DebuggingCenter />
           </TabsContent>
 
           {/* Settings Tab */}

@@ -11,6 +11,7 @@ import {
   ACFPricing,
   getPricePerDayFromACF,
 } from "@/services/woocommerceApi";
+import { getTotalWooCommerceStock } from "@/utils/stockUtils";
 
 interface SimpleBikeCardProps {
   bike: Bike;
@@ -79,6 +80,9 @@ const SimpleBikeCard = ({
 
   const quantity = getQuantityForBike(bike.id);
 
+  // Obter stock WooCommerce real para produto simples
+  const wooCommerceStock = getTotalWooCommerceStock(bike);
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-4">
@@ -95,13 +99,14 @@ const SimpleBikeCard = ({
 
           {/* Stock info */}
           <div
-            className={`mt-2 p-2 rounded text-xs text-center ${bike.available === 0 ? "bg-red-100 border border-red-200 text-red-700" : "bg-gray-100 text-gray-700"}`}
+            className={`mt-2 p-2 rounded text-xs text-center ${wooCommerceStock === 0 ? "bg-red-100 border border-red-200 text-red-700" : "bg-gray-100 text-gray-700"}`}
           >
             <div className="font-medium">
-              {bike.available === 0
+              {wooCommerceStock === 0
                 ? t("outOfStock") || "Sin Stock"
-                : `${bike.available} ${bike.available === 1 ? t("available") : t("availables")}`}
+                : `${wooCommerceStock} ${wooCommerceStock === 1 ? t("available") : t("availables")}`}
             </div>
+
           </div>
         </div>
 
@@ -171,6 +176,9 @@ const SimpleBikeCard = ({
         <div className="flex items-center justify-center gap-4 p-3 border rounded-lg">
           <div className="flex items-center gap-3">
             <span className="font-medium text-sm">{t("quantity")}:</span>
+            <span className="text-xs text-gray-500">
+              ({wooCommerceStock} {wooCommerceStock === 1 ? t("available") : t("availables")})
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -190,7 +198,7 @@ const SimpleBikeCard = ({
               size="sm"
               variant="outline"
               onClick={() => updateBikeQuantity(bike, 1)}
-              disabled={quantity >= bike.available || bike.available === 0}
+              disabled={quantity >= wooCommerceStock || wooCommerceStock === 0}
               className="h-8 w-8 p-0"
             >
               <Plus className="h-3 w-3" />

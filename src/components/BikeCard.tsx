@@ -13,6 +13,7 @@ import {
 } from "@/services/woocommerceApi";
 import { useAtumStockBySize } from "@/hooks/useAtumStock";
 import { useAtumStockFromBatch, StockBySize } from "@/hooks/useBatchAtumStock";
+import { getWooCommerceStockBySize } from "@/utils/stockUtils";
 
 interface BikeCardProps {
   bike: Bike;
@@ -48,6 +49,9 @@ const BikeCard = ({
   const atumStockBySize = batchStockData?.stockBySize || individualStockQuery.data || {};
   const isAtumLoading = batchStockData?.isLoading || individualStockQuery.isLoading || false;
   const hasAtumData = batchStockData?.hasAtumData || (Object.keys(atumStockBySize).length > 0);
+
+  // Obter stock WooCommerce real por tamanho
+  const wooCommerceStockBySize = getWooCommerceStockBySize(bike);
 
   // Extract ACF pricing first, then fallback to day-based pricing
   const acfPricing: ACFPricing | null = bike.wooCommerceData?.product
@@ -124,13 +128,15 @@ const BikeCard = ({
             </div>
             <div className="grid grid-cols-5 gap-1 text-center">
               {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
-                // Usar stock real de ATUM si está disponible, sino usar estimación
-                const availableForSize =
-                  atumStockBySize[size] ?? Math.floor(bike.available / 5);
+                // Usar stock WooCommerce real por tamanho
+                const sizeStock = wooCommerceStockBySize[size];
+                const availableForSize = sizeStock?.wooCommerceStock || 0;
+                const isInStock = sizeStock?.stockStatus === 'instock' && availableForSize > 0;
+
                 return (
                   <div key={size} className="flex flex-col">
                     <span className="font-medium">{size}</span>
-                    <span className="text-xs text-gray-600">
+                    <span className={`text-xs ${isInStock ? 'text-green-600' : 'text-red-500'}`}>
                       ({availableForSize})
                     </span>
                   </div>
@@ -209,9 +215,10 @@ const BikeCard = ({
           </h4>
           {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
             const quantity = getQuantityForBikeAndSize(bike.id, size);
-            // Usar stock real de ATUM si está disponible, sino usar estimación
-            const availableForSize =
-              atumStockBySize[size] ?? Math.floor(bike.available / 5);
+            // Usar stock WooCommerce real por tamanho
+            const sizeStock = wooCommerceStockBySize[size];
+            const availableForSize = sizeStock?.wooCommerceStock || 0;
+            const isInStock = sizeStock?.stockStatus === 'instock' && availableForSize > 0;
 
             return (
               <div
@@ -220,18 +227,9 @@ const BikeCard = ({
               >
                 <div className="flex items-center gap-3">
                   <span className="font-medium w-6">{size}</span>
-                  <span className="text-xs text-gray-500">
+                  <span className={`text-xs ${isInStock ? 'text-green-600' : 'text-red-500'}`}>
                     ({availableForSize}{" "}
                     {availableForSize === 1 ? t("available") : t("availables")})
-                    {isAtumLoading && (
-                      <span className="text-blue-600 font-medium"> ⏳ATUM</span>
-                    )}
-                    {!isAtumLoading && atumStockBySize[size] !== undefined && (
-                      <span className="text-green-600 font-medium"> ✓ATUM</span>
-                    )}
-                    {!isAtumLoading && !hasAtumData && (
-                      <span className="text-orange-600 font-medium"> ⚠️EST</span>
-                    )}
                   </span>
                 </div>
 
