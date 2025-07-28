@@ -230,10 +230,6 @@ const BikeCard = ({
                   <span className={`text-xs ${isInStock ? 'text-green-600' : 'text-red-500'}`}>
                     ({availableForSize}{" "}
                     {availableForSize === 1 ? t("available") : t("availables")})
-                    <span className="text-blue-600 font-medium"> WooCommerce</span>
-                    {atumStockBySize[size] !== undefined && (
-                      <span className="text-green-600 font-medium"> | ATUM: {atumStockBySize[size]}</span>
-                    )}
                   </span>
                 </div>
 
