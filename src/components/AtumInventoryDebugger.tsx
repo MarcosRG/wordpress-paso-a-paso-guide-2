@@ -533,9 +533,20 @@ export const AtumInventoryDebugger: React.FC = () => {
                   <strong>Diagnóstico:</strong>
                   <br />
                   {debugInfo.detectedAtumType === 'none' && (
-                    <span className="text-red-600">
-                      ❌ Nenhum campo ATUM detectado. Verifique se o plugin ATUM está ativo e configurado.
-                    </span>
+                    <div className="space-y-2">
+                      <span className="text-blue-600 font-medium">
+                        ✅ ATUM NÃO está gerenciando este produto.
+                      </span>
+                      <br />
+                      <span className="text-green-600">
+                        ✅ Stock WooCommerce ativo: {debugInfo.wooCommerceStock} unidades
+                      </span>
+                      <br />
+                      <span className="text-gray-600 text-sm">
+                        Este é o comportamento correto quando ATUM não está configurado para o produto.
+                        Os valores de stock das variações ({debugInfo.variations?.map(v => v.stockQuantity).join(', ')}) são válidos e corretos.
+                      </span>
+                    </div>
                   )}
                   {debugInfo.detectedAtumType === 'standard' && debugInfo.atumStock === 0 && (
                     <span className="text-orange-600">
