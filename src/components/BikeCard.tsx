@@ -124,9 +124,28 @@ const BikeCard = ({
             </div>
             <div className="grid grid-cols-5 gap-1 text-center">
               {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
-                // Usar stock real de ATUM si está disponible, sino usar estimación
-                const availableForSize =
-                  atumStockBySize[size] ?? Math.floor(bike.available / 5);
+                // Buscar stock WooCommerce real por variação
+                let wooCommerceStockForSize = 0;
+
+                if (bike.wooCommerceData?.variations) {
+                  const variation = bike.wooCommerceData.variations.find(v => {
+                    const sizeAttr = v.attributes.find(attr =>
+                      attr.name.toLowerCase().includes('tama') ||
+                      attr.name.toLowerCase().includes('size')
+                    );
+                    return sizeAttr?.option.toUpperCase() === size;
+                  });
+
+                  if (variation) {
+                    wooCommerceStockForSize = variation.stock_quantity || 0;
+                  }
+                }
+
+                // Fallback para divisão igual se não encontrar variação específica
+                const availableForSize = wooCommerceStockForSize > 0
+                  ? wooCommerceStockForSize
+                  : Math.floor(bike.available / 5);
+
                 return (
                   <div key={size} className="flex flex-col">
                     <span className="font-medium">{size}</span>
