@@ -86,10 +86,25 @@ const convertNeonProductToBike = (
         id: neonProduct.woocommerce_id,
         acf: neonProduct.acf_data,
       },
-      variations: variations.map((v) => ({
-        ...v,
-        id: v.woocommerce_id,
-      })),
+      variations: variations.map((v) => {
+        // Debug específico para KTM
+        if (neonProduct.name.includes('KTM MACINA CROSS 410') || neonProduct.woocommerce_id === 19265) {
+          console.log('🔧 KTM Mapeando variação:', {
+            original: v,
+            woocommerce_id: v.woocommerce_id,
+            stock_quantity: v.stock_quantity,
+            atum_stock: v.atum_stock,
+            attributes: v.attributes,
+            attributesType: typeof v.attributes,
+            attributesIsArray: Array.isArray(v.attributes)
+          });
+        }
+
+        return {
+          ...v,
+          id: v.woocommerce_id,
+        };
+      }),
       acfData: neonProduct.acf_data,
     },
   };
