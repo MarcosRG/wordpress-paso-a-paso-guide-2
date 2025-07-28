@@ -38,9 +38,21 @@ export const AtumInventoryTester: React.FC = () => {
   const [isTestingSync, setIsTestingSync] = useState(false);
   const [testResults, setTestResults] = useState<ProductStockInfo[]>([]);
   const [lastTestTime, setLastTestTime] = useState<Date | null>(null);
-  
+  const [circuitBreakerBlocked, setCircuitBreakerBlocked] = useState(false);
+
   const { data: bikes, isLoading, refetch } = useLocalNeonBikes();
   const batchAtumStock = useBatchAtumStock(bikes || []);
+
+  // Check circuit breaker status
+  useEffect(() => {
+    const checkCircuitBreaker = () => {
+      setCircuitBreakerBlocked(!canMakeWooCommerceRequest());
+    };
+
+    checkCircuitBreaker();
+    const interval = setInterval(checkCircuitBreaker, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const runStockTest = async () => {
     setIsTestingSync(true);
