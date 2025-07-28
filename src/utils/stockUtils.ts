@@ -121,10 +121,45 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
 };
 
 /**
- * Função mantida para compatibilidade - agora usa getRealStockBySize
+ * Função alternativa para quando os dados das variações não estão perfeitos
+ * Distribui o stock disponível total entre os tamanhos proporcionalmente
+ */
+export const getEstimatedStockBySize = (bike: Bike): StockBySize => {
+  const stockBySize: StockBySize = {};
+
+  // Se não temos variações ou dados inconsistentes, distribuir o total
+  const totalAvailable = bike.available || 0;
+  const estimatedPerSize = Math.floor(totalAvailable / 5);
+  const remainder = totalAvailable % 5;
+
+  ['XS', 'S', 'M', 'L', 'XL'].forEach((size, index) => {
+    // Distribuir o resto nos primeiros tamanhos
+    const stock = estimatedPerSize + (index < remainder ? 1 : 0);
+
+    stockBySize[size] = {
+      wooCommerceStock: stock,
+      stockStatus: stock > 0 ? 'instock' : 'outofstock'
+    };
+  });
+
+  return stockBySize;
+};
+
+/**
+ * Função mantida para compatibilidade - agora usa getRealStockBySize com fallback
  */
 export const getWooCommerceStockBySize = (bike: Bike): StockBySize => {
-  return getRealStockBySize(bike);
+  const realStock = getRealStockBySize(bike);
+
+  // Se não conseguimos dados das variações, usar estimativa
+  const totalRealStock = Object.values(realStock).reduce((sum, size) => sum + size.wooCommerceStock, 0);
+
+  if (totalRealStock === 0 && bike.available > 0) {
+    console.log(`⚠️ Usando stock estimado para ${bike.name} - dados das variações não disponíveis`);
+    return getEstimatedStockBySize(bike);
+  }
+
+  return realStock;
 };
 
 /**
