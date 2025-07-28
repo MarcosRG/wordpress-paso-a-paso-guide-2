@@ -154,8 +154,11 @@ export const SyncStatusIndicator = ({
               <div className="text-xs text-muted-foreground">
                 {statusDisplay.description}
               </div>
-              {canSync && (
+              {canSync && !circuitBreakerActive && (
                 <div className="text-xs mt-1">Haz clic para actualizar</div>
+              )}
+              {circuitBreakerActive && (
+                <div className="text-xs mt-1 text-red-400">Use reset no admin</div>
               )}
             </div>
           </TooltipContent>
