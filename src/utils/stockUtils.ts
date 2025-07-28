@@ -159,6 +159,31 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
     console.log(`📊 Stock final por tamanho para ${bike.name}:`, stockBySize);
   }
 
+  // Verificação final: se não conseguimos nenhum stock mas o bike tem disponível
+  const totalDetectedStock = Object.values(stockBySize).reduce((sum, size) => sum + size.wooCommerceStock, 0);
+
+  if (totalDetectedStock === 0 && bike.available > 0) {
+    if (isKTMDebug) {
+      console.warn('🚨 KTM: Não foi detectado stock nas variações, mas bike.available > 0. Usando fallback.');
+    }
+
+    // Usar fallback baseado no total disponível
+    const estimatedStock = Math.floor(bike.available / 5);
+    const remainder = bike.available % 5;
+
+    ['XS', 'S', 'M', 'L', 'XL'].forEach((size, index) => {
+      const stock = estimatedStock + (index < remainder ? 1 : 0);
+      stockBySize[size] = {
+        wooCommerceStock: stock,
+        stockStatus: stock > 0 ? 'instock' : 'outofstock'
+      };
+    });
+
+    if (isKTMDebug) {
+      console.log(`📊 Stock corrigido com fallback:`, stockBySize);
+    }
+  }
+
   return stockBySize;
 };
 
