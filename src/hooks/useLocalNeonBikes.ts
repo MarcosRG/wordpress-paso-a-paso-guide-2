@@ -18,11 +18,36 @@ const convertNeonProductToBike = (
     totalStock = variations.reduce((sum, variation) => {
       // Priorizar stock_quantity se atum_stock é 0, já que pode haver produtos não gerenciados pelo ATUM
       const stockToUse = variation.atum_stock > 0 ? variation.atum_stock : variation.stock_quantity;
+
+      // Debug específico para KTM
+      if (neonProduct.name.includes('KTM MACINA CROSS 410') || neonProduct.woocommerce_id === 19265) {
+        console.log(`🔧 KTM Conversão - Variação ${variation.woocommerce_id}:`, {
+          atum_stock: variation.atum_stock,
+          stock_quantity: variation.stock_quantity,
+          stockToUse,
+          attributes: variation.attributes
+        });
+      }
+
       return sum + (stockToUse || 0);
     }, 0);
   } else {
     // Para productos simples, usar stock directo
     totalStock = neonProduct.stock_quantity || 0;
+  }
+
+  // Debug final do total calculado para KTM
+  if (neonProduct.name.includes('KTM MACINA CROSS 410') || neonProduct.woocommerce_id === 19265) {
+    console.log(`🏆 KTM Total Stock Calculado:`, {
+      productName: neonProduct.name,
+      variationsCount: variations.length,
+      totalStock,
+      variationsStock: variations.map(v => ({
+        id: v.woocommerce_id,
+        atum: v.atum_stock,
+        woo: v.stock_quantity
+      }))
+    });
   }
 
   // Obtener precio base
