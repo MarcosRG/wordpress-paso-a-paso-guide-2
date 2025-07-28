@@ -128,32 +128,15 @@ const BikeCard = ({
             </div>
             <div className="grid grid-cols-5 gap-1 text-center">
               {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
-                // Buscar stock WooCommerce real por variação
-                let wooCommerceStockForSize = 0;
-
-                if (bike.wooCommerceData?.variations) {
-                  const variation = bike.wooCommerceData.variations.find(v => {
-                    const sizeAttr = v.attributes.find(attr =>
-                      attr.name.toLowerCase().includes('tama') ||
-                      attr.name.toLowerCase().includes('size')
-                    );
-                    return sizeAttr?.option.toUpperCase() === size;
-                  });
-
-                  if (variation) {
-                    wooCommerceStockForSize = variation.stock_quantity || 0;
-                  }
-                }
-
-                // Fallback para divisão igual se não encontrar variação específica
-                const availableForSize = wooCommerceStockForSize > 0
-                  ? wooCommerceStockForSize
-                  : Math.floor(bike.available / 5);
+                // Usar stock WooCommerce real por tamanho
+                const sizeStock = wooCommerceStockBySize[size];
+                const availableForSize = sizeStock?.wooCommerceStock || 0;
+                const isInStock = sizeStock?.stockStatus === 'instock' && availableForSize > 0;
 
                 return (
                   <div key={size} className="flex flex-col">
                     <span className="font-medium">{size}</span>
-                    <span className="text-xs text-gray-600">
+                    <span className={`text-xs ${isInStock ? 'text-green-600' : 'text-red-500'}`}>
                       ({availableForSize})
                     </span>
                   </div>
