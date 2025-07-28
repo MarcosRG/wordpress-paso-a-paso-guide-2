@@ -40,7 +40,7 @@ export const SyncStatusIndicator = ({
   const [circuitBreakerActive, setCircuitBreakerActive] = useState(false);
 
   // Check circuit breaker status
-  useState(() => {
+  useEffect(() => {
     const checkCircuitBreaker = () => {
       setCircuitBreakerActive(!canMakeWooCommerceRequest());
     };
@@ -48,7 +48,7 @@ export const SyncStatusIndicator = ({
     checkCircuitBreaker();
     const interval = setInterval(checkCircuitBreaker, 5000);
     return () => clearInterval(interval);
-  });
+  }, []);
 
   const handleRefresh = async () => {
     if (!canSync) return;
