@@ -25,6 +25,7 @@ import { localSyncService } from '@/services/localSyncService';
 import { neonHttpService } from '@/services/neonHttpService';
 import { CacheManager } from './CacheManager';
 import { RealTimeMonitor } from './RealTimeMonitor';
+import StockCalculationDebugger from '../StockCalculationDebugger';
 
 export const DebuggingCenter: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -238,8 +239,9 @@ export const DebuggingCenter: React.FC = () => {
       </Card>
 
       {/* Debugging Tabs */}
-      <Tabs defaultValue="atum-test" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+      <Tabs defaultValue="stock-calc" className="w-full">
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="stock-calc">📊 Stock Calculator</TabsTrigger>
           <TabsTrigger value="atum-test">Teste ATUM</TabsTrigger>
           <TabsTrigger value="atum-debug">Debug ATUM</TabsTrigger>
           <TabsTrigger value="circuit-breaker">Circuit Breaker</TabsTrigger>
@@ -247,6 +249,10 @@ export const DebuggingCenter: React.FC = () => {
           <TabsTrigger value="console-monitor">Console Monitor</TabsTrigger>
           <TabsTrigger value="system-info">Info Sistema</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="stock-calc" className="space-y-4">
+          <StockCalculationDebugger />
+        </TabsContent>
 
         <TabsContent value="atum-test" className="space-y-4">
           <AtumInventoryTester />
