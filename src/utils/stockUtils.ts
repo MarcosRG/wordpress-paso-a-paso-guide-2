@@ -36,6 +36,19 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
       productType: bike.wooCommerceData?.product?.type,
       fullVariationsData: bike.wooCommerceData?.variations
     });
+
+    // Debug cada variação individualmente
+    bike.wooCommerceData?.variations?.forEach((variation: any, index: number) => {
+      console.log(`🔎 KTM Variação ${index + 1}:`, {
+        id: variation.id,
+        woocommerce_id: variation.woocommerce_id,
+        stock_quantity: variation.stock_quantity,
+        atum_stock: variation.atum_stock,
+        stock_status: variation.stock_status,
+        attributes: variation.attributes,
+        allKeys: Object.keys(variation)
+      });
+    });
   }
 
   // Se não há dados WooCommerce, retornar distribuição estimada
