@@ -11,6 +11,7 @@ import {
   ACFPricing,
   getPricePerDayFromACF,
 } from "@/services/woocommerceApi";
+import { getTotalWooCommerceStock } from "@/utils/stockUtils";
 
 interface SimpleBikeCardProps {
   bike: Bike;
