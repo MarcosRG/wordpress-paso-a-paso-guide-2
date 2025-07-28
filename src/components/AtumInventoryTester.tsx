@@ -187,16 +187,33 @@ export const AtumInventoryTester: React.FC = () => {
     try {
       setIsTestingSync(true);
       console.log('🔄 Forçando sincronização completa...');
-      
+
+      // Check circuit breaker first
+      if (!canMakeWooCommerceRequest()) {
+        console.warn('🚨 Circuit breaker ou rate limiter bloqueando teste');
+        throw new Error('Request blocked by circuit breaker or rate limiter. Use o painel admin para resetar.');
+      }
+
       await localSyncService.forceSync();
       await refetch();
-      
+
       console.log('✅ Sincronização forçada concluída, executando teste...');
       await runStockTest();
-      
+
     } catch (error) {
       console.error('Erro na sincronização forçada:', error);
       setIsTestingSync(false);
+    }
+  };
+
+  const handleResetCircuitBreaker = () => {
+    try {
+      console.log('🔄 Resetando circuit breaker...');
+      wooCommerceCircuitBreaker.reset();
+      wooCommerceRateLimiter.reset();
+      console.log('✅ Circuit breaker resetado com sucesso');
+    } catch (error) {
+      console.error('Erro resetando circuit breaker:', error);
     }
   };
 
