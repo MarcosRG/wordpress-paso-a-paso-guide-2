@@ -134,21 +134,21 @@ export const AtumInventoryDebugger: React.FC = () => {
       if (hasMultiInventory) detectedAtumType = 'multi-inventory';
       else if (hasStandardAtum) detectedAtumType = 'standard';
 
-      // Calcular stock ATUM
+      // Calcular stock ATUM apenas se há campos ATUM reais
       let calculatedAtumStock = 0;
-      
+
       if (hasMultiInventory) {
-        const multiInventoryField = atumFields.find(field => 
-          field.key.includes('multi_inventory') ||
-          field.key.includes('_atum_mi_')
+        const multiInventoryField = realAtumFields.find(field =>
+          field.key === '_atum_multi_inventory' ||
+          field.key === 'atum_multi_inventory'
         );
-        
+
         if (multiInventoryField) {
           try {
-            const multiInventory = typeof multiInventoryField.value === 'string' 
+            const multiInventory = typeof multiInventoryField.value === 'string'
               ? JSON.parse(multiInventoryField.value)
               : multiInventoryField.value;
-              
+
             if (typeof multiInventory === 'object' && multiInventory !== null) {
               calculatedAtumStock = Object.values(multiInventory)
                 .reduce((sum: number, stock: any) => sum + (parseInt(String(stock)) || 0), 0);
@@ -158,12 +158,12 @@ export const AtumInventoryDebugger: React.FC = () => {
           }
         }
       } else if (hasStandardAtum) {
-        const standardAtumField = atumFields.find(field =>
+        const standardAtumField = realAtumFields.find(field =>
           field.key === '_atum_stock_quantity' ||
           field.key === 'atum_stock_quantity' ||
           field.key === '_atum_stock'
         );
-        
+
         if (standardAtumField) {
           calculatedAtumStock = parseInt(String(standardAtumField.value)) || 0;
         }
