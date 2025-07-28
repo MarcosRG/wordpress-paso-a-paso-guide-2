@@ -215,9 +215,10 @@ const BikeCard = ({
           </h4>
           {(["XS", "S", "M", "L", "XL"] as const).map((size) => {
             const quantity = getQuantityForBikeAndSize(bike.id, size);
-            // Usar stock real de ATUM si está disponible, sino usar estimación
-            const availableForSize =
-              atumStockBySize[size] ?? Math.floor(bike.available / 5);
+            // Usar stock WooCommerce real por tamanho
+            const sizeStock = wooCommerceStockBySize[size];
+            const availableForSize = sizeStock?.wooCommerceStock || 0;
+            const isInStock = sizeStock?.stockStatus === 'instock' && availableForSize > 0;
 
             return (
               <div
