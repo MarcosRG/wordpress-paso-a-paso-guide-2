@@ -82,11 +82,14 @@ export const AtumInventoryTester: React.FC = () => {
               stockInfo.atumStock = Object.values(batchData.stockBySize).reduce((sum, stock) => sum + stock, 0);
               stockInfo.sizes = {};
               
-              // Mapear stock por tamanho
-              Object.entries(batchData.stockBySize).forEach(([size, stock]) => {
+              // Mapear stock por tamanho comparando WooCommerce vs ATUM
+              ['XS', 'S', 'M', 'L', 'XL'].forEach(size => {
+                const wooStock = wooStockBySize[size]?.wooCommerceStock || 0;
+                const atumStock = batchData.stockBySize[size] || 0;
+
                 stockInfo.sizes![size] = {
-                  wooCommerce: 0, // Não temos acesso ao stock WooCommerce por tamanho facilmente
-                  atum: stock
+                  wooCommerce: wooStock,
+                  atum: atumStock
                 };
               });
             } else {
