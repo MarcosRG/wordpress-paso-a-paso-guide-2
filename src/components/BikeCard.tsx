@@ -50,6 +50,9 @@ const BikeCard = ({
   const isAtumLoading = batchStockData?.isLoading || individualStockQuery.isLoading || false;
   const hasAtumData = batchStockData?.hasAtumData || (Object.keys(atumStockBySize).length > 0);
 
+  // Obter stock WooCommerce real por tamanho
+  const wooCommerceStockBySize = getWooCommerceStockBySize(bike);
+
   // Extract ACF pricing first, then fallback to day-based pricing
   const acfPricing: ACFPricing | null = bike.wooCommerceData?.product
     ? extractACFPricing(bike.wooCommerceData.product)
