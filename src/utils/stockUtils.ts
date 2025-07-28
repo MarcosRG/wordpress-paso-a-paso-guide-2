@@ -37,7 +37,18 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
   }
 
   // Processar variações reais para obter stock verdadeiro
-  bike.wooCommerceData.variations.forEach((variation: any) => {
+  console.log(`🔍 Processando variações para ${bike.name} (ID: ${bike.id}):`, {
+    totalVariations: bike.wooCommerceData.variations.length,
+    bikeAvailable: bike.available,
+    variations: bike.wooCommerceData.variations.map((v: any) => ({
+      id: v.id,
+      stock_quantity: v.stock_quantity,
+      stock_status: v.stock_status,
+      attributes: v.attributes
+    }))
+  });
+
+  bike.wooCommerceData.variations.forEach((variation: any, index: number) => {
     // Buscar atributo de tamanho
     const sizeAttribute = variation.attributes?.find((attr: any) =>
       attr.name.toLowerCase().includes('tama') ||
@@ -45,6 +56,14 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
       attr.name.toLowerCase().includes('pa_size') ||
       attr.name.toLowerCase().includes('pa_tama')
     );
+
+    console.log(`📏 Variação ${index + 1} (ID: ${variation.id}):`, {
+      attributes: variation.attributes,
+      sizeAttributeFound: !!sizeAttribute,
+      sizeValue: sizeAttribute?.option,
+      stock_quantity: variation.stock_quantity,
+      stock_status: variation.stock_status
+    });
 
     if (sizeAttribute && sizeAttribute.option) {
       const size = sizeAttribute.option.toUpperCase();
@@ -63,6 +82,8 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
         finalStock = Math.floor(bike.available / 5);
       }
 
+      console.log(`✅ Stock calculado para tamanho ${size}: ${finalStock} (original: ${stock}, status: ${status})`);
+
       stockBySize[size] = {
         wooCommerceStock: finalStock,
         variationId: variation.id,
@@ -70,6 +91,8 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
       };
     }
   });
+
+  console.log(`📊 Stock final por tamanho para ${bike.name}:`, stockBySize);
 
   return stockBySize;
 };
