@@ -23,6 +23,7 @@ import { CircuitBreakerControl } from '../CircuitBreakerControl';
 import { useLocalSyncStatus } from '@/hooks/useLocalSyncStatus';
 import { localSyncService } from '@/services/localSyncService';
 import { neonHttpService } from '@/services/neonHttpService';
+import { CacheManager } from './CacheManager';
 
 export const DebuggingCenter: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
