@@ -258,6 +258,10 @@ export const DebuggingCenter: React.FC = () => {
           <CircuitBreakerControl />
         </TabsContent>
 
+        <TabsContent value="cache-manager" className="space-y-4">
+          <CacheManager />
+        </TabsContent>
+
         <TabsContent value="system-info" className="space-y-4">
           <SystemInfoPanel />
         </TabsContent>
