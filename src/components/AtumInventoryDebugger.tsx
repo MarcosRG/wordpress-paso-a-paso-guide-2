@@ -26,6 +26,7 @@ interface ProductDebugInfo {
   manageStock: boolean;
   metaDataKeys: string[];
   atumFields: { key: string; value: any; type: string }[];
+  otherPluginFields?: { key: string; value: any; type: string }[];
   variations?: VariationDebugInfo[];
   wooCommerceStock: number;
   atumStock: number;
