@@ -672,54 +672,92 @@ export const checkAtumAvailability = async (
       }
     );
 
-    // Check for ATUM Multi-Inventory data in meta_data
-    const atumMultiStock = data.meta_data?.find(
-      (meta: any) =>
-        meta.key === "_atum_multi_inventory" ||
-        meta.key === "atum_multi_inventory" ||
-        meta.key === "_multi_inventory" ||
-        meta.key === "_atum_location_inventory" ||
-        meta.key === "_atum_mi_inventory" ||
-        meta.key === "_inventory_sorting_date",
+    // Buscar TODOS os campos relacionados a ATUM e inventário para diagnóstico completo
+    const allAtumFields = data.meta_data?.filter((meta: any) =>
+      meta.key.includes('atum') ||
+      meta.key.includes('_stock') ||
+      meta.key.includes('inventory') ||
+      meta.key.includes('_mi_') ||
+      meta.key.includes('location')
+    ) || [];
+
+    console.log(`🔍 ATUM Debug Completo - Produto ${productId} (${data.name || 'Sin nombre'}):`, {
+      totalMetaFields: data.meta_data?.length || 0,
+      atumRelatedFields: allAtumFields.length,
+      atumFields: allAtumFields.map(field => ({
+        key: field.key,
+        valueType: typeof field.value,
+        hasValue: field.value !== null && field.value !== undefined && field.value !== '',
+        valuePreview: typeof field.value === 'string' && field.value.length > 100
+          ? field.value.substring(0, 100) + '...'
+          : field.value
+      }))
+    });
+
+    // 1. PRIORIDADE: Multi-Inventory (múltiplas localizações)
+    const multiInventoryFields = allAtumFields.filter(field =>
+      field.key.includes('multi_inventory') ||
+      field.key.includes('_atum_mi_') ||
+      field.key.includes('location_inventory') ||
+      field.key === '_atum_multi_inventory' ||
+      field.key === 'atum_multi_inventory' ||
+      field.key === '_multi_inventory' ||
+      field.key === '_inventory_sorting_date'
     );
 
-    if (atumMultiStock && atumMultiStock.value) {
-      console.log(`📦 ATUM Multi-Inventory encontrado para producto ${productId}:`, {
-        key: atumMultiStock.key,
-        valueType: typeof atumMultiStock.value,
-        rawValue: atumMultiStock.value
-      });
+    for (const multiField of multiInventoryFields) {
+      if (multiField.value) {
+        console.log(`📦 ATUM Multi-Inventory encontrado para producto ${productId}:`, {
+          key: multiField.key,
+          valueType: typeof multiField.value,
+          rawValue: multiField.value
+        });
 
-      try {
-        const multiInventory =
-          typeof atumMultiStock.value === "string"
-            ? JSON.parse(atumMultiStock.value)
-            : atumMultiStock.value;
+        try {
+          const multiInventory = typeof multiField.value === "string"
+            ? JSON.parse(multiField.value)
+            : multiField.value;
 
-        console.log(`🏪 ATUM Multi-Inventory parsed para ${productId}:`, multiInventory);
+          console.log(`🏪 ATUM Multi-Inventory parsed para ${productId}:`, multiInventory);
 
-        // If it's an object, get the total stock across all inventories
-        if (typeof multiInventory === "object" && multiInventory !== null) {
-          const stockDetails = Object.entries(multiInventory).map(([location, stock]) => ({
-            location,
-            stock: parseInt(String(stock)) || 0
-          }));
+          if (typeof multiInventory === "object" && multiInventory !== null) {
+            // Se for array, somar valores
+            if (Array.isArray(multiInventory)) {
+              const totalStock = multiInventory.reduce((sum, item) => {
+                const stock = typeof item === 'object' ? (item.stock || item.quantity || 0) : (parseInt(String(item)) || 0);
+                return sum + stock;
+              }, 0);
 
-          const totalStock = stockDetails.reduce((sum, item) => sum + item.stock, 0);
+              if (totalStock > 0) {
+                console.log(`✅ ATUM Multi-Inventory (array) calculado para ${productId}: ${totalStock} unidades`);
+                return totalStock;
+              }
+            } else {
+              // Se for objeto, somar valores das propriedades
+              const stockDetails = Object.entries(multiInventory).map(([location, stock]) => ({
+                location,
+                stock: parseInt(String(stock)) || 0
+              }));
 
-          console.log(`✅ ATUM Multi-Inventory calculado para ${productId}:`, {
-            stockByLocation: stockDetails,
-            totalStock: totalStock
-          });
+              const totalStock = stockDetails.reduce((sum, item) => sum + item.stock, 0);
 
-          if (totalStock > 0) {
-            return totalStock;
+              console.log(`✅ ATUM Multi-Inventory (objeto) calculado para ${productId}:`, {
+                stockByLocation: stockDetails,
+                totalStock: totalStock
+              });
+
+              if (totalStock > 0) {
+                return totalStock;
+              }
+            }
           }
+        } catch (e) {
+          console.error(`❌ Error parsing ATUM multi-inventory para ${productId}:`, e);
         }
-      } catch (e) {
-        console.error(`❌ Error parsing ATUM multi-inventory para ${productId}:`, e);
       }
-    } else {
+    }
+
+    if (multiInventoryFields.length === 0) {
       console.log(`❌ NO se encontró ATUM Multi-Inventory para producto ${productId}`);
     }
 
