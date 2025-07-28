@@ -16,7 +16,9 @@ const convertNeonProductToBike = (
   if (variations.length > 0) {
     // Para productos variables, sumar stock de todas las variaciones
     totalStock = variations.reduce((sum, variation) => {
-      return sum + (variation.atum_stock || variation.stock_quantity);
+      // Priorizar stock_quantity se atum_stock é 0, já que pode haver produtos não gerenciados pelo ATUM
+      const stockToUse = variation.atum_stock > 0 ? variation.atum_stock : variation.stock_quantity;
+      return sum + (stockToUse || 0);
     }, 0);
   } else {
     // Para productos simples, usar stock directo
