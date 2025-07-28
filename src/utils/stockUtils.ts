@@ -80,13 +80,23 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
   }
 
   bike.wooCommerceData.variations.forEach((variation: any, index: number) => {
-    // Buscar atributo de tamanho
-    const sizeAttribute = variation.attributes?.find((attr: any) =>
-      attr.name.toLowerCase().includes('tama') ||
-      attr.name.toLowerCase().includes('size') ||
-      attr.name.toLowerCase().includes('pa_size') ||
-      attr.name.toLowerCase().includes('pa_tama')
-    );
+    // Buscar atributo de tamanho com busca mais ampla
+    const sizeAttribute = variation.attributes?.find((attr: any) => {
+      const attrName = (attr.name || '').toLowerCase();
+      const attrOption = (attr.option || '').toLowerCase();
+
+      return (
+        attrName.includes('tama') ||
+        attrName.includes('size') ||
+        attrName.includes('pa_size') ||
+        attrName.includes('pa_tama') ||
+        attrName.includes('tamaño') ||
+        attrName === 'size' ||
+        attrName === 'tamanho' ||
+        // Verificar se o valor é um tamanho conhecido
+        ['xs', 's', 'm', 'l', 'xl', 'xxl'].includes(attrOption)
+      );
+    });
 
     if (isKTMDebug) {
       console.log(`📏 Variação ${index + 1} (ID: ${variation.id}):`, {
