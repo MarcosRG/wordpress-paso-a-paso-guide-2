@@ -264,6 +264,10 @@ export const DebuggingCenter: React.FC = () => {
           <CacheManager />
         </TabsContent>
 
+        <TabsContent value="console-monitor" className="space-y-4">
+          <RealTimeMonitor />
+        </TabsContent>
+
         <TabsContent value="system-info" className="space-y-4">
           <SystemInfoPanel />
         </TabsContent>
