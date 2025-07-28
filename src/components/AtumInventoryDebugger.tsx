@@ -228,6 +228,15 @@ export const AtumInventoryDebugger: React.FC = () => {
                 varAtumStock = parseInt(String(varAtumField.value)) || 0;
               }
 
+              // Log detalhado da variação para debugging
+              console.log(`🔍 Variação ${varData.id} (${varData.attributes?.map((a: any) => `${a.name}: ${a.option}`).join(', ')}):`, {
+                stock_quantity: varData.stock_quantity,
+                stock_status: varData.stock_status,
+                manage_stock: varData.manage_stock,
+                atumStock: varAtumStock,
+                metaFields: varData.meta_data?.length || 0
+              });
+
               variations.push({
                 id: varData.id,
                 attributes: varData.attributes || [],
