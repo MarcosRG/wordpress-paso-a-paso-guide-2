@@ -202,6 +202,15 @@ export class LocalSyncService {
 
       // Handle specific error types gracefully
       if (error instanceof Error) {
+        // Handle circuit breaker errors
+        if (error.message.includes("Request blocked by circuit breaker") ||
+            error.message.includes("circuit breaker") ||
+            error.message.includes("rate limiter")) {
+          console.warn("🚨 Circuit breaker or rate limiter blocked sync - check admin panel for reset options");
+          // Don't throw - let the app continue with cached data
+          return;
+        }
+
         // Handle authentication errors (403)
         if (error.message.includes("Authentication failed (403)") ||
             error.message.includes("HTTP 403")) {
