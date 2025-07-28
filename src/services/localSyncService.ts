@@ -259,6 +259,13 @@ export class LocalSyncService {
       throw new Error("Sincronización ya en curso");
     }
 
+    // Check circuit breaker status for force sync
+    if (!canMakeWooCommerceRequest()) {
+      console.warn("🚨 Circuit breaker or rate limiter blocking force sync");
+      console.warn("💡 Suggestão: Use o painel admin (aba Circuit Breaker) para resetar");
+      throw new Error("Request blocked by circuit breaker or rate limiter");
+    }
+
     // Check connectivity status even for force sync
     const { getConnectivityStatus } = await import("../services/connectivityMonitor");
     const connectivityStatus = getConnectivityStatus();
