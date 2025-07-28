@@ -106,9 +106,7 @@ const SimpleBikeCard = ({
                 ? t("outOfStock") || "Sin Stock"
                 : `${wooCommerceStock} ${wooCommerceStock === 1 ? t("available") : t("availables")}`}
             </div>
-            <div className="text-xs text-blue-600 mt-1">
-              WooCommerce Stock
-            </div>
+
           </div>
         </div>
 
