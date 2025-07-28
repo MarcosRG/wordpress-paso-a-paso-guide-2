@@ -13,6 +13,7 @@ import {
 } from "@/services/woocommerceApi";
 import { useAtumStockBySize } from "@/hooks/useAtumStock";
 import { useAtumStockFromBatch, StockBySize } from "@/hooks/useBatchAtumStock";
+import { getWooCommerceStockBySize } from "@/utils/stockUtils";
 
 interface BikeCardProps {
   bike: Bike;
