@@ -180,6 +180,32 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
         variationId: variation.id,
         stockStatus: finalStock > 0 ? 'instock' : 'outofstock'
       };
+    } else if (isKTMDebug) {
+      // Para KTM, tentar mapear com base nos IDs conhecidos das variações
+      console.warn(`⚠️ KTM: Atributo de tamanho não encontrado para variação ${variation.id || variation.woocommerce_id}`);
+
+      // Mapeamento específico baseado nos IDs das variações KTM conhecidos
+      const ktmVariationMap: { [key: string]: string } = {
+        '19266': 'S',
+        '19267': 'M',
+        '19268': 'L',
+        '19269': 'XL'
+      };
+
+      const variationId = String(variation.id || variation.woocommerce_id);
+      const size = ktmVariationMap[variationId];
+
+      if (size) {
+        const stock = parseInt(String(variation.stock_quantity)) || 0;
+
+        console.log(`🎯 KTM: Mapeamento por ID - Variação ${variationId} = Tamanho ${size} = Stock ${stock}`);
+
+        stockBySize[size] = {
+          wooCommerceStock: stock,
+          variationId: variation.id,
+          stockStatus: stock > 0 ? 'instock' : 'outofstock'
+        };
+      }
     }
   });
 
