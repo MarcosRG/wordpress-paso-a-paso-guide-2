@@ -237,9 +237,9 @@ export const AtumInventoryTester: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-3 mb-6">
-            <Button 
-              onClick={runStockTest} 
+          <div className="flex gap-3 mb-6 flex-wrap">
+            <Button
+              onClick={runStockTest}
               disabled={isTestingSync || isLoading}
               className="flex items-center gap-2"
             >
@@ -250,9 +250,9 @@ export const AtumInventoryTester: React.FC = () => {
               )}
               {isTestingSync ? 'Testando...' : 'Testar Stock ATUM'}
             </Button>
-            
-            <Button 
-              onClick={forceSyncAndTest} 
+
+            <Button
+              onClick={forceSyncAndTest}
               disabled={isTestingSync || isLoading}
               variant="outline"
               className="flex items-center gap-2"
@@ -263,6 +263,17 @@ export const AtumInventoryTester: React.FC = () => {
                 <Database className="h-4 w-4" />
               )}
               Sincronizar e Testar
+            </Button>
+
+            <Button
+              onClick={handleResetCircuitBreaker}
+              disabled={isTestingSync}
+              variant="destructive"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <AlertCircle className="h-4 w-4" />
+              Reset Circuit Breaker
             </Button>
           </div>
 
