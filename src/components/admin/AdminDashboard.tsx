@@ -338,6 +338,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <TabsList>
             <TabsTrigger value="reservations">Reservas</TabsTrigger>
             <TabsTrigger value="sync">Sincronización</TabsTrigger>
+            <TabsTrigger value="circuit-breaker">Circuit Breaker</TabsTrigger>
             <TabsTrigger value="atum-debug">Debug ATUM</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
