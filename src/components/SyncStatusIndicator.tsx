@@ -20,6 +20,7 @@ import {
   useLocalSyncStatus,
   useLocalConnectivity,
 } from "@/hooks/useLocalSyncStatus";
+import { canMakeWooCommerceRequest } from "@/services/circuitBreaker";
 import { SyncStatus } from "@/config/neon";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
