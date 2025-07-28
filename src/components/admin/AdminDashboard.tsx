@@ -535,6 +535,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             </Card>
           </TabsContent>
 
+          {/* ATUM Debug Tab */}
+          <TabsContent value="atum-debug">
+            <AtumInventoryDebugger />
+          </TabsContent>
+
           {/* Settings Tab */}
           <TabsContent value="settings">
             <SystemSettings />
