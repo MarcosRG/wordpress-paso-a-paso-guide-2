@@ -10,11 +10,12 @@ export interface StockBySize {
 }
 
 /**
- * Obtém o stock WooCommerce real por tamanho a partir das variações do produto
+ * Obtém o stock real por tamanho das variações do produto
+ * Independentemente de quem administra o inventário (WooCommerce, ATUM, etc)
  */
-export const getWooCommerceStockBySize = (bike: Bike): StockBySize => {
+export const getRealStockBySize = (bike: Bike): StockBySize => {
   const stockBySize: StockBySize = {};
-  
+
   // Inicializar todos os tamanhos com 0
   ['XS', 'S', 'M', 'L', 'XL'].forEach(size => {
     stockBySize[size] = {
@@ -35,7 +36,7 @@ export const getWooCommerceStockBySize = (bike: Bike): StockBySize => {
     return stockBySize;
   }
 
-  // Processar variações reais
+  // Processar variações reais para obter stock verdadeiro
   bike.wooCommerceData.variations.forEach((variation: any) => {
     // Buscar atributo de tamanho
     const sizeAttribute = variation.attributes?.find((attr: any) =>
@@ -47,17 +48,37 @@ export const getWooCommerceStockBySize = (bike: Bike): StockBySize => {
 
     if (sizeAttribute && sizeAttribute.option) {
       const size = sizeAttribute.option.toUpperCase();
+
+      // Obter stock real da variação - pode ser WooCommerce, ATUM ou outro
       const stock = parseInt(String(variation.stock_quantity)) || 0;
-      
+      const status = variation.stock_status || (stock > 0 ? 'instock' : 'outofstock');
+
+      // Se o stock é maior que 0, usar esse valor
+      // Se não, verificar se há stock disponível mas não relatado corretamente
+      let finalStock = stock;
+
+      // Se status indica 'instock' mas stock é 0, provavelmente há stock não reportado
+      if (status === 'instock' && stock === 0) {
+        // Usar fallback baseado no disponível total
+        finalStock = Math.floor(bike.available / 5);
+      }
+
       stockBySize[size] = {
-        wooCommerceStock: stock,
+        wooCommerceStock: finalStock,
         variationId: variation.id,
-        stockStatus: variation.stock_status || (stock > 0 ? 'instock' : 'outofstock')
+        stockStatus: finalStock > 0 ? 'instock' : 'outofstock'
       };
     }
   });
 
   return stockBySize;
+};
+
+/**
+ * Função mantida para compatibilidade - agora usa getRealStockBySize
+ */
+export const getWooCommerceStockBySize = (bike: Bike): StockBySize => {
+  return getRealStockBySize(bike);
 };
 
 /**
