@@ -55,15 +55,22 @@ export const AtumInventoryTester: React.FC = () => {
       for (const bike of bikesToTest) {
         try {
           const productId = parseInt(bike.id);
+
+          // Obter debugging info completo
+          const debugInfo = getStockDebugInfo(bike);
+          const wooStockBySize = getWooCommerceStockBySize(bike);
+
           const stockInfo: ProductStockInfo = {
             id: bike.id,
             name: bike.name,
             type: bike.wooCommerceData?.product?.type || 'unknown',
-            wooCommerceStock: bike.wooCommerceData?.product?.stock_quantity || 0,
+            wooCommerceStock: debugInfo.totalWooCommerceStock,
             atumStock: 0,
             syncedCorrectly: false,
             hasAtumData: false
           };
+
+          console.log(`🔍 Debug Stock Completo para ${bike.name}:`, debugInfo);
 
           // Para produtos variáveis, testar stock por tamanho
           if (bike.wooCommerceData?.product?.type === 'variable') {
