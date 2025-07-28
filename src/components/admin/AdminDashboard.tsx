@@ -27,6 +27,7 @@ import { adminAuthService } from '../../services/adminAuthService';
 import { reservationService, Reservation } from '../../services/reservationService';
 import { wordPressSyncService } from '../../services/wordpressSyncService';
 import { SystemSettings } from './SystemSettings';
+import { AtumInventoryDebugger } from '../AtumInventoryDebugger';
 
 interface AdminDashboardProps {
   onLogout: () => void;
