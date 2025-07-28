@@ -538,7 +538,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
           {/* ATUM Debug Tab */}
           <TabsContent value="atum-debug">
-            <AtumInventoryDebugger />
+            <div className="space-y-6">
+              <AtumInventoryTester />
+              <AtumInventoryDebugger />
+            </div>
           </TabsContent>
 
           {/* Settings Tab */}
