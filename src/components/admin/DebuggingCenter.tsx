@@ -239,11 +239,12 @@ export const DebuggingCenter: React.FC = () => {
 
       {/* Debugging Tabs */}
       <Tabs defaultValue="atum-test" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="atum-test">Teste ATUM</TabsTrigger>
           <TabsTrigger value="atum-debug">Debug ATUM</TabsTrigger>
           <TabsTrigger value="circuit-breaker">Circuit Breaker</TabsTrigger>
           <TabsTrigger value="cache-manager">Cache Manager</TabsTrigger>
+          <TabsTrigger value="console-monitor">Console Monitor</TabsTrigger>
           <TabsTrigger value="system-info">Info Sistema</TabsTrigger>
         </TabsList>
 
