@@ -60,6 +60,12 @@ export class LocalSyncService {
       return;
     }
 
+    // Check circuit breaker first
+    if (!canMakeWooCommerceRequest()) {
+      console.warn("🚨 Circuit breaker ou rate limiter bloqueando sincronização");
+      throw new Error("Request blocked by circuit breaker or rate limiter");
+    }
+
     // Import connectivity monitor to check network status
     const { getConnectivityStatus, isEmergencyStopActive } = await import("../services/connectivityMonitor");
 
