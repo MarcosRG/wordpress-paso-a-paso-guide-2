@@ -177,7 +177,8 @@ export const AtumInventoryDebugger: React.FC = () => {
         stockStatus: productData.stock_status,
         manageStock: productData.manage_stock,
         metaDataKeys: productData.meta_data?.map((m: any) => m.key) || [],
-        atumFields,
+        atumFields: realAtumFields,
+        otherPluginFields,
         wooCommerceStock: productData.stock_quantity || 0,
         atumStock: calculatedAtumStock,
         detectedAtumType
