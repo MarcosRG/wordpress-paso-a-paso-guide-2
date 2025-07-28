@@ -104,23 +104,33 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
   }
 
   bike.wooCommerceData.variations.forEach((variation: any, index: number) => {
-    // Buscar atributo de tamanho com busca mais ampla
-    const sizeAttribute = variation.attributes?.find((attr: any) => {
-      const attrName = (attr.name || '').toLowerCase();
-      const attrOption = (attr.option || '').toLowerCase();
+    // Buscar atributo de tamanho com busca mais ampla e robusta
+    let sizeAttribute = null;
 
-      return (
-        attrName.includes('tama') ||
-        attrName.includes('size') ||
-        attrName.includes('pa_size') ||
-        attrName.includes('pa_tama') ||
-        attrName.includes('tamaño') ||
-        attrName === 'size' ||
-        attrName === 'tamanho' ||
+    if (variation.attributes && Array.isArray(variation.attributes)) {
+      sizeAttribute = variation.attributes.find((attr: any) => {
+        if (!attr) return false;
+
+        const attrName = String(attr.name || '').toLowerCase();
+        const attrOption = String(attr.option || '').toLowerCase();
+
+        // Verificar pelo nome do atributo
+        const nameMatches = (
+          attrName.includes('tama') ||
+          attrName.includes('size') ||
+          attrName.includes('pa_size') ||
+          attrName.includes('pa_tama') ||
+          attrName.includes('tamaño') ||
+          attrName === 'size' ||
+          attrName === 'tamanho'
+        );
+
         // Verificar se o valor é um tamanho conhecido
-        ['xs', 's', 'm', 'l', 'xl', 'xxl'].includes(attrOption)
-      );
-    });
+        const optionMatches = ['xs', 's', 'm', 'l', 'xl', 'xxl'].includes(attrOption);
+
+        return nameMatches || optionMatches;
+      });
+    }
 
     if (isKTMDebug) {
       console.log(`📏 Variação ${index + 1} (ID: ${variation.id}):`, {
@@ -256,7 +266,7 @@ export const getWooCommerceStockBySize = (bike: Bike): StockBySize => {
   const totalRealStock = Object.values(realStock).reduce((sum, size) => sum + size.wooCommerceStock, 0);
 
   if (totalRealStock === 0 && bike.available > 0) {
-    console.log(`��️ Usando stock estimado para ${bike.name} - dados das variações não disponíveis`);
+    console.log(`⚠️ Usando stock estimado para ${bike.name} - dados das variações não disponíveis`);
     return getEstimatedStockBySize(bike);
   }
 
