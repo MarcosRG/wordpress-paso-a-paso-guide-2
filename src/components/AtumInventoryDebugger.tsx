@@ -337,7 +337,7 @@ export const AtumInventoryDebugger: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Campos ATUM Detectados */}
+              {/* Campos ATUM Reais */}
               <Collapsible>
                 <CollapsibleTrigger asChild>
                   <Button
@@ -347,7 +347,7 @@ export const AtumInventoryDebugger: React.FC = () => {
                   >
                     <span className="flex items-center gap-2">
                       <Eye className="h-4 w-4" />
-                      Campos ATUM Detectados ({debugInfo.atumFields.length})
+                      Campos ATUM Reais ({debugInfo.atumFields.length})
                     </span>
                     <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections['atum-fields'] ? 'rotate-180' : ''}`} />
                   </Button>
@@ -358,13 +358,13 @@ export const AtumInventoryDebugger: React.FC = () => {
                       {debugInfo.atumFields.length > 0 ? (
                         <div className="space-y-2">
                           {debugInfo.atumFields.map((field, index) => (
-                            <div key={index} className="border rounded p-3">
+                            <div key={index} className="border rounded p-3 bg-green-50">
                               <div className="flex justify-between items-start mb-2">
-                                <span className="font-mono text-sm font-semibold">{field.key}</span>
+                                <span className="font-mono text-sm font-semibold text-green-700">{field.key}</span>
                                 <Badge variant="outline">{field.type}</Badge>
                               </div>
-                              <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto">
-                                {typeof field.value === 'object' 
+                              <pre className="text-xs bg-white p-2 rounded overflow-x-auto">
+                                {typeof field.value === 'object'
                                   ? JSON.stringify(field.value, null, 2)
                                   : String(field.value)
                                 }
@@ -373,7 +373,50 @@ export const AtumInventoryDebugger: React.FC = () => {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-500">Nenhum campo ATUM detectado</p>
+                        <p className="text-red-600 font-medium">❌ Nenhum campo ATUM real detectado</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Campos de Outros Plugins */}
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between"
+                    onClick={() => toggleSection('other-fields')}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Package className="h-4 w-4" />
+                      Outros Plugins (Woodmart, USBS, etc.) ({debugInfo.otherPluginFields?.length || 0})
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections['other-fields'] ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2">
+                  <Card>
+                    <CardContent className="pt-4">
+                      {debugInfo.otherPluginFields && debugInfo.otherPluginFields.length > 0 ? (
+                        <div className="space-y-2">
+                          {debugInfo.otherPluginFields.map((field, index) => (
+                            <div key={index} className="border rounded p-3 bg-orange-50">
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="font-mono text-sm font-semibold text-orange-700">{field.key}</span>
+                                <Badge variant="outline">{field.type}</Badge>
+                              </div>
+                              <pre className="text-xs bg-white p-2 rounded overflow-x-auto">
+                                {typeof field.value === 'object'
+                                  ? JSON.stringify(field.value, null, 2)
+                                  : String(field.value)
+                                }
+                              </pre>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">Nenhum campo de outros plugins detectado</p>
                       )}
                     </CardContent>
                   </Card>
