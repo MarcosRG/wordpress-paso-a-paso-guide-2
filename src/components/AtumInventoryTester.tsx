@@ -249,6 +249,21 @@ export const AtumInventoryTester: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Circuit Breaker Alert */}
+          {circuitBreakerBlocked && (
+            <Alert className="mb-6 border-red-500 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription>
+                <strong className="text-red-800">Circuit Breaker Ativo!</strong>
+                <br />
+                <span className="text-red-700">
+                  As requisições estão sendo bloqueadas para prevenir sobrecarga da API.
+                  Use o botão "Reset Circuit Breaker" abaixo ou acesse a aba "Circuit Breaker" no painel admin.
+                </span>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex gap-3 mb-6 flex-wrap">
             <Button
               onClick={runStockTest}
