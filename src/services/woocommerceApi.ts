@@ -761,36 +761,39 @@ export const checkAtumAvailability = async (
       console.log(`❌ NO se encontró ATUM Multi-Inventory para producto ${productId}`);
     }
 
-    // Check for standard ATUM inventory data in meta_data
-    const atumStock = data.meta_data?.find(
-      (meta: { key: string; value: unknown }) =>
-        meta.key === "_atum_stock_quantity" ||
-        meta.key === "atum_stock_quantity" ||
-        meta.key === "_atum_stock" ||
-        meta.key === "_atum_stock_status" ||
-        meta.key === "_atum_manage_stock" ||
-        meta.key === "_stock_quantity",
+    // 2. SEGUNDA PRIORIDADE: Stock ATUM padrão
+    const standardAtumFields = allAtumFields.filter(field =>
+      field.key === "_atum_stock_quantity" ||
+      field.key === "atum_stock_quantity" ||
+      field.key === "_atum_stock" ||
+      field.key === "_atum_stock_status" ||
+      field.key === "_atum_manage_stock" ||
+      field.key === "_stock_quantity" ||
+      field.key.includes('atum') && field.key.includes('stock') && !field.key.includes('status')
     );
 
-    if (atumStock) {
-      const stockValue = parseInt(atumStock.value) || 0;
+    for (const stockField of standardAtumFields) {
+      const stockValue = parseInt(String(stockField.value)) || 0;
 
-      console.log(
-        `📦 ATUM Stock estándar para producto ${productId}:`,
-        {
-          key: atumStock.key,
-          rawValue: atumStock.value,
-          parsedValue: stockValue,
-          productName: data.name || 'Sin nombre'
-        }
-      );
+      console.log(`📦 ATUM Stock campo "${stockField.key}" para producto ${productId}:`, {
+        key: stockField.key,
+        rawValue: stockField.value,
+        parsedValue: stockValue,
+        productName: data.name || 'Sin nombre'
+      });
 
       if (stockValue > 0) {
-        console.log(`✅ ATUM Stock válido encontrado para ${productId}: ${stockValue} unidades`);
+        console.log(`✅ ATUM Stock válido encontrado para ${productId}: ${stockValue} unidades (campo: ${stockField.key})`);
         return stockValue;
       }
-    } else {
+    }
+
+    if (standardAtumFields.length === 0) {
       console.log(`❌ NO se encontró ATUM Stock estándar para producto ${productId}`);
+    } else {
+      console.log(`⚠️ ATUM Stock campos encontrados para ${productId}, pero todos en zero:`,
+        standardAtumFields.map(f => `${f.key}: ${f.value}`).join(', ')
+      );
     }
 
     // Check for ATUM manage stock setting
