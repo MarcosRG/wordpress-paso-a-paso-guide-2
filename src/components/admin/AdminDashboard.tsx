@@ -538,6 +538,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             </Card>
           </TabsContent>
 
+          {/* Circuit Breaker Tab */}
+          <TabsContent value="circuit-breaker">
+            <CircuitBreakerControl />
+          </TabsContent>
+
           {/* ATUM Debug Tab */}
           <TabsContent value="atum-debug">
             <div className="space-y-6">
