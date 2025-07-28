@@ -53,11 +53,17 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
 
   // Se não há dados WooCommerce, retornar distribuição estimada
   if (!bike.wooCommerceData?.variations || !Array.isArray(bike.wooCommerceData.variations)) {
+    if (isKTMDebug) {
+      console.warn('🚨 KTM: Sem dados de variações, usando distribuição estimada');
+    }
     const estimatedStock = Math.floor(bike.available / 5);
-    ['XS', 'S', 'M', 'L', 'XL'].forEach(size => {
+    const remainder = bike.available % 5;
+
+    ['XS', 'S', 'M', 'L', 'XL'].forEach((size, index) => {
+      const stock = estimatedStock + (index < remainder ? 1 : 0);
       stockBySize[size] = {
-        wooCommerceStock: estimatedStock,
-        stockStatus: estimatedStock > 0 ? 'instock' : 'outofstock'
+        wooCommerceStock: stock,
+        stockStatus: stock > 0 ? 'instock' : 'outofstock'
       };
     });
     return stockBySize;
