@@ -262,20 +262,10 @@ export const getEstimatedStockBySize = (bike: Bike): StockBySize => {
 };
 
 /**
- * Função mantida para compatibilidade - agora usa getRealStockBySize com fallback
+ * Função mantida para compatibilidade - usa getRealStockBySize diretamente
  */
 export const getWooCommerceStockBySize = (bike: Bike): StockBySize => {
-  const realStock = getRealStockBySize(bike);
-
-  // Se não conseguimos dados das variações, usar estimativa
-  const totalRealStock = Object.values(realStock).reduce((sum, size) => sum + size.wooCommerceStock, 0);
-
-  if (totalRealStock === 0 && bike.available > 0) {
-    console.log(`⚠️ Usando stock estimado para ${bike.name} - dados das variações não disponíveis`);
-    return getEstimatedStockBySize(bike);
-  }
-
-  return realStock;
+  return getRealStockBySize(bike);
 };
 
 /**
