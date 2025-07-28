@@ -81,28 +81,50 @@ export const AtumInventoryDebugger: React.FC = () => {
 
       const productData = await response.json();
       
-      // Analisar meta_data para encontrar campos ATUM
-      const atumFields = productData.meta_data
-        ?.filter((meta: any) => 
-          meta.key.includes('atum') || 
+      // Analisar meta_data para encontrar campos ATUM REAIS (não outros plugins)
+      const allAtumRelatedFields = productData.meta_data
+        ?.filter((meta: any) =>
+          meta.key.includes('atum') ||
           meta.key.includes('_stock') ||
           meta.key.includes('inventory') ||
           meta.key.includes('_mi_')
+        ) || [];
+
+      // Separar campos ATUM reais de outros plugins
+      const realAtumFields = allAtumRelatedFields
+        .filter((meta: any) =>
+          (meta.key.includes('atum') && !meta.key.includes('woodmart') && !meta.key.includes('woolentor')) ||
+          meta.key === '_atum_stock_quantity' ||
+          meta.key === '_atum_multi_inventory' ||
+          meta.key === '_atum_manage_stock' ||
+          meta.key === '_atum_stock'
         )
         .map((meta: any) => ({
           key: meta.key,
           value: meta.value,
           type: typeof meta.value
-        })) || [];
+        }));
 
-      // Detectar tipo de inventário ATUM
-      const hasMultiInventory = atumFields.some(field => 
-        field.key.includes('multi_inventory') ||
-        field.key.includes('_atum_mi_') ||
-        field.key.includes('location_inventory')
+      const otherPluginFields = allAtumRelatedFields
+        .filter((meta: any) =>
+          meta.key.includes('woodmart') ||
+          meta.key.includes('woolentor') ||
+          meta.key.includes('usbs_') ||
+          meta.key.includes('_bkap_')
+        )
+        .map((meta: any) => ({
+          key: meta.key,
+          value: meta.value,
+          type: typeof meta.value
+        }));
+
+      // Detectar tipo de inventário ATUM REAL
+      const hasMultiInventory = realAtumFields.some(field =>
+        field.key === '_atum_multi_inventory' ||
+        field.key === 'atum_multi_inventory'
       );
 
-      const hasStandardAtum = atumFields.some(field =>
+      const hasStandardAtum = realAtumFields.some(field =>
         field.key === '_atum_stock_quantity' ||
         field.key === 'atum_stock_quantity' ||
         field.key === '_atum_stock'
