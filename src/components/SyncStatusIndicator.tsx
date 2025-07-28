@@ -51,11 +51,13 @@ export const SyncStatusIndicator = ({
   }, []);
 
   const handleRefresh = async () => {
-    if (!canSync) return;
+    if (!canSync || circuitBreakerActive) return;
 
     setIsRefreshing(true);
     try {
       await forceSync();
+    } catch (error) {
+      console.error('Erro no force sync:', error);
     } finally {
       setIsRefreshing(false);
     }
