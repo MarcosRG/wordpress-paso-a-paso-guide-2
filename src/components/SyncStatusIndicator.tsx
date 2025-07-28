@@ -37,6 +37,18 @@ export const SyncStatusIndicator = ({
   const { syncStatus, forceSync, canSync } = useLocalSyncStatus();
   const { isConnected } = useLocalConnectivity();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [circuitBreakerActive, setCircuitBreakerActive] = useState(false);
+
+  // Check circuit breaker status
+  useState(() => {
+    const checkCircuitBreaker = () => {
+      setCircuitBreakerActive(!canMakeWooCommerceRequest());
+    };
+
+    checkCircuitBreaker();
+    const interval = setInterval(checkCircuitBreaker, 5000);
+    return () => clearInterval(interval);
+  });
 
   const handleRefresh = async () => {
     if (!canSync) return;
