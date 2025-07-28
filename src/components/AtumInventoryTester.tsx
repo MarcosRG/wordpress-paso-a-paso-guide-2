@@ -118,8 +118,10 @@ export const AtumInventoryTester: React.FC = () => {
                     const size = sizeAttr.option.toUpperCase();
                     const atumStock = await checkAtumAvailability(productId, variation.id);
                     
+                    const wooStock = wooStockBySize[size]?.wooCommerceStock || variation.stock_quantity || 0;
+
                     stockInfo.sizes[size] = {
-                      wooCommerce: variation.stock_quantity || 0,
+                      wooCommerce: wooStock,
                       atum: atumStock
                     };
                     
