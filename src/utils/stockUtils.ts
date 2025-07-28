@@ -24,6 +24,20 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
     };
   });
 
+  // Debug especial para KTM MACINA CROSS 410
+  if (bike.name.includes('KTM MACINA CROSS 410') || bike.id === '19265') {
+    console.log('🚴‍♂️ DEBUG ESPECIAL KTM MACINA CROSS 410:', {
+      bikeId: bike.id,
+      bikeName: bike.name,
+      bikeAvailable: bike.available,
+      hasWooCommerceData: !!bike.wooCommerceData,
+      hasVariations: !!(bike.wooCommerceData?.variations),
+      variationsCount: bike.wooCommerceData?.variations?.length || 0,
+      productType: bike.wooCommerceData?.product?.type,
+      fullVariationsData: bike.wooCommerceData?.variations
+    });
+  }
+
   // Se não há dados WooCommerce, retornar distribuição estimada
   if (!bike.wooCommerceData?.variations || !Array.isArray(bike.wooCommerceData.variations)) {
     const estimatedStock = Math.floor(bike.available / 5);
