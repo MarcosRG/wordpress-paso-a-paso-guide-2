@@ -160,6 +160,44 @@ export class ProductStockFixer {
   }
   
   /**
+   * Force complete cache refresh to fix size parsing issues
+   */
+  static async forceCompleteCacheRefresh(): Promise<void> {
+    console.log('🔄 Starting complete cache refresh...');
+
+    try {
+      // 1. Clear ALL cache
+      console.log('🗑️ Step 1: Clearing all cache...');
+      const { neonHttpService } = await import('@/services/neonHttpService');
+      neonHttpService.clearCache();
+
+      // 2. Clear React Query cache if available
+      if (typeof window !== 'undefined' && (window as any).queryClient) {
+        const queryClient = (window as any).queryClient;
+        queryClient.clear();
+        console.log('🗑️ Cleared React Query cache');
+      }
+
+      // 3. Force fresh sync
+      console.log('🔄 Step 2: Force complete sync...');
+      const { localSyncService } = await import('@/services/localSyncService');
+      await localSyncService.forceSync();
+
+      // 4. Wait and reload
+      console.log('✅ Step 3: Reloading application...');
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+
+      console.log('🎉 Complete cache refresh completed successfully!');
+
+    } catch (error) {
+      console.error('Error in complete cache refresh:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Fix all products that might have similar issues
    */
   static async fixAllVariableProducts(): Promise<void> {
