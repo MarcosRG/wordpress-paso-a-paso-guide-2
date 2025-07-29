@@ -331,6 +331,99 @@ export const DebuggingCenter: React.FC = () => {
             </Alert>
           )}
 
+          {/* Product Count Diagnostic Results */}
+          {productCountData && (
+            <Card className="mb-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <AlertTriangle className="h-4 w-4 text-orange-500" />
+                  Resultados do Diagnóstico de Produtos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="text-center p-3 bg-blue-50 rounded">
+                    <div className="text-xl font-bold text-blue-600">
+                      {productCountData.totalFromWooCommerce}
+                    </div>
+                    <div className="text-xs text-blue-700">WooCommerce Total</div>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded">
+                    <div className="text-xl font-bold text-green-600">
+                      {productCountData.totalInCache}
+                    </div>
+                    <div className="text-xs text-green-700">Cache Total</div>
+                  </div>
+                  <div className="text-center p-3 bg-red-50 rounded">
+                    <div className="text-xl font-bold text-red-600">
+                      {productCountData.excludedProducts.length}
+                    </div>
+                    <div className="text-xs text-red-700">Produtos Excluídos</div>
+                  </div>
+                </div>
+
+                {excludedProducts.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-2 text-red-700">
+                      ❌ Produtos Excluídos da Sincronização:
+                    </h4>
+                    <div className="space-y-2 max-h-40 overflow-y-auto border rounded p-2 bg-red-50">
+                      {excludedProducts.map((product, index) => (
+                        <div key={index} className="flex justify-between items-center p-2 bg-white rounded border border-red-200">
+                          <div>
+                            <div className="font-medium text-sm">{product.name}</div>
+                            <div className="text-xs text-gray-600">
+                              ID: {product.id} | Type: {product.type} | Status: {product.status}
+                            </div>
+                          </div>
+                          <div className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded">
+                            {product.reason}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {excludedProducts.length === 0 && productCountData.totalFromWooCommerce === productCountData.totalInCache && (
+                  <Alert className="border-green-200 bg-green-50">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <AlertDescription className="text-green-700">
+                      ✅ Todos os produtos estão sincronizados corretamente! Não há produtos excluídos.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="mt-4 flex gap-2">
+                  <Button
+                    onClick={handleCompleteRefresh}
+                    disabled={isProcessing}
+                    className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
+                    size="sm"
+                  >
+                    {isProcessing ? (
+                      <RefreshCw className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-3 w-3" />
+                    )}
+                    Corrigir com Refresh Completo
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      setProductCountData(null);
+                      setExcludedProducts([]);
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Limpar Resultados
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-3 flex-wrap">
             <Button
