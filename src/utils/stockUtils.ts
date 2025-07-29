@@ -170,6 +170,8 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
 
       if (enableDebug) {
         console.log(`✅ Stock calculado para tamanho ${size}:`, {
+          rawSizeAttribute: sizeAttribute.option,
+          extractedSize: size,
           atumStock,
           wooStock,
           finalStock,
