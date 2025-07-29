@@ -141,6 +141,8 @@ export class LocalSyncService {
                 product.id,
               );
 
+              let totalVariationStock = 0;
+
               for (const variation of variations) {
                 // Obtener stock ATUM para la variación
                 const atumStock = await checkAtumAvailability(
@@ -154,6 +156,16 @@ export class LocalSyncService {
                   atumStock,
                 );
                 neonVariations.push(neonVariation);
+
+                // Sumar stock de la variación al total
+                const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
+                totalVariationStock += variationStock;
+              }
+
+              // Actualizar el stock del producto principal con la suma de todas las variaciones
+              if (totalVariationStock > 0) {
+                neonProduct.stock_quantity = totalVariationStock;
+                console.log(`✅ Stock total calculado para producto variable ${product.id} (${product.name}): ${totalVariationStock} unidades`);
               }
             } catch (error) {
               console.warn(
