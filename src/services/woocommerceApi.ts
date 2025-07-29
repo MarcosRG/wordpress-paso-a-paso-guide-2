@@ -474,7 +474,7 @@ const fetchWithRetry = async (
       if (attempt === maxRetries) {
         // Only register failure in circuit breaker for non-network errors or after all retries
         if (!isNetworkError || attempt === maxRetries) {
-          recordWooCommerceFailure(); // Register failure in circuit breaker
+          recordWooCommerceFailure(error); // Register failure in circuit breaker with error details
         }
 
         if (error instanceof Error) {

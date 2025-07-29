@@ -248,7 +248,36 @@ export const recordWooCommerceSuccess = (): void => {
   wooCommerceCircuitBreaker.onSuccess();
 };
 
-export const recordWooCommerceFailure = (): void => {
+// Detectar si un error es causado por scripts de terceros
+const isThirdPartyScriptError = (error: any): boolean => {
+  if (!error) return false;
+
+  const errorStr = String(error);
+  const stackStr = error?.stack || '';
+
+  return (
+    errorStr.includes('Failed to fetch') && (
+      stackStr.includes('fullstory.com') ||
+      stackStr.includes('fs.js') ||
+      stackStr.includes('messageHandler') ||
+      stackStr.includes('edge.fullstory.com') ||
+      stackStr.includes('google-analytics') ||
+      stackStr.includes('gtag') ||
+      stackStr.includes('facebook.net')
+    )
+  );
+};
+
+export const recordWooCommerceFailure = (error?: any): void => {
+  // No registrar errores de scripts de terceros en el circuit breaker
+  if (isThirdPartyScriptError(error)) {
+    console.warn('🔧 Third-party script conflict detected, not recording as circuit breaker failure:', {
+      error: String(error),
+      source: 'Circuit Breaker'
+    });
+    return;
+  }
+
   wooCommerceCircuitBreaker.onFailure();
 };
 
