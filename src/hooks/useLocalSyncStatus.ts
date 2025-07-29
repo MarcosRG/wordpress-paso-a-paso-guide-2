@@ -15,20 +15,6 @@ interface SyncStatusData {
   };
 }
 
-// Función de utilidad para detectar conflictos de FullStory
-const isFullStoryConflict = (error: any): boolean => {
-  return (
-    error instanceof Error &&
-    error.message.includes('Failed to fetch') &&
-    error.stack && (
-      error.stack.includes('fullstory.com') ||
-      error.stack.includes('fs.js') ||
-      error.stack.includes('messageHandler') ||
-      error.stack.includes('edge.fullstory.com')
-    )
-  );
-};
-
 export const useLocalSyncStatus = () => {
   const queryClient = useQueryClient();
   const [syncStatus, setSyncStatus] = useState<SyncStatusData>({
@@ -109,24 +95,13 @@ export const useLocalSyncStatus = () => {
       // Actualizar estado después de la sincronización
       await updateSyncStatus();
     } catch (error) {
-      if (isFullStoryConflict(error)) {
-        console.warn("🔧 FullStory conflict detected in forceSync - setting as success");
-        setSyncStatus((prev) => ({
-          ...prev,
-          status: SyncStatus.SUCCESS,
-          isRunning: false,
-          error: null,
-          progress: 100,
-        }));
-      } else {
-        setSyncStatus((prev) => ({
-          ...prev,
-          status: SyncStatus.ERROR,
-          isRunning: false,
-          error: error instanceof Error ? error.message : "Error desconocido",
-          progress: 0,
-        }));
-      }
+      setSyncStatus((prev) => ({
+        ...prev,
+        status: SyncStatus.ERROR,
+        isRunning: false,
+        error: error instanceof Error ? error.message : "Error desconocido",
+        progress: 0,
+      }));
     }
   }, [queryClient, getSyncService, updateSyncStatus]);
 
@@ -162,25 +137,15 @@ export const useLocalSyncStatus = () => {
         // Actualizar estado
         await updateSyncStatus();
       } catch (error) {
-        if (isFullStoryConflict(error)) {
-          console.warn("🔧 FullStory conflict detected in syncProduct - setting as success");
-          setSyncStatus((prev) => ({
-            ...prev,
-            status: SyncStatus.SUCCESS,
-            progress: 100,
-            error: null,
-          }));
-        } else {
-          setSyncStatus((prev) => ({
-            ...prev,
-            status: SyncStatus.ERROR,
-            error:
-              error instanceof Error
-                ? error.message
-                : "Error sincronizando producto",
-            progress: 0,
-          }));
-        }
+        setSyncStatus((prev) => ({
+          ...prev,
+          status: SyncStatus.ERROR,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Error sincronizando producto",
+          progress: 0,
+        }));
       }
     },
     [queryClient, getSyncService, updateSyncStatus],
@@ -316,16 +281,9 @@ export const useLocalConnectivity = () => {
       setIsConnected(response.ok);
       setLastCheck(new Date());
     } catch (error) {
-      if (isFullStoryConflict(error)) {
-        console.warn("🔧 FullStory conflict detected in connectivity check - assuming connected");
-        // Asumir que estamos conectados cuando es un conflicto de FullStory
-        setIsConnected(true);
-      } else {
-        setIsConnected(false);
-        console.warn("⚠️ Conexión con WooCommerce no disponible:", error);
-      }
-
+      setIsConnected(false);
       setLastCheck(new Date());
+      console.warn("⚠️ Conexión con WooCommerce no disponible");
     }
   }, []);
 

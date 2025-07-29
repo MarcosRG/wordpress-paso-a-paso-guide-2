@@ -99,7 +99,7 @@ export class LocalSyncService {
       // 1. Obtener productos de WooCommerce
       const wooProducts = await wooCommerceApi.getProducts();
       console.log(
-        `���� Obtenidos ${wooProducts.length} productos de WooCommerce`,
+        `📦 Obtenidos ${wooProducts.length} productos de WooCommerce`,
       );
 
       // If no products were returned (likely due to network issues), skip sync
@@ -141,16 +141,6 @@ export class LocalSyncService {
                 product.id,
               );
 
-              console.log(`🔧 Procesando variaciones para ${product.name} (ID: ${product.id}):`, {
-                totalVariations: variations.length,
-                variations: variations.map(v => ({
-                  id: v.id,
-                  stock_quantity: v.stock_quantity,
-                  stock_status: v.stock_status,
-                  attributes: v.attributes
-                }))
-              });
-
               for (const variation of variations) {
                 // Obtener stock ATUM para la variación
                 const atumStock = await checkAtumAvailability(
@@ -158,29 +148,11 @@ export class LocalSyncService {
                   variation.id,
                 );
 
-                // Debug del stock antes de convertir
-                console.log(`🔧 Stock para variación ${variation.id}:`, {
-                  woocommerce_stock: variation.stock_quantity,
-                  atum_stock: atumStock,
-                  stock_status: variation.stock_status,
-                  attributes: variation.attributes
-                });
-
                 const neonVariation = convertToNeonVariation(
                   variation,
                   product.id,
                   atumStock,
                 );
-
-                // Debug del resultado final
-                console.log(`✅ Variación convertida:`, {
-                  id: neonVariation.id,
-                  woocommerce_id: neonVariation.woocommerce_id,
-                  stock_quantity: neonVariation.stock_quantity,
-                  atum_stock: neonVariation.atum_stock,
-                  stock_status: neonVariation.stock_status
-                });
-
                 neonVariations.push(neonVariation);
               }
             } catch (error) {
@@ -247,18 +219,11 @@ export class LocalSyncService {
           return;
         }
 
-        // Handle third-party script conflicts (FullStory, etc.)
-        if (this.isThirdPartyScriptConflict(error)) {
-          console.warn("🔧 Third-party script conflict detected during sync", {
-            error: error.message,
-            stack: error.stack,
-            source: this.identifyConflictSource(error)
-          });
-
-          // Record as third-party conflict, not genuine network error
-          const { recordApiNetworkError } = await import("../services/connectivityMonitor");
-          recordApiNetworkError(true); // true = isThirdPartyConflict
-
+        // Handle third-party script conflicts
+        if (error.message.includes("Failed to fetch") &&
+            (error.stack?.includes("messageHandler") ||
+             error.stack?.includes("fullstory"))) {
+          console.warn("🔧 Third-party script conflict during sync - will retry later");
           // Don't throw - let the app continue with cached data
           return;
         }
@@ -291,13 +256,7 @@ export class LocalSyncService {
   // Sincronización manual
   async forceSync(): Promise<void> {
     if (this.isRunning) {
-      console.log("⏳ Sincronización ya en curso, esperando a que termine...");
-      // Wait for the current sync to finish instead of throwing an error
-      while (this.isRunning) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-      // If sync completed successfully while waiting, no need to start another
-      return;
+      throw new Error("Sincronización ya en curso");
     }
 
     // Check circuit breaker status for force sync
@@ -420,54 +379,6 @@ export class LocalSyncService {
       console.error(`❌ Error sincronizando producto ${productId}:`, error);
       throw error;
     }
-  }
-
-  // Detectar conflictos de scripts de terceros
-  private isThirdPartyScriptConflict(error: Error): boolean {
-    const errorMessage = error.message || '';
-    const errorStack = error.stack || '';
-
-    // Detectar FullStory
-    const fullStoryConflict = (
-      errorMessage.includes('Failed to fetch') && (
-        errorStack.includes('fullstory.com') ||
-        errorStack.includes('fs.js') ||
-        errorStack.includes('messageHandler') ||
-        errorStack.includes('edge.fullstory.com')
-      )
-    );
-
-    // Detectar otros scripts conocidos que causan conflictos
-    const otherConflicts = (
-      errorMessage.includes('Failed to fetch') && (
-        errorStack.includes('gtag') ||
-        errorStack.includes('google-analytics') ||
-        errorStack.includes('facebook.net') ||
-        errorStack.includes('doubleclick.net')
-      )
-    );
-
-    return fullStoryConflict || otherConflicts;
-  }
-
-  // Identificar la fuente del conflicto
-  private identifyConflictSource(error: Error): string {
-    const stack = error.stack || '';
-
-    if (stack.includes('fullstory.com') || stack.includes('fs.js')) {
-      return 'FullStory Analytics';
-    }
-    if (stack.includes('google-analytics') || stack.includes('gtag')) {
-      return 'Google Analytics';
-    }
-    if (stack.includes('facebook.net')) {
-      return 'Facebook Pixel';
-    }
-    if (stack.includes('doubleclick.net')) {
-      return 'Google DoubleClick';
-    }
-
-    return 'Unknown third-party script';
   }
 
   // Verificar si hay datos en cache
