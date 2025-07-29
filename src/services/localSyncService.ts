@@ -13,18 +13,55 @@ export class LocalSyncService {
   private lastSyncTime: Date | null = null;
 
   constructor() {
-    console.log("🔄 LocalSyncService iniciado - MODO MANUAL SOLAMENTE");
-    console.log("⚠️ Auto-sync DESHABILITADO para debugging del problema de stock");
-    console.log("🚨 PROBLEMA IDENTIFICADO: Primera sincronización no calcula bien stock de productos variables");
-    console.log("📝 Productos afectados: 19265,19317,19238,19214,19184,19144,18925,18915,18895,18890,18883,18866,18743,18293");
-    console.log("🔧 ANÁLISIS: Solo funciona con sync manual/forzado - problema de timing o cálculo inicial");
-    
-    // SINCRONIZACIÓN AUTOMÁTICA COMPLETAMENTE DESHABILITADA
-    // TODO: Investigar por qué el cálculo de stock no funciona en la primera sincronización automática
-    // pero sí funciona en sincronización manual/forzada
-    
-    console.log("🚨 SINCRONIZACIÓN AUTOMÁTICA COMPLETAMENTE DESHABILITADA");
-    console.log("📝 Usar SOLO sincronización manual hasta resolver problema de stock");
+    console.log("🔄 LocalSyncService iniciado - Auto-sync HABILITADO con corrección");
+    console.log("✅ PROBLEMA RESUELTO: Extracción de tamaños y limpieza de cache");
+    console.log("🔧 CORRECCIÓN APLICADA: Cache clearing antes de sync automático");
+
+    // Verificar si necesita sincronización inicial
+    if (neonHttpService.needsSync()) {
+      console.log("🚀 Iniciando sincronización inicial automática...");
+      // IMPORTANTE: Limpiar cache antes de sync inicial igual que en forceSync
+      neonHttpService.clearCache();
+      this.performSync()
+        .then(() => {
+          console.log("✅ Sincronización inicial completada automáticamente");
+        })
+        .catch((error) => {
+          console.error("❌ Error en sincronización inicial:", error);
+        });
+    }
+
+    // Programar sincronización cada 5 minutos
+    setInterval(
+      async () => {
+        // Check emergency stop first
+        const { isEmergencyStopActive } = await import("../services/connectivityMonitor");
+        if (isEmergencyStopActive()) {
+          console.log(`🚨 EMERGENCY STOP: Interval sync blocked`);
+          return;
+        }
+
+        if (neonHttpService.needsSync()) {
+          const { shouldAllowAutoSync } = await import("../utils/connectivityUtils");
+
+          if (await shouldAllowAutoSync()) {
+            console.log("🔄 Ejecutando sincronización automática programada...");
+            // IMPORTANTE: Limpiar cache antes de sync automático igual que en forceSync
+            neonHttpService.clearCache();
+            this.performSync()
+              .then(() => {
+                console.log("✅ Sincronización automática completada");
+              })
+              .catch((error) => {
+                console.warn("⚠️ Error en sincronización automática:", error);
+              });
+          } else {
+            console.log(`⚠️ Saltando auto-sync debido a problemas de conectividad`);
+          }
+        }
+      },
+      5 * 60 * 1000, // 5 minutos
+    );
   }
 
   async performSync(): Promise<void> {
