@@ -13,51 +13,18 @@ export class LocalSyncService {
   private lastSyncTime: Date | null = null;
 
   constructor() {
-
-    console.log("🔄 LocalSyncService iniciado - auto-sync habilitado para tienda online");
-
-
-    // Verificar si necesita sincronización inicial
-    if (neonHttpService.needsSync()) {
-      console.log("🚀 Iniciando sincronización inicial automática...");
-      this.performSync()
-        .then(() => {
-          console.log("✅ Sincronización inicial completada automáticamente");
-        })
-        .catch((error) => {
-          console.error("��� Error en sincronización inicial:", error);
-        });
-    }
-
-    // Programar sincronización cada 5 minutos para tienda online
-    setInterval(
-      async () => {
-        // Check emergency stop first
-        const { isEmergencyStopActive } = await import("../services/connectivityMonitor");
-        if (isEmergencyStopActive()) {
-          console.log(`🚨 EMERGENCY STOP: Interval sync blocked`);
-          return;
-        }
-
-        if (neonHttpService.needsSync()) {
-          const { shouldAllowAutoSync } = await import("../utils/connectivityUtils");
-
-          if (await shouldAllowAutoSync()) {
-            console.log("🔄 Ejecutando sincronización automática programada...");
-            this.performSync()
-              .then(() => {
-                console.log("✅ Sincronización automática completada");
-              })
-              .catch((error) => {
-                console.warn("⚠️ Error en sincronización automática:", error);
-              });
-          } else {
-            console.log(`⚠️ Skipping auto-sync due to connectivity issues`);
-          }
-        }
-      },
-      5 * 60 * 1000, // 5 minutos para tienda online
-    );
+    console.log("🔄 LocalSyncService iniciado - MODO MANUAL SOLAMENTE");
+    console.log("⚠️ Auto-sync DESHABILITADO para debugging del problema de stock");
+    console.log("🚨 PROBLEMA IDENTIFICADO: Primera sincronización no calcula bien stock de productos variables");
+    console.log("📝 Productos afectados: 19265,19317,19238,19214,19184,19144,18925,18915,18895,18890,18883,18866,18743,18293");
+    console.log("🔧 ANÁLISIS: Solo funciona con sync manual/forzado - problema de timing o cálculo inicial");
+    
+    // SINCRONIZACIÓN AUTOMÁTICA COMPLETAMENTE DESHABILITADA
+    // TODO: Investigar por qué el cálculo de stock no funciona en la primera sincronización automática
+    // pero sí funciona en sincronización manual/forzada
+    
+    console.log("🚨 SINCRONIZACIÓN AUTOMÁTICA COMPLETAMENTE DESHABILITADA");
+    console.log("📝 Usar SOLO sincronización manual hasta resolver problema de stock");
   }
 
   async performSync(): Promise<void> {
@@ -155,6 +122,7 @@ export class LocalSyncService {
               );
 
               let totalVariationStock = 0;
+              console.log(`🔍 PROCESANDO PRODUCTO VARIABLE ${product.id} (${product.name}) con ${variations.length} variaciones`);
 
               for (const variation of variations) {
                 // Obtener stock ATUM para la variación
@@ -173,7 +141,7 @@ export class LocalSyncService {
                 // Sumar stock de la variación al total - usar el stock real de WooCommerce
                 const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
                 totalVariationStock += variationStock;
-
+                
                 console.log(`📦 Variación ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
               }
 
@@ -181,6 +149,21 @@ export class LocalSyncService {
               neonProduct.stock_quantity = totalVariationStock;
               console.log(`✅ Stock total calculado para producto variable ${product.id} (${product.name}): ${totalVariationStock} unidades (de ${variations.length} variaciones)`);
               console.log(`🔄 Producto ${product.name} actualizado: stock ${totalVariationStock} unidades`);
+              
+              // DEBUG ESPECÍFICO para productos problemáticos
+              const problematicIds = [19265,19317,19238,19214,19184,19144,18925,18915,18895,18890,18883,18866,18743,18293];
+              if (problematicIds.includes(product.id)) {
+                console.log(`🚨 PRODUCTO PROBLEMÁTICO DETECTADO ${product.id}:`);
+                console.log(`   • Nombre: ${product.name}`);
+                console.log(`   • Variaciones encontradas: ${variations.length}`);
+                console.log(`   • Stock calculado: ${totalVariationStock}`);
+                console.log(`   • Stock asignado al producto: ${neonProduct.stock_quantity}`);
+                console.log(`   • Detalles variaciones:`, variations.map(v => ({
+                  id: v.id,
+                  stock: v.stock_quantity,
+                  atumStock: atumStock
+                })));
+              }
             } catch (error) {
               console.warn(
                 `⚠️ Error obteniendo variaciones para producto ${product.id}:`,
@@ -222,7 +205,7 @@ export class LocalSyncService {
       // 4. Guardar en cache local
       await neonHttpService.cacheProducts(neonProducts);
       await neonHttpService.cacheVariations(neonVariations);
-
+      
       console.log("💾 Productos guardados en cache local");
 
       // Invalidar React Query cache para que el frontend refresque
@@ -372,17 +355,8 @@ export class LocalSyncService {
         // ACF data is optional
       }
 
-      // Convertir y actualizar en cache
+      // Convertir producto a formato Neon
       const neonProduct = convertToNeonProduct(product, acfData);
-
-      // Obtener productos existentes del cache
-      const existingProducts = await neonHttpService.getActiveProducts();
-      const otherProducts = existingProducts.filter(
-        (p) => p.woocommerce_id !== productId,
-      );
-
-      // Agregar/actualizar el producto
-      await neonHttpService.cacheProducts([...otherProducts, neonProduct]);
 
       // Sincronizar variaciones si las hay y calcular stock total
       if (product.type === "variable" && product.variations.length > 0) {
@@ -428,6 +402,15 @@ export class LocalSyncService {
           ...neonVariations,
         ]);
       }
+
+      // Obtener productos existentes del cache
+      const existingProducts = await neonHttpService.getActiveProducts();
+      const otherProducts = existingProducts.filter(
+        (p) => p.woocommerce_id !== productId,
+      );
+
+      // Agregar/actualizar el producto con stock calculado
+      await neonHttpService.cacheProducts([...otherProducts, neonProduct]);
 
       // Invalidar cache para refrescar frontend
       try {
