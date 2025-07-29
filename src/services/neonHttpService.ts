@@ -182,9 +182,23 @@ export class NeonHttpService {
   // Guardar productos en cache local (llamado por el servicio de sincronización)
   async cacheProducts(products: NeonProduct[]): Promise<void> {
     try {
+      // Log productos variables con stock antes de guardar
+      const variableProducts = products.filter(p => p.type === "variable");
+      console.log(`💾 Guardando ${variableProducts.length} productos variables en cache:`);
+      variableProducts.forEach(p => {
+        console.log(`  • ${p.name} (ID: ${p.id}): ${p.stock_quantity} unidades`);
+      });
+
       localStorage.setItem(this.storageKeys.products, JSON.stringify(products));
       localStorage.setItem(this.storageKeys.lastSync, new Date().toISOString());
       console.log(`✅ ${products.length} productos guardados en cache local`);
+
+      // Verificar que se guardó correctamente
+      const saved = JSON.parse(localStorage.getItem(this.storageKeys.products) || "[]");
+      const ktmProduct = saved.find((p: NeonProduct) => p.woocommerce_id === 18293);
+      if (ktmProduct) {
+        console.log(`🔍 Verificación KTM Alto Master Di2 12s en cache: ${ktmProduct.stock_quantity} unidades`);
+      }
     } catch (error) {
       console.error("Error guardando productos en cache:", error);
     }
