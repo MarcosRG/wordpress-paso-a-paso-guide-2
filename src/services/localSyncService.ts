@@ -362,12 +362,15 @@ export class LocalSyncService {
       // Agregar/actualizar el producto
       await neonHttpService.cacheProducts([...otherProducts, neonProduct]);
 
-      // Sincronizar variaciones si las hay
+      // Sincronizar variaciones si las hay y calcular stock total
       if (product.type === "variable" && product.variations.length > 0) {
         const variations = await wooCommerceApi.getProductVariations(
           product.id,
         );
         const neonVariations: NeonVariation[] = [];
+        let totalVariationStock = 0;
+
+        console.log(`🔄 Sincronizando producto variable ${productId} con ${variations.length} variaciones...`);
 
         for (const variation of variations) {
           const atumStock = await checkAtumAvailability(
@@ -380,7 +383,16 @@ export class LocalSyncService {
             atumStock,
           );
           neonVariations.push(neonVariation);
+
+          // Calcular stock total de variaciones
+          const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
+          totalVariationStock += variationStock;
+          console.log(`📦 Variação ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
         }
+
+        // IMPORTANTE: Actualizar el stock del producto principal
+        neonProduct.stock_quantity = totalVariationStock;
+        console.log(`✅ Stock total calculado para ${product.name}: ${totalVariationStock} unidades`);
 
         // Actualizar variaciones en cache
         const existingVariations = JSON.parse(
@@ -395,7 +407,7 @@ export class LocalSyncService {
         ]);
       }
 
-      console.log(`✅ Producto ${productId} sincronizado correctamente`);
+      console.log(`✅ Produto ${productId} (${product.name}) sincronizado correctamente - Stock final: ${neonProduct.stock_quantity} unidades`);
     } catch (error) {
       console.error(`❌ Error sincronizando producto ${productId}:`, error);
       throw error;
