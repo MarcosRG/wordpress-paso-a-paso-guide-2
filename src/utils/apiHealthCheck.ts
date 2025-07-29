@@ -123,10 +123,16 @@ class ApiHealthChecker {
 
       if (error instanceof Error) {
         // Provide more specific error messages
-        if (error.name === 'AbortError' || error.message === 'Health check timeout') {
+        if (error.name === 'AbortError' ||
+            error.message === 'Health check timeout' ||
+            error.message.includes('aborted') ||
+            error.message.includes('timeout')) {
           errorMessage = 'Request timeout';
-        } else if (error.message.includes('Failed to fetch')) {
+        } else if (error.message.includes('Failed to fetch') ||
+                   error.message.includes('fetch')) {
           errorMessage = 'Network unavailable';
+        } else if (error.message.includes('CORS')) {
+          errorMessage = 'CORS error';
         } else {
           errorMessage = error.message;
         }
