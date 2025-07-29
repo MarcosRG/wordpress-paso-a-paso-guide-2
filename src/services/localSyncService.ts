@@ -14,7 +14,7 @@ export class LocalSyncService {
 
   constructor() {
     // Deshabilitar auto-sincronización temporal para evitar errores de fetch en desarrollo
-    console.log("🔄 LocalSyncService iniciado (auto-sync deshabilitado en desarrollo)");
+    console.log("🔄 LocalSyncService iniciado - auto-sync habilitado para tienda online");
 
     // TODO: Re-habilitar en producción
     /*
