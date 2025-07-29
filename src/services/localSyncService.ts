@@ -423,6 +423,16 @@ export class LocalSyncService {
         ]);
       }
 
+      // Invalidar cache para refrescar frontend
+      try {
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(new CustomEvent('cache-updated'));
+          console.log("🔄 Cache invalidado após sincronização individual");
+        }
+      } catch (error) {
+        console.warn("No se pudo disparar evento de cache:", error);
+      }
+
       console.log(`✅ Produto ${productId} (${product.name}) sincronizado correctamente - Stock final: ${neonProduct.stock_quantity} unidades`);
     } catch (error) {
       console.error(`❌ Error sincronizando producto ${productId}:`, error);
