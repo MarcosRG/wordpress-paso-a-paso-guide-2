@@ -275,7 +275,9 @@ export const useLocalNeonStockBySize = (
             : null;
 
           if (sizeAttribute) {
-            const size = sizeAttribute.option?.toUpperCase() || "DEFAULT";
+            // Extraer solo la parte del tamaño antes del guión (ej: "XL - 59" -> "XL")
+            const rawSize = sizeAttribute.option?.toUpperCase() || "DEFAULT";
+            const size = rawSize.includes(' - ') ? rawSize.split(' - ')[0].trim() : rawSize;
             const stock = variation.atum_stock || variation.stock_quantity || 0;
             stockBySize[size] = stock;
 
