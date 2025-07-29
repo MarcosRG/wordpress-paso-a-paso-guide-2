@@ -157,16 +157,17 @@ export class LocalSyncService {
                 );
                 neonVariations.push(neonVariation);
 
-                // Sumar stock de la variación al total
+                // Sumar stock de la variación al total - usar el stock real de WooCommerce
                 const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
                 totalVariationStock += variationStock;
+
+                console.log(`📦 Variación ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
               }
 
-              // Actualizar el stock del producto principal con la suma de todas las variaciones
-              if (totalVariationStock > 0) {
-                neonProduct.stock_quantity = totalVariationStock;
-                console.log(`✅ Stock total calculado para producto variable ${product.id} (${product.name}): ${totalVariationStock} unidades`);
-              }
+              // IMPORTANTE: Actualizar el stock del producto principal con la suma de todas las variaciones
+              neonProduct.stock_quantity = totalVariationStock;
+              console.log(`✅ Stock total calculado para producto variable ${product.id} (${product.name}): ${totalVariationStock} unidades (de ${variations.length} variaciones)`);
+              console.log(`🔄 Producto ${product.name} actualizado: stock ${totalVariationStock} unidades`);
             } catch (error) {
               console.warn(
                 `⚠️ Error obteniendo variaciones para producto ${product.id}:`,
