@@ -155,7 +155,7 @@ class ApiHealthChecker {
       return result;
 
     } finally {
-      this.checkInProgress = false;
+      cleanup();
     }
   }
 
