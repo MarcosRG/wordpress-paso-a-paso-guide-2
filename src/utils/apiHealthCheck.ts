@@ -26,27 +26,28 @@ class ApiHealthChecker {
 
       if (typeof AbortController !== 'undefined') {
         const controller = new AbortController();
-        let timeoutId: NodeJS.Timeout;
-        let isAborted = false;
+        let timeoutId: NodeJS.Timeout | null = null;
+        let isTimedOut = false;
+        let requestCompleted = false;
 
         try {
-          // Set up timeout with proper cleanup
-          timeoutId = setTimeout(() => {
-            isAborted = true;
-            try {
-              controller.abort();
-            } catch (abortError) {
-              // Ignore abort errors on timeout
-              console.warn('Abort controller error:', abortError);
-            }
-          }, timeout);
+          // Create a timeout promise
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => {
+              isTimedOut = true;
+              if (!requestCompleted) {
+                controller.abort();
+                reject(new Error('Health check timeout'));
+              }
+            }, timeout);
+          });
 
           // Use the same endpoint logic as woocommerceApi
           const baseUrl = import.meta.env.DEV
             ? "https://bikesultoursgest.com/wp-json/wp/v2/"  // Use WordPress REST API for health check
             : (import.meta.env.VITE_WOOCOMMERCE_API_BASE || "https://bikesultoursgest.com/wp-json/wp/v2/");
 
-          response = await fetch(baseUrl, {
+          const fetchPromise = fetch(baseUrl, {
             method: 'HEAD',
             signal: controller.signal,
             headers: {
@@ -54,23 +55,33 @@ class ApiHealthChecker {
             }
           });
 
+          // Race between fetch and timeout
+          response = await Promise.race([fetchPromise, timeoutPromise]);
+          requestCompleted = true;
+
           // Clear timeout if request completed successfully
           if (timeoutId) {
             clearTimeout(timeoutId);
+            timeoutId = null;
           }
 
         } catch (fetchError) {
+          requestCompleted = true;
+
           // Always clear timeout on error
           if (timeoutId) {
             clearTimeout(timeoutId);
+            timeoutId = null;
           }
 
           // Handle AbortError specifically - these are expected for timeouts
-          if (fetchError instanceof Error &&
-              (fetchError.name === 'AbortError' ||
-               fetchError.message.includes('aborted') ||
-               isAborted)) {
-            throw new Error('Health check timeout');
+          if (fetchError instanceof Error) {
+            if (fetchError.name === 'AbortError' ||
+                fetchError.message.includes('aborted') ||
+                fetchError.message === 'Health check timeout' ||
+                isTimedOut) {
+              throw new Error('Health check timeout');
+            }
           }
           throw fetchError;
         }
