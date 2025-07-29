@@ -35,7 +35,7 @@ export class LocalSyncService {
         // Check emergency stop first
         const { isEmergencyStopActive } = await import("../services/connectivityMonitor");
         if (isEmergencyStopActive()) {
-          console.log(`🚨 EMERGENCY STOP: Interval sync blocked`);
+          console.log(`���� EMERGENCY STOP: Interval sync blocked`);
           return;
         }
 
@@ -423,6 +423,54 @@ export class LocalSyncService {
       console.error(`❌ Error sincronizando producto ${productId}:`, error);
       throw error;
     }
+  }
+
+  // Detectar conflictos de scripts de terceros
+  private isThirdPartyScriptConflict(error: Error): boolean {
+    const errorMessage = error.message || '';
+    const errorStack = error.stack || '';
+
+    // Detectar FullStory
+    const fullStoryConflict = (
+      errorMessage.includes('Failed to fetch') && (
+        errorStack.includes('fullstory.com') ||
+        errorStack.includes('fs.js') ||
+        errorStack.includes('messageHandler') ||
+        errorStack.includes('edge.fullstory.com')
+      )
+    );
+
+    // Detectar otros scripts conocidos que causan conflictos
+    const otherConflicts = (
+      errorMessage.includes('Failed to fetch') && (
+        errorStack.includes('gtag') ||
+        errorStack.includes('google-analytics') ||
+        errorStack.includes('facebook.net') ||
+        errorStack.includes('doubleclick.net')
+      )
+    );
+
+    return fullStoryConflict || otherConflicts;
+  }
+
+  // Identificar la fuente del conflicto
+  private identifyConflictSource(error: Error): string {
+    const stack = error.stack || '';
+
+    if (stack.includes('fullstory.com') || stack.includes('fs.js')) {
+      return 'FullStory Analytics';
+    }
+    if (stack.includes('google-analytics') || stack.includes('gtag')) {
+      return 'Google Analytics';
+    }
+    if (stack.includes('facebook.net')) {
+      return 'Facebook Pixel';
+    }
+    if (stack.includes('doubleclick.net')) {
+      return 'Google DoubleClick';
+    }
+
+    return 'Unknown third-party script';
   }
 
   // Verificar si hay datos en cache
