@@ -13,6 +13,13 @@ export class LocalSyncService {
   private lastSyncTime: Date | null = null;
 
   constructor() {
+    // Check if API is disabled in development
+    if (import.meta.env.VITE_DISABLE_API === 'true') {
+      console.log("🔄 LocalSyncService iniciado - API DESHABILITADO en desarrollo");
+      console.log("🚫 Auto-sync deshabilitado - solo modo manual disponible");
+      return;
+    }
+
     console.log("🔄 LocalSyncService iniciado - Auto-sync HABILITADO con corrección");
     console.log("✅ PROBLEMA RESUELTO: Extracción de tamaños y limpieza de cache");
     console.log("🔧 CORRECCIÓN APLICADA: Cache clearing antes de sync automático");
