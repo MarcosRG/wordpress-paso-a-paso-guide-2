@@ -152,6 +152,21 @@ export const DebuggingCenter: React.FC = () => {
     }
   };
 
+  const handleCompleteRefresh = async () => {
+    setIsProcessing(true);
+    try {
+      setLastAction('Iniciando refresh completo de cache...');
+      await forceCompleteCacheRefresh();
+      setLastAction('Cache refresh completo iniciado - página será recarregada em 2 segundos');
+      console.log('🔄 Complete cache refresh initiated');
+    } catch (error) {
+      setLastAction(`Erro no refresh completo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      console.error('Erro no refresh completo:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleExportCache = () => {
     try {
       const products = localStorage.getItem('neon_products_cache');
