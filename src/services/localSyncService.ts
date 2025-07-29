@@ -13,11 +13,10 @@ export class LocalSyncService {
   private lastSyncTime: Date | null = null;
 
   constructor() {
-    // Deshabilitar auto-sincronización temporal para evitar errores de fetch en desarrollo
+
     console.log("🔄 LocalSyncService iniciado - auto-sync habilitado para tienda online");
 
-    // TODO: Re-habilitar en producción
-    /*
+
     // Verificar si necesita sincronización inicial
     if (neonHttpService.needsSync()) {
       this.performSync()
@@ -49,9 +48,8 @@ export class LocalSyncService {
           }
         }
       },
-      10 * 60 * 1000,
+      5 * 60 * 1000, // 5 minutos para tienda online
     );
-    */
   }
 
   async performSync(): Promise<void> {
