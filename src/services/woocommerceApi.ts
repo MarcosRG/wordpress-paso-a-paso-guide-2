@@ -1202,6 +1202,21 @@ export const wooCommerceApi = {
       }
 
       const product = await response.json();
+
+      // Si es un producto variable, calcular stock total de variaciones
+      if (product.type === "variable" && product.variations?.length > 0) {
+        try {
+          const variations = await this.getProductVariations(productId);
+          const totalStock = calculateVariableProductStock(variations);
+
+          // Actualizar el stock del producto principal
+          product.calculated_total_stock = totalStock;
+          console.log(`✅ Product ${productId} retrieved with calculated total stock: ${totalStock}`);
+        } catch (error) {
+          console.warn(`⚠️ Error calculating variations stock for product ${productId}:`, error);
+        }
+      }
+
       console.log(`✅ Product ${productId} retrieved successfully`);
       return product;
     } catch (error) {
