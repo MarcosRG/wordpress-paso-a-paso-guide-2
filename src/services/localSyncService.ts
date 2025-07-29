@@ -114,12 +114,19 @@ export class LocalSyncService {
       // 2. Procesar cada producto
       for (const product of wooProducts) {
         try {
-          // Solo procesar productos activos con stock
-          if (
-            product.status !== "publish" ||
-            (product.stock_status !== "instock" && product.stock_quantity <= 0)
-          ) {
+          // Solo procesar productos publicados
+          if (product.status !== "publish") {
+            console.log(`⏭️ Saltando producto ${product.id} (${product.name}) - Status: ${product.status}`);
             continue;
+          }
+
+          // Para productos variables, no filtrar por stock principal (puede estar en variaciones)
+          if (product.type !== "variable") {
+            // Solo para productos simples, verificar stock
+            if (product.stock_status !== "instock" && product.stock_quantity <= 0) {
+              console.log(`⏭️ Saltando producto simple ${product.id} (${product.name}) - Sin stock`);
+              continue;
+            }
           }
 
           // Obtener datos ACF si están disponibles
