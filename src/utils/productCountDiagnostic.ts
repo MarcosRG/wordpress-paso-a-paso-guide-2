@@ -45,8 +45,6 @@ export class ProductCountDiagnostic {
       
       // Analyze each WooCommerce product
       for (const product of allWooProducts) {
-        const shouldInclude = product.status === "publish";
-        
         const productInfo = {
           id: product.id,
           name: product.name,
@@ -55,28 +53,27 @@ export class ProductCountDiagnostic {
           stock_status: product.stock_status,
           stock_quantity: product.stock_quantity,
         };
-        
-        if (!shouldInclude) {
+
+        // Check if it's actually in cache
+        const inCache = cachedProducts.find(cp => cp.woocommerce_id === product.id);
+
+        if (product.status !== "publish") {
           excludedProducts.push({
             ...productInfo,
-            reason: `Status: ${product.status} (not published)`
+            reason: `Status: ${product.status} (não publicado)`
+          });
+        } else if (!inCache) {
+          excludedProducts.push({
+            ...productInfo,
+            reason: 'Publicado mas não no cache - erro de sincronização'
           });
         } else {
-          // Check if it's actually in cache
-          const inCache = cachedProducts.find(cp => cp.woocommerce_id === product.id);
-          if (inCache) {
-            includedProducts.push({
-              id: product.id,
-              name: product.name,
-              type: product.type,
-              stock_quantity: product.stock_quantity
-            });
-          } else {
-            excludedProducts.push({
-              ...productInfo,
-              reason: 'Published but not in cache - sync issue'
-            });
-          }
+          includedProducts.push({
+            id: product.id,
+            name: product.name,
+            type: product.type,
+            stock_quantity: product.stock_quantity
+          });
         }
       }
       
