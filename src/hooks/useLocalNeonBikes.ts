@@ -172,8 +172,8 @@ export const useLocalNeonBikes = () => {
         return [];
       }
     },
-    staleTime: 1 * 60 * 1000, // 1 minuto (datos muy frescos desde cache)
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 0, // Siempre verificar si hay datos frescos
+    gcTime: 2 * 60 * 1000, // 2 minutos
     throwOnError: false,
     retry: 1, // Solo un reintento
     retryDelay: 1000,
