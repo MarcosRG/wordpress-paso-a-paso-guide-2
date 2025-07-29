@@ -162,19 +162,7 @@ export const useLocalSyncStatus = () => {
         // Actualizar estado
         await updateSyncStatus();
       } catch (error) {
-        // Detectar conflictos de FullStory
-        const isFullStoryConflict = (
-          error instanceof Error &&
-          error.message.includes('Failed to fetch') &&
-          error.stack && (
-            error.stack.includes('fullstory.com') ||
-            error.stack.includes('fs.js') ||
-            error.stack.includes('messageHandler') ||
-            error.stack.includes('edge.fullstory.com')
-          )
-        );
-
-        if (isFullStoryConflict) {
+        if (isFullStoryConflict(error)) {
           console.warn("🔧 FullStory conflict detected in syncProduct - setting as success");
           setSyncStatus((prev) => ({
             ...prev,
