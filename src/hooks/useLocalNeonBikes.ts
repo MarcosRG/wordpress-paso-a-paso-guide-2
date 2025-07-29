@@ -12,32 +12,25 @@ const convertNeonProductToBike = (
   neonProduct: NeonProduct,
   variations: NeonVariation[] = [],
 ): Bike => {
-  // Calcular stock total
-  let totalStock = 0;
-  if (variations.length > 0) {
-    // Para productos variables, sumar stock de todas las variaciones
-    totalStock = variations.reduce((sum, variation) => {
-      // LÓGICA UNIVERSAL: Priorizar stock_quantity se atum_stock é 0
+  // CORRECCIÓN: Usar stock ya calculado desde cache en lugar de recalcular
+  // El problema era que se recalculaba mal aquí aunque ya estaba bien en cache
+  let totalStock = neonProduct.stock_quantity || 0;
+
+  // Solo para debug: verificar si hay diferencia entre stock guardado y recalculado
+  if (variations.length > 0 && totalStock > 0) {
+    const recalculatedStock = variations.reduce((sum, variation) => {
       const atumStock = parseInt(String(variation.atum_stock)) || 0;
       const wooStock = parseInt(String(variation.stock_quantity)) || 0;
       const stockToUse = atumStock > 0 ? atumStock : wooStock;
-
-      // Debug para productos con stock > 0 para detectar inconsistencias
-      if (wooStock > 0 || atumStock > 0) {
-        console.log(`🔧 Conversão ${neonProduct.name} - Variação ${variation.woocommerce_id}:`, {
-          atum_stock: atumStock,
-          stock_quantity: wooStock,
-          stockToUse,
-          logic: atumStock > 0 ? 'usando atum' : 'usando woo',
-          attributes: variation.attributes
-        });
-      }
-
       return sum + stockToUse;
     }, 0);
-  } else {
-    // Para productos simples, usar stock directo
-    totalStock = neonProduct.stock_quantity || 0;
+
+    if (recalculatedStock !== totalStock) {
+      console.log(`🚨 DISCREPANCIA DETECTADA en ${neonProduct.name}:`);
+      console.log(`   • Stock en cache: ${totalStock}`);
+      console.log(`   • Stock recalculado: ${recalculatedStock}`);
+      console.log(`   • Usando stock del cache (correcto): ${totalStock}`);
+    }
   }
 
   // Debug final do total calculado para productos con stock
