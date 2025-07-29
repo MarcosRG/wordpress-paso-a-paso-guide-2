@@ -29,13 +29,13 @@ export class LocalSyncService {
         });
     }
 
-    // Programar sincronização cada 10 minutos, pero solo si la conectividad es buena
+    // Programar sincronización cada 5 minutos para tienda online
     setInterval(
       async () => {
         // Check emergency stop first
         const { isEmergencyStopActive } = await import("../services/connectivityMonitor");
         if (isEmergencyStopActive()) {
-          console.log(`��� EMERGENCY STOP: Interval sync blocked`);
+          console.log(`🚨 EMERGENCY STOP: Interval sync blocked`);
           return;
         }
 
