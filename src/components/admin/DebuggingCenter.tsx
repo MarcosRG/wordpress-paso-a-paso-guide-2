@@ -26,6 +26,7 @@ import { neonHttpService } from '@/services/neonHttpService';
 import { CacheManager } from './CacheManager';
 import { RealTimeMonitor } from './RealTimeMonitor';
 import StockCalculationDebugger from '../StockCalculationDebugger';
+import { fixKTMProduct, fixProductStock, fixAllVariableProducts } from '@/utils/productStockFixer';
 
 export const DebuggingCenter: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
