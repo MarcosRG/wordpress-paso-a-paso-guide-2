@@ -39,7 +39,7 @@ export const DebuggingCenter: React.FC = () => {
     try {
       neonHttpService.clearCache();
       setLastAction('Cache limpo com sucesso');
-      console.log('🗑��� Cache limpo pelo painel admin');
+      console.log('🗑️ Cache limpo pelo painel admin');
     } catch (error) {
       setLastAction('Erro ao limpar cache');
       console.error('Erro limpando cache:', error);
@@ -352,6 +352,20 @@ export const DebuggingCenter: React.FC = () => {
                 <CheckCircle className="h-4 w-4" />
               )}
               Fix All Variable Products
+            </Button>
+
+            <Button
+              onClick={handleFixFullStoryConflict}
+              disabled={isProcessing}
+              variant="outline"
+              className="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 border-orange-300"
+            >
+              {isProcessing ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <AlertTriangle className="h-4 w-4" />
+              )}
+              Fix FullStory Conflict
             </Button>
           </div>
         </CardContent>
