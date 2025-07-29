@@ -256,7 +256,13 @@ export class LocalSyncService {
   // Sincronización manual
   async forceSync(): Promise<void> {
     if (this.isRunning) {
-      throw new Error("Sincronización ya en curso");
+      console.log("⏳ Sincronización ya en curso, esperando a que termine...");
+      // Wait for the current sync to finish instead of throwing an error
+      while (this.isRunning) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      // If sync completed successfully while waiting, no need to start another
+      return;
     }
 
     // Check circuit breaker status for force sync
