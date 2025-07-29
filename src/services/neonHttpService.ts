@@ -301,6 +301,17 @@ export class NeonHttpService {
   // Verificar si necesita sincronización
   needsSync(): boolean {
     const status = this.getSyncStatus();
+
+    // Verificar si hay productos en cache
+    const cachedProducts = localStorage.getItem(this.storageKeys.products);
+    const hasProducts = cachedProducts && JSON.parse(cachedProducts).length > 0;
+
+    // Si no hay productos en cache, forzar sync independientemente de conectividad
+    if (!hasProducts) {
+      console.log("🚀 No products in cache - forcing sync");
+      return true;
+    }
+
     if (!status.lastSyncTime) {
       // For first sync, check connectivity
       try {
@@ -319,9 +330,9 @@ export class NeonHttpService {
       return true;
     }
 
-    // Sincronizar si han pasado más de 10 minutos
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-    return status.lastSyncTime < tenMinutesAgo;
+    // Sincronizar si han pasado más de 5 minutos (más frecuente para tienda online)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    return status.lastSyncTime < fiveMinutesAgo;
   }
 
   // Simular inserción/actualización de producto (para compatibilidad)
