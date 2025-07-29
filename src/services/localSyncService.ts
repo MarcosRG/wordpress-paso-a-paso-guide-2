@@ -193,16 +193,24 @@ export class LocalSyncService {
             }
           }
 
-          console.log(`✅ Procesado: ${product.name} (ID: ${product.id})`);
+          console.log(`✅ Procesado: ${product.name} (ID: ${product.id}) - Stock final: ${neonProduct.stock_quantity}`);
         } catch (error) {
           console.warn(`⚠️ Error procesando producto ${product.id}:`, error);
           // Continuar con el siguiente producto
         }
       }
 
+      // Log productos antes de guardar en cache
+      console.log("📋 Productos listos para cache:");
+      neonProducts.forEach(p => {
+        console.log(`  • ${p.name} (ID: ${p.id}, Tipo: ${p.type}): ${p.stock_quantity} unidades`);
+      });
+
       // 4. Guardar en cache local
       await neonHttpService.cacheProducts(neonProducts);
       await neonHttpService.cacheVariations(neonVariations);
+
+      console.log("💾 Productos guardados en cache local");
 
       const duration = Date.now() - startTime;
       this.lastSyncTime = new Date();
