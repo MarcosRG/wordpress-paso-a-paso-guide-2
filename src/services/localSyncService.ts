@@ -212,6 +212,15 @@ export class LocalSyncService {
 
       console.log("💾 Productos guardados en cache local");
 
+      // Invalidar React Query cache para que el frontend refresque
+      try {
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(new CustomEvent('cache-updated'));
+        }
+      } catch (error) {
+        console.warn("No se pudo disparar evento de cache actualizado:", error);
+      }
+
       const duration = Date.now() - startTime;
       this.lastSyncTime = new Date();
 
