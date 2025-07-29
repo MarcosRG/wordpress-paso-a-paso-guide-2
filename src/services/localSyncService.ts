@@ -35,7 +35,7 @@ export class LocalSyncService {
         // Check emergency stop first
         const { isEmergencyStopActive } = await import("../services/connectivityMonitor");
         if (isEmergencyStopActive()) {
-          console.log(`���� EMERGENCY STOP: Interval sync blocked`);
+          console.log(`🚨 EMERGENCY STOP: Interval sync blocked`);
           return;
         }
 
@@ -256,11 +256,8 @@ export class LocalSyncService {
           });
 
           // Record as third-party conflict, not genuine network error
-          const { getConnectivityStatus } = await import("../services/connectivityMonitor");
-          const monitor = getConnectivityStatus();
-          if (monitor.recordNetworkError) {
-            monitor.recordNetworkError(true); // true = isThirdPartyConflict
-          }
+          const { recordApiNetworkError } = await import("../services/connectivityMonitor");
+          recordApiNetworkError(true); // true = isThirdPartyConflict
 
           // Don't throw - let the app continue with cached data
           return;
