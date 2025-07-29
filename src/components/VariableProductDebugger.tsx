@@ -12,6 +12,7 @@ interface VariableProductDebuggerProps {
 export function VariableProductDebugger({ productId }: VariableProductDebuggerProps) {
   const [debugData, setDebugData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [inputProductId, setInputProductId] = useState(productId?.toString() || "");
 
   const debugProduct = async (id: number) => {
