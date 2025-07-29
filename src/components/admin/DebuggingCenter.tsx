@@ -39,7 +39,7 @@ export const DebuggingCenter: React.FC = () => {
     try {
       neonHttpService.clearCache();
       setLastAction('Cache limpo com sucesso');
-      console.log('🗑️ Cache limpo pelo painel admin');
+      console.log('🗑��� Cache limpo pelo painel admin');
     } catch (error) {
       setLastAction('Erro ao limpar cache');
       console.error('Erro limpando cache:', error);
@@ -108,6 +108,45 @@ export const DebuggingCenter: React.FC = () => {
     } catch (error) {
       setLastAction(`Erro corrigindo produtos: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
       console.error('Erro corrigindo produtos:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFixFullStoryConflict = async () => {
+    setIsProcessing(true);
+    try {
+      // Reset circuit breaker
+      const { wooCommerceCircuitBreaker } = await import('@/services/circuitBreaker');
+      wooCommerceCircuitBreaker.reset();
+
+      // Reset connectivity monitor
+      const { resetConnectivityStatus } = await import('@/services/connectivityMonitor');
+      if (resetConnectivityStatus) {
+        resetConnectivityStatus();
+      }
+
+      // Clear emergency stop
+      const { disableEmergencyStop } = await import('@/services/connectivityMonitor');
+      if (disableEmergencyStop) {
+        disableEmergencyStop();
+      }
+
+      setLastAction('Conflito FullStory resolvido - Circuit breaker e conectividade resetados');
+      console.log('🔧 FullStory conflict resolved successfully');
+
+      // Wait a bit then try a gentle sync
+      setTimeout(async () => {
+        try {
+          await handleForceSync();
+        } catch (syncError) {
+          console.log('Sync after FullStory fix failed, but that\'s ok');
+        }
+      }, 2000);
+
+    } catch (error) {
+      setLastAction(`Erro resolvendo conflito FullStory: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      console.error('Erro resolvendo conflito FullStory:', error);
     } finally {
       setIsProcessing(false);
     }
