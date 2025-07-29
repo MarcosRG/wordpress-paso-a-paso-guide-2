@@ -286,6 +286,34 @@ export const DebuggingCenter: React.FC = () => {
               <Trash2 className="h-4 w-4" />
               Limpar Console
             </Button>
+
+            <Button
+              onClick={handleFixKTMProduct}
+              disabled={isProcessing}
+              variant="outline"
+              className="flex items-center gap-2 bg-yellow-50 hover:bg-yellow-100 border-yellow-300"
+            >
+              {isProcessing ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle className="h-4 w-4" />
+              )}
+              Fix KTM Product
+            </Button>
+
+            <Button
+              onClick={handleFixAllVariableProducts}
+              disabled={isProcessing}
+              variant="outline"
+              className="flex items-center gap-2 bg-green-50 hover:bg-green-100 border-green-300"
+            >
+              {isProcessing ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle className="h-4 w-4" />
+              )}
+              Fix All Variable Products
+            </Button>
           </div>
         </CardContent>
       </Card>
