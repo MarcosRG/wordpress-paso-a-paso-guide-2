@@ -37,8 +37,6 @@ export const productDiagnostics = {
         },
       );
 
-      clearTimeout(timeoutId);
-
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
