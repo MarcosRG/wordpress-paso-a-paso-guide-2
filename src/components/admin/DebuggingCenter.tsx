@@ -100,14 +100,13 @@ export const DebuggingCenter: React.FC = () => {
   const handleFixAllVariableProducts = async () => {
     setIsProcessing(true);
     try {
-      await fixAllVariableProducts();
-      setLastAction('Todos os produtos variáveis corrigidos com sucesso');
-      console.log('🎉 All variable products fixed successfully');
-      // Force refresh of data
-      window.location.reload();
+      // Use complete cache refresh instead of individual product fixes
+      await forceCompleteCacheRefresh();
+      setLastAction('Refresh completo iniciado - todos os produtos serão atualizados');
+      console.log('🎉 Complete cache refresh initiated - all products will be updated');
     } catch (error) {
-      setLastAction(`Erro corrigindo produtos: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-      console.error('Erro corrigindo produtos:', error);
+      setLastAction(`Erro no refresh completo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      console.error('Erro no refresh completo:', error);
     } finally {
       setIsProcessing(false);
     }
