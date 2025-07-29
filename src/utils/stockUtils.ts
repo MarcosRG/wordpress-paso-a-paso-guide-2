@@ -156,7 +156,9 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
     }
 
     if (sizeAttribute && sizeAttribute.option) {
-      const size = sizeAttribute.option.toUpperCase();
+      // Extrair apenas o tamanho da string "XL - 59" -> "XL"
+      const rawSize = sizeAttribute.option.toString();
+      const size = rawSize.split(' - ')[0].toUpperCase().trim();
 
       // Obter stock real da variação - priorizar stock_quantity se atum_stock é 0
       const atumStock = parseInt(String(variation.atum_stock)) || 0;
