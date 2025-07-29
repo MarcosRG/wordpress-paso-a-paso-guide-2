@@ -382,6 +382,20 @@ export const DebuggingCenter: React.FC = () => {
               )}
               Fix FullStory Conflict
             </Button>
+
+            <Button
+              onClick={handleCompleteRefresh}
+              disabled={isProcessing}
+              variant="outline"
+              className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-blue-300"
+            >
+              {isProcessing ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Refresh Completo
+            </Button>
           </div>
         </CardContent>
       </Card>
