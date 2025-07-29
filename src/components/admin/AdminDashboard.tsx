@@ -537,6 +537,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             </Card>
           </TabsContent>
 
+          {/* Product Debugger Tab */}
+          <TabsContent value="products">
+            <VariableProductDebugger />
+          </TabsContent>
+
           {/* Debugging Center Tab */}
           <TabsContent value="debugging">
             <DebuggingCenter />
