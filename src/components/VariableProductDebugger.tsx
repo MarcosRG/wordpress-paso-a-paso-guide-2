@@ -126,6 +126,36 @@ export function VariableProductDebugger({ productId }: VariableProductDebuggerPr
     debugProduct(id);
   };
 
+  const forceSyncProduct = async () => {
+    const id = parseInt(inputProductId);
+    if (isNaN(id)) {
+      alert("ID de produto inválido");
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      console.log(`🔄 Iniciando sincronização forçada para produto ${id}...`);
+
+      // Importar o serviço de sincronização
+      const { localSyncService } = await import("../services/localSyncService");
+
+      // Sincronizar produto específico
+      await localSyncService.syncSingleProduct(id);
+
+      console.log(`✅ Produto ${id} sincronizado com sucesso`);
+
+      // Re-debuggar o produto após sincronização
+      await debugProduct(id);
+
+    } catch (error) {
+      console.error("Erro durante sincronização:", error);
+      alert(`Erro ao sincronizar produto: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   useEffect(() => {
     if (productId) {
       debugProduct(productId);
