@@ -61,6 +61,20 @@ export const DebuggingCenter: React.FC = () => {
     }
   };
 
+  const handleResetSyncState = async () => {
+    setIsProcessing(true);
+    try {
+      localSyncService.resetSyncState();
+      setLastAction('Estado de sincronização resetado');
+      console.log('🔄 Sync state reset pelo painel admin');
+    } catch (error) {
+      setLastAction(`Erro ao resetar estado: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      console.error('Erro resetando sync state:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleExportCache = () => {
     try {
       const products = localStorage.getItem('neon_products_cache');
