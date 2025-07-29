@@ -13,6 +13,17 @@ class ApiHealthChecker {
   private checkInProgress = false;
 
   async checkApiHealth(timeout: number = 10000): Promise<HealthCheckResult> {
+    // Skip health checks if API is disabled in development
+    if (import.meta.env.VITE_DISABLE_API === 'true') {
+      console.log('API disabled, returning healthy status for development');
+      return {
+        isHealthy: true,
+        responseTime: 0,
+        lastChecked: new Date(),
+        statusCode: 200
+      };
+    }
+
     if (this.checkInProgress) {
       console.warn('Health check already in progress, returning cached result');
       return this.lastResult || this.createFailureResult('Health check already in progress');
