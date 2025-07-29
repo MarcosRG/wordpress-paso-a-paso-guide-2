@@ -24,10 +24,7 @@ export const productDiagnostics = {
   // Diagnosticar todos los productos de la categoría ALUGUERES
   async diagnoseAlugueresProducts(): Promise<ProductDiagnostic[]> {
     try {
-      // Verificar si estamos en un entorno que puede acceder a la API
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
-
+      // AbortController disabled to prevent AbortError issues
       // Obtener TODOS los productos de la categoría, sin filtros
       const response = await fetch(
         `${WOOCOMMERCE_API_BASE}/products?per_page=100&category=319`,
@@ -36,7 +33,6 @@ export const productDiagnostics = {
             ...apiHeaders,
             Accept: "application/json",
           },
-          signal: controller.signal,
           mode: "cors",
         },
       );
