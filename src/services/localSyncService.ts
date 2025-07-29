@@ -187,19 +187,26 @@ export class LocalSyncService {
               console.log(`✅ Stock total calculado para producto variable ${product.id} (${product.name}): ${totalVariationStock} unidades (de ${variations.length} variaciones)`);
               console.log(`🔄 Producto ${product.name} actualizado: stock ${totalVariationStock} unidades`);
               
-              // DEBUG ESPECÍFICO para productos problemáticos
-              const problematicIds = [19265,19317,19238,19214,19184,19144,18925,18915,18895,18890,18883,18866,18743,18293];
-              if (problematicIds.includes(product.id)) {
-                console.log(`🚨 PRODUCTO PROBLEMÁTICO DETECTADO ${product.id}:`);
+              // DEBUG PARA TODOS LOS PRODUCTOS VARIABLES con stock > 0
+              if (totalVariationStock > 0) {
+                console.log(`🚴‍♂️ PRODUCTO VARIABLE CON STOCK ${product.id}:`);
                 console.log(`   • Nombre: ${product.name}`);
                 console.log(`   • Variaciones encontradas: ${variations.length}`);
                 console.log(`   • Stock calculado: ${totalVariationStock}`);
                 console.log(`   • Stock asignado al producto: ${neonProduct.stock_quantity}`);
-                console.log(`   • Detalles variaciones:`, variations.map(v => ({
-                  id: v.id,
-                  stock: v.stock_quantity,
-                  atumStock: atumStock
-                })));
+                console.log(`   • Detalles variaciones:`, variations.map(v => {
+                  const vAtumStock = parseInt(String(v.atum_stock)) || 0;
+                  const vWooStock = parseInt(String(v.stock_quantity)) || 0;
+                  const vFinalStock = Math.max(vAtumStock, vWooStock);
+                  return {
+                    id: v.id,
+                    attributes: v.attributes?.map((attr: any) => `${attr.name}: ${attr.option}`).join(', '),
+                    wooStock: vWooStock,
+                    atumStock: vAtumStock,
+                    finalStock: vFinalStock,
+                    stockStatus: v.stock_status
+                  };
+                }));
               }
             } catch (error) {
               console.warn(
