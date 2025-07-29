@@ -27,6 +27,7 @@ import { CacheManager } from './CacheManager';
 import { RealTimeMonitor } from './RealTimeMonitor';
 import StockCalculationDebugger from '../StockCalculationDebugger';
 import { fixKTMProduct, fixProductStock, fixAllVariableProducts, forceCompleteCacheRefresh } from '@/utils/productStockFixer';
+import { runProductCountDiagnostic, showDetailedProductReport } from '@/utils/productCountDiagnostic';
 
 export const DebuggingCenter: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
