@@ -177,6 +177,13 @@ export function VariableProductDebugger({ productId }: VariableProductDebuggerPr
           <Button onClick={handleDebug} disabled={loading}>
             {loading ? "Analisando..." : "Debug Produto"}
           </Button>
+          <Button
+            onClick={forceSyncProduct}
+            disabled={syncing || !inputProductId}
+            variant="outline"
+          >
+            {syncing ? "Sincronizando..." : "Forçar Sync"}
+          </Button>
         </div>
       </CardHeader>
       
