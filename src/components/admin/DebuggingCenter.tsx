@@ -32,6 +32,8 @@ import { runProductCountDiagnostic, showDetailedProductReport } from '@/utils/pr
 export const DebuggingCenter: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastAction, setLastAction] = useState<string | null>(null);
+  const [excludedProducts, setExcludedProducts] = useState<any[]>([]);
+  const [productCountData, setProductCountData] = useState<any>(null);
   const { syncStatus, forceSync } = useLocalSyncStatus();
 
   // Cache Management
@@ -51,7 +53,7 @@ export const DebuggingCenter: React.FC = () => {
 
   const handleForceSync = async () => {
     if (isProcessing) {
-      setLastAction('Sincronização já está sendo executada. Aguarde...');
+      setLastAction('Sincroniza��ão já está sendo executada. Aguarde...');
       return;
     }
 
