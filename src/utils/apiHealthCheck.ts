@@ -80,31 +80,11 @@ export const apiHealthChecker = new ApiHealthChecker();
 
 /**
  * Quick utility function to check if API is available before making requests
+ * SIMPLIFIED: Always returns true since health checks are disabled
  */
 export const shouldAllowApiRequest = async (): Promise<boolean> => {
-  try {
-    // Quick check first
-    if (!apiHealthChecker.isApiLikelyHealthy(30000)) { // 30 second cache
-      return false;
-    }
-
-    // If we don't have recent data, do a quick check
-    const lastResult = apiHealthChecker.getLastResult();
-    if (!lastResult || Date.now() - lastResult.lastChecked.getTime() > 30000) {
-      try {
-        const result = await apiHealthChecker.checkApiHealth(3000); // Quick 3s timeout
-        return result.isHealthy;
-      } catch (error) {
-        console.warn('Health check failed in shouldAllowApiRequest:', error instanceof Error ? error.message : 'Unknown error');
-        return false; // On error, assume unavailable
-      }
-    }
-
-    return lastResult.isHealthy;
-  } catch (error) {
-    console.warn('Error in shouldAllowApiRequest:', error instanceof Error ? error.message : 'Unknown error');
-    return true; // On unexpected error, allow request (fail open)
-  }
+  // Health checks disabled - always allow API requests
+  return true;
 };
 
 /**
