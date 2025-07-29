@@ -229,13 +229,22 @@ const BikeCard = ({
             const availableForSize = sizeStock?.wooCommerceStock || 0;
             const isInStock = sizeStock?.stockStatus === 'instock' && availableForSize > 0;
 
+            // Mapear tamanhos para medidas informativas
+            const sizeWithMeasurement = {
+              XS: "XS - 49",
+              S: "S - 52",
+              M: "M - 55",
+              L: "L - 57",
+              XL: "XL - 59"
+            }[size];
+
             return (
               <div
                 key={size}
                 className="flex items-center justify-between p-2 border rounded-lg"
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-medium w-6">{size}</span>
+                  <span className="font-medium min-w-[60px]">{sizeWithMeasurement}</span>
                   <span className={`text-xs ${isInStock ? 'text-green-600' : 'text-red-500'}`}>
                     ({availableForSize}{" "}
                     {availableForSize === 1 ? t("available") : t("availables")})
