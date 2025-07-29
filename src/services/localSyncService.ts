@@ -99,7 +99,7 @@ export class LocalSyncService {
       // 1. Obtener productos de WooCommerce
       const wooProducts = await wooCommerceApi.getProducts();
       console.log(
-        `📦 Obtenidos ${wooProducts.length} productos de WooCommerce`,
+        `���� Obtenidos ${wooProducts.length} productos de WooCommerce`,
       );
 
       // If no products were returned (likely due to network issues), skip sync
@@ -247,11 +247,21 @@ export class LocalSyncService {
           return;
         }
 
-        // Handle third-party script conflicts
-        if (error.message.includes("Failed to fetch") &&
-            (error.stack?.includes("messageHandler") ||
-             error.stack?.includes("fullstory"))) {
-          console.warn("🔧 Third-party script conflict during sync - will retry later");
+        // Handle third-party script conflicts (FullStory, etc.)
+        if (this.isThirdPartyScriptConflict(error)) {
+          console.warn("🔧 Third-party script conflict detected during sync", {
+            error: error.message,
+            stack: error.stack,
+            source: this.identifyConflictSource(error)
+          });
+
+          // Record as third-party conflict, not genuine network error
+          const { getConnectivityStatus } = await import("../services/connectivityMonitor");
+          const monitor = getConnectivityStatus();
+          if (monitor.recordNetworkError) {
+            monitor.recordNetworkError(true); // true = isThirdPartyConflict
+          }
+
           // Don't throw - let the app continue with cached data
           return;
         }
