@@ -122,8 +122,10 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
           attrName === 'tamanho'
         );
 
-        // Verificar se o valor é um tamanho conhecido
-        const optionMatches = ['xs', 's', 'm', 'l', 'xl', 'xxl'].includes(attrOption);
+        // Verificar se o valor é um tamanho conhecido (incluindo formatos como "XL - 59")
+        const optionMatches = ['xs', 's', 'm', 'l', 'xl', 'xxl'].some(size =>
+          attrOption.includes(size) || attrOption.startsWith(size.toUpperCase())
+        );
 
         return nameMatches || optionMatches;
       });
