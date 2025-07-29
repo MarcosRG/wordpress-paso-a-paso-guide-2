@@ -146,12 +146,35 @@ export class NeonHttpService {
 
       const products = await this.getActiveProducts();
       const product = products.find((p) => p.woocommerce_id === productId);
+
+      // Si es un producto variable, calcular stock total de variaciones
+      if (product?.type === "variable") {
+        return await this.getTotalVariationStock(productId);
+      }
+
       return product?.stock_quantity || 0;
     } catch (error) {
       console.error(
         `Error obteniendo stock para producto ${productId}:`,
         error,
       );
+      return 0;
+    }
+  }
+
+  // Calcular stock total de todas las variaciones de un producto
+  async getTotalVariationStock(productId: number): Promise<number> {
+    try {
+      const variations = await this.getProductVariations(productId);
+      const totalStock = variations.reduce((total, variation) => {
+        const variationStock = Math.max(variation.atum_stock || 0, variation.stock_quantity || 0);
+        return total + variationStock;
+      }, 0);
+
+      console.log(`📊 Stock total calculado para producto variable ${productId}: ${totalStock} unidades (${variations.length} variaciones)`);
+      return totalStock;
+    } catch (error) {
+      console.error(`Error calculando stock de variaciones para producto ${productId}:`, error);
       return 0;
     }
   }
