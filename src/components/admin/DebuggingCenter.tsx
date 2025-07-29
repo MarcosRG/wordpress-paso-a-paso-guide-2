@@ -411,6 +411,15 @@ export const DebuggingCenter: React.FC = () => {
               )}
               Refresh Completo
             </Button>
+
+            <Button
+              onClick={handleProductCountDiagnostic}
+              variant="outline"
+              className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 border-purple-300"
+            >
+              <Info className="h-4 w-4" />
+              Diagnóstico 25/22 Produtos
+            </Button>
           </div>
         </CardContent>
       </Card>
