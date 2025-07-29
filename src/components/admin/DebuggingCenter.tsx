@@ -167,6 +167,21 @@ export const DebuggingCenter: React.FC = () => {
     }
   };
 
+  const handleProductCountDiagnostic = async () => {
+    try {
+      setLastAction('Executando diagnóstico de contagem de produtos...');
+      const diagnostic = await runProductCountDiagnostic();
+      setLastAction(`Diagnóstico completo: WooCommerce=${diagnostic.totalFromWooCommerce}, Cache=${diagnostic.totalInCache}, Excluídos=${diagnostic.excludedProducts.length}`);
+      console.log('🔍 Product count diagnostic completed - check console for details');
+
+      // Also show detailed report
+      await showDetailedProductReport();
+    } catch (error) {
+      setLastAction(`Erro no diagnóstico: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      console.error('Erro no diagnóstico de produtos:', error);
+    }
+  };
+
   const handleExportCache = () => {
     try {
       const products = localStorage.getItem('neon_products_cache');
