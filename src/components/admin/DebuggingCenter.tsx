@@ -39,7 +39,7 @@ export const DebuggingCenter: React.FC = () => {
     try {
       neonHttpService.clearCache();
       setLastAction('Cache limpo com sucesso');
-      console.log('��️ Cache limpo pelo painel admin');
+      console.log('🗑️ Cache limpo pelo painel admin');
     } catch (error) {
       setLastAction('Erro ao limpar cache');
       console.error('Erro limpando cache:', error);
@@ -333,6 +333,14 @@ export const DebuggingCenter: React.FC = () => {
 
         <TabsContent value="stock-calc" className="space-y-4">
           <StockCalculationDebugger />
+        </TabsContent>
+
+        <TabsContent value="stock-fix" className="space-y-4">
+          <StockFixDiagnostics
+            onFixKTM={handleFixKTMProduct}
+            onFixAll={handleFixAllVariableProducts}
+            isProcessing={isProcessing}
+          />
         </TabsContent>
 
         <TabsContent value="atum-test" className="space-y-4">
