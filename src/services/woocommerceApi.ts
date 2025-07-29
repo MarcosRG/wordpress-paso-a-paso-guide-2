@@ -60,6 +60,7 @@ export interface WooCommerceProduct {
     value: unknown;
   }>;
   acf?: ACFPricing;
+  calculated_total_stock?: number; // Para productos variables, stock total de variaciones
 }
 
 export interface WooCommerceVariation {
