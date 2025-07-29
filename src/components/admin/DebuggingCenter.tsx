@@ -39,7 +39,7 @@ export const DebuggingCenter: React.FC = () => {
     try {
       neonHttpService.clearCache();
       setLastAction('Cache limpo com sucesso');
-      console.log('🗑️ Cache limpo pelo painel admin');
+      console.log('��️ Cache limpo pelo painel admin');
     } catch (error) {
       setLastAction('Erro ao limpar cache');
       console.error('Erro limpando cache:', error);
@@ -320,8 +320,9 @@ export const DebuggingCenter: React.FC = () => {
 
       {/* Debugging Tabs */}
       <Tabs defaultValue="stock-calc" className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="stock-calc">📊 Stock Calculator</TabsTrigger>
+          <TabsTrigger value="stock-fix">🔧 Stock Fix</TabsTrigger>
           <TabsTrigger value="atum-test">Teste ATUM</TabsTrigger>
           <TabsTrigger value="atum-debug">Debug ATUM</TabsTrigger>
           <TabsTrigger value="circuit-breaker">Circuit Breaker</TabsTrigger>
