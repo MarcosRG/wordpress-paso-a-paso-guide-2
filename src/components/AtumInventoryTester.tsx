@@ -312,8 +312,8 @@ export const AtumInventoryTester: React.FC = () => {
             </Alert>
           )}
 
-          {/* Status do Batch ATUM */}
-          {batchAtumStock.totalProducts > 0 && (
+          {/* Status do Batch ATUM - Oculto para usuários finais */}
+          {false && batchAtumStock.totalProducts > 0 && (
             <div className="mb-6 p-4 bg-blue-50 rounded-lg">
               <h3 className="font-semibold text-blue-800 mb-2">Status Batch ATUM</h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
