@@ -81,6 +81,38 @@ export const DebuggingCenter: React.FC = () => {
     }
   };
 
+  const handleFixKTMProduct = async () => {
+    setIsProcessing(true);
+    try {
+      await fixKTMProduct();
+      setLastAction('Produto KTM Alto Master Di2 12s corrigido com sucesso');
+      console.log('🎉 KTM product fixed successfully');
+      // Force refresh of data
+      window.location.reload();
+    } catch (error) {
+      setLastAction(`Erro corrigindo produto KTM: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      console.error('Erro corrigindo produto KTM:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFixAllVariableProducts = async () => {
+    setIsProcessing(true);
+    try {
+      await fixAllVariableProducts();
+      setLastAction('Todos os produtos variáveis corrigidos com sucesso');
+      console.log('🎉 All variable products fixed successfully');
+      // Force refresh of data
+      window.location.reload();
+    } catch (error) {
+      setLastAction(`Erro corrigindo produtos: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      console.error('Erro corrigindo produtos:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleExportCache = () => {
     try {
       const products = localStorage.getItem('neon_products_cache');
