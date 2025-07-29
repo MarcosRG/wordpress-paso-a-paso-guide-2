@@ -14,11 +14,17 @@ class ApiHealthChecker {
 
   async checkApiHealth(timeout: number = 10000): Promise<HealthCheckResult> {
     if (this.checkInProgress) {
+      console.warn('Health check already in progress, returning cached result');
       return this.lastResult || this.createFailureResult('Health check already in progress');
     }
 
     this.checkInProgress = true;
     const startTime = Date.now();
+
+    // Ensure we reset the flag even if something goes wrong
+    const cleanup = () => {
+      this.checkInProgress = false;
+    };
 
     try {
       // Try modern AbortController approach first
