@@ -28,6 +28,7 @@ import { reservationService, Reservation } from '../../services/reservationServi
 import { wordPressSyncService } from '../../services/wordpressSyncService';
 import { SystemSettings } from './SystemSettings';
 import { DebuggingCenter } from './DebuggingCenter';
+import { VariableProductDebugger } from '../VariableProductDebugger';
 
 interface AdminDashboardProps {
   onLogout: () => void;
