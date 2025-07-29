@@ -238,3 +238,4 @@ export class ProductStockFixer {
 export const fixKTMProduct = () => ProductStockFixer.fixKTMProduct();
 export const fixProductStock = (productId: number) => ProductStockFixer.fixProductStock(productId);
 export const fixAllVariableProducts = () => ProductStockFixer.fixAllVariableProducts();
+export const forceCompleteCacheRefresh = () => ProductStockFixer.forceCompleteCacheRefresh();
