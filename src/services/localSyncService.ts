@@ -19,9 +19,10 @@ export class LocalSyncService {
 
     // Verificar si necesita sincronización inicial
     if (neonHttpService.needsSync()) {
+      console.log("🚀 Iniciando sincronización inicial automática...");
       this.performSync()
         .then(() => {
-          console.log("✅ Sincronización inicial completada");
+          console.log("✅ Sincronización inicial completada automáticamente");
         })
         .catch((error) => {
           console.error("��� Error en sincronización inicial:", error);
@@ -34,7 +35,7 @@ export class LocalSyncService {
         // Check emergency stop first
         const { isEmergencyStopActive } = await import("../services/connectivityMonitor");
         if (isEmergencyStopActive()) {
-          console.log(`🚨 EMERGENCY STOP: Interval sync blocked`);
+          console.log(`��� EMERGENCY STOP: Interval sync blocked`);
           return;
         }
 
