@@ -122,9 +122,8 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
           attrName === 'tamanho'
         );
 
-        // Verificar se o valor é um tamanho conhecido (incluindo formatos como "XL - 59")
-        const extractedSize = attrOption.split(' - ')[0].toUpperCase().trim().replace(/[^A-Z]/g, '');
-        const optionMatches = ['XS', 'S', 'M', 'L', 'XL', 'XXL'].includes(extractedSize);
+        // Verificar se o valor é um tamanho conhecido
+        const optionMatches = ['xs', 's', 'm', 'l', 'xl', 'xxl'].includes(attrOption);
 
         return nameMatches || optionMatches;
       });
@@ -155,29 +154,7 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
     }
 
     if (sizeAttribute && sizeAttribute.option) {
-      // Extrair apenas o tamanho da string "XL - 59" -> "XL"
-      const rawSize = sizeAttribute.option.toString();
-      let size = rawSize.split(' - ')[0].toUpperCase().trim();
-
-      // Garantir que temos apenas o tamanho (remover outros caracteres se existirem)
-      size = size.replace(/[^A-Z]/g, '');
-
-      // Debug detalhado do parsing
-      if (enableDebug) {
-        console.log(`🔧 Parsing tamanho:`, {
-          rawSize,
-          extractedSize: size,
-          isValidSize: ['XS', 'S', 'M', 'L', 'XL'].includes(size)
-        });
-      }
-
-      // Verificar se o tamanho extraído é válido
-      if (!['XS', 'S', 'M', 'L', 'XL'].includes(size)) {
-        if (enableDebug) {
-          console.warn(`⚠️ Tamanho inválido extraído: "${size}" de "${rawSize}"`);
-        }
-        return; // Pular esta variação se o tamanho não é válido
-      }
+      const size = sizeAttribute.option.toUpperCase();
 
       // Obter stock real da variação - priorizar stock_quantity se atum_stock é 0
       const atumStock = parseInt(String(variation.atum_stock)) || 0;
@@ -189,8 +166,6 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
 
       if (enableDebug) {
         console.log(`✅ Stock calculado para tamanho ${size}:`, {
-          rawSizeAttribute: sizeAttribute.option,
-          extractedSize: size,
           atumStock,
           wooStock,
           finalStock,
