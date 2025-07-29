@@ -332,6 +332,14 @@ export class LocalSyncService {
     };
   }
 
+  // Reset sync state if it gets stuck
+  resetSyncState(): void {
+    console.log("🔄 Resetting sync state...");
+    this.isRunning = false;
+    neonHttpService.setSyncStatus(false);
+    console.log("✅ Sync state reset successfully");
+  }
+
   // Sincronizar un producto específico
   async syncSingleProduct(productId: number): Promise<void> {
     try {
