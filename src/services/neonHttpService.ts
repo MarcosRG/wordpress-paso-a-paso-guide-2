@@ -354,8 +354,13 @@ export const convertToNeonProduct = (
   wooProduct: any,
   acfData?: any,
 ): NeonProduct => {
-  // Para productos variables, inicializar stock en 0 - será calculado por las variaciones
-  const initialStock = wooProduct.type === "variable" ? 0 : (wooProduct.stock_quantity || 0);
+  // Para productos variables, usar el stock calculado total si está disponible
+  let stockQuantity = wooProduct.stock_quantity || 0;
+
+  if (wooProduct.type === "variable") {
+    // Si ya se calculó el stock total de variaciones, usarlo
+    stockQuantity = wooProduct.calculated_total_stock || 0;
+  }
 
   return {
     id: wooProduct.id, // Usamos directamente el ID de WooCommerce
@@ -373,7 +378,7 @@ export const convertToNeonProduct = (
     images: wooProduct.images,
     attributes: wooProduct.attributes,
     variations: wooProduct.variations,
-    stock_quantity: initialStock,
+    stock_quantity: stockQuantity,
     stock_status: wooProduct.stock_status,
     meta_data: wooProduct.meta_data,
     acf_data: acfData?.acf || null,
