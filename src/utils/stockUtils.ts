@@ -171,6 +171,14 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
         });
       }
 
+      // Verificar se o tamanho extraído é válido
+      if (!['XS', 'S', 'M', 'L', 'XL'].includes(size)) {
+        if (enableDebug) {
+          console.warn(`⚠️ Tamanho inválido extraído: "${size}" de "${rawSize}"`);
+        }
+        return; // Pular esta variação se o tamanho não é válido
+      }
+
       // Obter stock real da variação - priorizar stock_quantity se atum_stock é 0
       const atumStock = parseInt(String(variation.atum_stock)) || 0;
       const wooStock = parseInt(String(variation.stock_quantity)) || 0;
