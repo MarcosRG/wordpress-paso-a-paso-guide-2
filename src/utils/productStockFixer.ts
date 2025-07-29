@@ -119,7 +119,44 @@ export class ProductStockFixer {
    * Fix the KTM Alto Master Di2 12s product specifically
    */
   static async fixKTMProduct(): Promise<void> {
-    return this.fixProductStock(18293);
+    await this.fixProductStock(18293);
+    // Also force refresh of frontend queries
+    await this.refreshFrontendQueries();
+  }
+
+  /**
+   * Force refresh of React Query cache for frontend
+   */
+  static async refreshFrontendQueries(): Promise<void> {
+    try {
+      // Clear React Query cache keys
+      const keysToInvalidate = [
+        'local-neon-bikes',
+        'local-neon-bikes-by-category',
+        'local-neon-product',
+        'local-neon-stock-by-size',
+        'local-cache-stats'
+      ];
+
+      // If we're in a React context, try to invalidate queries
+      if (typeof window !== 'undefined' && (window as any).queryClient) {
+        const queryClient = (window as any).queryClient;
+        keysToInvalidate.forEach(key => {
+          queryClient.invalidateQueries({ queryKey: [key] });
+        });
+        console.log('🔄 Frontend queries invalidated');
+      }
+
+      // Force a small delay and then reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error refreshing frontend queries:', error);
+      // Fallback to simple reload
+      window.location.reload();
+    }
   }
   
   /**
