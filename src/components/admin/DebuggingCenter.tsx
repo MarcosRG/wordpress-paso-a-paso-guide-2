@@ -53,7 +53,7 @@ export const DebuggingCenter: React.FC = () => {
 
   const handleForceSync = async () => {
     if (isProcessing) {
-      setLastAction('Sincroniza��ão já está sendo executada. Aguarde...');
+      setLastAction('Sincronização já está sendo executada. Aguarde...');
       return;
     }
 
@@ -173,10 +173,15 @@ export const DebuggingCenter: React.FC = () => {
     try {
       setLastAction('Executando diagnóstico de contagem de produtos...');
       const diagnostic = await runProductCountDiagnostic();
-      setLastAction(`Diagnóstico completo: WooCommerce=${diagnostic.totalFromWooCommerce}, Cache=${diagnostic.totalInCache}, Excluídos=${diagnostic.excludedProducts.length}`);
-      console.log('🔍 Product count diagnostic completed - check console for details');
 
-      // Also show detailed report
+      // Store results in state for display
+      setProductCountData(diagnostic);
+      setExcludedProducts(diagnostic.excludedProducts);
+
+      setLastAction(`Diagnóstico completo: WooCommerce=${diagnostic.totalFromWooCommerce}, Cache=${diagnostic.totalInCache}, Excluídos=${diagnostic.excludedProducts.length}`);
+      console.log('🔍 Product count diagnostic completed - check results below');
+
+      // Also show detailed report in console
       await showDetailedProductReport();
     } catch (error) {
       setLastAction(`Erro no diagnóstico: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
