@@ -251,6 +251,14 @@ export const calculateTotalPriceACF = (
   return days * quantity * pricePerDay;
 };
 
+// Function to calculate total stock for variable products from their variations
+export const calculateVariableProductStock = (variations: WooCommerceVariation[]): number => {
+  return variations.reduce((total, variation) => {
+    const variationStock = variation.stock_quantity || 0;
+    return total + variationStock;
+  }, 0);
+};
+
 // Utility function for retrying failed requests
 async function retryRequest<T>(
   fn: () => Promise<T>,
