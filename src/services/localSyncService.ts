@@ -65,6 +65,12 @@ export class LocalSyncService {
   }
 
   async performSync(): Promise<void> {
+    // Check if API is disabled in development
+    if (import.meta.env.VITE_DISABLE_API === 'true') {
+      console.log("🚫 API disabled in development - skipping sync");
+      return;
+    }
+
     if (this.isRunning) {
       console.log("⏳ Sincronización ya en curso, esperando...");
       return;
