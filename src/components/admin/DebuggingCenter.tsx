@@ -515,3 +515,229 @@ const SystemInfoPanel: React.FC = () => {
     </Card>
   );
 };
+
+// Componente de diagnóstico e correção de problemas de stock
+const StockFixDiagnostics: React.FC<{
+  onFixKTM: () => void;
+  onFixAll: () => void;
+  isProcessing: boolean;
+}> = ({ onFixKTM, onFixAll, isProcessing }) => {
+  const [diagnostics, setDiagnostics] = useState<any>(null);
+  const [fixHistory, setFixHistory] = useState<string[]>([]);
+
+  const runDiagnostics = async () => {
+    try {
+      console.log('🔍 Running stock diagnostics...');
+
+      // Get products from cache
+      const { neonHttpService } = await import('@/services/neonHttpService');
+      const products = await neonHttpService.getActiveProducts();
+
+      const issues: any[] = [];
+      const variableProducts = products.filter(p => p.type === 'variable');
+
+      for (const product of variableProducts) {
+        const variations = await neonHttpService.getProductVariations(product.woocommerce_id);
+        const variationsWithStock = variations.filter(v => v.stock_quantity > 0 || v.atum_stock > 0);
+
+        if (variationsWithStock.length > 0 && product.stock_quantity === 0) {
+          issues.push({
+            productId: product.woocommerce_id,
+            productName: product.name,
+            productStock: product.stock_quantity,
+            variationsCount: variations.length,
+            variationsWithStock: variationsWithStock.length,
+            totalVariationStock: variationsWithStock.reduce((sum, v) =>
+              sum + (v.atum_stock > 0 ? v.atum_stock : v.stock_quantity), 0
+            )
+          });
+        }
+      }
+
+      setDiagnostics({
+        totalProducts: products.length,
+        variableProducts: variableProducts.length,
+        issuesFound: issues.length,
+        issues,
+        lastCheck: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Error running diagnostics:', error);
+      setDiagnostics({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  };
+
+  React.useEffect(() => {
+    runDiagnostics();
+  }, []);
+
+  const addToHistory = (action: string) => {
+    setFixHistory(prev => [
+      `${new Date().toLocaleTimeString()}: ${action}`,
+      ...prev.slice(0, 9) // Keep last 10 entries
+    ]);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-orange-500" />
+            Diagnóstico e Correção de Problemas de Stock
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Quick Actions */}
+            <div className="flex gap-3 flex-wrap">
+              <Button
+                onClick={() => {
+                  onFixKTM();
+                  addToHistory('Correção KTM product executada');
+                }}
+                disabled={isProcessing}
+                className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600"
+              >
+                {isProcessing ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-4 w-4" />
+                )}
+                Corrigir KTM Alto Master Di2 12s
+              </Button>
+
+              <Button
+                onClick={() => {
+                  onFixAll();
+                  addToHistory('Correção em massa executada');
+                }}
+                disabled={isProcessing}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                {isProcessing ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-4 w-4" />
+                )}
+                Corrigir Todos os Produtos Variáveis
+              </Button>
+
+              <Button
+                onClick={() => {
+                  runDiagnostics();
+                  addToHistory('Diagnóstico executado');
+                }}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Atualizar Diagnóstico
+              </Button>
+            </div>
+
+            {/* Fix History */}
+            {fixHistory.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Histórico de Ações</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {fixHistory.map((entry, index) => (
+                      <div key={index} className="text-xs text-gray-600 font-mono">
+                        {entry}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Diagnostics Results */}
+      {diagnostics && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Resultados do Diagnóstico</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {diagnostics.error ? (
+              <Alert className="border-red-200 bg-red-50">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-700">
+                  Erro no diagnóstico: {diagnostics.error}
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="space-y-4">
+                {/* Summary */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {diagnostics.totalProducts}
+                    </div>
+                    <div className="text-xs text-blue-700">Total Produtos</div>
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {diagnostics.variableProducts}
+                    </div>
+                    <div className="text-xs text-purple-700">Produtos Variáveis</div>
+                  </div>
+                  <div className="text-center p-3 bg-orange-50 rounded">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {diagnostics.issuesFound}
+                    </div>
+                    <div className="text-xs text-orange-700">Problemas Encontrados</div>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded">
+                    <div className="text-xs text-green-700">Última Verificação</div>
+                    <div className="text-xs font-mono text-green-600">
+                      {new Date(diagnostics.lastCheck).toLocaleTimeString()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Issues List */}
+                {diagnostics.issuesFound > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-2 text-orange-700">Produtos com Problemas de Stock:</h4>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {diagnostics.issues.map((issue: any, index: number) => (
+                        <div key={index} className="p-3 bg-orange-50 border border-orange-200 rounded text-sm">
+                          <div className="font-medium">{issue.productName}</div>
+                          <div className="text-xs text-gray-600 space-y-1">
+                            <div>ID: {issue.productId}</div>
+                            <div>Stock Produto: {issue.productStock}</div>
+                            <div>Variações: {issue.variationsCount}</div>
+                            <div>Variações com Stock: {issue.variationsWithStock}</div>
+                            <div>Total Stock Variações: {issue.totalVariationStock}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {diagnostics.issuesFound === 0 && (
+                  <Alert className="border-green-200 bg-green-50">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <AlertDescription className="text-green-700">
+                      ✅ Nenhum problema de stock detectado! Todos os produtos estão sincronizados corretamente.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
