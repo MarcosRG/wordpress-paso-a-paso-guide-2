@@ -42,7 +42,14 @@ export class LocalSyncService {
           const { shouldAllowAutoSync } = await import("../utils/connectivityUtils");
 
           if (await shouldAllowAutoSync()) {
-            this.performSync();
+            console.log("🔄 Ejecutando sincronización automática programada...");
+            this.performSync()
+              .then(() => {
+                console.log("✅ Sincronización automática completada");
+              })
+              .catch((error) => {
+                console.warn("⚠️ Error en sincronización automática:", error);
+              });
           } else {
             console.log(`⚠️ Skipping auto-sync due to connectivity issues`);
           }
