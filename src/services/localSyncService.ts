@@ -141,6 +141,16 @@ export class LocalSyncService {
                 product.id,
               );
 
+              console.log(`🔧 Procesando variaciones para ${product.name} (ID: ${product.id}):`, {
+                totalVariations: variations.length,
+                variations: variations.map(v => ({
+                  id: v.id,
+                  stock_quantity: v.stock_quantity,
+                  stock_status: v.stock_status,
+                  attributes: v.attributes
+                }))
+              });
+
               for (const variation of variations) {
                 // Obtener stock ATUM para la variación
                 const atumStock = await checkAtumAvailability(
@@ -148,11 +158,29 @@ export class LocalSyncService {
                   variation.id,
                 );
 
+                // Debug del stock antes de convertir
+                console.log(`🔧 Stock para variación ${variation.id}:`, {
+                  woocommerce_stock: variation.stock_quantity,
+                  atum_stock: atumStock,
+                  stock_status: variation.stock_status,
+                  attributes: variation.attributes
+                });
+
                 const neonVariation = convertToNeonVariation(
                   variation,
                   product.id,
                   atumStock,
                 );
+
+                // Debug del resultado final
+                console.log(`✅ Variación convertida:`, {
+                  id: neonVariation.id,
+                  woocommerce_id: neonVariation.woocommerce_id,
+                  stock_quantity: neonVariation.stock_quantity,
+                  atum_stock: neonVariation.atum_stock,
+                  stock_status: neonVariation.stock_status
+                });
+
                 neonVariations.push(neonVariation);
               }
             } catch (error) {
