@@ -719,6 +719,22 @@ const StockFixDiagnostics: React.FC<{
                 <RefreshCw className="h-4 w-4" />
                 Atualizar Diagnóstico
               </Button>
+
+              <Button
+                onClick={() => {
+                  onFixAll(); // This will be the complete refresh
+                  addToHistory('Refresh completo de cache executado');
+                }}
+                disabled={isProcessing}
+                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
+              >
+                {isProcessing ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                Refresh Completo de Cache
+              </Button>
             </div>
 
             {/* Fix History */}
