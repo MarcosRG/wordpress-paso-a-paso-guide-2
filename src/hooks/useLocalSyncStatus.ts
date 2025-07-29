@@ -15,6 +15,20 @@ interface SyncStatusData {
   };
 }
 
+// Función de utilidad para detectar conflictos de FullStory
+const isFullStoryConflict = (error: any): boolean => {
+  return (
+    error instanceof Error &&
+    error.message.includes('Failed to fetch') &&
+    error.stack && (
+      error.stack.includes('fullstory.com') ||
+      error.stack.includes('fs.js') ||
+      error.stack.includes('messageHandler') ||
+      error.stack.includes('edge.fullstory.com')
+    )
+  );
+};
+
 export const useLocalSyncStatus = () => {
   const queryClient = useQueryClient();
   const [syncStatus, setSyncStatus] = useState<SyncStatusData>({
