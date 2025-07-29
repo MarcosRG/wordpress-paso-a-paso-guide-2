@@ -48,13 +48,32 @@ export const DebuggingCenter: React.FC = () => {
   };
 
   const handleForceSync = async () => {
+    if (isProcessing) {
+      setLastAction('Sincronização já está sendo executada. Aguarde...');
+      return;
+    }
+
     setIsProcessing(true);
+    setLastAction('Iniciando sincronização forçada...');
+
     try {
       await localSyncService.forceSync();
-      setLastAction('Sincronização forçada concluída');
+      setLastAction('Sincronização forçada concluída com sucesso');
       console.log('🔄 Sync forçado pelo painel admin');
     } catch (error) {
-      setLastAction(`Erro na sincronização: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+
+      // Handle specific error cases with user-friendly messages
+      if (errorMessage.includes('circuit breaker') || errorMessage.includes('rate limiter')) {
+        setLastAction('Sincronização bloqueada pelo Circuit Breaker. Use a aba Circuit Breaker para resetar.');
+      } else if (errorMessage.includes('consecutive network errors')) {
+        setLastAction('Sincronização bloqueada devido a muitos erros de rede consecutivos. Verifique a conectividade.');
+      } else if (errorMessage.includes('Authentication failed')) {
+        setLastAction('Erro de autenticação. Verifique as credenciais do WooCommerce.');
+      } else {
+        setLastAction(`Erro na sincronização: ${errorMessage}`);
+      }
+
       console.error('Erro no sync forçado:', error);
     } finally {
       setIsProcessing(false);
