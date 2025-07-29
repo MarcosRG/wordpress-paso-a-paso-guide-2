@@ -146,6 +146,12 @@ export class NeonHttpService {
 
       const products = await this.getActiveProducts();
       const product = products.find((p) => p.woocommerce_id === productId);
+
+      // Si es un producto variable, calcular stock total de variaciones
+      if (product?.type === "variable") {
+        return await this.getTotalVariationStock(productId);
+      }
+
       return product?.stock_quantity || 0;
     } catch (error) {
       console.error(
@@ -156,12 +162,43 @@ export class NeonHttpService {
     }
   }
 
+  // Calcular stock total de todas las variaciones de un producto
+  async getTotalVariationStock(productId: number): Promise<number> {
+    try {
+      const variations = await this.getProductVariations(productId);
+      const totalStock = variations.reduce((total, variation) => {
+        const variationStock = Math.max(variation.atum_stock || 0, variation.stock_quantity || 0);
+        return total + variationStock;
+      }, 0);
+
+      console.log(`📊 Stock total calculado para producto variable ${productId}: ${totalStock} unidades (${variations.length} variaciones)`);
+      return totalStock;
+    } catch (error) {
+      console.error(`Error calculando stock de variaciones para producto ${productId}:`, error);
+      return 0;
+    }
+  }
+
   // Guardar productos en cache local (llamado por el servicio de sincronización)
   async cacheProducts(products: NeonProduct[]): Promise<void> {
     try {
+      // Log productos variables con stock antes de guardar
+      const variableProducts = products.filter(p => p.type === "variable");
+      console.log(`💾 Guardando ${variableProducts.length} productos variables en cache:`);
+      variableProducts.forEach(p => {
+        console.log(`  • ${p.name} (ID: ${p.id}): ${p.stock_quantity} unidades`);
+      });
+
       localStorage.setItem(this.storageKeys.products, JSON.stringify(products));
       localStorage.setItem(this.storageKeys.lastSync, new Date().toISOString());
       console.log(`✅ ${products.length} productos guardados en cache local`);
+
+      // Verificar que se guardó correctamente
+      const saved = JSON.parse(localStorage.getItem(this.storageKeys.products) || "[]");
+      const ktmProduct = saved.find((p: NeonProduct) => p.woocommerce_id === 18293);
+      if (ktmProduct) {
+        console.log(`🔍 Verificación KTM Alto Master Di2 12s en cache: ${ktmProduct.stock_quantity} unidades`);
+      }
     } catch (error) {
       console.error("Error guardando productos en cache:", error);
     }
@@ -264,6 +301,17 @@ export class NeonHttpService {
   // Verificar si necesita sincronización
   needsSync(): boolean {
     const status = this.getSyncStatus();
+
+    // Verificar si hay productos en cache
+    const cachedProducts = localStorage.getItem(this.storageKeys.products);
+    const hasProducts = cachedProducts && JSON.parse(cachedProducts).length > 0;
+
+    // Si no hay productos en cache, forzar sync independientemente de conectividad
+    if (!hasProducts) {
+      console.log("🚀 No products in cache - forcing sync");
+      return true;
+    }
+
     if (!status.lastSyncTime) {
       // For first sync, check connectivity
       try {
@@ -282,9 +330,9 @@ export class NeonHttpService {
       return true;
     }
 
-    // Sincronizar si han pasado más de 10 minutos
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-    return status.lastSyncTime < tenMinutesAgo;
+    // Sincronizar si han pasado más de 5 minutos (más frecuente para tienda online)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    return status.lastSyncTime < fiveMinutesAgo;
   }
 
   // Simular inserción/actualización de producto (para compatibilidad)
@@ -331,6 +379,14 @@ export const convertToNeonProduct = (
   wooProduct: any,
   acfData?: any,
 ): NeonProduct => {
+  // Para productos variables, usar el stock calculado total si está disponible
+  let stockQuantity = wooProduct.stock_quantity || 0;
+
+  if (wooProduct.type === "variable") {
+    // Si ya se calculó el stock total de variaciones, usarlo
+    stockQuantity = wooProduct.calculated_total_stock || 0;
+  }
+
   return {
     id: wooProduct.id, // Usamos directamente el ID de WooCommerce
     woocommerce_id: wooProduct.id,
@@ -347,7 +403,7 @@ export const convertToNeonProduct = (
     images: wooProduct.images,
     attributes: wooProduct.attributes,
     variations: wooProduct.variations,
-    stock_quantity: wooProduct.stock_quantity || 0,
+    stock_quantity: stockQuantity,
     stock_status: wooProduct.stock_status,
     meta_data: wooProduct.meta_data,
     acf_data: acfData?.acf || null,

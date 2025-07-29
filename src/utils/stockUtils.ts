@@ -154,7 +154,9 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
     }
 
     if (sizeAttribute && sizeAttribute.option) {
-      const size = sizeAttribute.option.toUpperCase();
+      // Extraer solo la parte del tamaño antes del guión (ej: "XL - 59" -> "XL")
+      const rawSize = String(sizeAttribute.option).toUpperCase().trim();
+      const size = rawSize.includes(' - ') ? rawSize.split(' - ')[0].trim() : rawSize;
 
       // Obter stock real da variação - priorizar stock_quantity se atum_stock é 0
       const atumStock = parseInt(String(variation.atum_stock)) || 0;
@@ -166,6 +168,8 @@ export const getRealStockBySize = (bike: Bike): StockBySize => {
 
       if (enableDebug) {
         console.log(`✅ Stock calculado para tamanho ${size}:`, {
+          rawSizeValue: sizeAttribute.option,
+          extractedSize: size,
           atumStock,
           wooStock,
           finalStock,

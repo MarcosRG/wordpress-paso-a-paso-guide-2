@@ -13,23 +13,32 @@ export class LocalSyncService {
   private lastSyncTime: Date | null = null;
 
   constructor() {
-    // Deshabilitar auto-sincronización temporal para evitar errores de fetch en desarrollo
-    console.log("🔄 LocalSyncService iniciado (auto-sync deshabilitado en desarrollo)");
+    // Check if API is disabled in development
+    if (import.meta.env.VITE_DISABLE_API === 'true') {
+      console.log("🔄 LocalSyncService iniciado - API DESHABILITADO en desarrollo");
+      console.log("🚫 Auto-sync deshabilitado - solo modo manual disponible");
+      return;
+    }
 
-    // TODO: Re-habilitar en producción
-    /*
+    console.log("🔄 LocalSyncService iniciado - Auto-sync HABILITADO con corrección");
+    console.log("✅ PROBLEMA RESUELTO: Extracción de tamaños y limpieza de cache");
+    console.log("🔧 CORRECCIÓN APLICADA: Cache clearing antes de sync automático");
+
     // Verificar si necesita sincronización inicial
     if (neonHttpService.needsSync()) {
+      console.log("🚀 Iniciando sincronización inicial automática...");
+      // IMPORTANTE: Limpiar cache antes de sync inicial igual que en forceSync
+      neonHttpService.clearCache();
       this.performSync()
         .then(() => {
-          console.log("✅ Sincronización inicial completada");
+          console.log("✅ Sincronización inicial completada automáticamente");
         })
         .catch((error) => {
-          console.error("��� Error en sincronización inicial:", error);
+          console.error("❌ Error en sincronización inicial:", error);
         });
     }
 
-    // Programar sincronização cada 10 minutos, pero solo si la conectividad es buena
+    // Programar sincronización cada 5 minutos
     setInterval(
       async () => {
         // Check emergency stop first
@@ -43,18 +52,32 @@ export class LocalSyncService {
           const { shouldAllowAutoSync } = await import("../utils/connectivityUtils");
 
           if (await shouldAllowAutoSync()) {
-            this.performSync();
+            console.log("🔄 Ejecutando sincronización automática programada...");
+            // IMPORTANTE: Limpiar cache antes de sync automático igual que en forceSync
+            neonHttpService.clearCache();
+            this.performSync()
+              .then(() => {
+                console.log("✅ Sincronización automática completada");
+              })
+              .catch((error) => {
+                console.warn("⚠️ Error en sincronización automática:", error);
+              });
           } else {
-            console.log(`⚠️ Skipping auto-sync due to connectivity issues`);
+            console.log(`⚠️ Saltando auto-sync debido a problemas de conectividad`);
           }
         }
       },
-      10 * 60 * 1000,
+      5 * 60 * 1000, // 5 minutos
     );
-    */
   }
 
   async performSync(): Promise<void> {
+    // Check if API is disabled in development
+    if (import.meta.env.VITE_DISABLE_API === 'true') {
+      console.log("🚫 API disabled in development - skipping sync");
+      return;
+    }
+
     if (this.isRunning) {
       console.log("⏳ Sincronización ya en curso, esperando...");
       return;
@@ -114,12 +137,19 @@ export class LocalSyncService {
       // 2. Procesar cada producto
       for (const product of wooProducts) {
         try {
-          // Solo procesar productos activos con stock
-          if (
-            product.status !== "publish" ||
-            (product.stock_status !== "instock" && product.stock_quantity <= 0)
-          ) {
+          // Solo procesar productos publicados
+          if (product.status !== "publish") {
+            console.log(`⏭️ Saltando producto ${product.id} (${product.name}) - Status: ${product.status}`);
             continue;
+          }
+
+          // Para productos variables, no filtrar por stock principal (puede estar en variaciones)
+          if (product.type !== "variable") {
+            // Solo para productos simples, verificar stock
+            if (product.stock_status !== "instock" && product.stock_quantity <= 0) {
+              console.log(`⏭️ Saltando producto simple ${product.id} (${product.name}) - Sin stock`);
+              continue;
+            }
           }
 
           // Obtener datos ACF si están disponibles
@@ -141,6 +171,9 @@ export class LocalSyncService {
                 product.id,
               );
 
+              let totalVariationStock = 0;
+              console.log(`🔍 PROCESANDO PRODUCTO VARIABLE ${product.id} (${product.name}) con ${variations.length} variaciones`);
+
               for (const variation of variations) {
                 // Obtener stock ATUM para la variación
                 const atumStock = await checkAtumAvailability(
@@ -154,6 +187,39 @@ export class LocalSyncService {
                   atumStock,
                 );
                 neonVariations.push(neonVariation);
+
+                // Sumar stock de la variación al total - usar el stock real de WooCommerce
+                const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
+                totalVariationStock += variationStock;
+                
+                console.log(`📦 Variación ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
+              }
+
+              // IMPORTANTE: Actualizar el stock del producto principal con la suma de todas las variaciones
+              neonProduct.stock_quantity = totalVariationStock;
+              console.log(`✅ Stock total calculado para producto variable ${product.id} (${product.name}): ${totalVariationStock} unidades (de ${variations.length} variaciones)`);
+              console.log(`🔄 Producto ${product.name} actualizado: stock ${totalVariationStock} unidades`);
+              
+              // DEBUG PARA TODOS LOS PRODUCTOS VARIABLES con stock > 0
+              if (totalVariationStock > 0) {
+                console.log(`🚴‍♂️ PRODUCTO VARIABLE CON STOCK ${product.id}:`);
+                console.log(`   • Nombre: ${product.name}`);
+                console.log(`   • Variaciones encontradas: ${variations.length}`);
+                console.log(`   • Stock calculado: ${totalVariationStock}`);
+                console.log(`   • Stock asignado al producto: ${neonProduct.stock_quantity}`);
+                console.log(`   • Detalles variaciones:`, variations.map(v => {
+                  const vAtumStock = parseInt(String(v.atum_stock)) || 0;
+                  const vWooStock = parseInt(String(v.stock_quantity)) || 0;
+                  const vFinalStock = Math.max(vAtumStock, vWooStock);
+                  return {
+                    id: v.id,
+                    attributes: v.attributes?.map((attr: any) => `${attr.name}: ${attr.option}`).join(', '),
+                    wooStock: vWooStock,
+                    atumStock: vAtumStock,
+                    finalStock: vFinalStock,
+                    stockStatus: v.stock_status
+                  };
+                }));
               }
             } catch (error) {
               console.warn(
@@ -180,16 +246,33 @@ export class LocalSyncService {
             }
           }
 
-          console.log(`✅ Procesado: ${product.name} (ID: ${product.id})`);
+          console.log(`✅ Procesado: ${product.name} (ID: ${product.id}) - Stock final: ${neonProduct.stock_quantity}`);
         } catch (error) {
           console.warn(`⚠️ Error procesando producto ${product.id}:`, error);
           // Continuar con el siguiente producto
         }
       }
 
+      // Log productos antes de guardar en cache
+      console.log("📋 Productos listos para cache:");
+      neonProducts.forEach(p => {
+        console.log(`  • ${p.name} (ID: ${p.id}, Tipo: ${p.type}): ${p.stock_quantity} unidades`);
+      });
+
       // 4. Guardar en cache local
       await neonHttpService.cacheProducts(neonProducts);
       await neonHttpService.cacheVariations(neonVariations);
+      
+      console.log("💾 Productos guardados en cache local");
+
+      // Invalidar React Query cache para que el frontend refresque
+      try {
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(new CustomEvent('cache-updated'));
+        }
+      } catch (error) {
+        console.warn("No se pudo disparar evento de cache actualizado:", error);
+      }
 
       const duration = Date.now() - startTime;
       this.lastSyncTime = new Date();
@@ -256,7 +339,18 @@ export class LocalSyncService {
   // Sincronización manual
   async forceSync(): Promise<void> {
     if (this.isRunning) {
-      throw new Error("Sincronización ya en curso");
+      console.log("⏳ Sync already in progress, waiting for it to complete...");
+      // Wait for current sync to complete instead of throwing error
+      let attempts = 0;
+      while (this.isRunning && attempts < 30) { // Wait max 30 seconds
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        attempts++;
+      }
+
+      if (this.isRunning) {
+        console.warn("⚠️ Sync seems stuck, proceeding anyway...");
+        this.isRunning = false; // Force reset the flag
+      }
     }
 
     // Check circuit breaker status for force sync
@@ -295,6 +389,14 @@ export class LocalSyncService {
     };
   }
 
+  // Reset sync state if it gets stuck
+  resetSyncState(): void {
+    console.log("🔄 Resetting sync state...");
+    this.isRunning = false;
+    neonHttpService.setSyncStatus(false);
+    console.log("✅ Sync state reset successfully");
+  }
+
   // Sincronizar un producto específico
   async syncSingleProduct(productId: number): Promise<void> {
     try {
@@ -329,24 +431,18 @@ export class LocalSyncService {
         // ACF data is optional
       }
 
-      // Convertir y actualizar en cache
+      // Convertir producto a formato Neon
       const neonProduct = convertToNeonProduct(product, acfData);
 
-      // Obtener productos existentes del cache
-      const existingProducts = await neonHttpService.getActiveProducts();
-      const otherProducts = existingProducts.filter(
-        (p) => p.woocommerce_id !== productId,
-      );
-
-      // Agregar/actualizar el producto
-      await neonHttpService.cacheProducts([...otherProducts, neonProduct]);
-
-      // Sincronizar variaciones si las hay
+      // Sincronizar variaciones si las hay y calcular stock total
       if (product.type === "variable" && product.variations.length > 0) {
         const variations = await wooCommerceApi.getProductVariations(
           product.id,
         );
         const neonVariations: NeonVariation[] = [];
+        let totalVariationStock = 0;
+
+        console.log(`🔄 Sincronizando producto variable ${productId} con ${variations.length} variaciones...`);
 
         for (const variation of variations) {
           const atumStock = await checkAtumAvailability(
@@ -359,7 +455,16 @@ export class LocalSyncService {
             atumStock,
           );
           neonVariations.push(neonVariation);
+
+          // Calcular stock total de variaciones
+          const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
+          totalVariationStock += variationStock;
+          console.log(`📦 Variação ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
         }
+
+        // IMPORTANTE: Actualizar el stock del producto principal
+        neonProduct.stock_quantity = totalVariationStock;
+        console.log(`✅ Stock total calculado para ${product.name}: ${totalVariationStock} unidades`);
 
         // Actualizar variaciones en cache
         const existingVariations = JSON.parse(
@@ -374,7 +479,26 @@ export class LocalSyncService {
         ]);
       }
 
-      console.log(`✅ Producto ${productId} sincronizado correctamente`);
+      // Obtener productos existentes del cache
+      const existingProducts = await neonHttpService.getActiveProducts();
+      const otherProducts = existingProducts.filter(
+        (p) => p.woocommerce_id !== productId,
+      );
+
+      // Agregar/actualizar el producto con stock calculado
+      await neonHttpService.cacheProducts([...otherProducts, neonProduct]);
+
+      // Invalidar cache para refrescar frontend
+      try {
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(new CustomEvent('cache-updated'));
+          console.log("🔄 Cache invalidado após sincronização individual");
+        }
+      } catch (error) {
+        console.warn("No se pudo disparar evento de cache:", error);
+      }
+
+      console.log(`✅ Produto ${productId} (${product.name}) sincronizado correctamente - Stock final: ${neonProduct.stock_quantity} unidades`);
     } catch (error) {
       console.error(`❌ Error sincronizando producto ${productId}:`, error);
       throw error;

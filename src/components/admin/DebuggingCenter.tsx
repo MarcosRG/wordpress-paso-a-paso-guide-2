@@ -61,6 +61,20 @@ export const DebuggingCenter: React.FC = () => {
     }
   };
 
+  const handleResetSyncState = async () => {
+    setIsProcessing(true);
+    try {
+      localSyncService.resetSyncState();
+      setLastAction('Estado de sincronização resetado');
+      console.log('🔄 Sync state reset pelo painel admin');
+    } catch (error) {
+      setLastAction(`Erro ao resetar estado: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      console.error('Erro resetando sync state:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleExportCache = () => {
     try {
       const products = localStorage.getItem('neon_products_cache');
@@ -168,8 +182,8 @@ export const DebuggingCenter: React.FC = () => {
                   <span className="font-medium">Ações Rápidas</span>
                 </div>
                 <div className="space-y-2">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={handleForceSync}
                     disabled={isProcessing}
                     className="w-full"
@@ -181,8 +195,18 @@ export const DebuggingCenter: React.FC = () => {
                     )}
                     Sync Forçado
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={handleResetSyncState}
+                    disabled={isProcessing}
+                    className="w-full"
+                  >
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    Reset Sync State
+                  </Button>
+                  <Button
+                    size="sm"
                     variant="outline"
                     onClick={handleClearCache}
                     className="w-full"

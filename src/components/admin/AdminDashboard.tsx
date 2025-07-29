@@ -28,6 +28,7 @@ import { reservationService, Reservation } from '../../services/reservationServi
 import { wordPressSyncService } from '../../services/wordpressSyncService';
 import { SystemSettings } from './SystemSettings';
 import { DebuggingCenter } from './DebuggingCenter';
+import { VariableProductDebugger } from '../VariableProductDebugger';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -335,6 +336,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         <Tabs defaultValue="reservations" className="space-y-6">
           <TabsList>
             <TabsTrigger value="reservations">Reservas</TabsTrigger>
+            <TabsTrigger value="products">Debug Productos</TabsTrigger>
             <TabsTrigger value="debugging">Debugging & Cache</TabsTrigger>
             <TabsTrigger value="sync">Sincronización</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
@@ -533,6 +535,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Product Debugger Tab */}
+          <TabsContent value="products">
+            <VariableProductDebugger />
           </TabsContent>
 
           {/* Debugging Center Tab */}

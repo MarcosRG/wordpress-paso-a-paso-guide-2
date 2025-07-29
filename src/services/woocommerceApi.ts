@@ -60,6 +60,7 @@ export interface WooCommerceProduct {
     value: unknown;
   }>;
   acf?: ACFPricing;
+  calculated_total_stock?: number; // Para productos variables, stock total de variaciones
 }
 
 export interface WooCommerceVariation {
@@ -249,6 +250,14 @@ export const calculateTotalPriceACF = (
 ): number => {
   const pricePerDay = getPricePerDayFromACF(days, acfPricing);
   return days * quantity * pricePerDay;
+};
+
+// Function to calculate total stock for variable products from their variations
+export const calculateVariableProductStock = (variations: WooCommerceVariation[]): number => {
+  return variations.reduce((total, variation) => {
+    const variationStock = variation.stock_quantity || 0;
+    return total + variationStock;
+  }, 0);
 };
 
 // Utility function for retrying failed requests
@@ -1194,6 +1203,21 @@ export const wooCommerceApi = {
       }
 
       const product = await response.json();
+
+      // Si es un producto variable, calcular stock total de variaciones
+      if (product.type === "variable" && product.variations?.length > 0) {
+        try {
+          const variations = await this.getProductVariations(productId);
+          const totalStock = calculateVariableProductStock(variations);
+
+          // Actualizar el stock del producto principal
+          product.calculated_total_stock = totalStock;
+          console.log(`✅ Product ${productId} retrieved with calculated total stock: ${totalStock}`);
+        } catch (error) {
+          console.warn(`⚠️ Error calculating variations stock for product ${productId}:`, error);
+        }
+      }
+
       console.log(`✅ Product ${productId} retrieved successfully`);
       return product;
     } catch (error) {

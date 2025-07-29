@@ -66,7 +66,9 @@ export const useAtumStockBySize = (
           );
 
           if (sizeAttribute) {
-            const size = sizeAttribute.option.toUpperCase();
+            // Extraer solo la parte del tamaño antes del guión (ej: "XL - 59" -> "XL")
+            const rawSize = sizeAttribute.option.toUpperCase();
+            const size = rawSize.includes(' - ') ? rawSize.split(' - ')[0].trim() : rawSize;
             const stock = await checkAtumAvailability(productId, variation.id);
             stockBySize[size] = stock;
 
