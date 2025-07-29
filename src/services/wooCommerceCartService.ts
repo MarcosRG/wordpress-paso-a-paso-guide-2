@@ -210,7 +210,10 @@ export class WooCommerceCartService {
                   attr.name?.toLowerCase().includes("tama") ||
                   attr.name?.toLowerCase().includes("size"),
               );
-              return sizeAttribute?.option?.toUpperCase() === bike.size;
+              // Extraer solo la parte del tamaño antes del guión para comparar
+              const rawSize = sizeAttribute?.option?.toUpperCase() || "";
+              const extractedSize = rawSize.includes(' - ') ? rawSize.split(' - ')[0].trim() : rawSize;
+              return extractedSize === bike.size;
             },
           );
 
