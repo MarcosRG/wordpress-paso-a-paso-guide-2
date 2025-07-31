@@ -85,7 +85,7 @@ const mockProducts: MockNeonProduct[] = [
   }
 ];
 
-const mockVariations: NeonVariation[] = [
+const mockVariations: MockNeonVariation[] = [
   // Variaciones para BTT TREK FUEL EX 8
   {
     id: 1,
