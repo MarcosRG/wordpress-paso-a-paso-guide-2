@@ -78,7 +78,7 @@ export class NeonHttpService {
 
       return products;
     } catch (error) {
-      console.error("❌ Error consultando Neon Database:", error);
+      // Fallback silencioso cuando endpoint no existe
 
       // Fallback temporal: usar mock API hasta implementar endpoint real
       console.log("�� Usando mock API temporal...");
