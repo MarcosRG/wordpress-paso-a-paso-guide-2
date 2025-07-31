@@ -185,22 +185,23 @@ export const useLocalNeonBikesByCategory = (categorySlug: string | null) => {
   });
 };
 
-// Hook para obtener stock específico por tamaño desde cache local
+// Hook para obtener stock específico por tamaño desde Neon Database
 export const useLocalNeonStockBySize = (
   productId: number,
   enabled: boolean = true,
 ) => {
   return useQuery({
-    queryKey: ["local-neon-stock-by-size", productId],
+    queryKey: ["neon-stock-by-size", productId],
     queryFn: async (): Promise<Record<string, number>> => {
       try {
+        console.log(`🔄 Consultando stock por tamaño del producto ${productId}...`);
+
         // Obtener variaciones del producto
-        const variations =
-          await neonHttpService.getProductVariations(productId);
+        const variations = await neonHttpService.getProductVariations(productId);
 
         if (!variations || variations.length === 0) {
           // Para productos simples, devolver stock total
-          const stock = await neonHttpService.getAtumStock(productId);
+          const stock = await neonHttpService.getTotalStock(productId);
           return { default: stock };
         }
 
@@ -227,26 +228,21 @@ export const useLocalNeonStockBySize = (
             const stock = variation.stock_quantity || 0;
             stockBySize[size] = stock;
 
-            console.log(
-              `Stock cache local para ${productId} tamaño ${size}: ${stock}`,
-            );
+            console.log(`✅ Stock Neon ${productId} tamaño ${size}: ${stock}`);
           }
         }
 
         return stockBySize;
       } catch (error) {
-        console.error(
-          `Error obteniendo stock desde cache local para producto ${productId}:`,
-          error,
-        );
+        console.error(`❌ Error obteniendo stock de Neon para producto ${productId}:`, error);
         return { default: 0 };
       }
     },
     enabled: enabled && !!productId,
-    staleTime: 30 * 1000, // 30 segundos para stock
+    staleTime: 1 * 60 * 1000, // 1 minuto para stock
     gcTime: 2 * 60 * 1000,
     throwOnError: false,
-    retry: 1,
+    retry: 2,
   });
 };
 
