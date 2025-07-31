@@ -183,15 +183,14 @@ export const useLocalSyncStatus = () => {
     }
   }, [getSyncService]);
 
-  // Actualizar estado periódicamente
+  // Actualizar estado periódicamente (DESHABILITADO)
   useEffect(() => {
-    // Actualización inicial
+    // Solo actualización inicial - sin intervalos automáticos
     updateSyncStatus();
 
-    // Verificar estado cada 30 segundos
-    const interval = setInterval(updateSyncStatus, 30000);
-
-    return () => clearInterval(interval);
+    // Intervalo deshabilitado para evitar fetch calls automáticos
+    // const interval = setInterval(updateSyncStatus, 30000);
+    // return () => clearInterval(interval);
   }, [updateSyncStatus]);
 
   // Verificar si necesita sincronización inicial
