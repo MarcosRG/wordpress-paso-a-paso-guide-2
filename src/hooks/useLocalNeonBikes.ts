@@ -126,7 +126,7 @@ export const useLocalNeonBikes = () => {
         console.log(`✅ ${bikes.length} bicicletas con stock disponibles`);
         return bikes;
       } catch (error) {
-        console.error("❌ Error cargando productos desde cache local:", error);
+        console.error("❌ Error consultando Neon Database:", error);
 
         // En caso de error, devolver array vacío en lugar de fallar
         return [];
