@@ -82,8 +82,8 @@ export const useNeonBikes = () => {
       try {
         console.log("🚀 Cargando productos desde Neon database...");
 
-        // Obtener productos activos desde Neon (usando HTTP service)
-        const products = await neonHttpService.getActiveProducts();
+        // Obtener productos activos desde Neon (usando Serverless Functions)
+        const products = await neonServerlessService.getActiveProducts();
         console.log(`✅ ${products.length} productos obtenidos desde Neon`);
 
         const bikes: Bike[] = [];
