@@ -256,16 +256,53 @@ export class NeonHttpService {
     }
   }
 
-  // Limpiar cache local
-  clearCache(): void {
+  // Limpiar cache local (optimizado - completo solo cuando se especifica)
+  clearCache(force: boolean = false): void {
     try {
-      localStorage.removeItem(this.storageKeys.products);
-      localStorage.removeItem(this.storageKeys.variations);
-      localStorage.removeItem(this.storageKeys.lastSync);
-      localStorage.removeItem(this.storageKeys.syncStatus);
-      console.log("🧹 Cache local limpiado");
+      if (force) {
+        // Limpiar completamente solo si se fuerza (force sync)
+        localStorage.removeItem(this.storageKeys.products);
+        localStorage.removeItem(this.storageKeys.variations);
+        localStorage.removeItem(this.storageKeys.lastSync);
+        localStorage.removeItem(this.storageKeys.syncStatus);
+        localStorage.removeItem(this.storageKeys.productTimestamps);
+        console.log("🧹 Cache local limpiado completamente (forced)");
+      } else {
+        // En auto-sync, solo resetear timestamps para permitir actualización selectiva
+        console.log("⚡ Cache optimizado: manteniendo datos válidos, permitiendo actualización selectiva");
+      }
     } catch (error) {
       console.error("Error limpiando cache:", error);
+    }
+  }
+
+  // Verificar si un producto específico necesita actualización
+  shouldUpdateProduct(productId: number, lastModified: string): boolean {
+    try {
+      const timestamps = JSON.parse(localStorage.getItem(this.storageKeys.productTimestamps) || '{}');
+      const cachedTimestamp = timestamps[productId];
+
+      if (!cachedTimestamp) {
+        return true; // Producto no existe en cache
+      }
+
+      const cachedDate = new Date(cachedTimestamp);
+      const modifiedDate = new Date(lastModified);
+
+      return modifiedDate > cachedDate; // Actualizar solo si el producto es más reciente
+    } catch (error) {
+      return true; // En caso de error, actualizar
+    }
+  }
+
+  // Actualizar timestamp de un producto
+  updateProductTimestamp(productId: number, timestamp: string): void {
+    try {
+      const timestamps = JSON.parse(localStorage.getItem(this.storageKeys.productTimestamps) || '{}');
+      timestamps[productId] = timestamp;
+      localStorage.setItem(this.storageKeys.productTimestamps, JSON.stringify(timestamps));
+    } catch (error) {
+      console.error("Error actualizando timestamp del producto:", error);
     }
   }
 
