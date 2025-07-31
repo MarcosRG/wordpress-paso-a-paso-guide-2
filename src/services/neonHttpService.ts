@@ -83,17 +83,26 @@ export class NeonHttpService {
 
   // Obtener productos por categoría
   async getProductsByCategory(categorySlug: string): Promise<NeonProduct[]> {
-    const allProducts = await this.getActiveProducts();
+    try {
+      // Intentar obtener todos los productos y filtrar
+      const allProducts = await this.getActiveProducts();
 
-    return allProducts.filter((product) => {
-      if (!product.categories) return false;
+      return allProducts.filter((product) => {
+        if (!product.categories) return false;
 
-      const categories = Array.isArray(product.categories)
-        ? product.categories
-        : JSON.parse(product.categories || "[]");
+        const categories = Array.isArray(product.categories)
+          ? product.categories
+          : JSON.parse(product.categories || "[]");
 
-      return categories.some((cat: any) => cat.slug === categorySlug);
-    });
+        return categories.some((cat: any) => cat.slug === categorySlug);
+      });
+    } catch (error) {
+      console.error(`❌ Error obteniendo productos por categoría ${categorySlug}:`, error);
+
+      // Fallback: usar mock API directamente
+      const { mockNeonApi } = await import("./mockNeonApi");
+      return await mockNeonApi.getProductsByCategory(categorySlug);
+    }
   }
 
   // Obtener variaciones de un producto directamente de Neon Database
