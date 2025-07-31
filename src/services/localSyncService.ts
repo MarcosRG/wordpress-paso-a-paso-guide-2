@@ -379,8 +379,8 @@ export class LocalSyncService {
       console.warn(`⚠️ Force sync attempted with ${connectivityStatus.consecutiveErrors} consecutive errors - this may fail`);
     }
 
-    // Limpiar cache para forzar recarga completa
-    neonHttpService.clearCache();
+    // Limpiar cache COMPLETAMENTE solo en force sync manual
+    neonHttpService.clearCache(true); // force = true
 
     await this.performSync();
   }
@@ -464,7 +464,7 @@ export class LocalSyncService {
           // Calcular stock total de variaciones
           const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
           totalVariationStock += variationStock;
-          console.log(`📦 Variação ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
+          console.log(`�� Variação ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
         }
 
         // IMPORTANTE: Actualizar el stock del producto principal
