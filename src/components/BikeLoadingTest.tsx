@@ -42,11 +42,11 @@ export const BikeLoadingTest: React.FC = () => {
     // Auto-check circuit breaker status on load
     checkCircuitBreakerStatus();
 
-    // Auto-execute reset and sync after 2 seconds to fix the circuit breaker issue
+    // Auto-execute bypass after 3 seconds to fix the sync issue
     setTimeout(() => {
-      console.log('🚀 Auto-ejecutando reset del circuit breaker...');
-      resetCircuitBreakerAndSync();
-    }, 2000);
+      console.log('🚀 Auto-ejecutando bypass para resolver sincronización...');
+      forceSyncBypassingRestrictions();
+    }, 3000);
   }, [activeHook, currentResult, syncStatus]);
 
   const forceRefresh = () => {
