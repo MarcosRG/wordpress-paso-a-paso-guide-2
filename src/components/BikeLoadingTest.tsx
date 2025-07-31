@@ -41,6 +41,12 @@ export const BikeLoadingTest: React.FC = () => {
 
     // Auto-check circuit breaker status on load
     checkCircuitBreakerStatus();
+
+    // Auto-execute reset and sync after 2 seconds to fix the circuit breaker issue
+    setTimeout(() => {
+      console.log('🚀 Auto-ejecutando reset del circuit breaker...');
+      resetCircuitBreakerAndSync();
+    }, 2000);
   }, [activeHook, currentResult, syncStatus]);
 
   const forceRefresh = () => {
@@ -172,7 +178,7 @@ export const BikeLoadingTest: React.FC = () => {
           <h4 className="font-semibold mb-2">Status de Sincronização:</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
-              <strong>Em execuç��o:</strong> {syncStatus.isRunning ? 'Sim' : 'Não'}
+              <strong>Em execução:</strong> {syncStatus.isRunning ? 'Sim' : 'Não'}
             </div>
             <div>
               <strong>Última sync:</strong> {syncStatus.lastSyncTime ? new Date(syncStatus.lastSyncTime).toLocaleString() : 'Nunca'}
