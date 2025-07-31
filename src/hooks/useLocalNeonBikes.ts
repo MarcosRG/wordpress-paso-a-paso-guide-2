@@ -140,17 +140,22 @@ export const useLocalNeonBikes = () => {
   });
 };
 
-// Hook para obtener bicicletas por categoría desde cache local
+// Hook para obtener bicicletas por categoría desde Neon Database
 export const useLocalNeonBikesByCategory = (categorySlug: string | null) => {
   return useQuery({
-    queryKey: ["local-neon-bikes-by-category", categorySlug],
+    queryKey: ["neon-bikes-by-category", categorySlug],
     queryFn: async (): Promise<Bike[]> => {
-      if (!categorySlug) {
-        // Si no hay categoría, obtener todos los productos
-        const products = await neonHttpService.getActiveProducts();
-        const bikes: Bike[] = [];
+      console.log(`🔄 Consultando productos de categoría "${categorySlug}" desde Neon...`);
 
-        for (const product of products) {
+      // Obtener productos por categoría o todos si no hay categoría
+      const products = categorySlug
+        ? await neonHttpService.getProductsByCategory(categorySlug)
+        : await neonHttpService.getActiveProducts();
+
+      const bikes: Bike[] = [];
+
+      for (const product of products) {
+        try {
           let variations: NeonVariation[] = [];
           if (product.type === "variable") {
             variations = await neonHttpService.getProductVariations(
@@ -159,36 +164,24 @@ export const useLocalNeonBikesByCategory = (categorySlug: string | null) => {
           }
 
           const bike = convertNeonProductToBike(product, variations);
-          bikes.push(bike);
-        }
 
-        return bikes;
+          // Solo agregar productos con stock
+          if (bike.available > 0) {
+            bikes.push(bike);
+          }
+        } catch (error) {
+          console.warn(`⚠️ Error procesando producto ${product.woocommerce_id}:`, error);
+        }
       }
 
-      // Obtener productos por categoría
-      const products =
-        await neonHttpService.getProductsByCategory(categorySlug);
-      const bikes: Bike[] = [];
-
-      for (const product of products) {
-        let variations: NeonVariation[] = [];
-        if (product.type === "variable") {
-          variations = await neonHttpService.getProductVariations(
-            product.woocommerce_id,
-          );
-        }
-
-        const bike = convertNeonProductToBike(product, variations);
-        bikes.push(bike);
-      }
-
+      console.log(`✅ ${bikes.length} bicicletas encontradas para categoría "${categorySlug}"`);
       return bikes;
     },
     enabled: true,
-    staleTime: 1 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     throwOnError: false,
-    retry: 1,
+    retry: 2,
   });
 };
 
