@@ -46,8 +46,8 @@ export const BikeSelection = ({
   // Manual refresh function
   const handleRefresh = async () => {
     // Invalidar cache de React Query para forzar recarga desde cache local
-    queryClient.invalidateQueries({ queryKey: ["local-neon-bikes"] });
-    queryClient.invalidateQueries({ queryKey: ["local-neon-categories"] });
+    queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes"] });
+    queryClient.invalidateQueries({ queryKey: ["woocommerce-categories"] });
     await Promise.all([refetchBikes(), refetchCategories()]);
   };
 
