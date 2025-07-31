@@ -263,10 +263,8 @@ export const DebuggingCenter: React.FC = () => {
 
       {/* Debugging Tabs */}
       <Tabs defaultValue="stock-calc" className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="stock-calc">📊 Stock Calculator</TabsTrigger>
-          <TabsTrigger value="atum-test">Teste ATUM</TabsTrigger>
-          <TabsTrigger value="atum-debug">Debug ATUM</TabsTrigger>
           <TabsTrigger value="circuit-breaker">Circuit Breaker</TabsTrigger>
           <TabsTrigger value="cache-manager">Cache Manager</TabsTrigger>
           <TabsTrigger value="console-monitor">Console Monitor</TabsTrigger>
@@ -275,14 +273,6 @@ export const DebuggingCenter: React.FC = () => {
 
         <TabsContent value="stock-calc" className="space-y-4">
           <StockCalculationDebugger />
-        </TabsContent>
-
-        <TabsContent value="atum-test" className="space-y-4">
-          <AtumInventoryTester />
-        </TabsContent>
-
-        <TabsContent value="atum-debug" className="space-y-4">
-          <AtumInventoryDebugger />
         </TabsContent>
 
         <TabsContent value="circuit-breaker" className="space-y-4">
