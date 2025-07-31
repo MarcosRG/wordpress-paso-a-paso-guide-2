@@ -27,7 +27,7 @@ const convertNeonProductToBike = (
   // Si hay variaciones, usar el precio de la primera variación disponible
   if (variations.length > 0) {
     const availableVariation = variations.find(
-      (v) => (v.atum_stock || v.stock_quantity) > 0,
+      (v) => (v.stock_quantity || 0) > 0,
     );
     if (availableVariation) {
       basePrice =
