@@ -82,18 +82,14 @@ const convertNeonProductToBike = (
 export const useLocalNeonBikes = () => {
 
   return useQuery({
-    queryKey: ["local-neon-bikes"],
+    queryKey: ["neon-bikes"],
     queryFn: async (): Promise<Bike[]> => {
       try {
-        console.log(
-          "🚀 HOOK EJECUTÁNDOSE: Cargando productos desde cache local...",
-        );
+        console.log("🚀 Consultando productos directamente desde Neon Database...");
 
-        // Obtener productos activos desde cache local
+        // Obtener productos activos directamente de Neon Database
         const products = await neonHttpService.getActiveProducts();
-        console.log(
-          `✅ ${products.length} productos obtenidos desde cache local`,
-        );
+        console.log(`✅ ${products.length} productos obtenidos de Neon`);
 
 
 
