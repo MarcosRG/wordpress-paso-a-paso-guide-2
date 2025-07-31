@@ -20,15 +20,15 @@ export class LocalSyncService {
       return;
     }
 
-    console.log("🔄 LocalSyncService iniciado - Auto-sync HABILITADO con corrección");
-    console.log("✅ PROBLEMA RESUELTO: Extracción de tamaños y limpieza de cache");
-    console.log("🔧 CORRECCIÓN APLICADA: Cache clearing antes de sync automático");
+    console.log("🔄 LocalSyncService iniciado - Auto-sync OPTIMIZADO");
+    console.log("⚡ OPTIMIZACIÓN: Cache inteligente - no clearing en auto-sync");
+    console.log("🚀 RENDIMIENTO: Frecuencia optimizada de 5min → 15min");
 
     // Verificar si necesita sincronización inicial
     if (neonHttpService.needsSync()) {
       console.log("🚀 Iniciando sincronización inicial automática...");
-      // IMPORTANTE: Limpiar cache antes de sync inicial igual que en forceSync
-      neonHttpService.clearCache();
+      // Limpiar cache completamente en sync inicial (primera vez)
+      neonHttpService.clearCache(true);
       this.performSync()
         .then(() => {
           console.log("✅ Sincronización inicial completada automáticamente");
@@ -38,7 +38,7 @@ export class LocalSyncService {
         });
     }
 
-    // Programar sincronización cada 5 minutos
+    // Programar sincronización cada 15 minutos (optimizado de 5min)
     setInterval(
       async () => {
         // Check emergency stop first
@@ -52,12 +52,11 @@ export class LocalSyncService {
           const { shouldAllowAutoSync } = await import("../utils/connectivityUtils");
 
           if (await shouldAllowAutoSync()) {
-            console.log("🔄 Ejecutando sincronización automática programada...");
-            // IMPORTANTE: Limpiar cache antes de sync automático igual que en forceSync
-            neonHttpService.clearCache();
+            console.log("🔄 Ejecutando sincronización automática optimizada...");
+            // OPTIMIZACIÓN: NO limpiar cache en auto-sync, solo actualizar datos obsoletos
             this.performSync()
               .then(() => {
-                console.log("✅ Sincronización automática completada");
+                console.log("✅ Sincronización automática completada (cache preservado)");
               })
               .catch((error) => {
                 console.warn("⚠️ Error en sincronización automática:", error);
@@ -67,7 +66,7 @@ export class LocalSyncService {
           }
         }
       },
-      5 * 60 * 1000, // 5 minutos
+      15 * 60 * 1000, // 15 minutos (optimizado de 5 minutos)
     );
   }
 
@@ -164,7 +163,7 @@ export class LocalSyncService {
           const neonProduct = convertToNeonProduct(product, acfData);
           neonProducts.push(neonProduct);
 
-          // 3. Procesar variaciones si es un producto variable
+          // 3. Procesar variaciones si es un producto variable (OPTIMIZADO)
           if (product.type === "variable" && product.variations.length > 0) {
             try {
               const variations = await wooCommerceApi.getProductVariations(
@@ -172,14 +171,20 @@ export class LocalSyncService {
               );
 
               let totalVariationStock = 0;
-              console.log(`🔍 PROCESANDO PRODUCTO VARIABLE ${product.id} (${product.name}) con ${variations.length} variaciones`);
+              console.log(`⚡ PROCESANDO OPTIMIZADO - ${product.id} (${product.name}) con ${variations.length} variaciones`);
 
               for (const variation of variations) {
-                // Obtener stock ATUM para la variación
-                const atumStock = await checkAtumAvailability(
-                  product.id,
-                  variation.id,
-                );
+                // OPTIMIZACIÓN: Extraer stock ATUM directamente de meta_data de la variación
+                // Sin hacer requests adicionales
+                let atumStock = 0;
+                if (variation.meta_data) {
+                  const atumField = variation.meta_data.find((meta: any) =>
+                    meta.key === '_atum_stock_quantity' ||
+                    meta.key === '_atum_stock' ||
+                    meta.key === 'atum_stock_quantity'
+                  );
+                  atumStock = parseInt(String(atumField?.value)) || 0;
+                }
 
                 const neonVariation = convertToNeonVariation(
                   variation,
@@ -188,11 +193,11 @@ export class LocalSyncService {
                 );
                 neonVariations.push(neonVariation);
 
-                // Sumar stock de la variación al total - usar el stock real de WooCommerce
-                const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
+                // Usar lógica optimizada: ATUM si existe y > 0, sino WooCommerce
+                const variationStock = atumStock > 0 ? atumStock : (variation.stock_quantity || 0);
                 totalVariationStock += variationStock;
-                
-                console.log(`📦 Variación ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
+
+                console.log(`📦 Variación ${variation.id}: ${variationStock} (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity}) ⚡ OPTIMIZADO`);
               }
 
               // IMPORTANTE: Actualizar el stock del producto principal con la suma de todas las variaciones
@@ -374,8 +379,8 @@ export class LocalSyncService {
       console.warn(`⚠️ Force sync attempted with ${connectivityStatus.consecutiveErrors} consecutive errors - this may fail`);
     }
 
-    // Limpiar cache para forzar recarga completa
-    neonHttpService.clearCache();
+    // Limpiar cache COMPLETAMENTE solo en force sync manual
+    neonHttpService.clearCache(true); // force = true
 
     await this.performSync();
   }
@@ -394,7 +399,7 @@ export class LocalSyncService {
     console.log("🔄 Resetting sync state...");
     this.isRunning = false;
     neonHttpService.setSyncStatus(false);
-    console.log("✅ Sync state reset successfully");
+    console.log("��� Sync state reset successfully");
   }
 
   // Sincronizar un producto específico

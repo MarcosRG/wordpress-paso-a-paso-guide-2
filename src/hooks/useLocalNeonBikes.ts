@@ -7,46 +7,18 @@ import {
 } from "@/services/neonHttpService";
 import { Bike } from "@/pages/Index";
 
-// Convertir producto de Neon a formato Bike de la aplicación
+// Convertir producto de Neon a formato Bike de la aplicación (OPTIMIZADO)
 const convertNeonProductToBike = (
   neonProduct: NeonProduct,
   variations: NeonVariation[] = [],
 ): Bike => {
-  // CORRECCIÓN: Usar stock ya calculado desde cache en lugar de recalcular
-  // El problema era que se recalculaba mal aquí aunque ya estaba bien en cache
-  let totalStock = neonProduct.stock_quantity || 0;
+  // OPTIMIZACIÓN: Confiar directamente en el stock precalculado del cache
+  // Ya está correctamente calculado en localSyncService.ts
+  const totalStock = neonProduct.stock_quantity || 0;
 
-  // Solo para debug: verificar si hay diferencia entre stock guardado y recalculado
-  if (variations.length > 0 && totalStock > 0) {
-    const recalculatedStock = variations.reduce((sum, variation) => {
-      const atumStock = parseInt(String(variation.atum_stock)) || 0;
-      const wooStock = parseInt(String(variation.stock_quantity)) || 0;
-      const stockToUse = atumStock > 0 ? atumStock : wooStock;
-      return sum + stockToUse;
-    }, 0);
-
-    if (recalculatedStock !== totalStock) {
-      console.log(`🚨 DISCREPANCIA DETECTADA en ${neonProduct.name}:`);
-      console.log(`   • Stock en cache: ${totalStock}`);
-      console.log(`   • Stock recalculado: ${recalculatedStock}`);
-      console.log(`   • Usando stock del cache (correcto): ${totalStock}`);
-    }
-  }
-
-  // Debug final do total calculado para productos con stock
-  if (totalStock > 0) {
-    console.log(`🏆 Total Stock Calculado para ${neonProduct.name}:`, {
-      productName: neonProduct.name,
-      productId: neonProduct.woocommerce_id,
-      variationsCount: variations.length,
-      totalStock,
-      variationsStock: variations.map(v => ({
-        id: v.woocommerce_id,
-        atum: v.atum_stock,
-        woo: v.stock_quantity,
-        used: (v.atum_stock > 0 ? v.atum_stock : v.stock_quantity)
-      }))
-    });
+  // Debug simplificado solo para productos con stock > 0
+  if (totalStock > 0 && variations.length > 0) {
+    console.log(`✅ Stock optimizado para ${neonProduct.name}: ${totalStock} (${variations.length} variaciones)`);
   }
 
   // Obtener precio base
