@@ -83,27 +83,34 @@ export const BikeLoadingTest: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Hook selector */}
-        <div className="flex gap-2">
-          <Button 
+        <div className="flex gap-2 flex-wrap">
+          <Button
             size="sm"
             variant={activeHook === 'local' ? 'default' : 'outline'}
             onClick={() => setActiveHook('local')}
           >
             Local Cache
           </Button>
-          <Button 
+          <Button
             size="sm"
             variant={activeHook === 'neon' ? 'default' : 'outline'}
             onClick={() => setActiveHook('neon')}
           >
             Neon Direct
           </Button>
-          <Button 
+          <Button
             size="sm"
             variant={activeHook === 'mock' ? 'default' : 'outline'}
             onClick={() => setActiveHook('mock')}
           >
             Mock Data
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={forceSyncData}
+          >
+            🔄 Forçar Sync
           </Button>
         </div>
 
