@@ -42,11 +42,12 @@ export const BikeLoadingTest: React.FC = () => {
     // Auto-check circuit breaker status on load
     checkCircuitBreakerStatus();
 
-    // Auto-execute bypass after 3 seconds to fix the sync issue
-    setTimeout(() => {
-      console.log('🚀 Auto-ejecutando bypass para resolver sincronización...');
-      forceSyncBypassingRestrictions();
-    }, 3000);
+    // Execute bypass immediately on first load (only once)
+    if (!window.bypassExecuted) {
+      window.bypassExecuted = true;
+      console.log('🚀 Ejecutando bypass inmediatamente...');
+      setTimeout(() => forceSyncBypassingRestrictions(), 1000);
+    }
   }, [activeHook, currentResult, syncStatus]);
 
   const forceRefresh = () => {
