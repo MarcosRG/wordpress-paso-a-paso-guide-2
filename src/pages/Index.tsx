@@ -270,6 +270,11 @@ const Index = () => {
           </div>
         </div>
 
+        {/* DEBUG: Diagnóstico temporal */}
+        <div className="mb-6">
+          <BikeLoadingTest />
+        </div>
+
         <Card className="p-6 mb-6">
           {/* Language selector for each step */}
           <div className="flex justify-end mb-4">
