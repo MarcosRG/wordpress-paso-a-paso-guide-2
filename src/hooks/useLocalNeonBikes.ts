@@ -1,5 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   neonHttpService,
   NeonProduct,
@@ -58,18 +57,14 @@ const convertNeonProductToBike = (
         acf: neonProduct.acf_data,
       },
       variations: variations.map((v) => {
-        // Debug para variaciones con stock para detectar problemas
-        const vAtumStock = parseInt(String(v.atum_stock)) || 0;
+        // Mapeo simplificado usando solo stock_quantity
         const vWooStock = parseInt(String(v.stock_quantity)) || 0;
 
-        if (vAtumStock > 0 || vWooStock > 0) {
-          console.log(`🔧 Mapeando variação ${neonProduct.name}:`, {
+        if (vWooStock > 0) {
+          console.log(`✅ Variación ${neonProduct.name}:`, {
             woocommerce_id: v.woocommerce_id,
             stock_quantity: vWooStock,
-            atum_stock: vAtumStock,
-            finalStock: vAtumStock > 0 ? vAtumStock : vWooStock,
-            attributes: v.attributes,
-            attributesIsArray: Array.isArray(v.attributes)
+            attributes: v.attributes
           });
         }
 
@@ -83,34 +78,20 @@ const convertNeonProductToBike = (
   };
 };
 
-// Hook principal para obtener bicicletas desde cache local
+// Hook simplificado para obtener bicicletas directamente desde Neon Database
 export const useLocalNeonBikes = () => {
-  const queryClient = useQueryClient();
-
-  // Listener para refrescar cuando el cache se actualiza
-  useEffect(() => {
-    const handleCacheUpdate = () => {
-      queryClient.invalidateQueries({ queryKey: ["local-neon-bikes"] });
-      console.log("🔄 Cache invalidado - frontend refrescará automáticamente");
-    };
-
-    window.addEventListener('cache-updated', handleCacheUpdate);
-    return () => window.removeEventListener('cache-updated', handleCacheUpdate);
-  }, [queryClient]);
 
   return useQuery({
-    queryKey: ["local-neon-bikes"],
+    queryKey: ["neon-bikes"],
     queryFn: async (): Promise<Bike[]> => {
       try {
-        console.log(
-          "🚀 HOOK EJECUTÁNDOSE: Cargando productos desde cache local...",
-        );
+        console.log("🚀 Consultando productos directamente desde Neon Database...");
 
-        // Obtener productos activos desde cache local
+        // Obtener productos activos directamente de Neon Database
         const products = await neonHttpService.getActiveProducts();
-        console.log(
-          `✅ ${products.length} productos obtenidos desde cache local`,
-        );
+        console.log(`✅ ${products.length} productos obtenidos de Neon`);
+
+
 
         const bikes: Bike[] = [];
 
@@ -129,47 +110,52 @@ export const useLocalNeonBikes = () => {
             // Convertir a formato Bike
             const bike = convertNeonProductToBike(product, variations);
 
-            // Agregar todos los productos (incluso sin stock para mostrar disponibilidad)
-            bikes.push(bike);
+            // Solo agregar productos con stock disponible
+            if (bike.available > 0) {
+              bikes.push(bike);
+            }
           } catch (error) {
             console.warn(
-              `⚠️ Error procesando producto ${product.woocommerce_id}:`,
+              `��️ Error procesando producto ${product.woocommerce_id}:`,
               error,
             );
             // Continuar con el siguiente producto
           }
         }
 
-        console.log(
-          `✅ ${bikes.length} bicicletas disponibles cargadas desde cache local`,
-        );
+        console.log(`✅ ${bikes.length} bicicletas con stock disponibles`);
         return bikes;
       } catch (error) {
-        console.error("❌ Error cargando productos desde cache local:", error);
+        console.error("❌ Error consultando Neon Database:", error);
 
         // En caso de error, devolver array vacío en lugar de fallar
         return [];
       }
     },
-    staleTime: 0, // Siempre verificar si hay datos frescos
-    gcTime: 2 * 60 * 1000, // 2 minutos
+    staleTime: 2 * 60 * 1000, // 2 minutos - datos frescos
+    gcTime: 5 * 60 * 1000, // 5 minutos
     throwOnError: false,
-    retry: 1, // Solo un reintento
+    retry: 2,
     retryDelay: 1000,
   });
 };
 
-// Hook para obtener bicicletas por categoría desde cache local
+// Hook para obtener bicicletas por categoría desde Neon Database
 export const useLocalNeonBikesByCategory = (categorySlug: string | null) => {
   return useQuery({
-    queryKey: ["local-neon-bikes-by-category", categorySlug],
+    queryKey: ["neon-bikes-by-category", categorySlug],
     queryFn: async (): Promise<Bike[]> => {
-      if (!categorySlug) {
-        // Si no hay categoría, obtener todos los productos
-        const products = await neonHttpService.getActiveProducts();
-        const bikes: Bike[] = [];
+      console.log(`🔄 Consultando productos de categoría "${categorySlug}" desde Neon...`);
 
-        for (const product of products) {
+      // Obtener productos por categoría o todos si no hay categoría
+      const products = categorySlug
+        ? await neonHttpService.getProductsByCategory(categorySlug)
+        : await neonHttpService.getActiveProducts();
+
+      const bikes: Bike[] = [];
+
+      for (const product of products) {
+        try {
           let variations: NeonVariation[] = [];
           if (product.type === "variable") {
             variations = await neonHttpService.getProductVariations(
@@ -178,55 +164,44 @@ export const useLocalNeonBikesByCategory = (categorySlug: string | null) => {
           }
 
           const bike = convertNeonProductToBike(product, variations);
-          bikes.push(bike);
-        }
 
-        return bikes;
+          // Solo agregar productos con stock
+          if (bike.available > 0) {
+            bikes.push(bike);
+          }
+        } catch (error) {
+          console.warn(`⚠️ Error procesando producto ${product.woocommerce_id}:`, error);
+        }
       }
 
-      // Obtener productos por categoría
-      const products =
-        await neonHttpService.getProductsByCategory(categorySlug);
-      const bikes: Bike[] = [];
-
-      for (const product of products) {
-        let variations: NeonVariation[] = [];
-        if (product.type === "variable") {
-          variations = await neonHttpService.getProductVariations(
-            product.woocommerce_id,
-          );
-        }
-
-        const bike = convertNeonProductToBike(product, variations);
-        bikes.push(bike);
-      }
-
+      console.log(`✅ ${bikes.length} bicicletas encontradas para categoría "${categorySlug}"`);
       return bikes;
     },
     enabled: true,
-    staleTime: 1 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     throwOnError: false,
-    retry: 1,
+    retry: 2,
   });
 };
 
-// Hook para obtener stock específico por tamaño desde cache local
+// Hook para obtener stock específico por tamaño desde Neon Database
 export const useLocalNeonStockBySize = (
   productId: number,
   enabled: boolean = true,
 ) => {
   return useQuery({
-    queryKey: ["local-neon-stock-by-size", productId],
+    queryKey: ["neon-stock-by-size", productId],
     queryFn: async (): Promise<Record<string, number>> => {
       try {
+        console.log(`🔄 Consultando stock por tamaño del producto ${productId}...`);
+
         // Obtener variaciones del producto
-        const variations =
-          await neonHttpService.getProductVariations(productId);
+        const variations = await neonHttpService.getProductVariations(productId);
 
         if (!variations || variations.length === 0) {
           // Para productos simples, devolver stock total
-          const stock = await neonHttpService.getAtumStock(productId);
+          const stock = await neonHttpService.getTotalStock(productId);
           return { default: stock };
         }
 
@@ -250,38 +225,35 @@ export const useLocalNeonStockBySize = (
             // Extraer solo la parte del tamaño antes del guión (ej: "XL - 59" -> "XL")
             const rawSize = sizeAttribute.option?.toUpperCase() || "DEFAULT";
             const size = rawSize.includes(' - ') ? rawSize.split(' - ')[0].trim() : rawSize;
-            const stock = variation.atum_stock || variation.stock_quantity || 0;
+            const stock = variation.stock_quantity || 0;
             stockBySize[size] = stock;
 
-            console.log(
-              `Stock cache local para ${productId} tamaño ${size}: ${stock}`,
-            );
+            console.log(`✅ Stock Neon ${productId} tamaño ${size}: ${stock}`);
           }
         }
 
         return stockBySize;
       } catch (error) {
-        console.error(
-          `Error obteniendo stock desde cache local para producto ${productId}:`,
-          error,
-        );
+        console.error(`❌ Error obteniendo stock de Neon para producto ${productId}:`, error);
         return { default: 0 };
       }
     },
     enabled: enabled && !!productId,
-    staleTime: 30 * 1000, // 30 segundos para stock
+    staleTime: 1 * 60 * 1000, // 1 minuto para stock
     gcTime: 2 * 60 * 1000,
     throwOnError: false,
-    retry: 1,
+    retry: 2,
   });
 };
 
-// Hook para obtener categorías disponibles
+// Hook para obtener categorías disponibles desde Neon Database
 export const useLocalNeonCategories = () => {
   return useQuery({
-    queryKey: ["local-neon-categories"],
+    queryKey: ["neon-categories"],
     queryFn: async (): Promise<string[]> => {
       try {
+        console.log("🔄 Consultando categorías desde Neon Database...");
+
         // Obtener categorías únicas de productos activos
         const products = await neonHttpService.getActiveProducts();
         const categorySlugs = new Set<string>();
@@ -297,16 +269,19 @@ export const useLocalNeonCategories = () => {
           }
         });
 
-        return Array.from(categorySlugs).sort();
+        const categoryList = Array.from(categorySlugs).sort();
+        console.log(`✅ ${categoryList.length} categorías encontradas:`, categoryList);
+
+        return categoryList;
       } catch (error) {
-        console.error("Error obteniendo categorías desde cache local:", error);
+        console.error("❌ Error obteniendo categorías desde Neon:", error);
         return [];
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 20 * 60 * 1000,
     throwOnError: false,
-    retry: 1,
+    retry: 2,
   });
 };
 
@@ -345,18 +320,4 @@ export const useLocalNeonProduct = (productId: number) => {
   });
 };
 
-// Hook para obtener estadísticas del cache
-export const useLocalCacheStats = () => {
-  return useQuery({
-    queryKey: ["local-cache-stats"],
-    queryFn: async () => {
-      // Importar aquí para evitar dependencias circulares
-      const { localSyncService } = await import("@/services/localSyncService");
-      return localSyncService.getCacheStats();
-    },
-    staleTime: 30 * 1000, // 30 segundos
-    gcTime: 2 * 60 * 1000,
-    throwOnError: false,
-    retry: 1,
-  });
-};
+// ⚠️ Hook de cache stats eliminado - ya no usamos cache local

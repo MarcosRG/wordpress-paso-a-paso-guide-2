@@ -38,12 +38,132 @@ export const BikeLoadingTest: React.FC = () => {
     console.log('🔍 BikeLoadingTest - Current hook:', activeHook);
     console.log('🔍 BikeLoadingTest - Result:', currentResult);
     console.log('🔍 BikeLoadingTest - Sync Status:', syncStatus);
+
+    // Auto-check circuit breaker status on load
+    checkCircuitBreakerStatus();
+
+    // Execute bypass immediately on first load (only once)
+    if (!window.bypassExecuted) {
+      window.bypassExecuted = true;
+      console.log('🚀 Ejecutando bypass inmediatamente...');
+      setTimeout(() => forceSyncBypassingRestrictions(), 1000);
+    }
   }, [activeHook, currentResult, syncStatus]);
 
   const forceRefresh = () => {
     setManualRefresh(prev => prev + 1);
     if (currentResult.refetch) {
       currentResult.refetch();
+    }
+  };
+
+  const forceSyncData = async () => {
+    try {
+      console.log('🚀 Forzando sincronización manual...');
+      const { localSyncService } = await import('@/services/localSyncService');
+      await localSyncService.performSync();
+      console.log('✅ Sincronización manual completada');
+      // Refresh all hooks after sync
+      if (localResult.refetch) localResult.refetch();
+      if (neonResult.refetch) neonResult.refetch();
+    } catch (error) {
+      console.error('❌ Error en sincronización manual:', error);
+    }
+  };
+
+  const resetCircuitBreakerAndSync = async () => {
+    try {
+      console.log('🔄 Reseteando circuit breaker y reintentando sincronización...');
+
+      // Reset circuit breaker
+      const { wooCommerceCircuitBreaker } = await import('@/services/circuitBreaker');
+      wooCommerceCircuitBreaker.reset();
+      console.log('✅ Circuit breaker reseteado');
+
+      // Wait a bit and then try sync
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const { localSyncService } = await import('@/services/localSyncService');
+      await localSyncService.performSync();
+      console.log('✅ Sincronización completada después del reset');
+
+      // Refresh all hooks after sync
+      if (localResult.refetch) localResult.refetch();
+      if (neonResult.refetch) neonResult.refetch();
+    } catch (error) {
+      console.error('❌ Error después del reset:', error);
+    }
+  };
+
+  const checkCircuitBreakerStatus = async () => {
+    try {
+      const { wooCommerceCircuitBreaker, getWooCommerceStatus } = await import('@/services/circuitBreaker');
+      const state = wooCommerceCircuitBreaker.getState();
+      const status = getWooCommerceStatus();
+      console.log('🔍 Estado del Circuit Breaker:', state);
+      console.log('🔍 Estado completo:', status);
+      console.log('🔍 VITE_DISABLE_API:', import.meta.env.VITE_DISABLE_API);
+    } catch (error) {
+      console.error('❌ Error verificando circuit breaker:', error);
+    }
+  };
+
+  const forceSyncBypassingRestrictions = async () => {
+    try {
+      console.log('🚨 BYPASS: Forzando sincronización directa...');
+
+      // Check environment variables
+      console.log('🔍 Variables de entorno:', {
+        VITE_DISABLE_API: import.meta.env.VITE_DISABLE_API,
+        DEV: import.meta.env.DEV,
+        MODE: import.meta.env.MODE
+      });
+
+      // Import WooCommerce API directly
+      const { wooCommerceApi } = await import('@/services/woocommerceApi');
+
+      console.log('🔄 Obteniendo productos directamente de WooCommerce...');
+
+      // Get products directly from WooCommerce
+      const products = await wooCommerceApi.getProductsByCategory(319); // ALUGUERES category
+      console.log(`✅ ${products.length} productos obtenidos directamente`);
+
+      if (products.length > 0) {
+        // Store in localStorage manually
+        const neonProducts = products.map(product => ({
+          id: product.id,
+          woocommerce_id: product.id,
+          name: product.name,
+          type: product.type,
+          status: product.status,
+          price: parseFloat(product.price || '0'),
+          regular_price: parseFloat(product.regular_price || '0'),
+          categories: product.categories,
+          images: product.images,
+          stock_quantity: product.stock_quantity || 0,
+          stock_status: product.stock_status,
+          meta_data: product.meta_data,
+          acf_data: product.acf,
+          last_updated: new Date().toISOString(),
+          created_at: new Date().toISOString()
+        }));
+
+        // Save to localStorage
+        localStorage.setItem('neon_products_cache', JSON.stringify(neonProducts));
+        localStorage.setItem('neon_last_sync', new Date().toISOString());
+
+        console.log('✅ Productos guardados en localStorage manualmente');
+
+        // Trigger cache update event
+        window.dispatchEvent(new Event('cache-updated'));
+
+        // Refresh hooks
+        if (localResult.refetch) localResult.refetch();
+        if (neonResult.refetch) neonResult.refetch();
+      }
+
+    } catch (error) {
+      console.error('❌ Error en bypass directo:', error);
     }
   };
 
@@ -69,27 +189,55 @@ export const BikeLoadingTest: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Hook selector */}
-        <div className="flex gap-2">
-          <Button 
+        <div className="flex gap-2 flex-wrap">
+          <Button
             size="sm"
             variant={activeHook === 'local' ? 'default' : 'outline'}
             onClick={() => setActiveHook('local')}
           >
             Local Cache
           </Button>
-          <Button 
+          <Button
             size="sm"
             variant={activeHook === 'neon' ? 'default' : 'outline'}
             onClick={() => setActiveHook('neon')}
           >
             Neon Direct
           </Button>
-          <Button 
+          <Button
             size="sm"
             variant={activeHook === 'mock' ? 'default' : 'outline'}
             onClick={() => setActiveHook('mock')}
           >
             Mock Data
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={forceSyncData}
+          >
+            🔄 Forçar Sync
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={resetCircuitBreakerAndSync}
+          >
+            🔧 Reset & Sync
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={checkCircuitBreakerStatus}
+          >
+            🔍 Check Status
+          </Button>
+          <Button
+            size="sm"
+            variant="default"
+            onClick={forceSyncBypassingRestrictions}
+          >
+            🚨 Force Bypass
           </Button>
         </div>
 

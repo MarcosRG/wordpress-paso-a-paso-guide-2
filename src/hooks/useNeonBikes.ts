@@ -9,15 +9,15 @@ const convertNeonProductToBike = (
   neonProduct: NeonProduct,
   variations: NeonVariation[] = [],
 ): Bike => {
-  // Calcular stock total
+  // Calcular stock total usando solo stock_quantity (simplificado)
   let totalStock = 0;
   if (variations.length > 0) {
     // Para productos variables, sumar stock de todas las variaciones
     totalStock = variations.reduce((sum, variation) => {
-      return sum + (variation.atum_stock || variation.stock_quantity);
+      return sum + (variation.stock_quantity || 0);
     }, 0);
   } else {
-    // Para productos simples, usar stock directo o ATUM
+    // Para productos simples, usar stock directo
     totalStock = neonProduct.stock_quantity || 0;
   }
 
@@ -27,7 +27,7 @@ const convertNeonProductToBike = (
   // Si hay variaciones, usar el precio de la primera variación disponible
   if (variations.length > 0) {
     const availableVariation = variations.find(
-      (v) => (v.atum_stock || v.stock_quantity) > 0,
+      (v) => (v.stock_quantity || 0) > 0,
     );
     if (availableVariation) {
       basePrice =
@@ -202,7 +202,7 @@ export const useNeonStockBySize = (
           return { default: stock };
         }
 
-        // Para productos variables, obtener stock por tamaño
+        // Para productos variables, obtener stock por tamaño (simplificado)
         const stockBySize: Record<string, number> = {};
 
         for (const variation of variations) {
@@ -222,7 +222,7 @@ export const useNeonStockBySize = (
             // Extraer solo la parte del tamaño antes del guión (ej: "XL - 59" -> "XL")
             const rawSize = sizeAttribute.option?.toUpperCase() || "DEFAULT";
             const size = rawSize.includes(' - ') ? rawSize.split(' - ')[0].trim() : rawSize;
-            const stock = variation.atum_stock || variation.stock_quantity || 0;
+            const stock = variation.stock_quantity || 0; // Solo usar stock_quantity
             stockBySize[size] = stock;
 
             console.log(
