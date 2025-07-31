@@ -450,21 +450,18 @@ export class LocalSyncService {
         console.log(`🔄 Sincronizando producto variable ${productId} con ${variations.length} variaciones...`);
 
         for (const variation of variations) {
-          const atumStock = await checkAtumAvailability(
-            product.id,
-            variation.id,
-          );
+          // Usar solo stock nativo de WooCommerce (sin ATUM)
+          const variationStock = variation.stock_quantity || 0;
           const neonVariation = convertToNeonVariation(
             variation,
             product.id,
-            atumStock,
+            variationStock,
           );
           neonVariations.push(neonVariation);
 
           // Calcular stock total de variaciones
-          const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
           totalVariationStock += variationStock;
-          console.log(`📦 Variação ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
+          console.log(`📦 Variação ${variation.id}: ${variationStock} unidades (WooCommerce stock)`);
         }
 
         // IMPORTANTE: Actualizar el stock del producto principal
