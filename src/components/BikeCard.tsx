@@ -32,17 +32,7 @@ const BikeCard = ({
 }: BikeCardProps) => {
   const { t } = useLanguage();
 
-  // Usar hook simplificado para obtener stock ATUM
-  const atumStockQuery = useAtumStock(
-    parseInt(bike.id),
-    bike.wooCommerceData?.product?.type === "variable"
-  );
-
-  const atumStockBySize = atumStockQuery.data || {};
-  const isAtumLoading = atumStockQuery.isLoading;
-  const hasAtumData = Object.keys(atumStockBySize).length > 0;
-
-  // Obter stock WooCommerce real por tamanho
+  // Obtener stock real por tamaño directamente desde las variaciones
   const wooCommerceStockBySize = getWooCommerceStockBySize(bike);
 
   // Extract ACF pricing first, then fallback to day-based pricing
