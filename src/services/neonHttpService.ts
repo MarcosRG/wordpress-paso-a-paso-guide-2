@@ -43,7 +43,7 @@ export interface NeonVariation {
 
 // Servicio HTTP simplificado para consultas directas a Neon Database
 export class NeonHttpService {
-  // API endpoints para consultas directas a Neon Database
+  // API endpoints para serverless functions (Netlify)
   private apiEndpoints = {
     products: "/api/neon/products",
     variations: "/api/neon/variations",
