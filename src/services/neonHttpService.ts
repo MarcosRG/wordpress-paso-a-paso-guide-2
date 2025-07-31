@@ -67,6 +67,12 @@ export class NeonHttpService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
+      // Verificar que la respuesta es JSON válido
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("La respuesta no es JSON válido - posiblemente endpoint inexistente");
+      }
+
       const products = await response.json();
       console.log(`✅ ${products.length} productos obtenidos directamente de Neon`);
 
@@ -119,6 +125,12 @@ export class NeonHttpService {
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Verificar que la respuesta es JSON válido
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("La respuesta no es JSON válido - posiblemente endpoint inexistente");
       }
 
       const variations = await response.json();
