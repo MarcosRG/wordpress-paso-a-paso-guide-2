@@ -8,6 +8,11 @@ import "./index.css";
 // Reset any connectivity issues on startup
 import "./utils/resetConnectivity";
 
+// Test cleanFetch functionality in development
+if (import.meta.env.DEV) {
+  import("./utils/testCleanFetch");
+}
+
 // Initialize connectivity debugger in development
 if (import.meta.env.DEV) {
   import("./utils/connectivityDebugger");
