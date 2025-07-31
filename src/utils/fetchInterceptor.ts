@@ -8,9 +8,11 @@ let isInterceptorActive = false;
  */
 export const enableFetchInterceptor = () => {
   if (isInterceptorActive) return;
-  
+
   if (!originalFetch) {
     originalFetch = window.fetch;
+    // Store original fetch globally for direct access
+    (window as any).__originalFetch__ = originalFetch;
   }
   
   window.fetch = async (...args: Parameters<typeof fetch>): Promise<Response> => {
