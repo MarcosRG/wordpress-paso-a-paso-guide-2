@@ -25,22 +25,23 @@ const App = () => {
   // Check if running in WordPress iframe
   const isWordPressEmbed = window.location !== window.parent.location;
 
-  // Initialize network recovery service
+  // Initialize network recovery service (DESHABILITADO)
   React.useEffect(() => {
-    try {
-      networkRecoveryService.startMonitoring();
-    } catch (error) {
-      console.error('Error starting network recovery service:', error);
-    }
+    // Deshabilitado para evitar fetch calls automáticos que causan conflictos con FullStory
+    // try {
+    //   networkRecoveryService.startMonitoring();
+    // } catch (error) {
+    //   console.error('Error starting network recovery service:', error);
+    // }
 
-    // Cleanup on unmount
-    return () => {
-      try {
-        networkRecoveryService.stopMonitoring();
-      } catch (error) {
-        console.error('Error stopping network recovery service:', error);
-      }
-    };
+    // // Cleanup on unmount
+    // return () => {
+    //   try {
+    //     networkRecoveryService.stopMonitoring();
+    //   } catch (error) {
+    //     console.error('Error stopping network recovery service:', error);
+    //   }
+    // };
   }, []);
 
   return (
