@@ -75,22 +75,14 @@ export const useWooCommerceBikes = () => {
               }
 
               if (variations.length > 0) {
-                // Calcular stock total usando ATUM cuando esté disponible
+                // Calcular stock total usando SOLO stock nativo de WooCommerce
                 totalStock = 0;
                 for (const variation of variations) {
-                  const atumStock = await checkAtumAvailability(
-                    product.id,
-                    variation.id,
-                  );
-                  const regularStock = variation.stock_quantity || 0;
-
-                  // Usar ATUM stock si está disponible, sino usar stock regular
-                  const variationStock =
-                    atumStock > 0 ? atumStock : regularStock;
+                  const variationStock = variation.stock_quantity || 0;
                   totalStock += variationStock;
 
                   console.log(
-                    `Producto ${product.id}, Variación ${variation.id}: ATUM=${atumStock}, Regular=${regularStock}, Usado=${variationStock}`,
+                    `✅ Producto ${product.id}, Variación ${variation.id}: Stock WooCommerce=${variationStock}`,
                   );
                 }
 
