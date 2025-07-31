@@ -109,35 +109,60 @@ export const BikeLoadingTest: React.FC = () => {
 
   const forceSyncBypassingRestrictions = async () => {
     try {
-      console.log('🚨 BYPASS: Forzando sincronización sin restricciones...');
+      console.log('🚨 BYPASS: Forzando sincronización directa...');
 
-      // First check current env vars
+      // Check environment variables
       console.log('🔍 Variables de entorno:', {
         VITE_DISABLE_API: import.meta.env.VITE_DISABLE_API,
         DEV: import.meta.env.DEV,
         MODE: import.meta.env.MODE
       });
 
-      // Reset circuit breaker first
-      const { wooCommerceCircuitBreaker } = await import('@/services/circuitBreaker');
-      wooCommerceCircuitBreaker.reset();
-      console.log('✅ Circuit breaker reseteado');
+      // Import WooCommerce API directly
+      const { wooCommerceApi } = await import('@/services/woocommerceApi');
 
-      // Import and force sync from neonHttpService directly
-      const { neonHttpService } = await import('@/services/neonHttpService');
+      console.log('🔄 Obteniendo productos directamente de WooCommerce...');
 
-      // Force trigger background sync
-      console.log('🔄 Triggering background sync...');
-      await neonHttpService.triggerBackgroundSync();
+      // Get products directly from WooCommerce
+      const products = await wooCommerceApi.getProductsByCategory(319); // ALUGUERES category
+      console.log(`✅ ${products.length} productos obtenidos directamente`);
 
-      console.log('✅ Background sync triggered');
+      if (products.length > 0) {
+        // Store in localStorage manually
+        const neonProducts = products.map(product => ({
+          id: product.id,
+          woocommerce_id: product.id,
+          name: product.name,
+          type: product.type,
+          status: product.status,
+          price: parseFloat(product.price || '0'),
+          regular_price: parseFloat(product.regular_price || '0'),
+          categories: product.categories,
+          images: product.images,
+          stock_quantity: product.stock_quantity || 0,
+          stock_status: product.stock_status,
+          meta_data: product.meta_data,
+          acf_data: product.acf,
+          last_updated: new Date().toISOString(),
+          created_at: new Date().toISOString()
+        }));
 
-      // Refresh hooks
-      if (localResult.refetch) localResult.refetch();
-      if (neonResult.refetch) neonResult.refetch();
+        // Save to localStorage
+        localStorage.setItem('neon_products_cache', JSON.stringify(neonProducts));
+        localStorage.setItem('neon_last_sync', new Date().toISOString());
+
+        console.log('✅ Productos guardados en localStorage manualmente');
+
+        // Trigger cache update event
+        window.dispatchEvent(new Event('cache-updated'));
+
+        // Refresh hooks
+        if (localResult.refetch) localResult.refetch();
+        if (neonResult.refetch) neonResult.refetch();
+      }
 
     } catch (error) {
-      console.error('❌ Error en bypass sync:', error);
+      console.error('❌ Error en bypass directo:', error);
     }
   };
 
