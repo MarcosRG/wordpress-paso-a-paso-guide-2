@@ -157,7 +157,7 @@ export const useNeonBikesByCategory = (categorySlug: string | null) => {
       }
 
       // Obtener productos por categoría
-      const products = await neonHttpService.getProductsByCategory(categorySlug);
+      const products = await neonServerlessService.getProductsByCategory(categorySlug);
       const bikes: Bike[] = [];
 
       for (const product of products) {
