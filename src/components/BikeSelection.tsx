@@ -36,9 +36,9 @@ export const BikeSelection = ({
     isLoading,
     error,
     refetch: refetchBikes,
-  } = useLocalNeonBikes();
+  } = useWooCommerceBikes();
   const { data: categories = [], refetch: refetchCategories } =
-    useLocalNeonCategories();
+    useWooCommerceCategories();
   const { language, setLanguage, t } = useLanguage();
 
 
