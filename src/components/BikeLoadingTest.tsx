@@ -206,6 +206,13 @@ export const BikeLoadingTest: React.FC = () => {
           >
             🔍 Check Status
           </Button>
+          <Button
+            size="sm"
+            variant="default"
+            onClick={forceSyncBypassingRestrictions}
+          >
+            🚨 Force Bypass
+          </Button>
         </div>
 
         {/* Sync Status */}
