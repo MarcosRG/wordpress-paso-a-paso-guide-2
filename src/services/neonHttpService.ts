@@ -53,7 +53,7 @@ export class NeonHttpService {
   // Obtener todos los productos activos directamente de Neon Database
   async getActiveProducts(): Promise<NeonProduct[]> {
     try {
-      console.log("🔄 Consultando productos directamente desde Neon Database...");
+      // Silencioso - intentar consultar la API de Neon Database
 
       // Intentar consultar la API de Neon Database
       const response = await fetch(this.apiEndpoints.products, {
