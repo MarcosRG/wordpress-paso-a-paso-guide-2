@@ -1,19 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
-import { checkAtumAvailability, wooCommerceApi } from "@/services/woocommerceApi";
+import { wooCommerceApi } from "@/services/woocommerceApi";
 
-// Hook básico simplificado para obtener stock ATUM por tamaño
+// Hook simplificado para obtener stock nativo de WooCommerce por tamaño (sin ATUM)
 export const useAtumStock = (productId: number, enabled: boolean = true) => {
   return useQuery({
-    queryKey: ["atum-stock", productId],
+    queryKey: ["woocommerce-stock", productId],
     queryFn: async (): Promise<Record<string, number>> => {
       try {
         // Obtener las variaciones del producto
         const variations = await wooCommerceApi.getProductVariations(productId);
 
         if (!variations || variations.length === 0) {
-          // Para productos simples, devolver stock total
-          const stock = await checkAtumAvailability(productId);
-          return { default: stock };
+          // Para productos simples, obtener stock del producto principal
+          const product = await wooCommerceApi.getProduct(productId);
+          return { default: product.stock_quantity || 0 };
         }
 
         // Para productos variables, obtener stock por tamaño
@@ -33,14 +33,14 @@ export const useAtumStock = (productId: number, enabled: boolean = true) => {
             // Extraer solo la parte del tamaño antes del guión (ej: "XL - 59" -> "XL")
             const rawSize = sizeAttribute.option.toUpperCase();
             const size = rawSize.includes(' - ') ? rawSize.split(' - ')[0].trim() : rawSize;
-            const stock = await checkAtumAvailability(productId, variation.id);
+            const stock = variation.stock_quantity || 0; // Usar stock nativo de WooCommerce
             stockBySize[size] = stock;
           }
         }
 
         return stockBySize;
       } catch (error) {
-        console.error(`Error obteniendo stock ATUM para producto ${productId}:`, error);
+        console.error(`Error obteniendo stock WooCommerce para producto ${productId}:`, error);
         return { default: 0 };
       }
     },

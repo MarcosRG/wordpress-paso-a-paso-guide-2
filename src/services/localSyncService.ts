@@ -1,4 +1,4 @@
-import { wooCommerceApi, checkAtumAvailability } from "./woocommerceApi";
+import { wooCommerceApi } from "./woocommerceApi";
 import { wooCommerceCircuitBreaker, canMakeWooCommerceRequest } from "./circuitBreaker";
 import {
   neonHttpService,
@@ -233,22 +233,8 @@ export class LocalSyncService {
               );
             }
           } else {
-            // Producto simple - obtener stock ATUM
-            try {
-              const atumStock = await checkAtumAvailability(product.id);
-              if (atumStock > 0) {
-                // Actualizar stock en el producto
-                neonProduct.stock_quantity = Math.max(
-                  neonProduct.stock_quantity,
-                  atumStock,
-                );
-              }
-            } catch (error) {
-              console.warn(
-                `⚠️ Error obteniendo stock ATUM para producto ${product.id}:`,
-                error,
-              );
-            }
+            // Producto simple - usar stock nativo de WooCommerce
+            neonProduct.stock_quantity = product.stock_quantity || 0;
           }
 
           console.log(`✅ Procesado: ${product.name} (ID: ${product.id}) - Stock final: ${neonProduct.stock_quantity}`);
@@ -450,21 +436,18 @@ export class LocalSyncService {
         console.log(`🔄 Sincronizando producto variable ${productId} con ${variations.length} variaciones...`);
 
         for (const variation of variations) {
-          const atumStock = await checkAtumAvailability(
-            product.id,
-            variation.id,
-          );
+          // Usar solo stock nativo de WooCommerce (sin ATUM)
+          const variationStock = variation.stock_quantity || 0;
           const neonVariation = convertToNeonVariation(
             variation,
             product.id,
-            atumStock,
+            variationStock,
           );
           neonVariations.push(neonVariation);
 
           // Calcular stock total de variaciones
-          const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
           totalVariationStock += variationStock;
-          console.log(`📦 Variação ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
+          console.log(`📦 Variação ${variation.id}: ${variationStock} unidades (WooCommerce stock)`);
         }
 
         // IMPORTANTE: Actualizar el stock del producto principal

@@ -45,9 +45,9 @@ export interface NeonVariation {
 export class NeonHttpService {
   // API endpoints para serverless functions (Netlify)
   private apiEndpoints = {
-    products: "/api/neon/products",
-    variations: "/api/neon/variations",
-    categories: "/api/neon/categories",
+    products: "/.netlify/functions/neon-products",
+    variations: "/.netlify/functions/neon-variations",
+    categories: "/.netlify/functions/neon-categories",
   };
 
   // Usar fetch nativo para evitar conflictos con interceptores
@@ -229,6 +229,22 @@ export class NeonHttpService {
     // En el futuro: enviar lista de IDs activos para limpiar obsoletos
   }
 
+  // Métodos stub para cache (compatibilidad con LocalSyncService)
+  async cacheProducts(products: any[]): Promise<void> {
+    console.log(`📦 Cache de productos (stub): ${products.length} productos`);
+    // Sin cache local, estos métodos no hacen nada
+  }
+
+  async cacheVariations(variations: any[]): Promise<void> {
+    console.log(`📦 Cache de variaciones (stub): ${variations.length} variaciones`);
+    // Sin cache local, estos métodos no hacen nada
+  }
+
+  async cacheCategories(categories: any[]): Promise<void> {
+    console.log(`📦 Cache de categorías (stub): ${categories.length} categorías`);
+    // Sin cache local, estos métodos no hacen nada
+  }
+
   // Métodos stub para compatibilidad con LocalSyncService
   needsSync(): boolean {
     // Como ya no usamos cache local, nunca necesitamos sincronizar desde frontend
@@ -241,6 +257,16 @@ export class NeonHttpService {
       lastSyncTime: new Date(), // Simular que acabó de sincronizar
       isRunning: false,
     };
+  }
+
+  setSyncStatus(isRunning: boolean): void {
+    console.log(`🔄 Sync status set to: ${isRunning ? 'running' : 'idle'}`);
+    // Sin estado local, este método no hace nada
+  }
+
+  clearCache(force: boolean = false): void {
+    console.log(`🧹 Clear cache (stub): force=${force}`);
+    // Sin cache local, este método no hace nada
   }
 }
 

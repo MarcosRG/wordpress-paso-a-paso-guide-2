@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
 import {
-  useLocalNeonBikes,
-  useLocalNeonCategories,
-} from "@/hooks/useLocalNeonBikes";
+  useWooCommerceBikes,
+  useWooCommerceCategories,
+} from "@/hooks/useWooCommerceBikes";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -36,9 +36,9 @@ export const BikeSelection = ({
     isLoading,
     error,
     refetch: refetchBikes,
-  } = useLocalNeonBikes();
+  } = useWooCommerceBikes();
   const { data: categories = [], refetch: refetchCategories } =
-    useLocalNeonCategories();
+    useWooCommerceCategories();
   const { language, setLanguage, t } = useLanguage();
 
 
@@ -46,8 +46,8 @@ export const BikeSelection = ({
   // Manual refresh function
   const handleRefresh = async () => {
     // Invalidar cache de React Query para forzar recarga desde cache local
-    queryClient.invalidateQueries({ queryKey: ["local-neon-bikes"] });
-    queryClient.invalidateQueries({ queryKey: ["local-neon-categories"] });
+    queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes"] });
+    queryClient.invalidateQueries({ queryKey: ["woocommerce-categories"] });
     await Promise.all([refetchBikes(), refetchCategories()]);
   };
 
