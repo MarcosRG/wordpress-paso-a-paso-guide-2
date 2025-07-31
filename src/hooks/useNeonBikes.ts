@@ -198,7 +198,7 @@ export const useNeonStockBySize = (
 
         if (!variations || variations.length === 0) {
           // Para productos simples, devolver stock total
-          const stock = await neonServerlessService.getAtumStock(productId);
+          const stock = await neonServerlessService.getTotalStock(productId);
           return { default: stock };
         }
 
