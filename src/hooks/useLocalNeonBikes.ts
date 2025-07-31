@@ -246,12 +246,14 @@ export const useLocalNeonStockBySize = (
   });
 };
 
-// Hook para obtener categorías disponibles
+// Hook para obtener categorías disponibles desde Neon Database
 export const useLocalNeonCategories = () => {
   return useQuery({
-    queryKey: ["local-neon-categories"],
+    queryKey: ["neon-categories"],
     queryFn: async (): Promise<string[]> => {
       try {
+        console.log("🔄 Consultando categorías desde Neon Database...");
+
         // Obtener categorías únicas de productos activos
         const products = await neonHttpService.getActiveProducts();
         const categorySlugs = new Set<string>();
@@ -267,16 +269,19 @@ export const useLocalNeonCategories = () => {
           }
         });
 
-        return Array.from(categorySlugs).sort();
+        const categoryList = Array.from(categorySlugs).sort();
+        console.log(`✅ ${categoryList.length} categorías encontradas:`, categoryList);
+
+        return categoryList;
       } catch (error) {
-        console.error("Error obteniendo categorías desde cache local:", error);
+        console.error("❌ Error obteniendo categorías desde Neon:", error);
         return [];
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 20 * 60 * 1000,
     throwOnError: false,
-    retry: 1,
+    retry: 2,
   });
 };
 
