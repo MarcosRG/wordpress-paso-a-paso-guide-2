@@ -75,7 +75,7 @@ export class NeonHttpService {
       console.error("❌ Error consultando Neon Database:", error);
 
       // Fallback temporal: usar mock API hasta implementar endpoint real
-      console.log("🔄 Usando mock API temporal...");
+      console.log("�� Usando mock API temporal...");
       const { mockNeonApi } = await import("./mockNeonApi");
       return await mockNeonApi.getProducts();
     }
@@ -172,10 +172,18 @@ export class NeonHttpService {
     // En el futuro: enviar lista de IDs activos para limpiar obsoletos
   }
 
-  // Método stub para compatibilidad con LocalSyncService
+  // Métodos stub para compatibilidad con LocalSyncService
   needsSync(): boolean {
     // Como ya no usamos cache local, nunca necesitamos sincronizar desde frontend
     return false;
+  }
+
+  getSyncStatus(): { lastSyncTime: Date | null; isRunning: boolean } {
+    // Sin cache local, el estado de sync es siempre idle
+    return {
+      lastSyncTime: new Date(), // Simular que acabó de sincronizar
+      isRunning: false,
+    };
   }
 }
 
