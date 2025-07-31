@@ -123,7 +123,7 @@ export class NeonHttpService {
     try {
       // Silencioso - intentar consultar variaciones
 
-      const response = await fetch(`${this.apiEndpoints.products}/${productId}/variations`, {
+      const response = await this.nativeFetch(`${this.apiEndpoints.products}/${productId}/variations`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
