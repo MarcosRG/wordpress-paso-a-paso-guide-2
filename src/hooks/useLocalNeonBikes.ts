@@ -123,9 +123,7 @@ export const useLocalNeonBikes = () => {
           }
         }
 
-        console.log(
-          `✅ ${bikes.length} bicicletas disponibles cargadas desde cache local`,
-        );
+        console.log(`✅ ${bikes.length} bicicletas con stock disponibles`);
         return bikes;
       } catch (error) {
         console.error("❌ Error cargando productos desde cache local:", error);
