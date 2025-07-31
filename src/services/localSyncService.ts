@@ -27,8 +27,8 @@ export class LocalSyncService {
     // Verificar si necesita sincronización inicial
     if (neonHttpService.needsSync()) {
       console.log("🚀 Iniciando sincronización inicial automática...");
-      // Solo limpiar cache en sync inicial si realmente es necesario
-      neonHttpService.clearCache();
+      // Limpiar cache completamente en sync inicial (primera vez)
+      neonHttpService.clearCache(true);
       this.performSync()
         .then(() => {
           console.log("✅ Sincronización inicial completada automáticamente");
@@ -464,7 +464,7 @@ export class LocalSyncService {
           // Calcular stock total de variaciones
           const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
           totalVariationStock += variationStock;
-          console.log(`�� Variação ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
+          console.log(`📦 Variação ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
         }
 
         // IMPORTANTE: Actualizar el stock del producto principal
