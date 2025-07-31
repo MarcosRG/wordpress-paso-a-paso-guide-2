@@ -54,7 +54,45 @@ export class NeonHttpService {
   private async nativeFetch(url: string, options?: RequestInit): Promise<Response> {
     // Guardar referencia a fetch original antes de cualquier interceptor
     const originalFetch = (window as any).__originalFetch__ || window.fetch;
-    return originalFetch(url, options);
+
+    try {
+      return await originalFetch(url, options);
+    } catch (error) {
+      // Si el fetch nativo falla, usar XMLHttpRequest como fallback
+      if (error instanceof Error && error.message.includes('Failed to fetch')) {
+        return this.xmlHttpFallback(url, options);
+      }
+      throw error;
+    }
+  }
+
+  // Fallback usando XMLHttpRequest para evitar problemas de fetch
+  private async xmlHttpFallback(url: string, options?: RequestInit): Promise<Response> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open(options?.method || 'GET', url);
+
+      // Establecer headers
+      if (options?.headers) {
+        const headers = options.headers as Record<string, string>;
+        Object.entries(headers).forEach(([key, value]) => {
+          xhr.setRequestHeader(key, value);
+        });
+      }
+
+      xhr.onload = () => {
+        const response = new Response(xhr.responseText, {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          headers: new Headers()
+        });
+        resolve(response);
+      };
+
+      xhr.onerror = () => reject(new Error('XHR request failed'));
+      xhr.timeout = 10000; // 10 second timeout
+      xhr.send(options?.body as string);
+    });
   }
 
   // Obtener todos los productos activos directamente de Neon Database
