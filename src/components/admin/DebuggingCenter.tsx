@@ -17,8 +17,7 @@ import {
   Info,
   CheckCircle
 } from 'lucide-react';
-import { AtumInventoryDebugger } from '../AtumInventoryDebugger';
-import { AtumInventoryTester } from '../AtumInventoryTester';
+
 import { CircuitBreakerControl } from '../CircuitBreakerControl';
 import { useLocalSyncStatus } from '@/hooks/useLocalSyncStatus';
 import { localSyncService } from '@/services/localSyncService';
