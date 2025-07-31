@@ -1,27 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  checkAtumAvailability,
-  wooCommerceApi,
-} from "@/services/woocommerceApi";
-import { neonStockService } from "@/services/neonStockService";
+import { checkAtumAvailability, wooCommerceApi } from "@/services/woocommerceApi";
 
-// Temporary flag to disable API calls when network is problematic
-const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
-
-// Hook para obtener stock específico por tamaño de un producto
-export const useAtumStockBySize = (
-  productId: number,
-  enabled: boolean = true,
-) => {
+// Hook básico simplificado para obtener stock ATUM por tamaño
+export const useAtumStock = (productId: number, enabled: boolean = true) => {
   return useQuery({
     queryKey: ["atum-stock", productId],
     queryFn: async (): Promise<Record<string, number>> => {
-      // If API calls are disabled, return mock data
-      if (DISABLE_API_CALLS) {
-        console.info("API calls disabled, returning mock stock data");
-        return { S: 3, M: 5, L: 2, XL: 1 };
-      }
-
       try {
         // Obtener las variaciones del producto
         const variations = await wooCommerceApi.getProductVariations(productId);
@@ -29,31 +13,11 @@ export const useAtumStockBySize = (
         if (!variations || variations.length === 0) {
           // Para productos simples, devolver stock total
           const stock = await checkAtumAvailability(productId);
-
-          // Sincronizar producto simple con Neon
-          neonStockService
-            .syncProductStock(productId, [
-              {
-                stock_quantity: stock,
-                manage_stock: true,
-                in_stock: stock > 0,
-                backorders_allowed: false,
-              },
-            ])
-            .catch((error) => {
-              console.warn(
-                `Error sincronizando producto simple ${productId} con Neon:`,
-                error,
-              );
-            });
-
           return { default: stock };
         }
 
         // Para productos variables, obtener stock por tamaño
         const stockBySize: Record<string, number> = {};
-
-        const stockData = [];
 
         for (const variation of variations) {
           // Buscar el atributo de tamaño en la variación
@@ -71,96 +35,20 @@ export const useAtumStockBySize = (
             const size = rawSize.includes(' - ') ? rawSize.split(' - ')[0].trim() : rawSize;
             const stock = await checkAtumAvailability(productId, variation.id);
             stockBySize[size] = stock;
-
-            // Preparar datos para sincronizar con Neon
-            stockData.push({
-              variation_id: variation.id,
-              size: size,
-              stock_quantity: stock,
-              manage_stock: true,
-              in_stock: stock > 0,
-              backorders_allowed: false,
-            });
-
-            console.log(
-              `Stock ATUM para ${productId} tamaño ${size}: ${stock}`,
-            );
           }
-        }
-
-        // Sincronizar con Neon (en segundo plano)
-        if (stockData.length > 0) {
-          neonStockService
-            .syncProductStock(productId, stockData)
-            .catch((error) => {
-              console.warn(
-                `Error sincronizando stock con Neon para producto ${productId}:`,
-                error,
-              );
-            });
         }
 
         return stockBySize;
       } catch (error) {
-        console.error(
-          `Error obteniendo stock ATUM para producto ${productId}:`,
-          error,
-        );
-        // Return default stock instead of empty object to prevent UI errors
+        console.error(`Error obteniendo stock ATUM para producto ${productId}:`, error);
         return { default: 0 };
       }
     },
     enabled: enabled && !!productId,
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
-    throwOnError: false, // Don't throw errors to prevent console spam
-    retry: (failureCount, error) => {
-      // Don't retry on timeout or network errors
-      if (
-        error instanceof Error &&
-        (error.message.includes("fetch") ||
-          error.message.includes("Failed to fetch") ||
-          error.message === "Request timeout")
-      ) {
-        return false; // No retries for network/timeout errors
-      }
-      return failureCount < 2; // Only 2 retries for other errors
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  });
-};
-
-// Hook para obtener stock total de un producto usando ATUM
-export const useAtumProductStock = (
-  productId: number,
-  enabled: boolean = true,
-) => {
-  return useQuery({
-    queryKey: ["atum-product-stock", productId],
-    queryFn: () => {
-      // If API calls are disabled, return mock data
-      if (DISABLE_API_CALLS) {
-        console.info("API calls disabled, returning mock stock data");
-        return Promise.resolve(10);
-      }
-      return checkAtumAvailability(productId);
-    },
-    enabled: enabled && !!productId,
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 5 * 60 * 1000, // 5 minutos
-    throwOnError: false, // Don't throw errors to prevent console spam
-    retry: (failureCount, error) => {
-      // Don't retry on timeout or network errors
-      if (
-        error instanceof Error &&
-        (error.message.includes("fetch") ||
-          error.message.includes("Failed to fetch") ||
-          error.message === "Request timeout")
-      ) {
-        return false; // No retries for network/timeout errors
-      }
-      return failureCount < 2; // Only 2 retries for other errors
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    throwOnError: false,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });
 };
