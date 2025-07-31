@@ -114,7 +114,7 @@ export class NeonHttpService {
   // Obtener variaciones de un producto directamente de Neon Database
   async getProductVariations(productId: number): Promise<NeonVariation[]> {
     try {
-      console.log(`🔄 Consultando variaciones del producto ${productId} desde Neon...`);
+      // Silencioso - intentar consultar variaciones
 
       const response = await fetch(`${this.apiEndpoints.products}/${productId}/variations`, {
         method: 'GET',
