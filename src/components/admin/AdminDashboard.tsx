@@ -133,52 +133,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Reservas</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalReservations}</div>
-              <p className="text-xs text-muted-foreground">
-                Todas las reservas
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-              <AlertCircle className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{stats.pendingReservations}</div>
-              <p className="text-xs text-muted-foreground">
-                Requieren atención
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Confirmadas</CardTitle>
+              <CardTitle className="text-sm font-medium">Estado Sistema</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.confirmedReservations}</div>
+              <div className="text-2xl font-bold text-green-600">{stats.systemStatus}</div>
               <p className="text-xs text-muted-foreground">
-                Listas para entrega
+                Sistema funcionando
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ingresos Hoy</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Productos Activos</CardTitle>
+              <Bike className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">€{stats.todayRevenue.toFixed(2)}</div>
+              <div className="text-2xl font-bold">{stats.activeProducts}</div>
               <p className="text-xs text-muted-foreground">
-                Reservas de hoy
+                Con stock disponible
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">WooCommerce</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">Conectado</div>
+              <p className="text-xs text-muted-foreground">
+                API funcionando
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Última Actualización</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-lg font-bold">{lastUpdate.toLocaleTimeString()}</div>
+              <p className="text-xs text-muted-foreground">
+                Datos actualizados
               </p>
             </CardContent>
           </Card>
