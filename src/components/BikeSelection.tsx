@@ -257,10 +257,7 @@ export const BikeSelection = ({
         onCategoryChange={setSelectedCategory}
       />
 
-      {/* DEBUG: Componente temporal de diagnóstico */}
-      <div className="mb-6">
-        <BikeLoadingTest />
-      </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBikes.map((bike) => {
