@@ -269,7 +269,7 @@ const Index = () => {
           </div>
         </div>
 
-        {/* DEBUG: Componente removido temporalmente para mejor visualización */}
+
 
         <Card className="p-6 mb-6">
           {/* Language selector for each step */}
