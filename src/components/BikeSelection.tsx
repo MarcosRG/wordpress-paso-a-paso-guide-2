@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
 import {
-  useLocalNeonBikes,
-  useLocalNeonCategories,
-} from "@/hooks/useLocalNeonBikes";
+  useWooCommerceBikes,
+  useWooCommerceCategories,
+} from "@/hooks/useWooCommerceBikes";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
