@@ -38,6 +38,9 @@ export const BikeLoadingTest: React.FC = () => {
     console.log('🔍 BikeLoadingTest - Current hook:', activeHook);
     console.log('🔍 BikeLoadingTest - Result:', currentResult);
     console.log('🔍 BikeLoadingTest - Sync Status:', syncStatus);
+
+    // Auto-check circuit breaker status on load
+    checkCircuitBreakerStatus();
   }, [activeHook, currentResult, syncStatus]);
 
   const forceRefresh = () => {
@@ -169,7 +172,7 @@ export const BikeLoadingTest: React.FC = () => {
           <h4 className="font-semibold mb-2">Status de Sincronização:</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
-              <strong>Em execução:</strong> {syncStatus.isRunning ? 'Sim' : 'Não'}
+              <strong>Em execuç��o:</strong> {syncStatus.isRunning ? 'Sim' : 'Não'}
             </div>
             <div>
               <strong>Última sync:</strong> {syncStatus.lastSyncTime ? new Date(syncStatus.lastSyncTime).toLocaleString() : 'Nunca'}
