@@ -9,15 +9,15 @@ const convertNeonProductToBike = (
   neonProduct: NeonProduct,
   variations: NeonVariation[] = [],
 ): Bike => {
-  // Calcular stock total
+  // Calcular stock total usando solo stock_quantity (simplificado)
   let totalStock = 0;
   if (variations.length > 0) {
     // Para productos variables, sumar stock de todas las variaciones
     totalStock = variations.reduce((sum, variation) => {
-      return sum + (variation.atum_stock || variation.stock_quantity);
+      return sum + (variation.stock_quantity || 0);
     }, 0);
   } else {
-    // Para productos simples, usar stock directo o ATUM
+    // Para productos simples, usar stock directo
     totalStock = neonProduct.stock_quantity || 0;
   }
 
