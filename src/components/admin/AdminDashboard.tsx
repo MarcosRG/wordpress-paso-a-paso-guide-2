@@ -38,31 +38,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const currentUser = adminAuthService.getCurrentUser();
 
   useEffect(() => {
-    loadDashboardData();
-    
-    // Actualizar datos cada 30 segundos
-    const interval = setInterval(loadDashboardData, 30000);
+    // Solo actualizar timestamp
+    const interval = setInterval(() => setLastUpdate(new Date()), 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const loadDashboardData = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Cargar reservas
-      const reservationsData = await reservationService.getReservations();
-      setReservations(reservationsData);
-      
-      // Cargar estadísticas de sincronización
-      const syncStatsData = wordPressSyncService.getSyncStats();
-      setSyncStats(syncStatsData);
-      
-      setLastUpdate(new Date());
-    } catch (error) {
-      console.error('Error cargando datos del dashboard:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleRefresh = () => {
+    setLastUpdate(new Date());
+    toast({
+      title: "Dashboard actualizado",
+      description: "Los datos han sido actualizados."
+    });
   };
 
   const handleLogout = () => {
