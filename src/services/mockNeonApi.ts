@@ -1,7 +1,39 @@
 // Mock temporal de la API de Neon para development
 // Este archivo debe eliminarse cuando se implemente la API real
 
-import { NeonProduct, NeonVariation } from "./neonHttpService";
+// Interfaces locales para evitar importación circular
+interface MockNeonProduct {
+  id: number;
+  woocommerce_id: number;
+  name: string;
+  slug?: string;
+  type: string;
+  status: string;
+  description?: string;
+  short_description?: string;
+  price?: number;
+  regular_price?: number;
+  categories?: any;
+  images?: any;
+  stock_quantity: number;
+  stock_status: string;
+  acf_data?: any;
+  last_updated: string;
+  created_at: string;
+}
+
+interface MockNeonVariation {
+  id: number;
+  woocommerce_id: number;
+  product_id: number;
+  price?: number;
+  regular_price?: number;
+  stock_quantity: number;
+  stock_status: string;
+  attributes?: any;
+  last_updated: string;
+  created_at: string;
+}
 
 // Mock data con productos reales para testing
 const mockProducts: NeonProduct[] = [
