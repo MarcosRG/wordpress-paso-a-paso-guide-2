@@ -50,6 +50,13 @@ export class NeonHttpService {
     categories: "/api/neon/categories",
   };
 
+  // Usar fetch nativo para evitar conflictos con interceptores
+  private async nativeFetch(url: string, options?: RequestInit): Promise<Response> {
+    // Guardar referencia a fetch original antes de cualquier interceptor
+    const originalFetch = (window as any).__originalFetch__ || window.fetch;
+    return originalFetch(url, options);
+  }
+
   // Obtener todos los productos activos directamente de Neon Database
   async getActiveProducts(): Promise<NeonProduct[]> {
     try {
