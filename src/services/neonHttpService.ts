@@ -111,26 +111,31 @@ export class NeonHttpService {
     });
   }
 
-  // Obtener variaciones de un producto
+  // Obtener variaciones de un producto directamente de Neon Database
   async getProductVariations(productId: number): Promise<NeonVariation[]> {
     try {
-      const cached = localStorage.getItem(this.storageKeys.variations);
-      if (!cached) return [];
+      console.log(`🔄 Consultando variaciones del producto ${productId} desde Neon...`);
 
-      const allVariations = JSON.parse(cached);
-      const productVariations = allVariations.filter(
-        (v: NeonVariation) =>
-          v.product_id === productId ||
-          allVariations.find((p: NeonProduct) => p.woocommerce_id === productId)
-            ?.id === v.product_id,
-      );
+      const response = await fetch(`/api/neon/products/${productId}/variations`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      return productVariations;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const variations = await response.json();
+      console.log(`✅ ${variations.length} variaciones obtenidas para producto ${productId}`);
+
+      return variations;
     } catch (error) {
-      console.error(
-        `Error cargando variaciones para producto ${productId}:`,
-        error,
-      );
+      console.error(`❌ Error consultando variaciones del producto ${productId}:`, error);
+
+      // Fallback: devolver array vacío hasta implementar API endpoint
+      console.log("⚠️ API endpoint variaciones no disponible aún");
       return [];
     }
   }
