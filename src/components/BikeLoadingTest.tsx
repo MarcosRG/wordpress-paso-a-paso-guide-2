@@ -47,6 +47,20 @@ export const BikeLoadingTest: React.FC = () => {
     }
   };
 
+  const forceSyncData = async () => {
+    try {
+      console.log('🚀 Forzando sincronización manual...');
+      const { localSyncService } = await import('@/services/localSyncService');
+      await localSyncService.performSync();
+      console.log('✅ Sincronización manual completada');
+      // Refresh all hooks after sync
+      if (localResult.refetch) localResult.refetch();
+      if (neonResult.refetch) neonResult.refetch();
+    } catch (error) {
+      console.error('❌ Error en sincronización manual:', error);
+    }
+  };
+
   const getStatusColor = (loading: boolean, error: any, data: any[]) => {
     if (loading) return 'bg-yellow-100 border-yellow-300';
     if (error) return 'bg-red-100 border-red-300';
