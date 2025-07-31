@@ -233,22 +233,8 @@ export class LocalSyncService {
               );
             }
           } else {
-            // Producto simple - obtener stock ATUM
-            try {
-              const atumStock = await checkAtumAvailability(product.id);
-              if (atumStock > 0) {
-                // Actualizar stock en el producto
-                neonProduct.stock_quantity = Math.max(
-                  neonProduct.stock_quantity,
-                  atumStock,
-                );
-              }
-            } catch (error) {
-              console.warn(
-                `⚠️ Error obteniendo stock ATUM para producto ${product.id}:`,
-                error,
-              );
-            }
+            // Producto simple - usar stock nativo de WooCommerce
+            neonProduct.stock_quantity = product.stock_quantity || 0;
           }
 
           console.log(`✅ Procesado: ${product.name} (ID: ${product.id}) - Stock final: ${neonProduct.stock_quantity}`);
