@@ -45,9 +45,9 @@ export interface NeonVariation {
 export class NeonHttpService {
   // API endpoints para serverless functions (Netlify)
   private apiEndpoints = {
-    products: "/api/neon/products",
-    variations: "/api/neon/variations",
-    categories: "/api/neon/categories",
+    products: "/.netlify/functions/neon-products",
+    variations: "/.netlify/functions/neon-variations",
+    categories: "/.netlify/functions/neon-categories",
   };
 
   // Usar fetch nativo para evitar conflictos con interceptores
