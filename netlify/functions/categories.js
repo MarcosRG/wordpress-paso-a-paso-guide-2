@@ -1,0 +1,91 @@
+const { neon } = require('@neondatabase/serverless');
+
+exports.handler = async (event, context) => {
+  // Configurar headers CORS
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Content-Type': 'application/json',
+  };
+
+  // Manejar preflight CORS
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: '',
+    };
+  }
+
+  try {
+    // Extraer slug de categoría del query parameter
+    const categorySlug = event.queryStringParameters?.slug;
+
+    if (!categorySlug) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          error: 'Slug de categoría requerido',
+          message: 'Proporciona slug como parámetro de query (?slug=btt)'
+        }),
+      };
+    }
+
+    // Inicializar conexión con Neon Database
+    const sql = neon(process.env.DATABASE_URL);
+
+    // Obtener productos filtrados por categoría
+    const products = await sql`
+      SELECT 
+        id,
+        woocommerce_id,
+        name,
+        slug,
+        type,
+        status,
+        description,
+        short_description,
+        price,
+        regular_price,
+        sale_price,
+        categories,
+        images,
+        attributes,
+        variations,
+        stock_quantity,
+        stock_status,
+        meta_data,
+        acf_data,
+        last_updated,
+        created_at
+      FROM products 
+      WHERE status = 'publish' 
+        AND stock_quantity > 0
+        AND categories::text ILIKE '%"slug":"' || ${categorySlug} || '"%'
+      ORDER BY name ASC
+    `;
+
+    console.log(`✅ ${products.length} productos obtenidos para categoría "${categorySlug}"`);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(products),
+    };
+
+  } catch (error) {
+    console.error('❌ Error en endpoint categories:', error);
+
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        error: 'Error interno del servidor',
+        message: error.message,
+        timestamp: new Date().toISOString()
+      }),
+    };
+  }
+};

@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { NeonProduct, NeonVariation } from "@/services/neonHttpService";
+import { NeonProduct, NeonVariation } from "@/services/neonServerlessService";
 import { Bike } from "@/pages/Index";
 import { extractACFPricing } from "@/services/woocommerceApi";
-import { neonHttpService } from "@/services/neonHttpService";
+import { neonServerlessService } from "@/services/neonServerlessService";
 
 // Convertir producto de Neon a formato Bike de la aplicación
 const convertNeonProductToBike = (
@@ -82,8 +82,8 @@ export const useNeonBikes = () => {
       try {
         console.log("🚀 Cargando productos desde Neon database...");
 
-        // Obtener productos activos desde Neon (usando HTTP service)
-        const products = await neonHttpService.getActiveProducts();
+        // Obtener productos activos desde Neon (usando Serverless Functions)
+        const products = await neonServerlessService.getActiveProducts();
         console.log(`✅ ${products.length} productos obtenidos desde Neon`);
 
         const bikes: Bike[] = [];
@@ -95,7 +95,7 @@ export const useNeonBikes = () => {
 
             // Si es un producto variable, obtener sus variaciones
             if (product.type === "variable") {
-              variations = await neonHttpService.getProductVariations(
+              variations = await neonServerlessService.getProductVariations(
                 product.woocommerce_id,
               );
             }
@@ -138,13 +138,13 @@ export const useNeonBikesByCategory = (categorySlug: string | null) => {
     queryFn: async (): Promise<Bike[]> => {
       if (!categorySlug) {
         // Si no hay categoría, obtener todos los productos
-        const products = await neonHttpService.getActiveProducts();
+        const products = await neonServerlessService.getActiveProducts();
         const bikes: Bike[] = [];
 
         for (const product of products) {
           let variations: NeonVariation[] = [];
           if (product.type === "variable") {
-            variations = await neonHttpService.getProductVariations(
+            variations = await neonServerlessService.getProductVariations(
               product.woocommerce_id,
             );
           }
@@ -157,13 +157,13 @@ export const useNeonBikesByCategory = (categorySlug: string | null) => {
       }
 
       // Obtener productos por categoría
-      const products = await neonHttpService.getProductsByCategory(categorySlug);
+      const products = await neonServerlessService.getProductsByCategory(categorySlug);
       const bikes: Bike[] = [];
 
       for (const product of products) {
         let variations: NeonVariation[] = [];
         if (product.type === "variable") {
-          variations = await neonHttpService.getProductVariations(
+          variations = await neonServerlessService.getProductVariations(
             product.woocommerce_id,
           );
         }
@@ -194,11 +194,11 @@ export const useNeonStockBySize = (
     queryFn: async (): Promise<Record<string, number>> => {
       try {
         // Obtener variaciones del producto
-        const variations = await neonHttpService.getProductVariations(productId);
+        const variations = await neonServerlessService.getProductVariations(productId);
 
         if (!variations || variations.length === 0) {
           // Para productos simples, devolver stock total
-          const stock = await neonHttpService.getAtumStock(productId);
+          const stock = await neonServerlessService.getTotalStock(productId);
           return { default: stock };
         }
 
@@ -254,7 +254,7 @@ export const useNeonCategories = () => {
     queryKey: ["neon-categories"],
     queryFn: async (): Promise<string[]> => {
       // Obtener categorías únicas de productos activos
-      const products = await neonHttpService.getActiveProducts();
+      const products = await neonServerlessService.getActiveProducts();
       const categorySlugs = new Set<string>();
 
       products.forEach((product) => {
@@ -281,7 +281,7 @@ export const useNeonProduct = (productId: number) => {
     queryKey: ["neon-product", productId],
     queryFn: async (): Promise<Bike | null> => {
       try {
-        const products = await neonHttpService.getActiveProducts();
+        const products = await neonServerlessService.getActiveProducts();
         const product = products.find((p) => p.woocommerce_id === productId);
 
         if (!product) {
@@ -290,7 +290,7 @@ export const useNeonProduct = (productId: number) => {
 
         let variations: NeonVariation[] = [];
         if (product.type === "variable") {
-          variations = await neonHttpService.getProductVariations(productId);
+          variations = await neonServerlessService.getProductVariations(productId);
         }
 
         return convertNeonProductToBike(product, variations);
