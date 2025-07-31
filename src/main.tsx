@@ -5,6 +5,9 @@ import "./index.css";
 // Fetch interceptor disabled - now using cleanFetch approach
 // import "./utils/fetchInterceptor";
 
+// Reset any connectivity issues on startup
+import "./utils/resetConnectivity";
+
 // Initialize connectivity debugger in development
 if (import.meta.env.DEV) {
   import("./utils/connectivityDebugger");
