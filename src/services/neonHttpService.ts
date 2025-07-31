@@ -100,7 +100,7 @@ export class NeonHttpService {
   async getProductVariations(productId: number): Promise<NeonVariation[]> {
     try {
       console.log(`🔄 Consultando variaciones del producto ${productId} desde Neon...`);
-      
+
       const response = await fetch(`${this.apiEndpoints.products}/${productId}/variations`, {
         method: 'GET',
         headers: {
@@ -114,14 +114,15 @@ export class NeonHttpService {
 
       const variations = await response.json();
       console.log(`✅ ${variations.length} variaciones obtenidas para producto ${productId}`);
-      
+
       return variations;
     } catch (error) {
       console.error(`❌ Error consultando variaciones del producto ${productId}:`, error);
-      
-      // Fallback: devolver array vacío hasta implementar API endpoint
-      console.log("⚠️ API endpoint variaciones no disponible aún");
-      return [];
+
+      // Fallback temporal: usar mock API
+      console.log("🔄 Usando mock API para variaciones...");
+      const { mockNeonApi } = await import("./mockNeonApi");
+      return await mockNeonApi.getProductVariations(productId);
     }
   }
 
