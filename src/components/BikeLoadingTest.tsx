@@ -85,6 +85,18 @@ export const BikeLoadingTest: React.FC = () => {
     }
   };
 
+  const checkCircuitBreakerStatus = async () => {
+    try {
+      const { wooCommerceCircuitBreaker, getWooCommerceStatus } = await import('@/services/circuitBreaker');
+      const state = wooCommerceCircuitBreaker.getState();
+      const status = getWooCommerceStatus();
+      console.log('🔍 Estado del Circuit Breaker:', state);
+      console.log('🔍 Estado completo:', status);
+    } catch (error) {
+      console.error('❌ Error verificando circuit breaker:', error);
+    }
+  };
+
   const getStatusColor = (loading: boolean, error: any, data: any[]) => {
     if (loading) return 'bg-yellow-100 border-yellow-300';
     if (error) return 'bg-red-100 border-red-300';
