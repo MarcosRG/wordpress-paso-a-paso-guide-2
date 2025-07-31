@@ -54,8 +54,8 @@ export class NeonHttpService {
   async getActiveProducts(): Promise<NeonProduct[]> {
     try {
       console.log("🔄 Consultando productos directamente desde Neon Database...");
-      
-      // Consultar directamente la API de Neon Database
+
+      // Intentar consultar la API de Neon Database
       const response = await fetch(this.apiEndpoints.products, {
         method: 'GET',
         headers: {
@@ -69,14 +69,15 @@ export class NeonHttpService {
 
       const products = await response.json();
       console.log(`✅ ${products.length} productos obtenidos directamente de Neon`);
-      
+
       return products;
     } catch (error) {
       console.error("❌ Error consultando Neon Database:", error);
-      
-      // Fallback: Por ahora devolver array vacío
-      console.log("⚠️ API endpoint /api/neon/products no disponible aún");
-      return [];
+
+      // Fallback temporal: usar mock API hasta implementar endpoint real
+      console.log("🔄 Usando mock API temporal...");
+      const { mockNeonApi } = await import("./mockNeonApi");
+      return await mockNeonApi.getProducts();
     }
   }
 
