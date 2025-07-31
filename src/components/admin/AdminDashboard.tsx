@@ -185,12 +185,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="reservations" className="space-y-6">
+        <Tabs defaultValue="products" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="reservations">Reservas</TabsTrigger>
             <TabsTrigger value="products">Debug Productos</TabsTrigger>
-            <TabsTrigger value="debugging">Debugging & Cache</TabsTrigger>
-            <TabsTrigger value="sync">Sincronización</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
 
