@@ -36,7 +36,7 @@ interface MockNeonVariation {
 }
 
 // Mock data con productos reales para testing
-const mockProducts: NeonProduct[] = [
+const mockProducts: MockNeonProduct[] = [
   {
     id: 1,
     woocommerce_id: 19551,
