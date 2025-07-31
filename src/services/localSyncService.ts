@@ -163,7 +163,7 @@ export class LocalSyncService {
           const neonProduct = convertToNeonProduct(product, acfData);
           neonProducts.push(neonProduct);
 
-          // 3. Procesar variaciones si es un producto variable
+          // 3. Procesar variaciones si es un producto variable (OPTIMIZADO)
           if (product.type === "variable" && product.variations.length > 0) {
             try {
               const variations = await wooCommerceApi.getProductVariations(
@@ -171,14 +171,20 @@ export class LocalSyncService {
               );
 
               let totalVariationStock = 0;
-              console.log(`🔍 PROCESANDO PRODUCTO VARIABLE ${product.id} (${product.name}) con ${variations.length} variaciones`);
+              console.log(`⚡ PROCESANDO OPTIMIZADO - ${product.id} (${product.name}) con ${variations.length} variaciones`);
 
               for (const variation of variations) {
-                // Obtener stock ATUM para la variación
-                const atumStock = await checkAtumAvailability(
-                  product.id,
-                  variation.id,
-                );
+                // OPTIMIZACIÓN: Extraer stock ATUM directamente de meta_data de la variación
+                // Sin hacer requests adicionales
+                let atumStock = 0;
+                if (variation.meta_data) {
+                  const atumField = variation.meta_data.find((meta: any) =>
+                    meta.key === '_atum_stock_quantity' ||
+                    meta.key === '_atum_stock' ||
+                    meta.key === 'atum_stock_quantity'
+                  );
+                  atumStock = parseInt(String(atumField?.value)) || 0;
+                }
 
                 const neonVariation = convertToNeonVariation(
                   variation,
@@ -187,11 +193,11 @@ export class LocalSyncService {
                 );
                 neonVariations.push(neonVariation);
 
-                // Sumar stock de la variación al total - usar el stock real de WooCommerce
-                const variationStock = Math.max(atumStock, variation.stock_quantity || 0);
+                // Usar lógica optimizada: ATUM si existe y > 0, sino WooCommerce
+                const variationStock = atumStock > 0 ? atumStock : (variation.stock_quantity || 0);
                 totalVariationStock += variationStock;
-                
-                console.log(`📦 Variación ${variation.id}: ${variationStock} unidades (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity})`);
+
+                console.log(`📦 Variación ${variation.id}: ${variationStock} (ATUM: ${atumStock}, WooCommerce: ${variation.stock_quantity}) ⚡ OPTIMIZADO`);
               }
 
               // IMPORTANTE: Actualizar el stock del producto principal con la suma de todas las variaciones
