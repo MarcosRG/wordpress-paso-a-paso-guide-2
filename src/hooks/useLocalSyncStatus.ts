@@ -193,25 +193,11 @@ export const useLocalSyncStatus = () => {
     // return () => clearInterval(interval);
   }, [updateSyncStatus]);
 
-  // Verificar si necesita sincronización inicial
+  // Verificar si necesita sincronización inicial (DESHABILITADO)
   useEffect(() => {
-    const checkInitialSync = async () => {
-      const hasData = await hasCachedData();
-      if (!hasData) {
-        console.log(
-          "🔄 No hay datos en cache, iniciando sincronización inicial...",
-        );
-        // No llamar forceSync automáticamente, solo notificar
-        setSyncStatus((prev) => ({
-          ...prev,
-          status: SyncStatus.IDLE,
-          error:
-            "No hay datos en cache. Haz clic en actualizar para sincronizar.",
-        }));
-      }
-    };
-
-    checkInitialSync();
+    // Deshabilitado - ya no verificamos cache porque usamos Neon Database directamente
+    // const checkInitialSync = async () => { ... }
+    // checkInitialSync();
   }, [hasCachedData]);
 
   return {
