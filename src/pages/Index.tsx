@@ -90,7 +90,7 @@ const calculateTotalPrice = (reservation: ReservationData): number => {
 };
 
 const Index = () => {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(2); // Auto ir al paso 2 para testing
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
