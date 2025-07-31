@@ -24,10 +24,7 @@ import {
   Download
 } from 'lucide-react';
 import { adminAuthService } from '../../services/adminAuthService';
-import { reservationService, Reservation } from '../../services/reservationService';
-import { wordPressSyncService } from '../../services/wordpressSyncService';
 import { SystemSettings } from './SystemSettings';
-import { DebuggingCenter } from './DebuggingCenter';
 import { VariableProductDebugger } from '../VariableProductDebugger';
 
 interface AdminDashboardProps {
