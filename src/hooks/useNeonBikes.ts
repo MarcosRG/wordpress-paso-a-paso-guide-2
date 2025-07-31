@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { NeonProduct, NeonVariation } from "@/services/neonHttpService";
 import { Bike } from "@/pages/Index";
 import { extractACFPricing } from "@/services/woocommerceApi";
-import { neonHttpService } from "@/services/neonHttpService";
+import { neonServerlessService } from "@/services/neonServerlessService";
 
 // Convertir producto de Neon a formato Bike de la aplicación
 const convertNeonProductToBike = (
