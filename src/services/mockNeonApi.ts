@@ -200,14 +200,14 @@ const mockVariations: MockNeonVariation[] = [
 
 // Mock API functions
 export const mockNeonApi = {
-  async getProducts(): Promise<NeonProduct[]> {
+  async getProducts(): Promise<MockNeonProduct[]> {
     // Simular delay de red
     await new Promise(resolve => setTimeout(resolve, 500));
     console.log("📡 Mock Neon API: Devolviendo productos mock");
     return mockProducts;
   },
 
-  async getProductVariations(productId: number): Promise<NeonVariation[]> {
+  async getProductVariations(productId: number): Promise<MockNeonVariation[]> {
     // Simular delay de red
     await new Promise(resolve => setTimeout(resolve, 300));
     const variations = mockVariations.filter(v => v.woocommerce_id.toString().startsWith(productId.toString()));
@@ -215,9 +215,9 @@ export const mockNeonApi = {
     return variations;
   },
 
-  async getProductsByCategory(categorySlug: string): Promise<NeonProduct[]> {
+  async getProductsByCategory(categorySlug: string): Promise<MockNeonProduct[]> {
     await new Promise(resolve => setTimeout(resolve, 400));
-    const filtered = mockProducts.filter(product => 
+    const filtered = mockProducts.filter(product =>
       product.categories?.some((cat: any) => cat.slug === categorySlug)
     );
     console.log(`📡 Mock Neon API: Devolviendo ${filtered.length} productos para categoría "${categorySlug}"`);
