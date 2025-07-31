@@ -18,7 +18,7 @@ import {
   extractDayBasedPricing,
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useBatchAtumStock } from "@/hooks/useBatchAtumStock";
+
 
 interface BikeSelectionProps {
   reservation: ReservationData;
