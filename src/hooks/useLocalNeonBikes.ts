@@ -58,18 +58,14 @@ const convertNeonProductToBike = (
         acf: neonProduct.acf_data,
       },
       variations: variations.map((v) => {
-        // Debug para variaciones con stock para detectar problemas
-        const vAtumStock = parseInt(String(v.atum_stock)) || 0;
+        // Mapeo simplificado usando solo stock_quantity
         const vWooStock = parseInt(String(v.stock_quantity)) || 0;
 
-        if (vAtumStock > 0 || vWooStock > 0) {
-          console.log(`🔧 Mapeando variação ${neonProduct.name}:`, {
+        if (vWooStock > 0) {
+          console.log(`✅ Variación ${neonProduct.name}:`, {
             woocommerce_id: v.woocommerce_id,
             stock_quantity: vWooStock,
-            atum_stock: vAtumStock,
-            finalStock: vAtumStock > 0 ? vAtumStock : vWooStock,
-            attributes: v.attributes,
-            attributesIsArray: Array.isArray(v.attributes)
+            attributes: v.attributes
           });
         }
 
