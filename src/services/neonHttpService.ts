@@ -258,6 +258,16 @@ export class NeonHttpService {
       isRunning: false,
     };
   }
+
+  setSyncStatus(isRunning: boolean): void {
+    console.log(`🔄 Sync status set to: ${isRunning ? 'running' : 'idle'}`);
+    // Sin estado local, este método no hace nada
+  }
+
+  clearCache(force: boolean = false): void {
+    console.log(`🧹 Clear cache (stub): force=${force}`);
+    // Sin cache local, este método no hace nada
+  }
 }
 
 // Función de utilidad para convertir producto de WooCommerce a formato NeonProduct
