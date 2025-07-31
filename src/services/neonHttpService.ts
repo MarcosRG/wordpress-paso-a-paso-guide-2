@@ -229,6 +229,22 @@ export class NeonHttpService {
     // En el futuro: enviar lista de IDs activos para limpiar obsoletos
   }
 
+  // Métodos stub para cache (compatibilidad con LocalSyncService)
+  async cacheProducts(products: any[]): Promise<void> {
+    console.log(`📦 Cache de productos (stub): ${products.length} productos`);
+    // Sin cache local, estos métodos no hacen nada
+  }
+
+  async cacheVariations(variations: any[]): Promise<void> {
+    console.log(`📦 Cache de variaciones (stub): ${variations.length} variaciones`);
+    // Sin cache local, estos métodos no hacen nada
+  }
+
+  async cacheCategories(categories: any[]): Promise<void> {
+    console.log(`📦 Cache de categorías (stub): ${categories.length} categorías`);
+    // Sin cache local, estos métodos no hacen nada
+  }
+
   // Métodos stub para compatibilidad con LocalSyncService
   needsSync(): boolean {
     // Como ya no usamos cache local, nunca necesitamos sincronizar desde frontend
