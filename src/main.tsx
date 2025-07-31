@@ -2,8 +2,8 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Initialize fetch interceptor early to handle third-party script conflicts
-import "./utils/fetchInterceptor";
+// Fetch interceptor disabled - now using cleanFetch approach
+// import "./utils/fetchInterceptor";
 
 // Initialize connectivity debugger in development
 if (import.meta.env.DEV) {
