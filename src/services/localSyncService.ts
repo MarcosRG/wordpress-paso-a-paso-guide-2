@@ -1,4 +1,4 @@
-import { wooCommerceApi, checkAtumAvailability } from "./woocommerceApi";
+import { wooCommerceApi } from "./woocommerceApi";
 import { wooCommerceCircuitBreaker, canMakeWooCommerceRequest } from "./circuitBreaker";
 import {
   neonHttpService,
