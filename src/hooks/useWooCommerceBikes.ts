@@ -102,19 +102,15 @@ export const useWooCommerceBikes = () => {
                         "0",
                     );
               } else {
-                // Fallback si no hay variaciones disponibles
-                const atumStock = await checkAtumAvailability(product.id);
-                totalStock =
-                  atumStock > 0 ? atumStock : product.stock_quantity || 0;
+                // Fallback si no hay variaciones disponibles - usar stock nativo
+                totalStock = product.stock_quantity || 0;
                 basePrice = parseFloat(
                   product.price || product.regular_price || "0",
                 );
               }
             } else {
-              // Producto simple - verificar ATUM stock
-              const atumStock = await checkAtumAvailability(product.id);
-              totalStock =
-                atumStock > 0 ? atumStock : product.stock_quantity || 0;
+              // Producto simple - usar stock nativo de WooCommerce
+              totalStock = product.stock_quantity || 0;
               basePrice = parseFloat(
                 product.price || product.regular_price || "0",
               );
