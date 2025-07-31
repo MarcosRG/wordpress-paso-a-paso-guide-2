@@ -270,18 +270,7 @@ const Index = () => {
           </div>
         </div>
 
-        {/* DEBUG: Diagnóstico temporal */}
-        <div className="mb-6">
-          <BikeLoadingTest />
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setCurrentStep(2)}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              🧪 Saltar al Paso 2 (Testing)
-            </button>
-          </div>
-        </div>
+        {/* DEBUG: Componente removido temporalmente para mejor visualización */}
 
         <Card className="p-6 mb-6">
           {/* Language selector for each step */}
