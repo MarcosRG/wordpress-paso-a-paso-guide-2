@@ -210,7 +210,16 @@ export const mockNeonApi = {
   async getProductVariations(productId: number): Promise<MockNeonVariation[]> {
     // Simular delay de red
     await new Promise(resolve => setTimeout(resolve, 300));
-    const variations = mockVariations.filter(v => v.woocommerce_id.toString().startsWith(productId.toString()));
+
+    // Primero buscar el producto en mockProducts para obtener el product_id interno
+    const product = mockProducts.find(p => p.woocommerce_id === productId);
+    if (!product) {
+      console.log(`📡 Mock Neon API: No se encontró producto con ID ${productId}`);
+      return [];
+    }
+
+    // Filtrar variaciones por product_id interno
+    const variations = mockVariations.filter(v => v.product_id === product.id);
     console.log(`📡 Mock Neon API: Devolviendo ${variations.length} variaciones para producto ${productId}`);
     return variations;
   },
