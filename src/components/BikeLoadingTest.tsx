@@ -61,6 +61,30 @@ export const BikeLoadingTest: React.FC = () => {
     }
   };
 
+  const resetCircuitBreakerAndSync = async () => {
+    try {
+      console.log('🔄 Reseteando circuit breaker y reintentando sincronización...');
+
+      // Reset circuit breaker
+      const { wooCommerceCircuitBreaker } = await import('@/services/circuitBreaker');
+      wooCommerceCircuitBreaker.reset();
+      console.log('✅ Circuit breaker reseteado');
+
+      // Wait a bit and then try sync
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const { localSyncService } = await import('@/services/localSyncService');
+      await localSyncService.performSync();
+      console.log('✅ Sincronización completada después del reset');
+
+      // Refresh all hooks after sync
+      if (localResult.refetch) localResult.refetch();
+      if (neonResult.refetch) neonResult.refetch();
+    } catch (error) {
+      console.error('❌ Error después del reset:', error);
+    }
+  };
+
   const getStatusColor = (loading: boolean, error: any, data: any[]) => {
     if (loading) return 'bg-yellow-100 border-yellow-300';
     if (error) return 'bg-red-100 border-red-300';
