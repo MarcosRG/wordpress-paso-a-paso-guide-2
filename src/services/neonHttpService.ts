@@ -138,7 +138,7 @@ export class NeonHttpService {
 
       return variations;
     } catch (error) {
-      console.error(`❌ Error consultando variaciones del producto ${productId}:`, error);
+      // Fallback silencioso para variaciones cuando endpoint no existe
 
       // Fallback temporal: usar mock API
       console.log("🔄 Usando mock API para variaciones...");
