@@ -20,6 +20,7 @@ import {
   getPricePerDayFromACF,
   calculateTotalPriceACF,
 } from "@/services/woocommerceApi";
+import { BikeLoadingTest } from "@/components/BikeLoadingTest";
 
 export interface Bike {
   id: string;
