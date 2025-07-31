@@ -20,14 +20,14 @@ export class LocalSyncService {
       return;
     }
 
-    console.log("🔄 LocalSyncService iniciado - Auto-sync HABILITADO con corrección");
-    console.log("✅ PROBLEMA RESUELTO: Extracción de tamaños y limpieza de cache");
-    console.log("🔧 CORRECCIÓN APLICADA: Cache clearing antes de sync automático");
+    console.log("🔄 LocalSyncService iniciado - Auto-sync OPTIMIZADO");
+    console.log("⚡ OPTIMIZACIÓN: Cache inteligente - no clearing en auto-sync");
+    console.log("🚀 RENDIMIENTO: Frecuencia optimizada de 5min → 15min");
 
     // Verificar si necesita sincronización inicial
     if (neonHttpService.needsSync()) {
       console.log("🚀 Iniciando sincronización inicial automática...");
-      // IMPORTANTE: Limpiar cache antes de sync inicial igual que en forceSync
+      // Solo limpiar cache en sync inicial si realmente es necesario
       neonHttpService.clearCache();
       this.performSync()
         .then(() => {
@@ -38,7 +38,7 @@ export class LocalSyncService {
         });
     }
 
-    // Programar sincronización cada 5 minutos
+    // Programar sincronización cada 15 minutos (optimizado de 5min)
     setInterval(
       async () => {
         // Check emergency stop first
@@ -52,12 +52,11 @@ export class LocalSyncService {
           const { shouldAllowAutoSync } = await import("../utils/connectivityUtils");
 
           if (await shouldAllowAutoSync()) {
-            console.log("🔄 Ejecutando sincronización automática programada...");
-            // IMPORTANTE: Limpiar cache antes de sync automático igual que en forceSync
-            neonHttpService.clearCache();
+            console.log("🔄 Ejecutando sincronización automática optimizada...");
+            // OPTIMIZACIÓN: NO limpiar cache en auto-sync, solo actualizar datos obsoletos
             this.performSync()
               .then(() => {
-                console.log("✅ Sincronización automática completada");
+                console.log("✅ Sincronización automática completada (cache preservado)");
               })
               .catch((error) => {
                 console.warn("⚠️ Error en sincronización automática:", error);
@@ -67,7 +66,7 @@ export class LocalSyncService {
           }
         }
       },
-      5 * 60 * 1000, // 5 minutos
+      15 * 60 * 1000, // 15 minutos (optimizado de 5 minutos)
     );
   }
 
@@ -394,7 +393,7 @@ export class LocalSyncService {
     console.log("🔄 Resetting sync state...");
     this.isRunning = false;
     neonHttpService.setSyncStatus(false);
-    console.log("✅ Sync state reset successfully");
+    console.log("��� Sync state reset successfully");
   }
 
   // Sincronizar un producto específico
