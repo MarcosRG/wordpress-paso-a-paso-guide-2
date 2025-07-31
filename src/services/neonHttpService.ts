@@ -171,6 +171,12 @@ export class NeonHttpService {
     console.log("🧹 Limpieza de productos antiguos en Neon");
     // En el futuro: enviar lista de IDs activos para limpiar obsoletos
   }
+
+  // Método stub para compatibilidad con LocalSyncService
+  needsSync(): boolean {
+    // Como ya no usamos cache local, nunca necesitamos sincronizar desde frontend
+    return false;
+  }
 }
 
 // Función de utilidad para convertir producto de WooCommerce a formato NeonProduct
