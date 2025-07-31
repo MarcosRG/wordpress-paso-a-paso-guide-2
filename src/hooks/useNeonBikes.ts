@@ -202,7 +202,7 @@ export const useNeonStockBySize = (
           return { default: stock };
         }
 
-        // Para productos variables, obtener stock por tamaño
+        // Para productos variables, obtener stock por tamaño (simplificado)
         const stockBySize: Record<string, number> = {};
 
         for (const variation of variations) {
@@ -222,7 +222,7 @@ export const useNeonStockBySize = (
             // Extraer solo la parte del tamaño antes del guión (ej: "XL - 59" -> "XL")
             const rawSize = sizeAttribute.option?.toUpperCase() || "DEFAULT";
             const size = rawSize.includes(' - ') ? rawSize.split(' - ')[0].trim() : rawSize;
-            const stock = variation.atum_stock || variation.stock_quantity || 0;
+            const stock = variation.stock_quantity || 0; // Solo usar stock_quantity
             stockBySize[size] = stock;
 
             console.log(
