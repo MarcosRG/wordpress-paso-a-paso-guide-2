@@ -138,7 +138,7 @@ export const useNeonBikesByCategory = (categorySlug: string | null) => {
     queryFn: async (): Promise<Bike[]> => {
       if (!categorySlug) {
         // Si no hay categoría, obtener todos los productos
-        const products = await neonHttpService.getActiveProducts();
+        const products = await neonServerlessService.getActiveProducts();
         const bikes: Bike[] = [];
 
         for (const product of products) {
@@ -281,7 +281,7 @@ export const useNeonProduct = (productId: number) => {
     queryKey: ["neon-product", productId],
     queryFn: async (): Promise<Bike | null> => {
       try {
-        const products = await neonHttpService.getActiveProducts();
+        const products = await neonServerlessService.getActiveProducts();
         const product = products.find((p) => p.woocommerce_id === productId);
 
         if (!product) {
