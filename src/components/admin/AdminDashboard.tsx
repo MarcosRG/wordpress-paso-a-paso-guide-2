@@ -56,17 +56,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     onLogout();
   };
 
-  // Calcular estadísticas
+  // Estadísticas simplificadas
   const stats = {
-    totalReservations: reservations.length,
-    pendingReservations: reservations.filter(r => r.status === 'pending').length,
-    confirmedReservations: reservations.filter(r => r.status === 'confirmed').length,
-    todayRevenue: reservations
-      .filter(r => {
-        const today = new Date().toISOString().split('T')[0];
-        return r.created_at?.split('T')[0] === today && r.status !== 'cancelled';
-      })
-      .reduce((sum, r) => sum + r.total_price, 0),
+    totalProducts: 0, // Se actualizará con datos reales
+    activeProducts: 0,
+    totalStock: 0,
+    systemStatus: 'Operativo',
   };
 
   const getStatusBadge = (status: string) => {
