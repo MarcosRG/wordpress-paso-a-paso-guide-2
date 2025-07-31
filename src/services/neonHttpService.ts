@@ -51,6 +51,7 @@ export class NeonHttpService {
     variations: "neon_variations_cache",
     lastSync: "neon_last_sync",
     syncStatus: "neon_sync_status",
+    productTimestamps: "neon_product_timestamps", // Para cache selectivo
   };
 
   // Obtener todos los productos activos
