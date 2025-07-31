@@ -32,12 +32,7 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [syncStats, setSyncStats] = useState<any>(null);
   const [lastUpdate, setLastUpdate] = useState(new Date());
-  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
 
   const currentUser = adminAuthService.getCurrentUser();
