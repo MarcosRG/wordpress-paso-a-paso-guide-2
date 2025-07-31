@@ -54,46 +54,47 @@ export class NeonHttpService {
     productTimestamps: "neon_product_timestamps", // Para cache selectivo
   };
 
-  // Obtener todos los productos activos
+  // Obtener todos los productos activos directamente de Neon Database
   async getActiveProducts(): Promise<NeonProduct[]> {
     try {
-      // Intentar cargar desde cache local primero
-      const cached = localStorage.getItem(this.storageKeys.products);
-      if (cached) {
-        const products = JSON.parse(cached);
-        console.log(
-          `📦 ${products.length} productos cargados desde cache local`,
-        );
-        return products;
+      console.log("🔄 Consultando productos directamente desde Neon Database...");
+
+      // Consultar directamente la API de Neon Database
+      const response = await fetch('/api/neon/products', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Si no hay cache, devolver array vacío y activar sincronización solo si hay buena conectividad
-      console.log("⚠️ No hay cache local...");
+      const products = await response.json();
+      console.log(`✅ ${products.length} productos obtenidos directamente de Neon`);
 
-      // Check emergency stop and connectivity before auto-triggering sync
-      const { getConnectivityStatus, isEmergencyStopActive } = await import("../services/connectivityMonitor");
+      return products;
+    } catch (error) {
+      console.error("❌ Error consultando Neon Database:", error);
 
-      if (isEmergencyStopActive()) {
-        console.warn(`🚨 EMERGENCY STOP: Auto-sync blocked`);
+      // Fallback: intentar usar herramientas Neon directamente
+      try {
+        console.log("🔄 Intentando consulta directa con herramientas Neon...");
+        return await this.queryNeonDirectly();
+      } catch (fallbackError) {
+        console.error("❌ Error en fallback Neon:", fallbackError);
         return [];
       }
-
-      const connectivityStatus = getConnectivityStatus();
-
-      if (connectivityStatus.consecutiveErrors === 0) {
-        console.log("🔄 Activando sincronización automática...");
-        this.triggerBackgroundSync().catch((error) => {
-          console.error("Error activando sincronización:", error);
-        });
-      } else {
-        console.warn(`🚫 Blocking auto-sync due to ${connectivityStatus.consecutiveErrors} consecutive errors`);
-      }
-
-      return [];
-    } catch (error) {
-      console.error("Error cargando productos desde cache:", error);
-      return [];
     }
+  }
+
+  // Método auxiliar para consulta directa con herramientas Neon
+  private async queryNeonDirectly(): Promise<NeonProduct[]> {
+    // Aquí podríamos usar las herramientas de Neon directamente
+    // Por ahora devolver array vacío hasta implementar API endpoint
+    console.log("⚠️ API endpoint /api/neon/products no disponible aún");
+    return [];
   }
 
   // Obtener productos por categoría
