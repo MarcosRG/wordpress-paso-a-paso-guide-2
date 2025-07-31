@@ -23,11 +23,6 @@ interface BikeCardProps {
     change: number,
   ) => void;
   totalDays: number;
-  batchStockData?: {
-    stockBySize: StockBySize;
-    isLoading: boolean;
-    hasAtumData: boolean;
-  };
 }
 
 const BikeCard = ({
