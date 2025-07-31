@@ -108,73 +108,7 @@ export const useLocalNeonBikes = () => {
           `✅ ${products.length} productos obtenidos desde cache local`,
         );
 
-        // Si no hay productos, usar mock data con variaciones para testing
-        if (products.length === 0) {
-          console.log("🧪 TESTING: Usando mock data con variaciones para probar sistema de stock");
 
-          return [
-            {
-              id: '19551',
-              name: 'BTT TREK FUEL EX 8',
-              type: 'btt',
-              pricePerDay: 35,
-              available: 15,
-              image: '/placeholder.svg',
-              description: 'Bicicleta de montaña TREK con suspensión completa',
-              wooCommerceData: {
-                product: {
-                  id: 19551,
-                  name: 'BTT TREK FUEL EX 8',
-                  type: 'variable',
-                  status: 'publish',
-                  categories: [{ id: 253, name: 'BTT', slug: 'btt' }]
-                },
-                variations: [
-                  {
-                    id: 19552,
-                    woocommerce_id: 19552,
-                    attributes: [{ name: 'pa_tamanho', option: 'XS - 15.5' }],
-                    stock_quantity: 2,
-                    stock_status: 'instock',
-                    price: 35
-                  },
-                  {
-                    id: 19553,
-                    woocommerce_id: 19553,
-                    attributes: [{ name: 'pa_tamanho', option: 'S - 17.5' }],
-                    stock_quantity: 4,
-                    stock_status: 'instock',
-                    price: 35
-                  },
-                  {
-                    id: 19554,
-                    woocommerce_id: 19554,
-                    attributes: [{ name: 'pa_tamanho', option: 'M - 19.5' }],
-                    stock_quantity: 5,
-                    stock_status: 'instock',
-                    price: 35
-                  },
-                  {
-                    id: 19555,
-                    woocommerce_id: 19555,
-                    attributes: [{ name: 'pa_tamanho', option: 'L - 21.5' }],
-                    stock_quantity: 3,
-                    stock_status: 'instock',
-                    price: 35
-                  },
-                  {
-                    id: 19556,
-                    woocommerce_id: 19556,
-                    attributes: [{ name: 'pa_tamanho', option: 'XL - 23' }],
-                    stock_quantity: 1,
-                    stock_status: 'instock',
-                    price: 35
-                  }
-                ]
-              }
-            }
-          ];
-        }
 
         const bikes: Bike[] = [];
 
@@ -197,7 +131,7 @@ export const useLocalNeonBikes = () => {
             bikes.push(bike);
           } catch (error) {
             console.warn(
-              `⚠️ Error procesando producto ${product.woocommerce_id}:`,
+              `��️ Error procesando producto ${product.woocommerce_id}:`,
               error,
             );
             // Continuar con el siguiente producto
