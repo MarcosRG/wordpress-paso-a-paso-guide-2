@@ -101,8 +101,43 @@ export const BikeLoadingTest: React.FC = () => {
       const status = getWooCommerceStatus();
       console.log('🔍 Estado del Circuit Breaker:', state);
       console.log('🔍 Estado completo:', status);
+      console.log('🔍 VITE_DISABLE_API:', import.meta.env.VITE_DISABLE_API);
     } catch (error) {
       console.error('❌ Error verificando circuit breaker:', error);
+    }
+  };
+
+  const forceSyncBypassingRestrictions = async () => {
+    try {
+      console.log('🚨 BYPASS: Forzando sincronización sin restricciones...');
+
+      // First check current env vars
+      console.log('🔍 Variables de entorno:', {
+        VITE_DISABLE_API: import.meta.env.VITE_DISABLE_API,
+        DEV: import.meta.env.DEV,
+        MODE: import.meta.env.MODE
+      });
+
+      // Reset circuit breaker first
+      const { wooCommerceCircuitBreaker } = await import('@/services/circuitBreaker');
+      wooCommerceCircuitBreaker.reset();
+      console.log('✅ Circuit breaker reseteado');
+
+      // Import and force sync from neonHttpService directly
+      const { neonHttpService } = await import('@/services/neonHttpService');
+
+      // Force trigger background sync
+      console.log('🔄 Triggering background sync...');
+      await neonHttpService.triggerBackgroundSync();
+
+      console.log('✅ Background sync triggered');
+
+      // Refresh hooks
+      if (localResult.refetch) localResult.refetch();
+      if (neonResult.refetch) neonResult.refetch();
+
+    } catch (error) {
+      console.error('❌ Error en bypass sync:', error);
     }
   };
 
