@@ -30,19 +30,18 @@ const BikeCard = ({
   getQuantityForBikeAndSize,
   updateBikeQuantity,
   totalDays,
-  batchStockData,
 }: BikeCardProps) => {
   const { t } = useLanguage();
 
-  // Usar stock do batch se disponível, senão usar hook individual como fallback
-  const individualStockQuery = useAtumStockBySize(
+  // Usar hook simplificado para obtener stock ATUM
+  const atumStockQuery = useAtumStock(
     parseInt(bike.id),
-    bike.wooCommerceData?.product?.type === "variable" && !batchStockData,
+    bike.wooCommerceData?.product?.type === "variable"
   );
 
-  const atumStockBySize = batchStockData?.stockBySize || individualStockQuery.data || {};
-  const isAtumLoading = batchStockData?.isLoading || individualStockQuery.isLoading || false;
-  const hasAtumData = batchStockData?.hasAtumData || (Object.keys(atumStockBySize).length > 0);
+  const atumStockBySize = atumStockQuery.data || {};
+  const isAtumLoading = atumStockQuery.isLoading;
+  const hasAtumData = Object.keys(atumStockBySize).length > 0;
 
   // Obter stock WooCommerce real por tamanho
   const wooCommerceStockBySize = getWooCommerceStockBySize(bike);
