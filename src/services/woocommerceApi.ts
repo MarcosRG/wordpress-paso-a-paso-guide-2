@@ -11,7 +11,7 @@ import {
   generateConnectivityReport,
   getConnectivityStatus,
 } from "./connectivityMonitor";
-import { isThirdPartyInterference } from "../utils/fetchInterceptor";
+import { cleanFetch, retryFetch } from "../utils/cleanFetch";
 import { shouldAllowApiRequest } from "../utils/apiHealthCheck";
 import {
   canMakeWooCommerceRequest,
