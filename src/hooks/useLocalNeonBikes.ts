@@ -78,20 +78,8 @@ const convertNeonProductToBike = (
   };
 };
 
-// Hook principal para obtener bicicletas desde cache local
+// Hook simplificado para obtener bicicletas directamente desde Neon Database
 export const useLocalNeonBikes = () => {
-  const queryClient = useQueryClient();
-
-  // Listener para refrescar cuando el cache se actualiza
-  useEffect(() => {
-    const handleCacheUpdate = () => {
-      queryClient.invalidateQueries({ queryKey: ["local-neon-bikes"] });
-      console.log("🔄 Cache invalidado - frontend refrescará automáticamente");
-    };
-
-    window.addEventListener('cache-updated', handleCacheUpdate);
-    return () => window.removeEventListener('cache-updated', handleCacheUpdate);
-  }, [queryClient]);
 
   return useQuery({
     queryKey: ["local-neon-bikes"],
