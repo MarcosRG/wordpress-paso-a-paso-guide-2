@@ -320,18 +320,4 @@ export const useLocalNeonProduct = (productId: number) => {
   });
 };
 
-// Hook para obtener estadísticas del cache
-export const useLocalCacheStats = () => {
-  return useQuery({
-    queryKey: ["local-cache-stats"],
-    queryFn: async () => {
-      // Importar aquí para evitar dependencias circulares
-      const { localSyncService } = await import("@/services/localSyncService");
-      return localSyncService.getCacheStats();
-    },
-    staleTime: 30 * 1000, // 30 segundos
-    gcTime: 2 * 60 * 1000,
-    throwOnError: false,
-    retry: 1,
-  });
-};
+// ⚠️ Hook de cache stats eliminado - ya no usamos cache local
