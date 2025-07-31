@@ -46,12 +46,11 @@ export interface NeonVariation {
 // Para este frontend, vamos a simular los datos desde localStorage
 // y usar la sincronización en background con WooCommerce
 export class NeonHttpService {
-  private storageKeys = {
-    products: "neon_products_cache",
-    variations: "neon_variations_cache",
-    lastSync: "neon_last_sync",
-    syncStatus: "neon_sync_status",
-    productTimestamps: "neon_product_timestamps", // Para cache selectivo
+  // API endpoints para consultas directas a Neon Database
+  private apiEndpoints = {
+    products: "/api/neon/products",
+    variations: "/api/neon/variations",
+    categories: "/api/neon/categories",
   };
 
   // Obtener todos los productos activos directamente de Neon Database
