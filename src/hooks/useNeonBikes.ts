@@ -95,7 +95,7 @@ export const useNeonBikes = () => {
 
             // Si es un producto variable, obtener sus variaciones
             if (product.type === "variable") {
-              variations = await neonHttpService.getProductVariations(
+              variations = await neonServerlessService.getProductVariations(
                 product.woocommerce_id,
               );
             }
