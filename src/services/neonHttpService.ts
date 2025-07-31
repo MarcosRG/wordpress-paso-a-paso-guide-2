@@ -62,8 +62,8 @@ export class NeonHttpService {
     try {
       // Silencioso - intentar consultar la API de Neon Database
 
-      // Intentar consultar la API de Neon Database
-      const response = await fetch(this.apiEndpoints.products, {
+      // Intentar consultar la API de Neon Database usando fetch nativo
+      const response = await this.nativeFetch(this.apiEndpoints.products, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
