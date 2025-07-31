@@ -269,15 +269,7 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Botón temporal para testing del sistema simplificado */}
-        <div className="text-center mb-4">
-          <button
-            onClick={() => setCurrentStep(2)}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            🚀 Ir al Paso 2 (Test Sistema Simplificado)
-          </button>
-        </div>
+
 
         <Card className="p-6 mb-6">
           {/* Language selector for each step */}
