@@ -136,6 +136,13 @@ export const BikeLoadingTest: React.FC = () => {
           >
             🔄 Forçar Sync
           </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={resetCircuitBreakerAndSync}
+          >
+            🔧 Reset & Sync
+          </Button>
         </div>
 
         {/* Sync Status */}
