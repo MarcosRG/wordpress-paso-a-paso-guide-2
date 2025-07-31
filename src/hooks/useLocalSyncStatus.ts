@@ -263,28 +263,10 @@ export const useLocalConnectivity = () => {
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
 
   const checkConnectivity = useCallback(async () => {
-    try {
-      // Verificar conectividad con una petición simple a la API de WooCommerce
-      const response = await fetch(
-        "https://bikesultoursgest.com/wp-json/wc/v3/system_status",
-        {
-          method: "HEAD",
-          headers: {
-            Authorization:
-              "Basic " +
-              btoa(
-                "ck_d702f875c82d5973562a62579cfa284db06e3a87:cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71",
-              ),
-          },
-        },
-      );
-      setIsConnected(response.ok);
-      setLastCheck(new Date());
-    } catch (error) {
-      setIsConnected(false);
-      setLastCheck(new Date());
-      console.warn("⚠️ Conexión con WooCommerce no disponible");
-    }
+    // Deshabilitado - ya no necesitamos verificar conectividad WooCommerce
+    // Sistema ahora usa Neon Database directamente
+    setIsConnected(true);
+    setLastCheck(new Date());
   }, []);
 
   useEffect(() => {
