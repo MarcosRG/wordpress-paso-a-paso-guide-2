@@ -10,8 +10,7 @@ if (import.meta.env.DEV) {
   import("./utils/connectivityDebugger");
 }
 
-// Inicializar servicios de sincronización local
-import "./services/localSyncService";
+// LocalSyncService removed - now using direct Neon Database queries
 
 // Inicializar nuevos servicios de reservas y administración
 import "./services/reservationService";
