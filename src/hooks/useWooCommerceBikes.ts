@@ -7,7 +7,6 @@ import {
   apiHeaders,
   extractACFPricing,
   ACFPricing,
-  checkAtumAvailability,
 } from "@/services/woocommerceApi";
 import { Bike } from "@/pages/Index";
 import { mockBikes, mockCategories } from "./useMockBikes";
