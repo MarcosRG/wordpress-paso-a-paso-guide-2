@@ -23,40 +23,88 @@ export const useWooCommerceBikes = () => {
         const products = await response.json();
         console.log(`📦 ${products.length} produtos obtidos do WooCommerce`);
 
-        // Converter produtos WooCommerce para formato Bike
-        const bikes: Bike[] = products
-          .filter((product: any) => 
-            product.status === 'publish' && 
-            product.stock_status === 'instock' &&
-            (product.stock_quantity > 0 || product.stock_quantity === null)
-          )
-          .map((product: any) => {
+        // Converter produtos WooCommerce para formato Bike com variações
+        const bikes: Bike[] = [];
+
+        for (const product of products) {
+          if (product.status !== 'publish') continue;
+
+          try {
             // Obter categoria principal (excluindo "alugueres")
             const subcategory = product.categories?.find((cat: any) => cat.slug !== "alugueres");
             const primaryCategory = subcategory ? subcategory.slug : "general";
 
             // Obter imagem principal
-            const mainImage = product.images && product.images.length > 0 
-              ? product.images[0].src 
+            const mainImage = product.images && product.images.length > 0
+              ? product.images[0].src
               : "/placeholder.svg";
 
-            return {
-              id: product.id.toString(),
-              name: product.name,
-              type: primaryCategory.toLowerCase(),
-              pricePerDay: parseFloat(product.price) || parseFloat(product.regular_price) || 0,
-              available: product.stock_quantity || 5, // Default para produtos sem stock específico
-              image: mainImage,
-              description: product.short_description || product.description || "",
-              wooCommerceData: {
-                product: product,
-                variations: product.variations || [],
-                acfData: product.acf || {},
-              },
-            };
-          });
+            let availableStock = 0;
+            let productVariations: any[] = [];
 
-        console.log(`✅ ${bikes.length} bicicletas convertidas (WooCommerce fallback)`);
+            // Se o produto tem variações, buscar as variações
+            if (product.type === 'variable' && product.variations && product.variations.length > 0) {
+              console.log(`🔍 Carregando variações para ${product.name}...`);
+
+              try {
+                const variationsResponse = await fetch(
+                  `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100`,
+                  {
+                    headers: {
+                      'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+                      'Content-Type': 'application/json',
+                    },
+                  }
+                );
+
+                if (variationsResponse.ok) {
+                  productVariations = await variationsResponse.json();
+
+                  // Calcular stock total das variações ativas
+                  availableStock = productVariations
+                    .filter((variation: any) =>
+                      variation.status === 'publish' &&
+                      variation.stock_status === 'instock' &&
+                      variation.stock_quantity > 0
+                    )
+                    .reduce((total: number, variation: any) => total + (variation.stock_quantity || 0), 0);
+
+                  console.log(`📊 ${product.name}: ${productVariations.length} variações, stock total: ${availableStock}`);
+                } else {
+                  console.warn(`⚠️ Não foi possível carregar variações para ${product.name}`);
+                }
+              } catch (variationError) {
+                console.error(`❌ Erro carregando variações para ${product.name}:`, variationError);
+              }
+            } else {
+              // Produto simples - usar stock direto
+              availableStock = product.stock_quantity || 0;
+              console.log(`📊 ${product.name} (simples): stock ${availableStock}`);
+            }
+
+            // Só adicionar se tem stock disponível
+            if (availableStock > 0) {
+              bikes.push({
+                id: product.id.toString(),
+                name: product.name,
+                type: primaryCategory.toLowerCase(),
+                pricePerDay: parseFloat(product.price) || parseFloat(product.regular_price) || 0,
+                available: availableStock,
+                image: mainImage,
+                description: product.short_description || product.description || "",
+                wooCommerceData: {
+                  product: product,
+                  variations: productVariations,
+                  acfData: product.acf || {},
+                },
+              });
+            }
+          } catch (productError) {
+            console.error(`❌ Erro processando produto ${product.name}:`, productError);
+          }
+        }
+
+        console.log(`✅ ${bikes.length} bicicletas convertidas com stocks reais (WooCommerce)`);
         return bikes;
 
       } catch (error) {
