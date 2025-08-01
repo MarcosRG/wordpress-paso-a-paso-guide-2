@@ -154,11 +154,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="products" className="space-y-6">
+        <Tabs defaultValue="neon-mcp" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="neon-mcp">Neon MCP</TabsTrigger>
             <TabsTrigger value="products">Debug Productos</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
+
+          {/* Neon MCP Setup Tab */}
+          <TabsContent value="neon-mcp">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Configuración Neon Database</CardTitle>
+                  <CardDescription>
+                    Configura y sincroniza la base de datos Neon para mejorar el rendimiento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <NeonMCPSetup />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           {/* Product Debugger Tab */}
           <TabsContent value="products">
