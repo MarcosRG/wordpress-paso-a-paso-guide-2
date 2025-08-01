@@ -3,7 +3,7 @@
   base = "."
 
   # Comando de build
-  command = "npm ci && npm run build"
+  command = "npm ci --include=dev && npm run build"
 
   # Directorio donde se genera el build
   publish = "dist"
