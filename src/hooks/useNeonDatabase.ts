@@ -106,6 +106,19 @@ export const useNeonDatabaseSync = () => {
   return useMutation({
     mutationFn: async (): Promise<number> => {
       console.log("🔄 Iniciando sincronização WooCommerce → Neon DB...");
+
+      // Check if we're in development
+      if (import.meta.env.DEV) {
+        toast({
+          title: "⚠️ Modo desenvolvimento",
+          description: "Sincronização completa requer deploy. Usando dados do WooCommerce.",
+          variant: "default",
+        });
+
+        // Return a mock count to simulate sync
+        return 0;
+      }
+
       return await neonDatabaseService.syncFromWooCommerce();
     },
     onSuccess: (count) => {
@@ -113,19 +126,26 @@ export const useNeonDatabaseSync = () => {
       queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
       queryClient.invalidateQueries({ queryKey: ["neon-database-categories"] });
       queryClient.invalidateQueries({ queryKey: ["neon-database-status"] });
-      
-      toast({
-        title: "✅ Sincronização concluída",
-        description: `${count} produtos sincronizados para Neon Database`,
-      });
-      
-      console.log(`✅ Sincronização Neon concluída: ${count} produtos`);
+
+      if (count > 0) {
+        toast({
+          title: "✅ Sincronização concluída",
+          description: `${count} produtos sincronizados para Neon Database`,
+        });
+
+        console.log(`✅ Sincronização Neon concluída: ${count} produtos`);
+      }
     },
     onError: (error) => {
       console.error("❌ Erro na sincronização Neon:", error);
+
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+
       toast({
         title: "❌ Erro de sincronização",
-        description: error instanceof Error ? error.message : "Erro desconhecido",
+        description: import.meta.env.DEV
+          ? "Funcionalidade completa disponível após deploy"
+          : errorMessage,
         variant: "destructive",
       });
     },
