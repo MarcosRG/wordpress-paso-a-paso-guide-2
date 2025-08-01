@@ -199,6 +199,12 @@ export const useWooCommerceToNeonSync = () => {
     mutationFn: async (): Promise<number> => {
       console.log("🔄 Sync WooCommerce → Neon MCP...");
 
+      // Check if MCP is available
+      if (!isMCPAvailable()) {
+        console.warn("⚠️ MCP não disponível - sync cancelado");
+        throw new Error("MCP Neon não conectado. Por favor, conecte o servidor MCP Neon clicando no botão 'MCP Servers' antes de sincronizar.");
+      }
+
       // 1. Obter productos de WooCommerce
       const response = await fetch('/api/wc/v3/products?per_page=50&category=319&status=publish', {
         headers: {
