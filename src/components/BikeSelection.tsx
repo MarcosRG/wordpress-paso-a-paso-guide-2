@@ -12,6 +12,12 @@ import {
   useWooCommerceBikes,
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
+import {
+  useNeonDatabaseBikes,
+  useNeonDatabaseSync,
+  useNeonDatabaseCategories,
+  useNeonDatabaseStatus,
+} from "@/hooks/useNeonDatabase";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
