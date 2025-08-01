@@ -88,17 +88,20 @@ export const useNeonMCPBikes = () => {
         }
 
         // Primeiro verificar se tabelas existem
+        console.log("🔍 Verificando se tabelas existem...");
         const tablesExist = await safeMCPCall('neon_run_sql', {
           params: {
             projectId: import.meta.env.VITE_NEON_PROJECT_ID || "noisy-mouse-34441036",
             sql: `
               SELECT EXISTS (
-                SELECT FROM information_schema.tables 
+                SELECT FROM information_schema.tables
                 WHERE table_name = 'products'
               ) as table_exists
             `
           }
         });
+
+        console.log("🔍 Resultado verificação tabelas:", tablesExist);
 
         if (!tablesExist?.rows?.[0]?.table_exists) {
           console.log("📊 Tabelas não existem, criando automaticamente...");
