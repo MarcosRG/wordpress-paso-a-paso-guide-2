@@ -63,11 +63,11 @@ export const useNeonDatabaseBikes = () => {
     queryFn: async (): Promise<Bike[]> => {
       try {
         console.log("🚀 Carregando produtos desde Neon Database...");
-        
+
         const products = await neonDatabaseService.getProducts();
-        
+
         if (!Array.isArray(products) || products.length === 0) {
-          console.log("📭 Nenhum produto no Neon - sincronização necessária");
+          console.log("📭 Nenhum produto no Neon - sincronização necessária ou funcionalidade não disponível");
           return [];
         }
 
@@ -81,13 +81,19 @@ export const useNeonDatabaseBikes = () => {
 
       } catch (error) {
         console.error("❌ Erro carregando produtos do Neon:", error);
-        // Em caso de erro, retornar array vazio
+
+        // In development, this is expected if netlify functions aren't running
+        if (import.meta.env.DEV) {
+          console.log("ℹ️ Erro esperado em desenvolvimento - usar fallback WooCommerce");
+        }
+
+        // Em caso de erro, retornar array vazio para trigger fallback
         return [];
       }
     },
     staleTime: 10 * 60 * 1000, // 10 minutos - dados da BD são mais estáveis
     gcTime: 30 * 60 * 1000, // 30 minutos no cache
-    retry: 2,
+    retry: import.meta.env.DEV ? 0 : 1, // No retry in development
     retryDelay: 1000,
   });
 };
