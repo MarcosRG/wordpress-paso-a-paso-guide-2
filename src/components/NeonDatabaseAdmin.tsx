@@ -17,6 +17,7 @@ import {
   Zap
 } from "lucide-react";
 import { NetlifySetupHelp } from "./NetlifySetupHelp";
+import { NetlifyDiagnostic } from "./NetlifyDiagnostic";
 
 export const NeonDatabaseAdmin: React.FC = () => {
   const { toast } = useToast();
