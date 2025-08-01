@@ -168,6 +168,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <NeonDatabaseAdmin />
           </TabsContent>
 
+          {/* Netlify Diagnostic Tab */}
+          <TabsContent value="diagnostic">
+            <NetlifyDiagnostic />
+          </TabsContent>
+
           {/* Product Debugger Tab */}
           <TabsContent value="products">
             <VariableProductDebugger />
