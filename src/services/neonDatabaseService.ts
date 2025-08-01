@@ -198,6 +198,18 @@ class NeonDatabaseService {
   // Verificar status da base de dados
   async checkDatabaseStatus(): Promise<{ connected: boolean; message: string; productsCount: number }> {
     try {
+      // In development, check if netlify functions are available
+      if (this.isDevelopment) {
+        const functionsAvailable = await this.checkNetlifyFunctionsAvailable();
+        if (!functionsAvailable) {
+          return {
+            connected: false,
+            message: 'Netlify functions não disponíveis em desenvolvimento',
+            productsCount: 0
+          };
+        }
+      }
+
       const response = await fetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: {
