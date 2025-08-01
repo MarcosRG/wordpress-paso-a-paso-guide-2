@@ -102,19 +102,29 @@ export const BikeSelection = ({
 
 
 
-  // Manual refresh function with smart data source selection
+  // Nueva función de sincronización manual mejorada
+  const handleManualSync = async () => {
+    try {
+      console.log("🚀 Iniciando sincronización manual WooCommerce → Neon...");
+      await manualSync.mutateAsync();
+
+      // Refrescar datos después de sincronización exitosa
+      await Promise.all([refetchBikes(), refetchCategories()]);
+    } catch (error) {
+      console.error("❌ Error en sincronización manual:", error);
+    }
+  };
+
+  // Función de refresh simple para datos locales
   const handleRefresh = async () => {
     try {
       if (useNeonDatabase) {
-        // Neon disponível - fazer sync e refresh
-        console.log("🔄 Sincronizando WooCommerce → Neon Database...");
-        await syncMutation.mutateAsync();
+        console.log("🔄 Refrescando datos desde Neon Database...");
         queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
         queryClient.invalidateQueries({ queryKey: ["neon-database-categories"] });
         queryClient.invalidateQueries({ queryKey: ["neon-database-status"] });
       } else {
-        // Neon não disponível - usar WooCommerce diretamente
-        console.log("🔄 Neon não disponível - refrescando desde WooCommerce...");
+        console.log("🔄 Refrescando datos desde WooCommerce...");
         queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
         queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
       }
@@ -122,7 +132,7 @@ export const BikeSelection = ({
       await Promise.all([refetchBikes(), refetchCategories()]);
       console.log("✅ Refresh completado");
     } catch (error) {
-      console.error("❌ Error en refresh manual:", error);
+      console.error("❌ Error en refresh:", error);
     }
   };
 
