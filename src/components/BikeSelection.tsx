@@ -220,22 +220,32 @@ export const BikeSelection = ({
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-        <h2 className="text-xl font-semibold mb-2">
-          Error al cargar las bicicletas
-        </h2>
-        <div className="flex gap-2 justify-center">
-          <Button onClick={handleRefresh}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Reintentar
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => console.error("Error details:", error)}
-          >
-            Ver Error
-          </Button>
+      <div className="space-y-6">
+        {/* Show MCP connection status if not available */}
+        {!isMCPAvailable() && <MCPConnectionStatus />}
+
+        <div className="text-center py-8">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">
+            Error al cargar las bicicletas
+          </h2>
+          {!isMCPAvailable() && (
+            <p className="text-gray-600 mb-4">
+              Este erro pode estar relacionado com a conexão MCP Neon em falta.
+            </p>
+          )}
+          <div className="flex gap-2 justify-center">
+            <Button onClick={handleRefresh}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reintentar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => console.error("Error details:", error)}
+            >
+              Ver Error
+            </Button>
+          </div>
         </div>
       </div>
     );
