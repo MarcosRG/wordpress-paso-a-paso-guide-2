@@ -8,14 +8,15 @@ import {
   useNeonDatabaseStatus,
   useNeonDatabaseSync,
 } from "@/hooks/useNeonDatabase";
-import { 
-  Database, 
-  RefreshCw, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  Database,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
   Loader2,
   Zap
 } from "lucide-react";
+import { NetlifySetupHelp } from "./NetlifySetupHelp";
 
 export const NeonDatabaseAdmin: React.FC = () => {
   const { toast } = useToast();
