@@ -8,6 +8,10 @@ import {
   useNeonMCPCategories,
   useWooCommerceToNeonSync,
 } from "@/hooks/useNeonMCP";
+import {
+  useWooCommerceBikes,
+  useWooCommerceCategories,
+} from "@/hooks/useWooCommerceBikes";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { MCPConnectionStatus } from "./MCPConnectionStatus";
