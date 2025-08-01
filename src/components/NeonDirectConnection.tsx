@@ -121,12 +121,12 @@ export const NeonDirectConnection: React.FC = () => {
     setIsConnecting(true);
     
     try {
-      console.log('🔄 Sincronizando produtos do WooCommerce para Neon...');
+      console.log('�� Sincronizando produtos do WooCommerce para Neon...');
       
       // Call WooCommerce API to get products
-      const wooResponse = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_URL}/wp-json/wc/v3/products?per_page=10&status=publish`, {
+      const wooResponse = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=10&status=publish`, {
         headers: {
-          'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_KEY}:${import.meta.env.VITE_WOOCOMMERCE_SECRET}`)}`
+          'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`
         }
       });
 
