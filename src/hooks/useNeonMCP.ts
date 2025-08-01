@@ -110,19 +110,26 @@ export const useNeonMCPBikes = () => {
         }
 
         // Obter produtos desde Neon
+        console.log("🔍 Consultando produtos na base de dados...");
         const result = await safeMCPCall('neon_run_sql', {
           params: {
             projectId: import.meta.env.VITE_NEON_PROJECT_ID || "noisy-mouse-34441036",
             sql: `
-              SELECT * FROM products 
-              WHERE status = 'publish' AND stock_quantity > 0 
+              SELECT * FROM products
+              WHERE status = 'publish' AND stock_quantity > 0
               ORDER BY name
             `
           }
         });
 
+        console.log("🔍 Resultado consulta produtos:", result);
         const products = result?.rows || [];
-        console.log(`✅ ${products.length} produtos obtidos desde Neon MCP`);
+        console.log(`📦 ${products.length} produtos obtidos desde Neon MCP`);
+
+        // Log sample products
+        if (products.length > 0) {
+          console.log("📦 Amostra produtos:", products.slice(0, 2));
+        }
 
         if (products.length === 0) {
           console.log("📭 Nenhum produto em Neon - necessário sincronizar primeiro");
@@ -130,9 +137,20 @@ export const useNeonMCPBikes = () => {
         }
 
         // Converter a formato Bike
-        const bikes: Bike[] = products.map(convertNeonToBike).filter(bike => bike.available > 0);
+        console.log("🔄 Convertendo produtos para formato Bike...");
+        const bikes: Bike[] = products.map((product, index) => {
+          console.log(`🔄 Convertendo produto ${index + 1}:`, product);
+          const converted = convertNeonToBike(product);
+          console.log(`✅ Produto convertido ${index + 1}:`, converted);
+          return converted;
+        }).filter(bike => {
+          const available = bike.available > 0;
+          console.log(`🔍 Bike ${bike.name} disponível: ${available} (stock: ${bike.available})`);
+          return available;
+        });
 
-        console.log(`✅ ${bikes.length} bicicletas disponíveis`);
+        console.log(`✅ ${bikes.length} bicicletas disponíveis após conversão e filtro`);
+        console.log("🚴 Bikes finais:", bikes);
         return bikes;
 
       } catch (error) {
