@@ -66,12 +66,14 @@ export const BikeSelection = ({
   // Debug logging
   React.useEffect(() => {
     console.log("🚴 BikeSelection Debug:", {
+      mcpAvailable,
+      dataSource: mcpAvailable ? 'Neon MCP' : 'WooCommerce Fallback',
       isLoading,
       error: error?.message,
       bikesCount: bikes?.length || 0,
       bikes: bikes?.slice(0, 2) // Only log first 2 for debugging
     });
-  }, [isLoading, error, bikes]);
+  }, [mcpAvailable, isLoading, error, bikes]);
 
 
 
