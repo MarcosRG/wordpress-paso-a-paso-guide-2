@@ -133,13 +133,14 @@ export const NeonMCPSetup: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          <Button 
-            onClick={handleSync} 
+          <Button
+            onClick={handleSync}
             className="flex-1"
-            disabled={syncMutation.isPending || isChecking}
+            disabled={syncMutation.isPending || isChecking || !mcpConnected}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
-            {syncMutation.isPending ? 'Sincronizando...' : 'Sincronizar WooCommerce'}
+            {!mcpConnected ? 'Conecte MCP primeiro' :
+             syncMutation.isPending ? 'Sincronizando...' : 'Sincronizar WooCommerce'}
           </Button>
 
           <Button 
