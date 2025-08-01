@@ -42,9 +42,19 @@ export const BikeSelection = ({
   const { data: categories = [], refetch: refetchCategories } =
     useNeonMCPCategories();
 
-  // Hook para sincronización WooCommerce → Neon
+  // Hook para sincronização WooCommerce → Neon
   const syncMutation = useWooCommerceToNeonSync();
   const { language, setLanguage, t } = useLanguage();
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log("🚴 BikeSelection Debug:", {
+      isLoading,
+      error: error?.message,
+      bikesCount: bikes?.length || 0,
+      bikes: bikes?.slice(0, 2) // Only log first 2 for debugging
+    });
+  }, [isLoading, error, bikes]);
 
 
 
