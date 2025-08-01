@@ -112,10 +112,10 @@ export const useWooCommerceBikes = () => {
         throw error;
       }
     },
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 5 * 60 * 1000, // 5 minutos
-    retry: 2,
-    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutos (mais tempo já que carrega variações)
+    gcTime: 10 * 60 * 1000, // 10 minutos
+    retry: 1, // Menos retries já que faz muitas chamadas
+    retryDelay: 2000,
   });
 };
 
