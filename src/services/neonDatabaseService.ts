@@ -244,7 +244,7 @@ class NeonDatabaseService {
         // Check content type before parsing
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('Resposta não é JSON válido - netlify function não disponível');
+          throw new Error('Variáveis de ambiente não configuradas no Netlify. Configure NEON_CONNECTION_STRING no painel do Netlify.');
         }
 
         const data = await response.json();
