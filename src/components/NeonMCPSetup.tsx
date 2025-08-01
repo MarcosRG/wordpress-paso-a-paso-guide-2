@@ -90,6 +90,7 @@ export const NeonMCPSetup: React.FC = () => {
   const getStatusMessage = () => {
     if (isChecking) return "Verificando produtos...";
     if (syncMutation.isPending) return "Sincronizando produtos...";
+    if (!mcpConnected) return "MCP Neon não conectado - conecte primeiro";
     if (error) return `Erro: ${error}`;
     if (productsCount === 0) return "Nenhum produto encontrado - sincronização necessária";
     return `${productsCount} produtos disponíveis`;
