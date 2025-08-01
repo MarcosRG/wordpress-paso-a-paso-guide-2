@@ -36,6 +36,7 @@ exports.handler = async (event, context) => {
   try {
     // 1. Verificar variáveis de ambiente disponíveis
     const envVars = {
+      DATABASE_URL: !!process.env.DATABASE_URL,
       NEON_CONNECTION_STRING: !!process.env.NEON_CONNECTION_STRING,
       VITE_NEON_CONNECTION_STRING: !!process.env.VITE_NEON_CONNECTION_STRING,
       VITE_NEON_PROJECT_ID: !!process.env.VITE_NEON_PROJECT_ID,
@@ -51,15 +52,21 @@ exports.handler = async (event, context) => {
     diagnostic.details.environmentVariables = envVars;
 
     // 2. Verificar qual connection string usar
-    const connectionString = process.env.NEON_CONNECTION_STRING || process.env.VITE_NEON_CONNECTION_STRING;
+    const connectionString = process.env.DATABASE_URL || process.env.NEON_CONNECTION_STRING || process.env.VITE_NEON_CONNECTION_STRING;
     
     if (!connectionString) {
       diagnostic.details.connectionStringStatus = 'not_found';
-      diagnostic.message = 'Nenhuma connection string encontrada (NEON_CONNECTION_STRING ou VITE_NEON_CONNECTION_STRING)';
+      diagnostic.message = 'Nenhuma connection string encontrada (DATABASE_URL, NEON_CONNECTION_STRING ou VITE_NEON_CONNECTION_STRING)';
       diagnostic.success = false;
     } else {
       diagnostic.details.connectionStringStatus = 'found';
-      diagnostic.details.connectionStringSource = process.env.NEON_CONNECTION_STRING ? 'NEON_CONNECTION_STRING' : 'VITE_NEON_CONNECTION_STRING';
+      if (process.env.DATABASE_URL) {
+        diagnostic.details.connectionStringSource = 'DATABASE_URL';
+      } else if (process.env.NEON_CONNECTION_STRING) {
+        diagnostic.details.connectionStringSource = 'NEON_CONNECTION_STRING';
+      } else {
+        diagnostic.details.connectionStringSource = 'VITE_NEON_CONNECTION_STRING';
+      }
       
       // Mascarar a connection string para segurança
       const maskedConnectionString = connectionString.replace(
