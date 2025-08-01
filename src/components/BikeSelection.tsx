@@ -15,7 +15,6 @@ import {
 } from "@/hooks/useWooCommerceBikes";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
-import { MCPConnectionStatus } from "./MCPConnectionStatus";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { isMCPAvailable } from "@/utils/mcpClient";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
