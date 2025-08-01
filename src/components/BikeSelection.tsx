@@ -77,29 +77,26 @@ export const BikeSelection = ({
 
 
 
-  // Manual refresh function with MCP Neon sync
+  // Manual refresh function with smart data source selection
   const handleRefresh = async () => {
     try {
-      // Check if MCP is available before attempting sync
-      if (!isMCPAvailable()) {
-        console.warn("⚠️ MCP não disponível - apenas refresh de cache");
-        // Just refresh cache without syncing
+      const currentMcpAvailable = isMCPAvailable();
+
+      if (currentMcpAvailable) {
+        // MCP disponível - fazer sync e refresh
+        console.log("🔄 MCP disponível - sincronizando WooCommerce → Neon...");
+        await syncMutation.mutateAsync();
         queryClient.invalidateQueries({ queryKey: ["neon-mcp-bikes"] });
         queryClient.invalidateQueries({ queryKey: ["neon-mcp-categories"] });
-        await Promise.all([refetchBikes(), refetchCategories()]);
-        return;
+      } else {
+        // MCP não disponível - usar WooCommerce diretamente
+        console.log("🔄 MCP não disponível - refrescando desde WooCommerce...");
+        queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
+        queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
       }
 
-      // Primero sincronizar desde WooCommerce a Neon
-      console.log("🔄 Iniciando sincronización manual WooCommerce → Neon MCP...");
-      await syncMutation.mutateAsync();
-
-      // Luego invalidar cache para recargar desde Neon
-      queryClient.invalidateQueries({ queryKey: ["neon-mcp-bikes"] });
-      queryClient.invalidateQueries({ queryKey: ["neon-mcp-categories"] });
       await Promise.all([refetchBikes(), refetchCategories()]);
-
-      console.log("✅ Sincronización y refresh completados");
+      console.log("✅ Refresh completado");
     } catch (error) {
       console.error("❌ Error en refresh manual:", error);
     }
