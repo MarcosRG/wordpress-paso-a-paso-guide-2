@@ -46,14 +46,25 @@ export const MCPDebugPanel: React.FC = () => {
       // Collect detailed status
       const available = isMCPAvailable();
       
+      const win = window as any;
       const details = {
         mcpClient: window.mcpClient !== undefined && typeof window.mcpClient?.call === 'function',
-        neonDirect: typeof (window as any).neon_run_sql === 'function',
-        builderMCP: typeof (window as any).builderIO?.mcp?.call === 'function',
-        globalMCP: typeof (window as any).mcp?.call === 'function',
-        neonMethods: typeof (window as any).neon_list_projects === 'function',
-        mcpGlobal: (window as any).mcp !== undefined,
-        builderGlobal: (window as any).builderIO !== undefined
+        neonDirect: typeof win.neon_run_sql === 'function',
+        builderMCP: typeof win.builderIO?.mcp?.call === 'function',
+        globalMCP: typeof win.mcp?.call === 'function',
+        neonMethods: typeof win.neon_list_projects === 'function',
+        mcpGlobal: win.mcp !== undefined,
+        builderGlobal: win.builderIO !== undefined,
+        // Novas verificações
+        builderAI: win.builderAI !== undefined,
+        builderAPI: win.builderAPI !== undefined,
+        builder: win.builder !== undefined,
+        hasNeonFunctions: Object.keys(win).some(key => key.startsWith('neon_')),
+        hasMCPFunctions: Object.keys(win).some(key => key.toLowerCase().includes('mcp')),
+        hasBuilderFunctions: Object.keys(win).some(key => key.toLowerCase().includes('builder')),
+        mcpPrivate: win.__MCP__ !== undefined,
+        mcpCore: win.mcpCore !== undefined,
+        mcpAPI: win.mcpAPI !== undefined,
       };
       
       // Get all window keys that might be MCP-related
