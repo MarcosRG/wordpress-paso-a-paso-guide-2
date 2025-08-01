@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { isMCPAvailable } from "@/utils/mcpClient";
-import { X, Plug } from "lucide-react";
+import { X, Plug, RefreshCw } from "lucide-react";
 
 export const MCPConnectionBanner: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
