@@ -32,8 +32,19 @@ class NeonDatabaseService {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
+
+      // Check if response is actually JSON and not the raw JS file
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+
+      if (!isJson) {
+        console.warn('⚠️ Netlify function retornando JS ao invés de JSON - não disponível');
+        return false;
+      }
+
       return response.status !== 404;
     } catch (error) {
+      console.warn('⚠️ Erro verificando netlify functions:', error);
       return false;
     }
   }
