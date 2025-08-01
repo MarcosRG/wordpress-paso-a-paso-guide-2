@@ -11,6 +11,7 @@ export const NeonMCPSetup: React.FC = () => {
   const [productsCount, setProductsCount] = useState<number>(0);
   const [isChecking, setIsChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mcpConnected, setMcpConnected] = useState<boolean>(false);
   const { toast } = useToast();
   const syncMutation = useWooCommerceToNeonSync();
 
