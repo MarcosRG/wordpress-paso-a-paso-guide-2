@@ -4,31 +4,49 @@
 export const isMCPAvailable = (): boolean => {
   if (typeof window === 'undefined') return false;
 
-  // Debug detalhado
+  // Buscar QUALQUER possível interface MCP
+  const win = window as any;
+
+  // Debug detalhado - verificações ampliadas
   const checks = {
     mcpClient: window.mcpClient !== undefined && typeof window.mcpClient?.call === 'function',
-    neonDirect: typeof (window as any).neon_run_sql === 'function',
-    builderMCP: typeof (window as any).builderIO?.mcp?.call === 'function',
-    globalMCP: typeof (window as any).mcp?.call === 'function',
-    // Novas verificações
-    neonMethods: typeof (window as any).neon_list_projects === 'function',
-    mcpGlobal: (window as any).mcp !== undefined,
-    builderGlobal: (window as any).builderIO !== undefined
+    neonDirect: typeof win.neon_run_sql === 'function',
+    builderMCP: typeof win.builderIO?.mcp?.call === 'function',
+    globalMCP: typeof win.mcp?.call === 'function',
+    neonMethods: typeof win.neon_list_projects === 'function',
+    mcpGlobal: win.mcp !== undefined,
+    builderGlobal: win.builderIO !== undefined,
+    // Novas verificações Builder.io específicas
+    builderAI: win.builderAI !== undefined,
+    builderAPI: win.builderAPI !== undefined,
+    builder: win.builder !== undefined,
+    // Verificações por prefixos comuns
+    hasNeonFunctions: Object.keys(win).some(key => key.startsWith('neon_')),
+    hasMCPFunctions: Object.keys(win).some(key => key.toLowerCase().includes('mcp')),
+    hasBuilderFunctions: Object.keys(win).some(key => key.toLowerCase().includes('builder')),
+    // Verificação de __MCP__ ou similar
+    mcpPrivate: win.__MCP__ !== undefined,
+    mcpCore: win.mcpCore !== undefined,
+    mcpAPI: win.mcpAPI !== undefined,
   };
 
-  // Log para debug
+  // Log detalhado para debug
   if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 MCP Detection:', checks);
+    console.log('🔍 MCP Detection Extended:', checks);
+
+    // Log todas as keys do window que podem ser relevantes
+    const relevantKeys = Object.keys(win).filter(key =>
+      key.toLowerCase().includes('mcp') ||
+      key.toLowerCase().includes('neon') ||
+      key.toLowerCase().includes('builder') ||
+      key.startsWith('__') ||
+      typeof win[key] === 'function'
+    );
+    console.log('🔍 Relevant Window Keys:', relevantKeys);
   }
 
-  // Verificar diferentes formas que MCP pode estar disponível
-  return (
-    checks.mcpClient ||
-    checks.neonDirect ||
-    checks.builderMCP ||
-    checks.globalMCP ||
-    checks.neonMethods
-  );
+  // Verificar se alguma forma está disponível
+  return Object.values(checks).some(check => check === true);
 };
 
 // Tentar diferentes formas de chamar MCP
