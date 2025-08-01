@@ -82,7 +82,7 @@ class NeonDatabaseService {
         console.log(`✅ ${data.products.length} produtos carregados do Neon`);
         return data.products;
       } else if (Array.isArray(data)) {
-        console.log(`✅ ${data.length} produtos carregados do Neon`);
+        console.log(`�� ${data.length} produtos carregados do Neon`);
         return data;
       } else {
         console.warn('⚠️ Formato de resposta inesperado:', data);
@@ -230,22 +230,27 @@ class NeonDatabaseService {
       });
 
       if (response.ok) {
+        // Check content type before parsing
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Resposta não é JSON válido - netlify function não disponível');
+        }
+
         const data = await response.json();
-        const productsCount = Array.isArray(data.products) ? data.products.length : 
-                             Array.isArray(data) ? data.length : 0;
-        
-        return {
-          connected: true,
-          message: data.message || 'Conexão bem-sucedida',
-          productsCount
-        };
+
+        // Verificar se a resposta tem o formato esperado
+        if (Array.isArray(data.products)) {
+          console.log(`✅ ${data.products.length} produtos carregados do Neon`);
+          return data.products;
+        } else if (Array.isArray(data)) {
+          console.log(`✅ ${data.length} produtos carregados do Neon`);
+          return data;
+        } else {
+          console.warn('⚠️ Formato de resposta inesperado:', data);
+          return [];
+        }
       } else {
-        const errorData = await response.json().catch(() => ({ error: 'Resposta inválida' }));
-        return {
-          connected: false,
-          message: `Erro: ${response.status} - ${errorData.error || response.statusText}`,
-          productsCount: 0
-        };
+        throw new Error(`Neon API Error: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
       return {
