@@ -44,7 +44,7 @@ export const BikeSelection = ({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const queryClient = useQueryClient();
 
-  // Usar Neon Database como primary, WooCommerce como fallback
+  // Usar Neon Database como primary con sincronización automática
   const neonQuery = useNeonDatabaseBikes();
   const neonCategoriesQuery = useNeonDatabaseCategories();
   const neonStatus = useNeonDatabaseStatus();
@@ -52,13 +52,10 @@ export const BikeSelection = ({
   const fallbackQuery = useWooCommerceBikes();
   const fallbackCategoriesQuery = useWooCommerceCategories();
 
-  // Determinar se deve usar Neon ou fallback
-  // Usar Neon apenas se conectado E sem erros críticos (como netlify functions unavailable)
-  const useNeonDatabase = neonStatus.data?.connected === true &&
-                           !neonQuery.error &&
-                           neonQuery.data !== undefined;
+  // Determinar se debe usar Neon o fallback
+  const useNeonDatabase = neonStatus.data?.connected === true && !neonQuery.error;
 
-  // Seleccionar la fuente de datos
+  // Seleccionar la fuente de datos automáticamente
   const {
     data: bikes,
     isLoading,
