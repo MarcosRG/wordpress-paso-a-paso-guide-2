@@ -102,8 +102,8 @@ export const NeonMCPSetup: React.FC = () => {
       });
 
       toast({
-        title: "Error de configuración",
-        description: "No se pudieron crear las tablas en Neon MCP",
+        title: "Erro de configuração",
+        description: "Não foi possível criar as tabelas no Neon MCP",
         variant: "destructive",
       });
     }
