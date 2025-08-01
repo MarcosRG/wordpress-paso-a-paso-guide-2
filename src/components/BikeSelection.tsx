@@ -53,8 +53,10 @@ export const BikeSelection = ({
   const fallbackCategoriesQuery = useWooCommerceCategories();
 
   // Determinar se deve usar Neon ou fallback
-  const useNeonDatabase = neonStatus.data?.connected !== false &&
-                           (!neonQuery.error || neonQuery.data?.length > 0);
+  // Usar Neon apenas se conectado E sem erros críticos (como netlify functions unavailable)
+  const useNeonDatabase = neonStatus.data?.connected === true &&
+                           !neonQuery.error &&
+                           neonQuery.data !== undefined;
 
   // Seleccionar la fuente de datos
   const {
