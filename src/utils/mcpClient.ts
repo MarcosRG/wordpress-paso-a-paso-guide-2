@@ -63,13 +63,16 @@ export const safeMCPCall = async (
       console.log(`🔄 Usando fallback para ${method}`);
       return await fallback();
     } else {
-      // Em vez de lançar erro, retornar resposta vazia para não quebrar UI
-      console.warn(`⚠️ ${method} falhou, retornando resposta vazia`);
-      
+      // Tratar erro de forma mais amigável
+      console.warn(`⚠️ ${method} falhou - MCP não conectado`);
+
+      // Para neon_run_sql, retornar formato esperado
       if (method === 'neon_run_sql') {
-        return { rows: [] };
+        return { rows: [], error: "MCP Neon não conectado" };
       }
-      return null;
+
+      // Para outros métodos, retornar null
+      return { error: "MCP Neon não conectado" };
     }
   }
 };
