@@ -323,10 +323,16 @@ export const BikeSelection = ({
         <h2 className="text-xl font-semibold mb-2">
           {t("loadingBikes")}
         </h2>
-        <Button onClick={handleRefresh} className="mt-4">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          {t("tryAgain")}
-        </Button>
+        <div className="flex gap-2 justify-center mt-4">
+          <Button onClick={handleManualSync} disabled={manualSync.isPending}>
+            <Download className="h-4 w-4 mr-2" />
+            {manualSync.isPending ? "Sincronizando..." : "Sincronizar Datos"}
+          </Button>
+          <Button onClick={handleRefresh} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {t("tryAgain")}
+          </Button>
+        </div>
       </div>
     );
   }
