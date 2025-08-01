@@ -126,7 +126,12 @@ export const NeonDatabaseAdmin: React.FC = () => {
 
             {/* Show setup help when error involves environment variables */}
             {(status.message?.includes('ambiente') || status.message?.includes('configuradas')) && (
-              <NetlifySetupHelp />
+              <>
+                <NetlifySetupHelp />
+                <div className="mt-4">
+                  <NetlifyDiagnostic />
+                </div>
+              </>
             )}
           </>
         )}
