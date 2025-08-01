@@ -68,7 +68,9 @@ export const useNeonMCPBikes = () => {
 
         // Verificar se MCP está disponível
         if (!isMCPAvailable()) {
-          console.warn("⚠️ MCP não disponível");
+          const { debugMCPAvailability } = await import("@/utils/mcpClient");
+          debugMCPAvailability();
+          console.warn("⚠️ MCP não disponível - verifique conexão MCP no admin");
           return [];
         }
 
