@@ -23,12 +23,35 @@ interface NeonProduct {
 
 class NeonDatabaseService {
   private baseUrl = '/netlify/functions';
+  private isDevelopment = import.meta.env.DEV;
+
+  // Check if netlify functions are available
+  private async checkNetlifyFunctionsAvailable(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/neon-products`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      return response.status !== 404;
+    } catch (error) {
+      return false;
+    }
+  }
 
   // Obter produtos da base de dados Neon
   async getProducts(): Promise<NeonProduct[]> {
     try {
       console.log('🚀 Carregando produtos desde Neon Database...');
-      
+
+      // In development, check if netlify functions are available
+      if (this.isDevelopment) {
+        const functionsAvailable = await this.checkNetlifyFunctionsAvailable();
+        if (!functionsAvailable) {
+          console.warn('⚠️ Netlify functions não disponíveis em desenvolvimento');
+          return [];
+        }
+      }
+
       const response = await fetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: {
