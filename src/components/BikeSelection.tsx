@@ -293,7 +293,12 @@ export const BikeSelection = ({
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
+          <Badge variant={mcpAvailable ? "default" : "secondary"} className="text-xs">
+            {mcpAvailable ? "🗄️ Neon DB" : "🛒 WooCommerce"}
+          </Badge>
+        </div>
         <div className="flex items-center gap-4">
           <SyncStatusIndicator showDetails={false} />
 
