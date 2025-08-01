@@ -290,9 +290,15 @@ export const BikeSelection = ({
             size="sm"
             onClick={handleRefresh}
             className="flex items-center gap-2"
+            disabled={syncMutation.isPending}
           >
-            <RefreshCw className="h-4 w-4" />
-            Actualizar
+            <RefreshCw className={`h-4 w-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
+            {syncMutation.isPending
+              ? "Sincronizando..."
+              : isMCPAvailable()
+                ? "Sincronizar & Atualizar"
+                : "Atualizar Cache"
+            }
           </Button>
         </div>
       </div>
