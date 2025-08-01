@@ -119,10 +119,10 @@ export const MCPDebugPanel: React.FC = () => {
     // Initial check
     checkMCPStatus();
     
-    // Auto refresh every 3 seconds if enabled
+    // Auto refresh every 5 seconds if enabled (reduced frequency)
     let interval: NodeJS.Timeout;
     if (autoRefresh) {
-      interval = setInterval(checkMCPStatus, 3000);
+      interval = setInterval(checkMCPStatus, 5000);
     }
     
     return () => {
