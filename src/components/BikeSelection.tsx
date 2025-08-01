@@ -277,6 +277,13 @@ export const BikeSelection = ({
         </div>
       </div>
 
+      {/* Show MCP connection status */}
+      {!isMCPAvailable() && (
+        <div className="mb-6">
+          <MCPConnectionStatus />
+        </div>
+      )}
+
       <CategoryFilter
         categories={categories}
         selectedCategory={selectedCategory}
