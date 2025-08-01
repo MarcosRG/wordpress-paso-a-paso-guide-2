@@ -22,7 +22,7 @@ import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { isMCPAvailable } from "@/utils/mcpClient";
-import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
+import { Bike as BikeIcon, AlertCircle, RefreshCw, Download, Database } from "lucide-react";
 import BikeCard from "./BikeCard";
 import SimpleBikeCard from "./SimpleBikeCard";
 import {
@@ -30,6 +30,7 @@ import {
   extractDayBasedPricing,
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
+import { useManualSync, useNeonStatus } from "@/hooks/useManualSync";
 
 
 interface BikeSelectionProps {
@@ -89,7 +90,7 @@ export const BikeSelection = ({
   // Logging optimizado
   React.useEffect(() => {
     if (bikes) {
-      const source = useNeonDatabase ? 'Neon Database ⚡' : 'WooCommerce 🐌';
+      const source = useNeonDatabase ? 'Neon Database ��' : 'WooCommerce 🐌';
       console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${source}`);
     }
   }, [bikes, useNeonDatabase]);
