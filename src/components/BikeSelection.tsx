@@ -74,9 +74,9 @@ export const BikeSelection = ({
   // Simple logging for admin purposes only
   React.useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🚴 ${bikes?.length || 0} bicicletas carregadas`);
+      console.log(`🚴 ${bikes?.length || 0} bicicletas carregadas (${useNeonDatabase ? 'Neon DB' : 'WooCommerce'})`);
     }
-  }, [bikes]);
+  }, [bikes, useNeonDatabase]);
 
 
 
