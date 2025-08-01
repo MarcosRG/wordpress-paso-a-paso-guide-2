@@ -250,15 +250,20 @@ class NeonDatabaseService {
         const data = await response.json();
 
         // Verificar se a resposta tem o formato esperado
-        if (Array.isArray(data.products)) {
-          console.log(`✅ ${data.products.length} produtos carregados do Neon`);
-          return data.products;
-        } else if (Array.isArray(data)) {
+        if (Array.isArray(data)) {
           console.log(`✅ ${data.length} produtos carregados do Neon`);
-          return data;
+          return {
+            connected: true,
+            message: `${data.length} produtos carregados da base de dados`,
+            productsCount: data.length
+          };
         } else {
           console.warn('⚠️ Formato de resposta inesperado:', data);
-          return [];
+          return {
+            connected: false,
+            message: 'Formato de resposta inesperado da base de dados',
+            productsCount: 0
+          };
         }
       } else {
         throw new Error(`Neon API Error: ${response.status} ${response.statusText}`);
