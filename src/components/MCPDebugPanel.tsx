@@ -67,12 +67,17 @@ export const MCPDebugPanel: React.FC = () => {
         mcpAPI: win.mcpAPI !== undefined,
       };
       
-      // Get all window keys that might be MCP-related
-      const windowKeys = Object.keys(window).filter(key => 
-        key.toLowerCase().includes('mcp') || 
+      // Get all window keys that might be MCP-related or are functions
+      const allKeys = Object.keys(window);
+      const mcpRelatedKeys = allKeys.filter(key =>
+        key.toLowerCase().includes('mcp') ||
         key.toLowerCase().includes('neon') ||
-        key.toLowerCase().includes('builder')
+        key.toLowerCase().includes('builder') ||
+        key.startsWith('__') ||
+        (typeof (window as any)[key] === 'function' && !key.startsWith('webkit') && !key.startsWith('chrome'))
       );
+
+      const windowKeys = mcpRelatedKeys.slice(0, 20); // Limit to first 20 to avoid clutter
       
       let testResult = null;
       
