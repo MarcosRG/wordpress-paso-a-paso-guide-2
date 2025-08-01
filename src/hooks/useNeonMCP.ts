@@ -168,10 +168,10 @@ export const useNeonMCPBikes = () => {
       } catch (error) {
         console.error("❌ Error cargando productos desde Neon MCP:", error);
         
-        // Mostrar toast de error
+        // Mostrar toast de erro
         toast({
-          title: "Error de conexión",
-          description: "No se pudieron cargar los productos desde la base de datos",
+          title: "Erro de ligação",
+          description: "Não foi possível carregar os produtos da base de dados",
           variant: "destructive",
         });
 
