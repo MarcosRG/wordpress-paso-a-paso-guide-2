@@ -48,12 +48,22 @@ export const BikeSelection = ({
 
 
 
-  // Manual refresh function
+  // Manual refresh function with MCP Neon sync
   const handleRefresh = async () => {
-    // Invalidar cache de React Query para forzar recarga desde cache local
-    queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes"] });
-    queryClient.invalidateQueries({ queryKey: ["woocommerce-categories"] });
-    await Promise.all([refetchBikes(), refetchCategories()]);
+    try {
+      // Primero sincronizar desde WooCommerce a Neon
+      console.log("🔄 Iniciando sincronización manual WooCommerce → Neon MCP...");
+      await syncMutation.mutateAsync();
+
+      // Luego invalidar cache para recargar desde Neon
+      queryClient.invalidateQueries({ queryKey: ["neon-mcp-bikes"] });
+      queryClient.invalidateQueries({ queryKey: ["neon-mcp-categories"] });
+      await Promise.all([refetchBikes(), refetchCategories()]);
+
+      console.log("✅ Sincronización y refresh completados");
+    } catch (error) {
+      console.error("❌ Error en refresh manual:", error);
+    }
   };
 
   // Filter bikes by category using WooCommerce slugs and exclude insurance products
