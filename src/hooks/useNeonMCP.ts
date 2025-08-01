@@ -275,19 +275,19 @@ export const useWooCommerceToNeonSync = () => {
       return wooProducts.length;
     },
     onSuccess: (count) => {
-      // Invalidar cache para recargar datos
+      // Invalidar cache para recarregar dados
       queryClient.invalidateQueries({ queryKey: ["neon-mcp-bikes"] });
-      
+
       toast({
-        title: "Sincronización completada",
-        description: `${count} productos sincronizados correctamente`,
+        title: "Sincronização concluída",
+        description: `${count} produtos sincronizados com sucesso`,
       });
     },
     onError: (error) => {
-      console.error("❌ Error en sync:", error);
+      console.error("❌ Erro na sincronização:", error);
       toast({
-        title: "Error de sincronización",
-        description: "No se pudo completar la sincronización de productos",
+        title: "Erro de sincronização",
+        description: "Não foi possível completar a sincronização de produtos",
         variant: "destructive",
       });
     },
