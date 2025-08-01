@@ -101,8 +101,14 @@ export const useNeonMCPBikes = () => {
       try {
         console.log("🚀 Cargando productos desde Neon MCP...");
 
+        // Verificar que MCP esté disponible
+        if (!isMCPAvailable()) {
+          console.warn("⚠️ MCP no disponible, retornando array vacío");
+          return [];
+        }
+
         // Usar MCP Neon para obtener productos activos
-        const result = await window.mcpClient?.call('neon_run_sql', {
+        const result = await safeMCPCall('neon_run_sql', {
           params: {
             projectId: import.meta.env.VITE_NEON_PROJECT_ID || "noisy-mouse-34441036",
             sql: `
@@ -111,6 +117,10 @@ export const useNeonMCPBikes = () => {
               ORDER BY name
             `
           }
+        }, async () => {
+          // Fallback: retornar array vacío si MCP falla
+          console.warn("MCP fallback: retornando array vacío");
+          return { rows: [] };
         });
 
         const products = result?.rows || [];
