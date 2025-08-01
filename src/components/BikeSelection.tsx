@@ -70,10 +70,27 @@ export const BikeSelection = ({
   const syncMutation = useNeonDatabaseSync();
   const { language, setLanguage, t } = useLanguage();
 
-  // Simple logging for admin purposes only
+  // Auto-sync si Neon está vacía
   React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🚴 ${bikes?.length || 0} bicicletas carregadas (${useNeonDatabase ? 'Neon DB' : 'WooCommerce'})`);
+    const handleAutoSync = async () => {
+      if (useNeonDatabase && bikes && bikes.length === 0 && !isLoading && !syncMutation.isPending) {
+        console.log('🔄 Neon Database vacía, iniciando sincronización automática...');
+        try {
+          await syncMutation.mutateAsync();
+        } catch (error) {
+          console.warn('⚠️ Auto-sync falló, usando fallback WooCommerce');
+        }
+      }
+    };
+
+    handleAutoSync();
+  }, [useNeonDatabase, bikes, isLoading, syncMutation]);
+
+  // Logging optimizado
+  React.useEffect(() => {
+    if (bikes) {
+      const source = useNeonDatabase ? 'Neon Database ⚡' : 'WooCommerce 🐌';
+      console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${source}`);
     }
   }, [bikes, useNeonDatabase]);
 
