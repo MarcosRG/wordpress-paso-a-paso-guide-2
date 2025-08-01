@@ -13,6 +13,11 @@ if (import.meta.env.DEV) {
   import("./utils/testCleanFetch");
 }
 
+// Initialize MCP client
+import("./utils/mcpClient").then(({ initializeMCP }) => {
+  initializeMCP();
+});
+
 // Initialize connectivity debugger in development
 if (import.meta.env.DEV) {
   import("./utils/connectivityDebugger");
