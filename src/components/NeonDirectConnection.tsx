@@ -249,7 +249,7 @@ export const NeonDirectConnection: React.FC = () => {
             ) : (
               <Database className="h-4 w-4 mr-2" />
             )}
-            Testar Conexão
+            Verificar Configuração
           </Button>
 
           <Button
