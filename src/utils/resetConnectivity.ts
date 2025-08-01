@@ -25,13 +25,8 @@ export const resetAllConnectivity = () => {
     
     console.log('✅ All connectivity issues have been reset');
     
-    // 5. Optionally reload the page to ensure clean state
-    if (typeof window !== 'undefined') {
-      console.log('🔄 Reloading page to ensure clean state...');
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    }
+    // 5. Don't reload the page automatically to avoid infinite loops
+    // Users can manually refresh if needed
     
   } catch (error) {
     console.error('❌ Error resetting connectivity:', error);
