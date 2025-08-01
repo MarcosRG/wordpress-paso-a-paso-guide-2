@@ -241,6 +241,11 @@ const Index = () => {
           <p className="text-lg text-gray-700">{t("subtitle")}</p>
         </div>
 
+        {/* Direct Neon Connection */}
+        <div className="mb-8">
+          <NeonDirectConnection />
+        </div>
+
 
 
 
