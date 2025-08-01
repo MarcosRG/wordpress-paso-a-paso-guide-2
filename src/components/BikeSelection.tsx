@@ -44,7 +44,7 @@ export const BikeSelection = ({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const queryClient = useQueryClient();
 
-  // Usar Neon Database como primary, WooCommerce como fallback
+  // Usar Neon Database como primary con sincronización automática
   const neonQuery = useNeonDatabaseBikes();
   const neonCategoriesQuery = useNeonDatabaseCategories();
   const neonStatus = useNeonDatabaseStatus();
@@ -52,13 +52,10 @@ export const BikeSelection = ({
   const fallbackQuery = useWooCommerceBikes();
   const fallbackCategoriesQuery = useWooCommerceCategories();
 
-  // Determinar se deve usar Neon ou fallback
-  // Usar Neon apenas se conectado E sem erros críticos (como netlify functions unavailable)
-  const useNeonDatabase = neonStatus.data?.connected === true &&
-                           !neonQuery.error &&
-                           neonQuery.data !== undefined;
+  // Determinar se debe usar Neon o fallback
+  const useNeonDatabase = neonStatus.data?.connected === true && !neonQuery.error;
 
-  // Seleccionar la fuente de datos
+  // Seleccionar la fuente de datos automáticamente
   const {
     data: bikes,
     isLoading,
@@ -73,10 +70,27 @@ export const BikeSelection = ({
   const syncMutation = useNeonDatabaseSync();
   const { language, setLanguage, t } = useLanguage();
 
-  // Simple logging for admin purposes only
+  // Auto-sync si Neon está vacía
   React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🚴 ${bikes?.length || 0} bicicletas carregadas (${useNeonDatabase ? 'Neon DB' : 'WooCommerce'})`);
+    const handleAutoSync = async () => {
+      if (useNeonDatabase && bikes && bikes.length === 0 && !isLoading && !syncMutation.isPending) {
+        console.log('🔄 Neon Database vacía, iniciando sincronización automática...');
+        try {
+          await syncMutation.mutateAsync();
+        } catch (error) {
+          console.warn('⚠️ Auto-sync falló, usando fallback WooCommerce');
+        }
+      }
+    };
+
+    handleAutoSync();
+  }, [useNeonDatabase, bikes, isLoading, syncMutation]);
+
+  // Logging optimizado
+  React.useEffect(() => {
+    if (bikes) {
+      const source = useNeonDatabase ? 'Neon Database ⚡' : 'WooCommerce 🐌';
+      console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${source}`);
     }
   }, [bikes, useNeonDatabase]);
 
