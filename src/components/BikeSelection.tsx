@@ -310,11 +310,6 @@ export const BikeSelection = ({
         </div>
       )}
 
-      {/* Debug Info - remover depois */}
-      <div className="mb-6">
-        <BikeDebugInfo />
-      </div>
-
       <CategoryFilter
         categories={categories}
         selectedCategory={selectedCategory}
