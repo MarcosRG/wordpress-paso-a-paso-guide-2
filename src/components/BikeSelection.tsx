@@ -230,6 +230,14 @@ export const BikeSelection = ({
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
+        <div className="text-center mb-6">
+          <p className="text-muted-foreground">
+            {mcpAvailable
+              ? "Carregando desde Neon database..."
+              : "Carregando produtos e stocks das variações..."
+            }
+          </p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i}>
