@@ -309,9 +309,9 @@ export const BikeSelection = ({
             <RefreshCw className={`h-4 w-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
             {syncMutation.isPending
               ? "Sincronizando..."
-              : isMCPAvailable()
-                ? "Sincronizar & Atualizar"
-                : "Atualizar Cache"
+              : mcpAvailable
+                ? "Sync Neon & Atualizar"
+                : "Atualizar do WooCommerce"
             }
           </Button>
         </div>
