@@ -55,6 +55,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <ConnectivityAlert />
+            <MCPConnectionBanner />
             <FloatingDebugButton />
             <BrowserRouter>
               <Routes>
