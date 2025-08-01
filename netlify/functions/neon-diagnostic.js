@@ -36,6 +36,7 @@ exports.handler = async (event, context) => {
   try {
     // 1. Verificar variáveis de ambiente disponíveis
     const envVars = {
+      DATABASE_URL: !!process.env.DATABASE_URL,
       NEON_CONNECTION_STRING: !!process.env.NEON_CONNECTION_STRING,
       VITE_NEON_CONNECTION_STRING: !!process.env.VITE_NEON_CONNECTION_STRING,
       VITE_NEON_PROJECT_ID: !!process.env.VITE_NEON_PROJECT_ID,
