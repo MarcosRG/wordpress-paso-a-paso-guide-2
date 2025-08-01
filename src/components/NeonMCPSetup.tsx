@@ -86,8 +86,8 @@ export const NeonMCPSetup: React.FC = () => {
       });
 
       toast({
-        title: "Configuración completada",
-        description: "Tablas creadas correctamente en Neon MCP",
+        title: "Configuração concluída",
+        description: "Tabelas criadas com sucesso no Neon MCP",
       });
 
       // Actualizar estado
