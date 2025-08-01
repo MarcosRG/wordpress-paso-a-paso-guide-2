@@ -32,14 +32,18 @@ export const BikeSelection = ({
 }: BikeSelectionProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const queryClient = useQueryClient();
+  // Usar MCP Neon en lugar de WooCommerce directo
   const {
     data: bikes,
     isLoading,
     error,
     refetch: refetchBikes,
-  } = useWooCommerceBikes();
+  } = useNeonMCPBikes();
   const { data: categories = [], refetch: refetchCategories } =
-    useWooCommerceCategories();
+    useNeonMCPCategories();
+
+  // Hook para sincronización WooCommerce → Neon
+  const syncMutation = useWooCommerceToNeonSync();
   const { language, setLanguage, t } = useLanguage();
 
 
