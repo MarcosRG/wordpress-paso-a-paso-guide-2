@@ -158,6 +158,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         <Tabs defaultValue="database" className="space-y-6">
           <TabsList>
             <TabsTrigger value="database">Base de Dados</TabsTrigger>
+            <TabsTrigger value="diagnostic">Diagnóstico Netlify</TabsTrigger>
             <TabsTrigger value="products">Debug Productos</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
