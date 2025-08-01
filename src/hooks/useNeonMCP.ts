@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Bike } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
+import { safeMCPCall, isMCPAvailable } from "@/utils/mcpClient";
 
 // Interface para productos en Neon MCP
 interface NeonProduct {
