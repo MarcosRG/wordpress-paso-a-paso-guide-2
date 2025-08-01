@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
 import {
-  useWooCommerceBikes,
-  useWooCommerceCategories,
-} from "@/hooks/useWooCommerceBikes";
+  useNeonMCPBikes,
+  useNeonMCPCategories,
+  useWooCommerceToNeonSync,
+} from "@/hooks/useNeonMCP";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
