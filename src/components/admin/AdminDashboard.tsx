@@ -165,11 +165,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           {/* Neon MCP Setup Tab */}
           <TabsContent value="neon-mcp">
             <div className="space-y-6">
+              {/* MCP Connection Debug */}
+              <MCPDebugInfo />
+
+              {/* Neon Setup */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Configuración Neon Database</CardTitle>
+                  <CardTitle>Configuração Neon Database</CardTitle>
                   <CardDescription>
-                    Configura y sincroniza la base de datos Neon para mejorar el rendimiento
+                    Configura e sincroniza a base de dados Neon para melhorar o rendimento
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
