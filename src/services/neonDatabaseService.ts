@@ -78,7 +78,7 @@ class NeonDatabaseService {
       // Check if response is JSON before parsing
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Resposta não é JSON válido - netlify function retornando arquivo JS');
+        throw new Error('Netlify Functions não configuradas. Verifique variáveis de ambiente no painel do Netlify.');
       }
 
       let data;
