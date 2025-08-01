@@ -156,8 +156,9 @@ export const initializeFetchInterceptor = () => {
   }
 };
 
+// Disable auto-initialization to prevent conflicts with cleanFetch
 // Auto-initialize when module loads
-if (typeof window !== 'undefined') {
-  // Delay initialization to allow other scripts to load
-  setTimeout(initializeFetchInterceptor, 100);
-}
+// if (typeof window !== 'undefined') {
+//   // Delay initialization to allow other scripts to load
+//   setTimeout(initializeFetchInterceptor, 100);
+// }

@@ -5,6 +5,7 @@ import { InsuranceOptions } from "@/components/InsuranceOptions";
 import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { NeonDirectConnection } from "@/components/NeonDirectConnection";
 
 
 import { Card } from "@/components/ui/card";
@@ -239,6 +240,13 @@ const Index = () => {
           </h1>
           <p className="text-lg text-gray-700">{t("subtitle")}</p>
         </div>
+
+        {/* Direct Neon Connection */}
+        <div className="mb-8">
+          <NeonDirectConnection />
+        </div>
+
+
 
 
 
