@@ -191,16 +191,42 @@ export const useNeonMCPBikes = () => {
         return bikes;
 
       } catch (error) {
-        console.error("❌ Error cargando productos desde Neon MCP:", error);
-        
-        // Mostrar toast de erro
-        toast({
-          title: "Erro de ligação",
-          description: "Não foi possível carregar os produtos da base de dados",
-          variant: "destructive",
-        });
+        console.error("❌ Erro carregando produtos do Neon MCP:", error);
 
-        throw error;
+        // Em vez de lançar erro, tentar WooCommerce como fallback final
+        console.log("🔄 Tentando WooCommerce como fallback final...");
+
+        try {
+          const { wooCommerceApi } = await import("../services/woocommerceApi");
+          const wooProducts = await wooCommerceApi.getProducts();
+
+          console.log(`🔄 Fallback final: ${wooProducts.length} produtos do WooCommerce`);
+
+          const fallbackBikes: Bike[] = wooProducts
+            .filter(product => product.status === "publish" && (product.stock_quantity > 0 || product.type === "variable"))
+            .slice(0, 10) // Limitar a 10 produtos para teste
+            .map(product => ({
+              id: product.id.toString(),
+              name: product.name,
+              type: product.categories?.find(cat => cat.slug !== "alugueres")?.slug || "general",
+              pricePerDay: parseFloat(product.price || product.regular_price || "0"),
+              available: product.stock_quantity || 1, // Pelo menos 1 para mostrar
+              image: product.images?.length > 0 ? product.images[0].src : "/placeholder.svg",
+              description: product.short_description || product.description || "",
+              wooCommerceData: {
+                product,
+                variations: [],
+                acfData: null,
+              },
+            }));
+
+          return fallbackBikes;
+        } catch (fallbackError) {
+          console.error("❌ Erro no fallback final:", fallbackError);
+
+          // Retornar array vazio em vez de lançar erro para evitar quebrar a UI
+          return [];
+        }
       }
     },
     staleTime: 2 * 60 * 1000, // 2 minutos
@@ -309,7 +335,7 @@ export const useWooCommerceToNeonSync = () => {
       });
     },
     onError: (error) => {
-      console.error("❌ Erro na sincronização:", error);
+      console.error("�� Erro na sincronização:", error);
       toast({
         title: "Erro de sincronização",
         description: "Não foi possível completar a sincronização de produtos",
