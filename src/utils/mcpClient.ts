@@ -33,27 +33,57 @@ export const isMCPAvailable = (): boolean => {
 
 // Tentar diferentes formas de chamar MCP
 const tryMCPCall = async (method: string, params: any): Promise<any> => {
+  console.log(`🔍 Tentando MCP call: ${method}`, { params });
+
+  // Lista de tentativas
+  const attempts = [];
+
   // Tentar forma padrão
   if (window.mcpClient && typeof window.mcpClient.call === 'function') {
-    return await window.mcpClient.call(method, params);
+    attempts.push('mcpClient.call');
+    try {
+      console.log('🔄 Tentando window.mcpClient.call...');
+      return await window.mcpClient.call(method, params);
+    } catch (error) {
+      console.warn('❌ window.mcpClient.call falhou:', error);
+    }
   }
-  
+
   // Tentar função direta (se disponível)
   if (typeof (window as any)[method] === 'function') {
-    return await (window as any)[method](params);
+    attempts.push('direct function');
+    try {
+      console.log(`🔄 Tentando window.${method} diretamente...`);
+      return await (window as any)[method](params);
+    } catch (error) {
+      console.warn(`❌ window.${method} falhou:`, error);
+    }
   }
-  
+
   // Tentar Builder.io MCP
   if ((window as any).builderIO?.mcp?.call) {
-    return await (window as any).builderIO.mcp.call(method, params);
+    attempts.push('builderIO.mcp.call');
+    try {
+      console.log('🔄 Tentando builderIO.mcp.call...');
+      return await (window as any).builderIO.mcp.call(method, params);
+    } catch (error) {
+      console.warn('❌ builderIO.mcp.call falhou:', error);
+    }
   }
-  
+
   // Tentar MCP global
   if ((window as any).mcp?.call) {
-    return await (window as any).mcp.call(method, params);
+    attempts.push('mcp.call');
+    try {
+      console.log('🔄 Tentando window.mcp.call...');
+      return await (window as any).mcp.call(method, params);
+    } catch (error) {
+      console.warn('❌ window.mcp.call falhou:', error);
+    }
   }
-  
-  throw new Error(`MCP Neon não está conectado. Clique no botão "MCP Servers" no topo da página e conecte o servidor Neon.`);
+
+  console.error(`❌ Todas as tentativas falharam para ${method}:`, attempts);
+  throw new Error(`MCP Neon não conectado. Tentativas: ${attempts.join(', ')}. Clique no botão "MCP Servers" no topo e conecte o servidor Neon.`);
 };
 
 // Chamada segura ao MCP (MAIS ROBUSTA)
