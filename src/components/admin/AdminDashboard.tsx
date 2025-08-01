@@ -16,6 +16,7 @@ import { SystemSettings } from './SystemSettings';
 import { VariableProductDebugger } from '../VariableProductDebugger';
 import { NeonMCPSetup } from '../NeonMCPSetup';
 import { MCPDebugInfo } from '../MCPDebugInfo';
+import { NeonDirectConnection } from '../NeonDirectConnection';
 
 interface AdminDashboardProps {
   onLogout: () => void;
