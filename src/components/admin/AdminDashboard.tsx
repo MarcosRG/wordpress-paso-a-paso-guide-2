@@ -181,6 +181,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   <NeonMCPSetup />
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Configuração Manual Neon</CardTitle>
+                  <CardDescription>
+                    Teste de conexão e configuração direta
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <NeonDirectConnection />
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
