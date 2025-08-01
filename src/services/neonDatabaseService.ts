@@ -75,8 +75,19 @@ class NeonDatabaseService {
         throw new Error(`Neon API Error: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
-      
+      // Check if response is JSON before parsing
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Resposta não é JSON válido - netlify function retornando arquivo JS');
+      }
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        throw new Error('Erro parsing JSON - netlify function não está executando corretamente');
+      }
+
       // Verificar se a resposta tem o formato esperado
       if (data.connected && Array.isArray(data.products)) {
         console.log(`✅ ${data.products.length} produtos carregados do Neon`);
