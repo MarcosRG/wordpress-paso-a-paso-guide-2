@@ -19,7 +19,8 @@ import {
 
 export const NeonDatabaseAdmin: React.FC = () => {
   const { toast } = useToast();
-  
+  const isDevelopment = import.meta.env.DEV;
+
   const { data: status, isLoading: statusLoading, refetch: refetchStatus } = useNeonDatabaseStatus();
   const syncMutation = useNeonDatabaseSync();
 
@@ -101,7 +102,7 @@ export const NeonDatabaseAdmin: React.FC = () => {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {status.message || "Não foi possível conectar à base de dados Neon"}
+              {status.message || "Não foi poss��vel conectar à base de dados Neon"}
             </AlertDescription>
           </Alert>
         )}
