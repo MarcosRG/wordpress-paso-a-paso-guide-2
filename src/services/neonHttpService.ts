@@ -1,4 +1,4 @@
-// Servicio HTTP simplificado para consultar Neon Database directamente
+// Servicio HTTP optimizado para consultar Neon Database directamente
 import { Bike } from "@/pages/Index";
 
 // Interface para productos en Neon Database
@@ -30,6 +30,7 @@ export interface NeonVariation {
   id: number;
   woocommerce_id: number;
   product_id: number;
+  woocommerce_product_id: number;
   price?: number;
   regular_price?: number;
   sale_price?: number;
@@ -41,13 +42,13 @@ export interface NeonVariation {
   created_at: string;
 }
 
-// Servicio HTTP simplificado para consultas directas a Neon Database
+// Servicio HTTP optimizado para consultas directas a Neon Database
 export class NeonHttpService {
   // API endpoints para serverless functions (Netlify)
   private apiEndpoints = {
     products: "/.netlify/functions/neon-products",
     variations: "/.netlify/functions/neon-variations",
-    categories: "/.netlify/functions/neon-categories",
+    sync: "/.netlify/functions/neon-sync",
   };
 
   // Usar fetch nativo para evitar conflictos con interceptores
@@ -56,10 +57,14 @@ export class NeonHttpService {
     const originalFetch = (window as any).__originalFetch__ || window.fetch;
 
     try {
-      return await originalFetch(url, options);
+      return await originalFetch(url, {
+        ...options,
+        // Agregar timeout de 10 segundos
+        signal: AbortSignal.timeout(10000),
+      });
     } catch (error) {
       // Si el fetch nativo falla, usar XMLHttpRequest como fallback
-      if (error instanceof Error && error.message.includes('Failed to fetch')) {
+      if (error instanceof Error && (error.message.includes('Failed to fetch') || error.name === 'AbortError')) {
         return this.xmlHttpFallback(url, options);
       }
       throw error;
@@ -98,9 +103,9 @@ export class NeonHttpService {
   // Obtener todos los productos activos directamente de Neon Database
   async getActiveProducts(): Promise<NeonProduct[]> {
     try {
-      // Silencioso - intentar consultar la API de Neon Database
+      console.log("🚀 Consultando productos desde Neon Database...");
 
-      // Intentar consultar la API de Neon Database usando fetch nativo
+      // Consultar la API de Neon Database
       const response = await this.nativeFetch(this.apiEndpoints.products, {
         method: 'GET',
         headers: {
@@ -109,33 +114,25 @@ export class NeonHttpService {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Verificar que la respuesta es JSON válido
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("La respuesta no es JSON válido - posiblemente endpoint inexistente");
+        throw new Error(`Neon API error! status: ${response.status}`);
       }
 
       const products = await response.json();
-      console.log(`✅ ${products.length} productos obtenidos directamente de Neon`);
+      console.log(`✅ ${products.length} productos obtenidos desde Neon Database`);
 
       return products;
     } catch (error) {
-      // Fallback silencioso cuando endpoint no existe
-
-      // Fallback temporal: usar mock API hasta implementar endpoint real
-      console.log("�� Usando mock API temporal...");
-      const { mockNeonApi } = await import("./mockNeonApi");
-      return await mockNeonApi.getProducts();
+      console.error("❌ Error consultando Neon Database:", error);
+      
+      // Si hay error, lanzar para que el componente use el fallback WooCommerce
+      throw new Error(`Neon Database no disponible: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     }
   }
 
   // Obtener productos por categoría
   async getProductsByCategory(categorySlug: string): Promise<NeonProduct[]> {
     try {
-      // Intentar obtener todos los productos y filtrar
+      // Obtener todos los productos y filtrar por categoría
       const allProducts = await this.getActiveProducts();
 
       return allProducts.filter((product) => {
@@ -149,17 +146,16 @@ export class NeonHttpService {
       });
     } catch (error) {
       console.error(`❌ Error obteniendo productos por categoría ${categorySlug}:`, error);
-
-      // Fallback: usar mock API directamente
-      const { mockNeonApi } = await import("./mockNeonApi");
-      return await mockNeonApi.getProductsByCategory(categorySlug);
+      
+      // Si hay error, devolver array vacío
+      return [];
     }
   }
 
   // Obtener variaciones de un producto directamente de Neon Database
   async getProductVariations(productId: number): Promise<NeonVariation[]> {
     try {
-      // Silencioso - intentar consultar variaciones
+      console.log(`🔍 Consultando variaciones para producto ${productId}...`);
 
       const response = await this.nativeFetch(`${this.apiEndpoints.products}/${productId}/variations`, {
         method: 'GET',
@@ -169,13 +165,7 @@ export class NeonHttpService {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Verificar que la respuesta es JSON válido
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("La respuesta no es JSON válido - posiblemente endpoint inexistente");
+        throw new Error(`Neon variations API error! status: ${response.status}`);
       }
 
       const variations = await response.json();
@@ -183,22 +173,20 @@ export class NeonHttpService {
 
       return variations;
     } catch (error) {
-      // Fallback silencioso para variaciones cuando endpoint no existe
-
-      // Fallback temporal: usar mock API
-      console.log("🔄 Usando mock API para variaciones...");
-      const { mockNeonApi } = await import("./mockNeonApi");
-      return await mockNeonApi.getProductVariations(productId);
+      console.error(`❌ Error consultando variaciones desde Neon Database:`, error);
+      
+      // Si hay error, devolver array vacío
+      return [];
     }
   }
 
-  // Obtener stock total para un producto (simplificado)
+  // Obtener stock total para un producto (optimizado)
   async getTotalStock(productId: number): Promise<number> {
     try {
       const products = await this.getActiveProducts();
       const product = products.find((p) => p.woocommerce_id === productId);
 
-      // Si es un producto variable, calcular stock total de variaciones
+      // Si es un producto variable, obtener stock total de variaciones
       if (product?.type === "variable") {
         const variations = await this.getProductVariations(productId);
         return variations.reduce((total, variation) => {
@@ -213,60 +201,31 @@ export class NeonHttpService {
     }
   }
 
-  // Métodos de compatibilidad (simplificados)
-  async upsertProduct(productData: any): Promise<void> {
-    console.log("📝 Producto para inserción en Neon:", productData.name);
-    // En el futuro: enviar a API de Neon para insertar/actualizar
-  }
+  // Sincronizar productos desde WooCommerce a Neon Database
+  async syncFromWooCommerce(products: any[]): Promise<number> {
+    try {
+      console.log(`🔄 Sincronizando ${products.length} productos a Neon Database...`);
 
-  async upsertVariation(variationData: any, productId: number, atumStock: number): Promise<void> {
-    console.log(`📝 Variación para inserción en Neon: ${variationData.id} (${atumStock} stock)`);
-    // En el futuro: enviar a API de Neon para insertar/actualizar
-  }
+      const response = await this.nativeFetch(this.apiEndpoints.sync, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ products }),
+      });
 
-  async cleanupOldProducts(activeProductIds: number[]): Promise<void> {
-    console.log("🧹 Limpieza de productos antiguos en Neon");
-    // En el futuro: enviar lista de IDs activos para limpiar obsoletos
-  }
+      if (!response.ok) {
+        throw new Error(`Sync API error! status: ${response.status}`);
+      }
 
-  // Métodos stub para cache (compatibilidad con LocalSyncService)
-  async cacheProducts(products: any[]): Promise<void> {
-    console.log(`📦 Cache de productos (stub): ${products.length} productos`);
-    // Sin cache local, estos métodos no hacen nada
-  }
+      const result = await response.json();
+      console.log(`✅ Sincronización completada:`, result);
 
-  async cacheVariations(variations: any[]): Promise<void> {
-    console.log(`📦 Cache de variaciones (stub): ${variations.length} variaciones`);
-    // Sin cache local, estos métodos no hacen nada
-  }
-
-  async cacheCategories(categories: any[]): Promise<void> {
-    console.log(`📦 Cache de categorías (stub): ${categories.length} categorías`);
-    // Sin cache local, estos métodos no hacen nada
-  }
-
-  // Métodos stub para compatibilidad con LocalSyncService
-  needsSync(): boolean {
-    // Como ya no usamos cache local, nunca necesitamos sincronizar desde frontend
-    return false;
-  }
-
-  getSyncStatus(): { lastSyncTime: Date | null; isRunning: boolean } {
-    // Sin cache local, el estado de sync es siempre idle
-    return {
-      lastSyncTime: new Date(), // Simular que acabó de sincronizar
-      isRunning: false,
-    };
-  }
-
-  setSyncStatus(isRunning: boolean): void {
-    console.log(`🔄 Sync status set to: ${isRunning ? 'running' : 'idle'}`);
-    // Sin estado local, este método no hace nada
-  }
-
-  clearCache(force: boolean = false): void {
-    console.log(`🧹 Clear cache (stub): force=${force}`);
-    // Sin cache local, este método no hace nada
+      return result.stats?.total_in_database || 0;
+    } catch (error) {
+      console.error('❌ Error en sincronización:', error);
+      throw error;
+    }
   }
 }
 
@@ -309,7 +268,8 @@ export const convertToNeonVariation = (
   return {
     id: 0, // Se asignará por Neon
     woocommerce_id: wooVariation.id,
-    product_id: productId,
+    product_id: 0, // Se asignará por Neon
+    woocommerce_product_id: productId,
     price: parseFloat(wooVariation.price || '0'),
     regular_price: parseFloat(wooVariation.regular_price || '0'),
     sale_price: parseFloat(wooVariation.sale_price || '0'),
