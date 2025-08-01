@@ -70,7 +70,13 @@ export const useNeonMCPBikes = () => {
         if (!isMCPAvailable()) {
           const { debugMCPAvailability } = await import("@/utils/mcpClient");
           debugMCPAvailability();
-          console.warn("⚠️ MCP não disponível - verifique conexão MCP no admin");
+          console.warn("⚠️ MCP não disponível - conecte MCP Neon para usar esta funcionalidade");
+
+          // Mostrar toast informativo
+          if (typeof window !== 'undefined') {
+            console.log("📋 Para conectar MCP Neon: clique no botão 'MCP Servers' no topo da página");
+          }
+
           return [];
         }
 
