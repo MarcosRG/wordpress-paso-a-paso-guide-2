@@ -14,6 +14,7 @@ import {
 import { adminAuthService } from '../../services/adminAuthService';
 import { SystemSettings } from './SystemSettings';
 import { VariableProductDebugger } from '../VariableProductDebugger';
+import { NeonDatabaseAdmin } from '../NeonDatabaseAdmin';
 
 interface AdminDashboardProps {
   onLogout: () => void;
