@@ -12,6 +12,11 @@ import {
   useWooCommerceBikes,
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
+import {
+  useLocalDatabaseBikes,
+  useLocalDatabaseSync,
+  useLocalDatabaseCategories,
+} from "@/hooks/useLocalDatabase";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
