@@ -52,7 +52,11 @@ export const NeonDatabaseAdmin: React.FC = () => {
   const getStatusMessage = () => {
     if (statusLoading) return "Verificando status...";
     if (syncMutation.isPending) return "Sincronizando produtos...";
-    if (!status?.connected) return "Erro de conexão com Neon Database";
+    if (!status?.connected) {
+      return isDevelopment
+        ? "Netlify functions não disponíveis em desenvolvimento"
+        : "Erro de conexão com Neon Database";
+    }
     if (status.productsCount === 0) return "Base de dados vazia - sincronização necessária";
     return `${status.productsCount} produtos na base de dados`;
   };
