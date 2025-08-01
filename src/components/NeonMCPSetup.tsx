@@ -9,9 +9,10 @@ import { useWooCommerceToNeonSync } from "@/hooks/useNeonMCP";
 import { Database, RefreshCw, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 interface SetupStatus {
-  step: 'checking' | 'setup' | 'sync' | 'complete' | 'error';
+  step: 'checking' | 'empty' | 'ready' | 'syncing' | 'complete' | 'error';
   message: string;
   progress: number;
+  productsCount: number;
 }
 
 export const NeonMCPSetup: React.FC = () => {
