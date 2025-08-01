@@ -82,8 +82,12 @@ export const useNeonDatabaseBikes = () => {
       } catch (error) {
         console.error("❌ Erro carregando produtos do Neon:", error);
 
-        // In development, this is expected if netlify functions aren't running
-        if (import.meta.env.DEV) {
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+
+        // Check if it's a netlify function error
+        if (errorMessage.includes('netlify function') || errorMessage.includes('JSON válido')) {
+          console.log("ℹ️ Netlify functions não disponíveis - usar fallback WooCommerce");
+        } else if (import.meta.env.DEV) {
           console.log("ℹ️ Erro esperado em desenvolvimento - usar fallback WooCommerce");
         }
 
