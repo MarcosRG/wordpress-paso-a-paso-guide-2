@@ -98,6 +98,7 @@ export const NeonMCPSetup: React.FC = () => {
 
   const getStatusColor = () => {
     if (isChecking || syncMutation.isPending) return "text-blue-600";
+    if (!mcpConnected) return "text-red-600";
     if (error) return "text-red-600";
     if (productsCount > 0) return "text-green-600";
     return "text-orange-600";
