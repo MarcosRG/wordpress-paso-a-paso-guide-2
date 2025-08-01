@@ -100,15 +100,27 @@ export const useNeonMCPBikes = () => {
       try {
         console.log("🚀 Cargando productos desde Neon MCP...");
 
-        // Usar MCP Neon para obtener productos
-        const products = await window.mcpClient?.call('neon_get_database_tables', {
+        // Usar MCP Neon para obtener productos activos
+        const result = await window.mcpClient?.call('neon_run_sql', {
           params: {
-            projectId: import.meta.env.VITE_NEON_PROJECT_ID || "noisy-mouse-34441036"
+            projectId: import.meta.env.VITE_NEON_PROJECT_ID || "noisy-mouse-34441036",
+            sql: `
+              SELECT * FROM products
+              WHERE status = 'publish' AND stock_quantity > 0
+              ORDER BY name
+            `
           }
         });
 
-        if (!products || !products.length) {
-          console.warn("⚠️ No hay productos en Neon MCP, usando fallback");
+        const products = result?.rows || [];
+
+        if (!products || products.length === 0) {
+          console.warn("⚠️ No hay productos en Neon MCP, iniciando sync inicial...");
+
+          // Intentar configurar tablas si no existen
+          const { neonMCPSetup } = await import("../services/neonMCPSetup");
+          await neonMCPSetup.createTables();
+
           return [];
         }
 
