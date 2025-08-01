@@ -34,5 +34,4 @@ export const resetAllConnectivity = () => {
 };
 
 // Don't auto-reset to prevent infinite loops
-// Export function for manual use when needed
-export { resetAllConnectivity };
+// Function is already exported above
