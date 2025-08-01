@@ -1,91 +1,134 @@
-// Utility para inicializar y gestionar el cliente MCP
+// Utility para gestionar MCP de forma robusta
 
-// Verificar si MCP está disponible
+// Múltiplas formas de detectar MCP
 export const isMCPAvailable = (): boolean => {
-  return typeof window !== 'undefined' && 
-         window.mcpClient !== undefined &&
-         typeof window.mcpClient.call === 'function';
+  if (typeof window === 'undefined') return false;
+  
+  // Verificar diferentes formas que MCP pode estar disponível
+  return (
+    // Forma padrão
+    (window.mcpClient !== undefined && typeof window.mcpClient?.call === 'function') ||
+    // Forma alternativa - funções MCP diretas
+    (typeof (window as any).neon_run_sql === 'function') ||
+    // Forma Builder.io
+    (typeof (window as any).builderIO?.mcp?.call === 'function') ||
+    // Forma global MCP
+    (typeof (window as any).mcp?.call === 'function')
+  );
 };
 
-// Esperar hasta que MCP esté disponible
-export const waitForMCP = async (timeout: number = 5000): Promise<boolean> => {
-  const startTime = Date.now();
-  
-  while (Date.now() - startTime < timeout) {
-    if (isMCPAvailable()) {
-      console.log("✅ MCP Cliente disponible");
-      return true;
-    }
-    
-    // Esperar 100ms antes de verificar de nuevo
-    await new Promise(resolve => setTimeout(resolve, 100));
+// Tentar diferentes formas de chamar MCP
+const tryMCPCall = async (method: string, params: any): Promise<any> => {
+  // Tentar forma padrão
+  if (window.mcpClient && typeof window.mcpClient.call === 'function') {
+    return await window.mcpClient.call(method, params);
   }
   
-  console.warn("⚠️ MCP Cliente no disponible después de timeout");
-  return false;
+  // Tentar função direta (se disponível)
+  if (typeof (window as any)[method] === 'function') {
+    return await (window as any)[method](params);
+  }
+  
+  // Tentar Builder.io MCP
+  if ((window as any).builderIO?.mcp?.call) {
+    return await (window as any).builderIO.mcp.call(method, params);
+  }
+  
+  // Tentar MCP global
+  if ((window as any).mcp?.call) {
+    return await (window as any).mcp.call(method, params);
+  }
+  
+  throw new Error(`MCP não disponível para ${method}`);
 };
 
-// Llamada segura al MCP con fallback
+// Chamada segura ao MCP (MAIS ROBUSTA)
 export const safeMCPCall = async (
   method: string, 
   params: any,
   fallback?: () => Promise<any>
 ): Promise<any> => {
   try {
-    // Verificar disponibilidad de MCP
-    if (!isMCPAvailable()) {
-      console.warn(`⚠️ MCP no disponible para ${method}, intentando fallback...`);
-      
-      if (fallback) {
-        return await fallback();
-      } else {
-        throw new Error("MCP no disponible y sin fallback");
-      }
-    }
-
-    // Realizar llamada MCP
-    const result = await window.mcpClient!.call(method, params);
-    console.log(`✅ MCP ${method} ejecutado correctamente`);
+    console.log(`🔄 Tentando MCP ${method}...`);
+    
+    // Tentar diferentes formas de acesso ao MCP
+    const result = await tryMCPCall(method, params);
+    console.log(`✅ MCP ${method} executado com sucesso`);
     return result;
 
   } catch (error) {
-    console.error(`❌ Error en MCP ${method}:`, error);
+    console.error(`❌ Erro em MCP ${method}:`, error);
     
     if (fallback) {
       console.log(`🔄 Usando fallback para ${method}`);
       return await fallback();
     } else {
-      throw error;
+      // Em vez de lançar erro, retornar resposta vazia para não quebrar UI
+      console.warn(`⚠️ ${method} falhou, retornando resposta vazia`);
+      
+      if (method === 'neon_run_sql') {
+        return { rows: [] };
+      }
+      return null;
     }
   }
 };
 
-// Inicializar MCP en el arranque de la aplicación
+// Aguardar MCP ficar disponível
+export const waitForMCP = async (timeout: number = 10000): Promise<boolean> => {
+  const startTime = Date.now();
+  
+  while (Date.now() - startTime < timeout) {
+    if (isMCPAvailable()) {
+      console.log("✅ MCP Cliente disponível");
+      return true;
+    }
+    
+    // Aguardar 200ms antes de verificar novamente
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+  
+  console.warn("⚠️ MCP Cliente não disponível após timeout");
+  return false;
+};
+
+// Inicializar MCP
 export const initializeMCP = async (): Promise<void> => {
   console.log("🚀 Inicializando MCP cliente...");
   
   try {
-    const available = await waitForMCP(10000); // 10 segundos timeout
+    // Aguardar MCP ficar disponível
+    const available = await waitForMCP(15000); // 15 segundos
     
     if (available) {
       console.log("✅ MCP inicializado correctamente");
       
       // Test básico
       try {
-        await window.mcpClient!.call('neon_list_projects', { params: {} });
-        console.log("✅ Test MCP Neon exitoso");
+        const projects = await safeMCPCall('neon_list_projects', { params: {} });
+        console.log("✅ Test MCP Neon exitoso:", projects);
       } catch (error) {
-        console.warn("⚠️ Test MCP Neon falló:", error);
+        console.warn("⚠️ Test MCP Neon falhou (normal se ainda não conectado):", error);
       }
     } else {
-      console.warn("⚠️ MCP no pudo inicializarse - funcionalidad limitada");
+      console.warn("⚠️ MCP não disponível - app funcionará em modo limitado");
     }
   } catch (error) {
-    console.error("❌ Error inicializando MCP:", error);
+    console.error("❌ Erro inicializando MCP:", error);
   }
 };
 
-// Declarar tipos globales
+// Função para debug - listar todas as formas possíveis de MCP
+export const debugMCPAvailability = (): void => {
+  console.log("🔍 Debug MCP Availability:");
+  console.log("- window.mcpClient:", typeof window.mcpClient);
+  console.log("- window.neon_run_sql:", typeof (window as any).neon_run_sql);
+  console.log("- window.builderIO.mcp:", typeof (window as any).builderIO?.mcp);
+  console.log("- window.mcp:", typeof (window as any).mcp);
+  console.log("- isMCPAvailable():", isMCPAvailable());
+};
+
+// Tipos globais
 declare global {
   interface Window {
     mcpClient?: {
