@@ -1,172 +1,99 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { neonMCPSetup } from "@/services/neonMCPSetup";
 import { useWooCommerceToNeonSync } from "@/hooks/useNeonMCP";
 import { Database, RefreshCw, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-
-interface SetupStatus {
-  step: 'checking' | 'empty' | 'ready' | 'syncing' | 'complete' | 'error';
-  message: string;
-  progress: number;
-  productsCount: number;
-}
+import { safeMCPCall, isMCPAvailable } from "@/utils/mcpClient";
 
 export const NeonMCPSetup: React.FC = () => {
-  const [status, setStatus] = useState<SetupStatus>({
-    step: 'checking',
-    message: 'Verificando configuración...',
-    progress: 0
-  });
-  const [tablesStatus, setTablesStatus] = useState<any>(null);
+  const [productsCount, setProductsCount] = useState<number>(0);
+  const [isChecking, setIsChecking] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const syncMutation = useWooCommerceToNeonSync();
 
   useEffect(() => {
-    checkSetupStatus();
+    checkProductsCount();
   }, []);
 
-  const checkSetupStatus = async () => {
+  const checkProductsCount = async () => {
     try {
-      setStatus({
-        step: 'checking',
-        message: 'Verificando estado de Neon MCP...',
-        progress: 10
-      });
+      setIsChecking(true);
+      setError(null);
 
-      const tablesCheck = await neonMCPSetup.checkTablesStatus();
-      setTablesStatus(tablesCheck);
-
-      if (!tablesCheck.products.exists) {
-        setStatus({
-          step: 'setup',
-          message: 'Tablas no encontradas. Configuración necesaria.',
-          progress: 20
-        });
-      } else if (tablesCheck.products.count === 0) {
-        setStatus({
-          step: 'sync',
-          message: 'Tablas creadas pero vacías. Sincronización necesaria.',
-          progress: 50
-        });
-      } else {
-        setStatus({
-          step: 'complete',
-          message: `Sistema configurado. ${tablesCheck.products.count} productos disponibles.`,
-          progress: 100
-        });
+      if (!isMCPAvailable()) {
+        setError("MCP não disponível");
+        return;
       }
 
-    } catch (error) {
-      console.error("❌ Error verificando setup:", error);
-      setStatus({
-        step: 'error',
-        message: 'Error verificando configuración de Neon MCP',
-        progress: 0
+      // Verificar se tabelas existem e contar produtos
+      const result = await safeMCPCall('neon_run_sql', {
+        params: {
+          projectId: import.meta.env.VITE_NEON_PROJECT_ID || "noisy-mouse-34441036",
+          sql: `
+            SELECT 
+              CASE 
+                WHEN EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'products') 
+                THEN (SELECT COUNT(*) FROM products WHERE status = 'publish')
+                ELSE 0 
+              END as count
+          `
+        }
       });
+
+      const count = result?.rows?.[0]?.count || 0;
+      setProductsCount(count);
+      
+      console.log(`📊 Produtos em Neon: ${count}`);
+
+    } catch (error) {
+      console.error("❌ Erro verificando produtos:", error);
+      setError(error instanceof Error ? error.message : "Erro desconhecido");
+    } finally {
+      setIsChecking(false);
     }
   };
 
-  const setupTables = async () => {
+  const handleSync = async () => {
     try {
-      setStatus({
-        step: 'setup',
-        message: 'Creando tablas en Neon MCP...',
-        progress: 30
-      });
-
-      await neonMCPSetup.createTables();
-
-      setStatus({
-        step: 'sync',
-        message: 'Tablas creadas. Listo para sincronización.',
-        progress: 60
-      });
-
-      toast({
-        title: "Configuração concluída",
-        description: "Tabelas criadas com sucesso no Neon MCP",
-      });
-
-      // Actualizar estado
-      await checkSetupStatus();
-
-    } catch (error) {
-      console.error("❌ Error en setup:", error);
-      setStatus({
-        step: 'error',
-        message: 'Error configurando tablas en Neon MCP',
-        progress: 0
-      });
-
-      toast({
-        title: "Erro de configuração",
-        description: "Não foi possível criar as tabelas no Neon MCP",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const performSync = async () => {
-    try {
-      setStatus({
-        step: 'sync',
-        message: 'Sincronizando productos WooCommerce → Neon MCP...',
-        progress: 70
-      });
-
       await syncMutation.mutateAsync();
-
-      setStatus({
-        step: 'complete',
-        message: 'Sincronización completada exitosamente',
-        progress: 100
-      });
-
-      // Recheck status to get updated counts
+      // Recheck count after sync
       setTimeout(() => {
-        checkSetupStatus();
+        checkProductsCount();
       }, 1000);
-
     } catch (error) {
-      console.error("❌ Error en sync:", error);
-      setStatus({
-        step: 'error',
-        message: 'Error durante la sincronización',
-        progress: 70
-      });
+      console.error("❌ Erro na sincronização:", error);
     }
   };
 
   const getStatusIcon = () => {
-    switch (status.step) {
-      case 'checking':
-        return <Loader2 className="h-5 w-5 animate-spin text-blue-500" />;
-      case 'setup':
-        return <Database className="h-5 w-5 text-orange-500" />;
-      case 'sync':
-        return <RefreshCw className="h-5 w-5 text-yellow-500" />;
-      case 'complete':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'error':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
-      default:
-        return <Database className="h-5 w-5" />;
+    if (isChecking || syncMutation.isPending) {
+      return <Loader2 className="h-5 w-5 animate-spin text-blue-500" />;
     }
+    if (error) {
+      return <AlertCircle className="h-5 w-5 text-red-500" />;
+    }
+    if (productsCount > 0) {
+      return <CheckCircle className="h-5 w-5 text-green-500" />;
+    }
+    return <Database className="h-5 w-5 text-orange-500" />;
+  };
+
+  const getStatusMessage = () => {
+    if (isChecking) return "Verificando produtos...";
+    if (syncMutation.isPending) return "Sincronizando produtos...";
+    if (error) return `Erro: ${error}`;
+    if (productsCount === 0) return "Nenhum produto encontrado - sincronização necessária";
+    return `${productsCount} produtos disponíveis`;
   };
 
   const getStatusColor = () => {
-    switch (status.step) {
-      case 'checking': return 'bg-blue-500';
-      case 'setup': return 'bg-orange-500';
-      case 'sync': return 'bg-yellow-500';
-      case 'complete': return 'bg-green-500';
-      case 'error': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
+    if (isChecking || syncMutation.isPending) return "text-blue-600";
+    if (error) return "text-red-600";
+    if (productsCount > 0) return "text-green-600";
+    return "text-orange-600";
   };
 
   return (
@@ -174,118 +101,76 @@ export const NeonMCPSetup: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {getStatusIcon()}
-          Configuración Neon MCP
+          Neon Database Status
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Progreso</span>
-            <span>{status.progress}%</span>
-          </div>
-          <Progress value={status.progress} className="h-2" />
-        </div>
-
         {/* Status Message */}
-        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-          {getStatusIcon()}
-          <span className="text-sm">{status.message}</span>
-        </div>
-
-        {/* Tables Status */}
-        {tablesStatus && (
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h4 className="font-medium">Tabla Productos</h4>
-              <div className="flex items-center gap-2">
-                <Badge variant={tablesStatus.products.exists ? "default" : "secondary"}>
-                  {tablesStatus.products.exists ? "Existe" : "No existe"}
-                </Badge>
-                {tablesStatus.products.exists && (
-                  <Badge variant="outline">
-                    {tablesStatus.products.count} productos
-                  </Badge>
-                )}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-medium">Tabla Variaciones</h4>
-              <div className="flex items-center gap-2">
-                <Badge variant={tablesStatus.variations.exists ? "default" : "secondary"}>
-                  {tablesStatus.variations.exists ? "Existe" : "No existe"}
-                </Badge>
-                {tablesStatus.variations.exists && (
-                  <Badge variant="outline">
-                    {tablesStatus.variations.count} variaciones
-                  </Badge>
-                )}
-              </div>
-            </div>
+        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div>
+            <p className={`font-medium ${getStatusColor()}`}>
+              {getStatusMessage()}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {productsCount > 0 
+                ? "Sistema pronto para uso" 
+                : "Execute sincronização para carregar produtos"
+              }
+            </p>
           </div>
-        )}
+          <Badge variant={productsCount > 0 ? "default" : "secondary"}>
+            {productsCount} produtos
+          </Badge>
+        </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2 pt-4">
-          {status.step === 'setup' && (
-            <Button 
-              onClick={setupTables} 
-              className="flex-1"
-              disabled={syncMutation.isPending}
-            >
-              <Database className="h-4 w-4 mr-2" />
-              Configurar Tablas
-            </Button>
-          )}
-
-          {status.step === 'sync' && (
-            <Button 
-              onClick={performSync} 
-              className="flex-1"
-              disabled={syncMutation.isPending}
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Sincronizar Productos
-            </Button>
-          )}
-
-          {status.step === 'complete' && (
-            <Button 
-              onClick={performSync} 
-              variant="outline"
-              className="flex-1"
-              disabled={syncMutation.isPending}
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Sincronizar de Nuevo
-            </Button>
-          )}
-
-          {status.step === 'error' && (
-            <Button 
-              onClick={checkSetupStatus} 
-              variant="outline"
-              className="flex-1"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Reintentar
-            </Button>
-          )}
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleSync} 
+            className="flex-1"
+            disabled={syncMutation.isPending || isChecking}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
+            {syncMutation.isPending ? 'Sincronizando...' : 'Sincronizar WooCommerce'}
+          </Button>
 
           <Button 
-            onClick={checkSetupStatus} 
-            variant="ghost"
-            size="sm"
+            onClick={checkProductsCount} 
+            variant="outline"
+            disabled={isChecking || syncMutation.isPending}
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className={`h-4 w-4 ${isChecking ? 'animate-spin' : ''}`} />
           </Button>
         </div>
 
-        {/* Loading State */}
-        {syncMutation.isPending && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Sincronizando productos...
+        {/* Instructions */}
+        {productsCount === 0 && !error && !isChecking && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">Primeiros passos:</h4>
+            <ol className="text-sm text-blue-800 space-y-1">
+              <li>1. Clique em "Sincronizar WooCommerce" para carregar produtos</li>
+              <li>2. Aguarde a sincronização concluir</li>
+              <li>3. As bicicletas aparecerão automaticamente na página principal</li>
+            </ol>
+          </div>
+        )}
+
+        {/* Error Details */}
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h4 className="font-medium text-red-900 mb-1">Erro detectado:</h4>
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        )}
+
+        {/* Success State */}
+        {productsCount > 0 && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h4 className="font-medium text-green-900 mb-1">✅ Sistema funcionando!</h4>
+            <p className="text-sm text-green-800">
+              {productsCount} produtos carregados e prontos para uso. 
+              As bicicletas devem aparecer na página principal.
+            </p>
           </div>
         )}
       </CardContent>
