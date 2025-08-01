@@ -153,41 +153,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="neon-mcp" className="space-y-6">
+        <Tabs defaultValue="database" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="neon-mcp">Neon MCP</TabsTrigger>
+            <TabsTrigger value="database">Base de Dados</TabsTrigger>
             <TabsTrigger value="products">Debug Productos</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
 
-          {/* Neon MCP Setup Tab */}
-          <TabsContent value="neon-mcp">
+          {/* Database Management Tab */}
+          <TabsContent value="database">
             <div className="space-y-6">
-              {/* MCP Connection Debug */}
-              <MCPDebugInfo />
-
-              {/* Neon Setup */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Configuração Neon Database</CardTitle>
+                  <CardTitle>Gestão de Base de Dados</CardTitle>
                   <CardDescription>
-                    Configura e sincroniza a base de dados Neon para melhorar o rendimento
+                    Sincronização WooCommerce → Base de Dados Local → Frontend
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <NeonMCPSetup />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Configuração Manual Neon</CardTitle>
-                  <CardDescription>
-                    Teste de conexão e configuração direta
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <NeonDirectConnection />
+                  <div className="text-center py-8">
+                    <h3 className="text-lg font-medium mb-4">Sistema em Desenvolvimento</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Estamos a preparar uma solução de base de dados local que funcionará sem dependências externas.
+                    </p>
+                    <div className="space-y-2 text-sm text-left max-w-md mx-auto">
+                      <p><strong>Fluxo Proposto:</strong></p>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p>1. 🛒 <strong>WooCommerce API</strong> → Buscar produtos</p>
+                        <p>2. 💾 <strong>Base de Dados Local</strong> → Guardar dados</p>
+                        <p>3. 🚀 <strong>Frontend</strong> → Consultar apenas BD (rápido)</p>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
