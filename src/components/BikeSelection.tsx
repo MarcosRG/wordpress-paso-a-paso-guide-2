@@ -63,6 +63,16 @@ export const BikeSelection = ({
   // Manual refresh function with MCP Neon sync
   const handleRefresh = async () => {
     try {
+      // Check if MCP is available before attempting sync
+      if (!isMCPAvailable()) {
+        console.warn("⚠️ MCP não disponível - apenas refresh de cache");
+        // Just refresh cache without syncing
+        queryClient.invalidateQueries({ queryKey: ["neon-mcp-bikes"] });
+        queryClient.invalidateQueries({ queryKey: ["neon-mcp-categories"] });
+        await Promise.all([refetchBikes(), refetchCategories()]);
+        return;
+      }
+
       // Primero sincronizar desde WooCommerce a Neon
       console.log("🔄 Iniciando sincronización manual WooCommerce → Neon MCP...");
       await syncMutation.mutateAsync();
