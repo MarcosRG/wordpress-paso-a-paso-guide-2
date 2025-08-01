@@ -24,8 +24,13 @@ export const NeonMCPSetup: React.FC = () => {
       setIsChecking(true);
       setError(null);
 
-      if (!isMCPAvailable()) {
-        setError("MCP não disponível");
+      // Verificar se MCP está conectado
+      const mcpAvailable = isMCPAvailable();
+      setMcpConnected(mcpAvailable);
+
+      if (!mcpAvailable) {
+        setError("MCP Neon não está conectado");
+        setProductsCount(0);
         return;
       }
 
