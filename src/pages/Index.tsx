@@ -241,10 +241,7 @@ const Index = () => {
           <p className="text-lg text-gray-700">{t("subtitle")}</p>
         </div>
 
-        {/* MCP Debug Panel - Temporary for debugging */}
-        <div className="mb-8">
-          <MCPDebugPanel />
-        </div>
+
 
 
 
