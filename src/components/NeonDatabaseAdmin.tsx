@@ -115,12 +115,19 @@ export const NeonDatabaseAdmin: React.FC = () => {
 
         {/* Connection Error */}
         {status && !status.connected && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {status.message || "Não foi possível conectar à base de dados Neon"}
-            </AlertDescription>
-          </Alert>
+          <>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {status.message || "Não foi possível conectar à base de dados Neon"}
+              </AlertDescription>
+            </Alert>
+
+            {/* Show setup help when error involves environment variables */}
+            {(status.message?.includes('ambiente') || status.message?.includes('configuradas')) && (
+              <NetlifySetupHelp />
+            )}
+          </>
         )}
 
         {/* Success State */}
