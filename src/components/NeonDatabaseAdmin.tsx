@@ -76,7 +76,18 @@ export const NeonDatabaseAdmin: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        
+
+        {/* Development Mode Warning */}
+        {isDevelopment && (
+          <Alert>
+            <Zap className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Modo Desenvolvimento:</strong> Netlify functions não estão disponíveis localmente.
+              Para funcionalidade completa, faça deploy da aplicação.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Status Section */}
         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
           <div>
@@ -102,7 +113,7 @@ export const NeonDatabaseAdmin: React.FC = () => {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {status.message || "Não foi poss��vel conectar à base de dados Neon"}
+              {status.message || "Não foi possível conectar à base de dados Neon"}
             </AlertDescription>
           </Alert>
         )}
