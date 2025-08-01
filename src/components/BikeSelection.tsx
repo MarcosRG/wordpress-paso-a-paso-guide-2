@@ -44,25 +44,28 @@ export const BikeSelection = ({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const queryClient = useQueryClient();
 
-  // Usar MCP Neon si está disponible, sino fallback a WooCommerce
-  const mcpAvailable = isMCPAvailable();
+  // Usar Neon Database como primary, WooCommerce como fallback
+  const neonQuery = useNeonDatabaseBikes();
+  const neonCategoriesQuery = useNeonDatabaseCategories();
+  const neonStatus = useNeonDatabaseStatus();
 
-  const mcpQuery = useNeonMCPBikes();
   const fallbackQuery = useWooCommerceBikes();
-
-  const mcpCategoriesQuery = useNeonMCPCategories();
   const fallbackCategoriesQuery = useWooCommerceCategories();
 
-  // Seleccionar la fuente de datos según disponibilidad MCP
+  // Determinar se deve usar Neon ou fallback
+  const useNeonDatabase = neonStatus.data?.connected !== false &&
+                           (!neonQuery.error || neonQuery.data?.length > 0);
+
+  // Seleccionar la fuente de datos
   const {
     data: bikes,
     isLoading,
     error,
     refetch: refetchBikes,
-  } = mcpAvailable ? mcpQuery : fallbackQuery;
+  } = useNeonDatabase ? neonQuery : fallbackQuery;
 
   const { data: categories = [], refetch: refetchCategories } =
-    mcpAvailable ? mcpCategoriesQuery : fallbackCategoriesQuery;
+    useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
 
   // Hook para sincronização WooCommerce → Neon
   const syncMutation = useWooCommerceToNeonSync();
