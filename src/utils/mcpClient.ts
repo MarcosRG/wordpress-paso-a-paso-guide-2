@@ -53,55 +53,45 @@ export const isMCPAvailable = (): boolean => {
 const tryMCPCall = async (method: string, params: any): Promise<any> => {
   console.log(`🔍 Tentando MCP call: ${method}`, { params });
 
-  // Lista de tentativas
-  const attempts = [];
+  const win = window as any;
+  const attempts: string[] = [];
+  const errors: string[] = [];
 
-  // Tentar forma padrão
-  if (window.mcpClient && typeof window.mcpClient.call === 'function') {
-    attempts.push('mcpClient.call');
-    try {
-      console.log('🔄 Tentando window.mcpClient.call...');
-      return await window.mcpClient.call(method, params);
-    } catch (error) {
-      console.warn('❌ window.mcpClient.call falhou:', error);
+  // Lista expandida de tentativas
+  const mcpInterfaces = [
+    { name: 'mcpClient.call', fn: () => window.mcpClient?.call(method, params) },
+    { name: 'direct function', fn: () => win[method]?.(params) },
+    { name: 'builderIO.mcp.call', fn: () => win.builderIO?.mcp?.call(method, params) },
+    { name: 'mcp.call', fn: () => win.mcp?.call(method, params) },
+    { name: 'builderAI.call', fn: () => win.builderAI?.call?.(method, params) },
+    { name: 'builderAPI.call', fn: () => win.builderAPI?.call?.(method, params) },
+    { name: 'builder.mcp.call', fn: () => win.builder?.mcp?.call?.(method, params) },
+    { name: '__MCP__.call', fn: () => win.__MCP__?.call?.(method, params) },
+    { name: 'mcpCore.call', fn: () => win.mcpCore?.call?.(method, params) },
+    { name: 'mcpAPI.call', fn: () => win.mcpAPI?.call?.(method, params) },
+  ];
+
+  for (const iface of mcpInterfaces) {
+    if (typeof iface.fn === 'function') {
+      attempts.push(iface.name);
+      try {
+        console.log(`🔄 Tentando ${iface.name}...`);
+        const result = await iface.fn();
+        if (result !== undefined && result !== null) {
+          console.log(`✅ ${iface.name} funcionou!`, result);
+          return result;
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.warn(`❌ ${iface.name} falhou:`, errorMsg);
+        errors.push(`${iface.name}: ${errorMsg}`);
+      }
     }
   }
 
-  // Tentar função direta (se disponível)
-  if (typeof (window as any)[method] === 'function') {
-    attempts.push('direct function');
-    try {
-      console.log(`🔄 Tentando window.${method} diretamente...`);
-      return await (window as any)[method](params);
-    } catch (error) {
-      console.warn(`❌ window.${method} falhou:`, error);
-    }
-  }
-
-  // Tentar Builder.io MCP
-  if ((window as any).builderIO?.mcp?.call) {
-    attempts.push('builderIO.mcp.call');
-    try {
-      console.log('🔄 Tentando builderIO.mcp.call...');
-      return await (window as any).builderIO.mcp.call(method, params);
-    } catch (error) {
-      console.warn('❌ builderIO.mcp.call falhou:', error);
-    }
-  }
-
-  // Tentar MCP global
-  if ((window as any).mcp?.call) {
-    attempts.push('mcp.call');
-    try {
-      console.log('🔄 Tentando window.mcp.call...');
-      return await (window as any).mcp.call(method, params);
-    } catch (error) {
-      console.warn('❌ window.mcp.call falhou:', error);
-    }
-  }
-
-  console.error(`❌ Todas as tentativas falharam para ${method}:`, attempts);
-  throw new Error(`MCP Neon não conectado. Tentativas: ${attempts.join(', ')}. Clique no botão "MCP Servers" no topo e conecte o servidor Neon.`);
+  // Se chegou aqui, nenhum método funcionou
+  console.error(`❌ Todas as tentativas falharam para ${method}:`, { attempts, errors });
+  throw new Error(`MCP não conectado. Tentativas: ${attempts.join(', ')}. Conecte MCP Neon primeiro.`);
 };
 
 // Chamada segura ao MCP (MAIS ROBUSTA)
