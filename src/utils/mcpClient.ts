@@ -3,17 +3,31 @@
 // Múltiplas formas de detectar MCP
 export const isMCPAvailable = (): boolean => {
   if (typeof window === 'undefined') return false;
-  
+
+  // Debug detalhado
+  const checks = {
+    mcpClient: window.mcpClient !== undefined && typeof window.mcpClient?.call === 'function',
+    neonDirect: typeof (window as any).neon_run_sql === 'function',
+    builderMCP: typeof (window as any).builderIO?.mcp?.call === 'function',
+    globalMCP: typeof (window as any).mcp?.call === 'function',
+    // Novas verificações
+    neonMethods: typeof (window as any).neon_list_projects === 'function',
+    mcpGlobal: (window as any).mcp !== undefined,
+    builderGlobal: (window as any).builderIO !== undefined
+  };
+
+  // Log para debug
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 MCP Detection:', checks);
+  }
+
   // Verificar diferentes formas que MCP pode estar disponível
   return (
-    // Forma padrão
-    (window.mcpClient !== undefined && typeof window.mcpClient?.call === 'function') ||
-    // Forma alternativa - funções MCP diretas
-    (typeof (window as any).neon_run_sql === 'function') ||
-    // Forma Builder.io
-    (typeof (window as any).builderIO?.mcp?.call === 'function') ||
-    // Forma global MCP
-    (typeof (window as any).mcp?.call === 'function')
+    checks.mcpClient ||
+    checks.neonDirect ||
+    checks.builderMCP ||
+    checks.globalMCP ||
+    checks.neonMethods
   );
 };
 
