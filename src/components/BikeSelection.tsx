@@ -83,17 +83,16 @@ export const BikeSelection = ({
   // Manual refresh function with smart data source selection
   const handleRefresh = async () => {
     try {
-      const currentMcpAvailable = isMCPAvailable();
-
-      if (currentMcpAvailable) {
-        // MCP disponível - fazer sync e refresh
-        console.log("🔄 MCP disponível - sincronizando WooCommerce → Neon...");
+      if (useNeonDatabase) {
+        // Neon disponível - fazer sync e refresh
+        console.log("🔄 Sincronizando WooCommerce → Neon Database...");
         await syncMutation.mutateAsync();
-        queryClient.invalidateQueries({ queryKey: ["neon-mcp-bikes"] });
-        queryClient.invalidateQueries({ queryKey: ["neon-mcp-categories"] });
+        queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
+        queryClient.invalidateQueries({ queryKey: ["neon-database-categories"] });
+        queryClient.invalidateQueries({ queryKey: ["neon-database-status"] });
       } else {
-        // MCP não disponível - usar WooCommerce diretamente
-        console.log("🔄 MCP não disponível - refrescando desde WooCommerce...");
+        // Neon não disponível - usar WooCommerce diretamente
+        console.log("🔄 Neon não disponível - refrescando desde WooCommerce...");
         queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
         queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
       }
