@@ -39,7 +39,7 @@ const tryMCPCall = async (method: string, params: any): Promise<any> => {
     return await (window as any).mcp.call(method, params);
   }
   
-  throw new Error(`MCP não disponível para ${method}`);
+  throw new Error(`MCP Neon não está conectado. Clique no botão "MCP Servers" no topo da página e conecte o servidor Neon.`);
 };
 
 // Chamada segura ao MCP (MAIS ROBUSTA)
