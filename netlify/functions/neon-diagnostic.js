@@ -56,7 +56,7 @@ exports.handler = async (event, context) => {
     
     if (!connectionString) {
       diagnostic.details.connectionStringStatus = 'not_found';
-      diagnostic.message = 'Nenhuma connection string encontrada (NEON_CONNECTION_STRING ou VITE_NEON_CONNECTION_STRING)';
+      diagnostic.message = 'Nenhuma connection string encontrada (DATABASE_URL, NEON_CONNECTION_STRING ou VITE_NEON_CONNECTION_STRING)';
       diagnostic.success = false;
     } else {
       diagnostic.details.connectionStringStatus = 'found';
