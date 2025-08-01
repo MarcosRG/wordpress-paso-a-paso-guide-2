@@ -32,6 +32,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/neon/diagnostic"
+  to = "/.netlify/functions/neon-diagnostic"
+  status = 200
+
+[[redirects]]
   from = "/netlify/functions/neon-products"
   to = "/.netlify/functions/neon-products"
   status = 200
@@ -41,7 +46,12 @@
   to = "/.netlify/functions/neon-sync"
   status = 200
 
-# Redirect para SPA routing (React Router)
+[[redirects]]
+  from = "/netlify/functions/neon-diagnostic"
+  to = "/.netlify/functions/neon-diagnostic"
+  status = 200
+
+# Redirect para SPA routing (React Router) - DEVE SER O ÚLTIMO
 [[redirects]]
   from = "/*"
   to = "/index.html"
