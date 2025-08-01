@@ -33,7 +33,6 @@ export const resetAllConnectivity = () => {
   }
 };
 
-// Auto-reset on module load to ensure clean state
-if (typeof window !== 'undefined') {
-  resetAllConnectivity();
-}
+// Don't auto-reset to prevent infinite loops
+// Export function for manual use when needed
+export { resetAllConnectivity };
