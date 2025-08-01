@@ -1,7 +1,10 @@
 [build]
+  # Comando de instalación
+  base = "."
+
   # Comando de build
-  command = "npm run build"
-  
+  command = "npm ci && npm run build"
+
   # Directorio donde se genera el build
   publish = "dist"
   
