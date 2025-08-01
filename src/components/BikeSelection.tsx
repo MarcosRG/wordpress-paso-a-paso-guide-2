@@ -68,7 +68,7 @@ export const BikeSelection = ({
     useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
 
   // Hook para sincronização WooCommerce → Neon
-  const syncMutation = useWooCommerceToNeonSync();
+  const syncMutation = useNeonDatabaseSync();
   const { language, setLanguage, t } = useLanguage();
 
   // Simple logging for admin purposes only
