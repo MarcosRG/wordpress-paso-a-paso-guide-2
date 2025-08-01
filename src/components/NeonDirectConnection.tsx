@@ -159,7 +159,7 @@ export const NeonDirectConnection: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Database className="h-5 w-5" />
-          Conexão Direta Neon Database
+          Configuração Neon Database
           {status?.connected ? (
             <CheckCircle className="h-5 w-5 text-green-500" />
           ) : (
