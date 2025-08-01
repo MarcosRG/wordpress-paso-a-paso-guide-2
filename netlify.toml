@@ -7,9 +7,13 @@
 
   # Directorio donde se genera el build
   publish = "dist"
-  
+
   # Directorio de las serverless functions
   functions = "netlify/functions"
+
+# Environment variables for build process
+[build.environment]
+  NODE_ENV = "production"
 
 # Redirects para mapear rutas de API a serverless functions
 [[redirects]]
