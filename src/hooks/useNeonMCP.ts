@@ -126,13 +126,38 @@ export const useNeonMCPBikes = () => {
         const products = result?.rows || [];
 
         if (!products || products.length === 0) {
-          console.warn("⚠️ No hay productos en Neon MCP, iniciando sync inicial...");
+          console.warn("⚠️ Sem produtos no Neon MCP, usando WooCommerce como fallback...");
 
-          // Intentar configurar tablas si no existen
-          const { neonMCPSetup } = await import("../services/neonMCPSetup");
-          await neonMCPSetup.createTables();
+          // Fallback: usar WooCommerce direto se Neon não tem dados
+          const { wooCommerceApi } = await import("../services/woocommerceApi");
 
-          return [];
+          try {
+            const wooProducts = await wooCommerceApi.getProducts();
+            console.log(`🔄 Fallback: ${wooProducts.length} produtos do WooCommerce`);
+
+            // Converter produtos WooCommerce para formato Bike básico
+            const fallbackBikes: Bike[] = wooProducts
+              .filter(product => product.status === "publish" && product.stock_quantity > 0)
+              .map(product => ({
+                id: product.id.toString(),
+                name: product.name,
+                type: product.categories?.find(cat => cat.slug !== "alugueres")?.slug || "general",
+                pricePerDay: parseFloat(product.price || product.regular_price || "0"),
+                available: product.stock_quantity || 0,
+                image: product.images?.length > 0 ? product.images[0].src : "/placeholder.svg",
+                description: product.short_description || product.description || "",
+                wooCommerceData: {
+                  product,
+                  variations: [],
+                  acfData: null,
+                },
+              }));
+
+            return fallbackBikes;
+          } catch (error) {
+            console.error("❌ Erro no fallback WooCommerce:", error);
+            return [];
+          }
         }
 
         console.log(`✅ ${products.length} productos obtenidos desde Neon MCP`);
