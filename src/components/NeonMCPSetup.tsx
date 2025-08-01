@@ -151,10 +151,26 @@ export const NeonMCPSetup: React.FC = () => {
           </Button>
         </div>
 
-        {/* Instructions */}
-        {productsCount === 0 && !error && !isChecking && (
+        {/* MCP Connection Instructions */}
+        {!mcpConnected && !isChecking && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h4 className="font-medium text-red-900 mb-2">🔌 MCP Neon não conectado</h4>
+            <p className="text-sm text-red-800 mb-3">
+              Para usar a base de dados Neon, precisa conectar o servidor MCP primeiro.
+            </p>
+            <ol className="text-sm text-red-800 space-y-1">
+              <li>1. <strong>Clique no botão "MCP Servers"</strong> no topo da página</li>
+              <li>2. <strong>Encontre "Neon"</strong> na lista de servidores</li>
+              <li>3. <strong>Clique "Connect"</strong> para conectar</li>
+              <li>4. <strong>Volte aqui</strong> e clique no botão de refresh</li>
+            </ol>
+          </div>
+        )}
+
+        {/* Sync Instructions */}
+        {mcpConnected && productsCount === 0 && !error && !isChecking && (
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">Primeiros passos:</h4>
+            <h4 className="font-medium text-blue-900 mb-2">✅ MCP conectado! Primeiros passos:</h4>
             <ol className="text-sm text-blue-800 space-y-1">
               <li>1. Clique em "Sincronizar WooCommerce" para carregar produtos</li>
               <li>2. Aguarde a sincronização concluir</li>
