@@ -67,8 +67,13 @@ export const BikeSelection = ({
   const { data: categories = [], refetch: refetchCategories } =
     useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
 
-  // Hook para sincronização WooCommerce → Neon
+  // Hook para sincronização WooCommerce → Neon (original)
   const syncMutation = useNeonDatabaseSync();
+
+  // Nuevos hooks para sincronización manual
+  const manualSync = useManualSync();
+  const neonStatusQuery = useNeonStatus();
+
   const { language, setLanguage, t } = useLanguage();
 
   // Auto-sync si Neon está vacía
@@ -90,7 +95,7 @@ export const BikeSelection = ({
   // Logging optimizado
   React.useEffect(() => {
     if (bikes) {
-      const source = useNeonDatabase ? 'Neon Database ��' : 'WooCommerce 🐌';
+      const source = useNeonDatabase ? 'Neon Database ⚡' : 'WooCommerce 🐌';
       console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${source}`);
     }
   }, [bikes, useNeonDatabase]);
