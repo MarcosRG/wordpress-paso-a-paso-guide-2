@@ -306,7 +306,7 @@ export const BikeSelection = ({
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
           <Badge variant={mcpAvailable ? "default" : "secondary"} className="text-xs">
-            {mcpAvailable ? "🗄️ Neon DB" : "🛒 WooCommerce"}
+            {mcpAvailable ? "🗄️ Neon DB" : "🛒 WooCommerce + Variações"}
           </Badge>
         </div>
         <div className="flex items-center gap-4">
