@@ -67,7 +67,14 @@ export const useNeonMCPBikes = () => {
         console.log("🚀 Carregando produtos desde Neon MCP...");
 
         // Verificar se MCP está disponível
-        if (!isMCPAvailable()) {
+        const mcpAvailable = isMCPAvailable();
+        console.log("🔍 MCP Status Check:", {
+          available: mcpAvailable,
+          window: typeof window !== 'undefined',
+          windowKeys: typeof window !== 'undefined' ? Object.keys(window).filter(k => k.includes('mcp') || k.includes('neon') || k.includes('builder')).slice(0, 5) : []
+        });
+
+        if (!mcpAvailable) {
           const { debugMCPAvailability } = await import("@/utils/mcpClient");
           debugMCPAvailability();
           console.warn("⚠️ MCP não disponível - conecte MCP Neon para usar esta funcionalidade");
