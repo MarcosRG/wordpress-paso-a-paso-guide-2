@@ -29,8 +29,8 @@ interface ConnectionStatus {
 
 export const NeonDirectConnection: React.FC = () => {
   const [config, setConfig] = useState<NeonConfig>({
-    connectionString: '',
-    projectId: '',
+    connectionString: import.meta.env.VITE_NEON_CONNECTION_STRING || '',
+    projectId: import.meta.env.VITE_NEON_PROJECT_ID || '',
     dbName: 'neondb'
   });
   
@@ -121,7 +121,7 @@ export const NeonDirectConnection: React.FC = () => {
     setIsConnecting(true);
     
     try {
-      console.log('�� Sincronizando produtos do WooCommerce para Neon...');
+      console.log('🔄 Sincronizando produtos do WooCommerce para Neon...');
       
       // Call WooCommerce API to get products
       const wooResponse = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=10&status=publish`, {
