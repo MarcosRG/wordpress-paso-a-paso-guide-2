@@ -29,8 +29,8 @@ interface ConnectionStatus {
 
 export const NeonDirectConnection: React.FC = () => {
   const [config, setConfig] = useState<NeonConfig>({
-    connectionString: '',
-    projectId: '',
+    connectionString: import.meta.env.VITE_NEON_CONNECTION_STRING || '',
+    projectId: import.meta.env.VITE_NEON_PROJECT_ID || '',
     dbName: 'neondb'
   });
   
@@ -40,10 +40,12 @@ export const NeonDirectConnection: React.FC = () => {
   const { toast } = useToast();
 
   const testConnection = async () => {
-    if (!config.connectionString && !config.projectId) {
+    const projectId = config.projectId || import.meta.env.VITE_NEON_PROJECT_ID;
+
+    if (!projectId) {
       toast({
         title: "Configuração necessária",
-        description: "Configure primeiro a connection string ou project ID",
+        description: "Configure primeiro o Project ID do Neon",
         variant: "destructive"
       });
       setShowConfig(true);
@@ -51,52 +53,42 @@ export const NeonDirectConnection: React.FC = () => {
     }
 
     setIsConnecting(true);
-    
+
     try {
-      console.log('🔄 Testando conexão direta ao Neon...');
-      
-      // Test direct connection to Neon API
-      const apiUrl = `https://console.neon.tech/api/v2/projects/${config.projectId}`;
-      
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_NEON_API_KEY || ''}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+      console.log('🔄 Testando configuração do Neon...');
+
+      // Check if required environment variables are available
+      const connectionString = import.meta.env.VITE_NEON_CONNECTION_STRING;
+
+      if (!connectionString) {
+        throw new Error('VITE_NEON_CONNECTION_STRING não configurado');
+      }
+
+      // Simulate connection test (since we can't directly connect to Postgres from browser)
+      console.log('✅ Configuração Neon verificada');
+
+      setStatus({
+        connected: true,
+        message: `Configuração validada para projeto: ${projectId}`,
+        timestamp: new Date().toLocaleTimeString()
       });
 
-      if (response.ok) {
-        const projectData = await response.json();
-        console.log('✅ Conexão Neon bem-sucedida:', projectData);
-        
-        setStatus({
-          connected: true,
-          message: `Conectado ao projeto: ${projectData.project?.name || config.projectId}`,
-          timestamp: new Date().toLocaleTimeString()
-        });
-        
-        toast({
-          title: "✅ Conexão bem-sucedida",
-          description: "Conectado à base de dados Neon"
-        });
-        
-      } else {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-      }
-      
+      toast({
+        title: "✅ Configuração válida",
+        description: "Variáveis de ambiente do Neon configuradas"
+      });
+
     } catch (error) {
       console.error('❌ Erro conectando ao Neon:', error);
-      
+
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      
+
       setStatus({
         connected: false,
         message: `Erro: ${errorMessage}`,
         timestamp: new Date().toLocaleTimeString()
       });
-      
+
       toast({
         title: "❌ Erro de conexão",
         description: errorMessage,
@@ -123,9 +115,9 @@ export const NeonDirectConnection: React.FC = () => {
       console.log('🔄 Sincronizando produtos do WooCommerce para Neon...');
       
       // Call WooCommerce API to get products
-      const wooResponse = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_URL}/wp-json/wc/v3/products?per_page=10&status=publish`, {
+      const wooResponse = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=10&status=publish`, {
         headers: {
-          'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_KEY}:${import.meta.env.VITE_WOOCOMMERCE_SECRET}`)}`
+          'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`
         }
       });
 
@@ -167,7 +159,7 @@ export const NeonDirectConnection: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Database className="h-5 w-5" />
-          Conexão Direta Neon Database
+          Configuração Neon Database
           {status?.connected ? (
             <CheckCircle className="h-5 w-5 text-green-500" />
           ) : (
@@ -257,7 +249,7 @@ export const NeonDirectConnection: React.FC = () => {
             ) : (
               <Database className="h-4 w-4 mr-2" />
             )}
-            Testar Conexão
+            Verificar Configuração
           </Button>
 
           <Button
@@ -279,11 +271,11 @@ export const NeonDirectConnection: React.FC = () => {
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h4 className="font-medium text-blue-900 mb-2">📋 Passos para configurar:</h4>
           <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-            <li>Obtenha sua <strong>API Key</strong> e <strong>Project ID</strong> do Neon Console</li>
+            <li>Obtenha seu <strong>Project ID</strong> e <strong>Connection String</strong> do Neon Console</li>
             <li>Configure as variáveis de ambiente no arquivo .env</li>
-            <li>Insira o Project ID na configuração acima</li>
-            <li>Clique em "Testar Conexão"</li>
-            <li>Se conectado, clique em "Sincronizar Produtos"</li>
+            <li>Insira o Project ID na configuração acima (se necessário)</li>
+            <li>Clique em "Verificar Configuração"</li>
+            <li>Se configurado, clique em "Sincronizar Produtos"</li>
           </ol>
         </div>
       </CardContent>

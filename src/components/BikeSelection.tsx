@@ -8,9 +8,20 @@ import {
   useNeonMCPCategories,
   useWooCommerceToNeonSync,
 } from "@/hooks/useNeonMCP";
+import {
+  useWooCommerceBikes,
+  useWooCommerceCategories,
+} from "@/hooks/useWooCommerceBikes";
+import {
+  useNeonDatabaseBikes,
+  useNeonDatabaseSync,
+  useNeonDatabaseCategories,
+  useNeonDatabaseStatus,
+} from "@/hooks/useNeonDatabase";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { isMCPAvailable } from "@/utils/mcpClient";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
 import SimpleBikeCard from "./SimpleBikeCard";
@@ -32,45 +43,64 @@ export const BikeSelection = ({
 }: BikeSelectionProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const queryClient = useQueryClient();
-  // Usar MCP Neon en lugar de WooCommerce directo
+
+  // Usar Neon Database como primary, WooCommerce como fallback
+  const neonQuery = useNeonDatabaseBikes();
+  const neonCategoriesQuery = useNeonDatabaseCategories();
+  const neonStatus = useNeonDatabaseStatus();
+
+  const fallbackQuery = useWooCommerceBikes();
+  const fallbackCategoriesQuery = useWooCommerceCategories();
+
+  // Determinar se deve usar Neon ou fallback
+  // Usar Neon apenas se conectado E sem erros críticos (como netlify functions unavailable)
+  const useNeonDatabase = neonStatus.data?.connected === true &&
+                           !neonQuery.error &&
+                           neonQuery.data !== undefined;
+
+  // Seleccionar la fuente de datos
   const {
     data: bikes,
     isLoading,
     error,
     refetch: refetchBikes,
-  } = useNeonMCPBikes();
+  } = useNeonDatabase ? neonQuery : fallbackQuery;
+
   const { data: categories = [], refetch: refetchCategories } =
-    useNeonMCPCategories();
+    useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
 
   // Hook para sincronização WooCommerce → Neon
-  const syncMutation = useWooCommerceToNeonSync();
+  const syncMutation = useNeonDatabaseSync();
   const { language, setLanguage, t } = useLanguage();
 
-  // Debug logging
+  // Simple logging for admin purposes only
   React.useEffect(() => {
-    console.log("🚴 BikeSelection Debug:", {
-      isLoading,
-      error: error?.message,
-      bikesCount: bikes?.length || 0,
-      bikes: bikes?.slice(0, 2) // Only log first 2 for debugging
-    });
-  }, [isLoading, error, bikes]);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🚴 ${bikes?.length || 0} bicicletas carregadas (${useNeonDatabase ? 'Neon DB' : 'WooCommerce'})`);
+    }
+  }, [bikes, useNeonDatabase]);
 
 
 
-  // Manual refresh function with MCP Neon sync
+  // Manual refresh function with smart data source selection
   const handleRefresh = async () => {
     try {
-      // Primero sincronizar desde WooCommerce a Neon
-      console.log("🔄 Iniciando sincronización manual WooCommerce → Neon MCP...");
-      await syncMutation.mutateAsync();
+      if (useNeonDatabase) {
+        // Neon disponível - fazer sync e refresh
+        console.log("🔄 Sincronizando WooCommerce → Neon Database...");
+        await syncMutation.mutateAsync();
+        queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
+        queryClient.invalidateQueries({ queryKey: ["neon-database-categories"] });
+        queryClient.invalidateQueries({ queryKey: ["neon-database-status"] });
+      } else {
+        // Neon não disponível - usar WooCommerce diretamente
+        console.log("🔄 Neon não disponível - refrescando desde WooCommerce...");
+        queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
+        queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
+      }
 
-      // Luego invalidar cache para recargar desde Neon
-      queryClient.invalidateQueries({ queryKey: ["neon-mcp-bikes"] });
-      queryClient.invalidateQueries({ queryKey: ["neon-mcp-categories"] });
       await Promise.all([refetchBikes(), refetchCategories()]);
-
-      console.log("✅ Sincronización y refresh completados");
+      console.log("✅ Refresh completado");
     } catch (error) {
       console.error("❌ Error en refresh manual:", error);
     }
@@ -202,6 +232,9 @@ export const BikeSelection = ({
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
+        <div className="text-center mb-6">
+          <p className="text-muted-foreground">Carregando bicicletas...</p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i}>
@@ -218,22 +251,32 @@ export const BikeSelection = ({
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-        <h2 className="text-xl font-semibold mb-2">
-          Error al cargar las bicicletas
-        </h2>
-        <div className="flex gap-2 justify-center">
-          <Button onClick={handleRefresh}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Reintentar
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => console.error("Error details:", error)}
-          >
-            Ver Error
-          </Button>
+      <div className="space-y-6">
+        {/* Show MCP connection status if not available */}
+        {!isMCPAvailable() && <MCPConnectionStatus />}
+
+        <div className="text-center py-8">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">
+            Error al cargar las bicicletas
+          </h2>
+          {!isMCPAvailable() && (
+            <p className="text-gray-600 mb-4">
+              Este erro pode estar relacionado com a conexão MCP Neon em falta.
+            </p>
+          )}
+          <div className="flex gap-2 justify-center">
+            <Button onClick={handleRefresh}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reintentar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => console.error("Error details:", error)}
+            >
+              Ver Error
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -268,12 +311,16 @@ export const BikeSelection = ({
             size="sm"
             onClick={handleRefresh}
             className="flex items-center gap-2"
+            disabled={syncMutation.isPending}
           >
-            <RefreshCw className="h-4 w-4" />
-            Actualizar
+            <RefreshCw className={`h-4 w-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
+            {syncMutation.isPending ? "Atualizando..." : "Atualizar"}
+
           </Button>
         </div>
       </div>
+
+
 
       <CategoryFilter
         categories={categories}

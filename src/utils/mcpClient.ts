@@ -110,7 +110,7 @@ export const safeMCPCall = async (
 
   } catch (error) {
     console.error(`❌ Erro em MCP ${method}:`, error);
-    
+
     if (fallback) {
       console.log(`🔄 Usando fallback para ${method}`);
       return await fallback();
@@ -118,13 +118,18 @@ export const safeMCPCall = async (
       // Tratar erro de forma mais amigável
       console.warn(`⚠️ ${method} falhou - MCP não conectado`);
 
-      // Para neon_run_sql, retornar formato esperado
+      // Para neon_run_sql, retornar formato esperado com melhor mensaje
       if (method === 'neon_run_sql') {
-        return { rows: [], error: "MCP Neon não conectado" };
+        return {
+          rows: [],
+          error: "MCP Neon não conectado. Conecte o servidor MCP Neon clicando no botão 'MCP Servers' para habilitar integração com banco de dados."
+        };
       }
 
-      // Para outros métodos, retornar null
-      return { error: "MCP Neon não conectado" };
+      // Para outros métodos, retornar mensagem informativa
+      return {
+        error: "MCP Neon não conectado. Conecte o servidor MCP Neon primeiro para usar esta funcionalidade."
+      };
     }
   }
 };
