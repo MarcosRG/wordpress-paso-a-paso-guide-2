@@ -64,18 +64,12 @@ export const BikeSelection = ({
   const syncMutation = useWooCommerceToNeonSync();
   const { language, setLanguage, t } = useLanguage();
 
-  // Debug logging
+  // Simple logging for admin purposes only
   React.useEffect(() => {
-    console.log("🚴 BikeSelection Debug:", {
-      mcpAvailable,
-      dataSource: mcpAvailable ? 'Neon MCP' : 'WooCommerce + Variações',
-      isLoading,
-      error: error?.message,
-      bikesCount: bikes?.length || 0,
-      totalStock: bikes?.reduce((total, bike) => total + bike.available, 0) || 0,
-      bikes: bikes?.slice(0, 1) // Only log first bike for debugging
-    });
-  }, [mcpAvailable, isLoading, error, bikes]);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🚴 ${bikes?.length || 0} bicicletas carregadas`);
+    }
+  }, [bikes]);
 
 
 
