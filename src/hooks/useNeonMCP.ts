@@ -27,16 +27,37 @@ interface NeonProduct {
 
 // Convertir produto de Neon a formato Bike
 const convertNeonToBike = (product: NeonProduct): Bike => {
+  console.log("🔄 Convertendo produto:", product);
+
+  // Parsing JSON fields if they're strings
+  let categories = product.categories;
+  let images = product.images;
+  let acfData = product.acf_data;
+
+  try {
+    if (typeof categories === 'string') {
+      categories = JSON.parse(categories);
+    }
+    if (typeof images === 'string') {
+      images = JSON.parse(images);
+    }
+    if (typeof acfData === 'string') {
+      acfData = JSON.parse(acfData);
+    }
+  } catch (e) {
+    console.warn("⚠️ Erro parsing JSON fields:", e);
+  }
+
   // Obter categoria principal
-  const subcategory = product.categories?.find((cat: any) => cat.slug !== "alugueres");
+  const subcategory = categories?.find((cat: any) => cat.slug !== "alugueres");
   const primaryCategory = subcategory ? subcategory.slug : "general";
 
   // Obter imagen principal
-  const mainImage = product.images && product.images.length > 0 
-    ? product.images[0].src 
+  const mainImage = images && images.length > 0
+    ? images[0].src
     : "/placeholder.svg";
 
-  return {
+  const result = {
     id: product.woocommerce_id.toString(),
     name: product.name,
     type: primaryCategory.toLowerCase(),
@@ -48,12 +69,15 @@ const convertNeonToBike = (product: NeonProduct): Bike => {
       product: {
         id: product.woocommerce_id,
         ...product,
-        acf: product.acf_data,
+        acf: acfData,
       },
       variations: [],
-      acfData: product.acf_data,
+      acfData: acfData,
     },
   };
+
+  console.log("✅ Produto convertido:", result);
+  return result;
 };
 
 // Hook principal - SEMPRE usar Neon, nunca fallback
