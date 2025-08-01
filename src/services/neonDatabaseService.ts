@@ -88,6 +88,14 @@ class NeonDatabaseService {
     try {
       console.log('🔄 Iniciando sincronização WooCommerce → Neon...');
 
+      // Check if netlify functions are available in development
+      if (this.isDevelopment) {
+        const functionsAvailable = await this.checkNetlifyFunctionsAvailable();
+        if (!functionsAvailable) {
+          throw new Error('Netlify functions não disponíveis em desenvolvimento. Deploy necessário para funcionalidade completa.');
+        }
+      }
+
       // 1. Buscar produtos do WooCommerce
       const wooResponse = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
         headers: {
