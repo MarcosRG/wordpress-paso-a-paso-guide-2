@@ -271,11 +271,11 @@ export const NeonDirectConnection: React.FC = () => {
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h4 className="font-medium text-blue-900 mb-2">📋 Passos para configurar:</h4>
           <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-            <li>Obtenha sua <strong>API Key</strong> e <strong>Project ID</strong> do Neon Console</li>
+            <li>Obtenha seu <strong>Project ID</strong> e <strong>Connection String</strong> do Neon Console</li>
             <li>Configure as variáveis de ambiente no arquivo .env</li>
-            <li>Insira o Project ID na configuração acima</li>
-            <li>Clique em "Testar Conexão"</li>
-            <li>Se conectado, clique em "Sincronizar Produtos"</li>
+            <li>Insira o Project ID na configuração acima (se necessário)</li>
+            <li>Clique em "Verificar Configuração"</li>
+            <li>Se configurado, clique em "Sincronizar Produtos"</li>
           </ol>
         </div>
       </CardContent>
