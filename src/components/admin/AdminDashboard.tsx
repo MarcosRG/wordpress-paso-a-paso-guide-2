@@ -15,6 +15,7 @@ import { adminAuthService } from '../../services/adminAuthService';
 import { SystemSettings } from './SystemSettings';
 import { VariableProductDebugger } from '../VariableProductDebugger';
 import { NeonMCPSetup } from '../NeonMCPSetup';
+import { MCPDebugInfo } from '../MCPDebugInfo';
 
 interface AdminDashboardProps {
   onLogout: () => void;
