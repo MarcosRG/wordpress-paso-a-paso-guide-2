@@ -40,10 +40,12 @@ export const NeonDirectConnection: React.FC = () => {
   const { toast } = useToast();
 
   const testConnection = async () => {
-    if (!config.connectionString && !config.projectId) {
+    const projectId = config.projectId || import.meta.env.VITE_NEON_PROJECT_ID;
+
+    if (!projectId) {
       toast({
         title: "Configuração necessária",
-        description: "Configure primeiro a connection string ou project ID",
+        description: "Configure primeiro o Project ID do Neon",
         variant: "destructive"
       });
       setShowConfig(true);
@@ -51,52 +53,51 @@ export const NeonDirectConnection: React.FC = () => {
     }
 
     setIsConnecting(true);
-    
+
     try {
-      console.log('🔄 Testando conexão direta ao Neon...');
-      
-      // Test direct connection to Neon API
-      const apiUrl = `https://console.neon.tech/api/v2/projects/${config.projectId}`;
-      
-      const response = await fetch(apiUrl, {
+      console.log('🔄 Testando conexão à base de dados Neon...');
+
+      // Test database connection via serverless function
+      const response = await fetch('/netlify/functions/neon-products', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_NEON_API_KEY || ''}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
-        const projectData = await response.json();
-        console.log('✅ Conexão Neon bem-sucedida:', projectData);
-        
+        const data = await response.json();
+        console.log('✅ Conexão Neon bem-sucedida:', data);
+
         setStatus({
           connected: true,
-          message: `Conectado ao projeto: ${projectData.project?.name || config.projectId}`,
+          message: `Conectado à base de dados (Projeto: ${projectId})`,
+          productsCount: data.products?.length || 0,
           timestamp: new Date().toLocaleTimeString()
         });
-        
+
         toast({
           title: "✅ Conexão bem-sucedida",
-          description: "Conectado à base de dados Neon"
+          description: "Base de dados Neon acessível"
         });
-        
+
       } else {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({ error: 'Resposta inválida' }));
+        throw new Error(`Database Error: ${response.status} - ${errorData.error || response.statusText}`);
       }
-      
+
     } catch (error) {
       console.error('❌ Erro conectando ao Neon:', error);
-      
+
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      
+
       setStatus({
         connected: false,
         message: `Erro: ${errorMessage}`,
         timestamp: new Date().toLocaleTimeString()
       });
-      
+
       toast({
         title: "❌ Erro de conexão",
         description: errorMessage,
