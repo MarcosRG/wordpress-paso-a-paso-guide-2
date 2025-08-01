@@ -163,32 +163,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
           {/* Database Management Tab */}
           <TabsContent value="database">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Gestão de Base de Dados</CardTitle>
-                  <CardDescription>
-                    Sincronização WooCommerce → Base de Dados Local → Frontend
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <h3 className="text-lg font-medium mb-4">Sistema em Desenvolvimento</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Estamos a preparar uma solução de base de dados local que funcionará sem dependências externas.
-                    </p>
-                    <div className="space-y-2 text-sm text-left max-w-md mx-auto">
-                      <p><strong>Fluxo Proposto:</strong></p>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p>1. 🛒 <strong>WooCommerce API</strong> → Buscar produtos</p>
-                        <p>2. 💾 <strong>Base de Dados Local</strong> → Guardar dados</p>
-                        <p>3. 🚀 <strong>Frontend</strong> → Consultar apenas BD (rápido)</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <NeonDatabaseAdmin />
           </TabsContent>
 
           {/* Product Debugger Tab */}
