@@ -131,8 +131,6 @@ class AdminAuthService {
       }
       
       // En producción: actualizar en base de datos
-      console.log('🔐 Contraseña actualizada para:', this.currentUser.username);
-      
       return true;
       
     } catch (error) {
