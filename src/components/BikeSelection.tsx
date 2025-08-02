@@ -41,6 +41,65 @@ interface BikeSelectionProps {
   setReservation: (reservation: ReservationData) => void;
 }
 
+/**
+ * Transformar productos MySQL al formato Bike esperado por el frontend
+ */
+function transformMySQLToBikes(mysqlProducts: WooCommerceProduct[]): Bike[] {
+  return mysqlProducts.map(product => {
+    // Calcular precio principal
+    let pricePerDay = parseFloat(product.price || '0');
+
+    // Usar precios ACF si están disponibles (preferir precio_1_2)
+    if (product.acf?.precio_1_2) {
+      pricePerDay = product.acf.precio_1_2;
+    } else if (product.acf?.precio_3_6) {
+      pricePerDay = product.acf.precio_3_6;
+    } else if (product.acf?.precio_7_mais) {
+      pricePerDay = product.acf.precio_7_mais;
+    }
+
+    // Calcular stock disponible
+    let availableStock = product.stock_quantity || 0;
+
+    // Si es producto variable, calcular stock total de variaciones
+    if (product.type === 'variable' && product.variations?.length > 0) {
+      availableStock = product.variations.reduce((total, variation) => {
+        return total + (variation.stock_status === 'instock' ? variation.stock_quantity : 0);
+      }, 0);
+    }
+
+    return {
+      id: product.id.toString(),
+      name: product.name,
+      type: product.type === 'variable' ? 'bike' : 'simple', // Mapear tipos
+      pricePerDay,
+      available: availableStock,
+      description: product.short_description || product.description || '',
+      image: product.image_url || '/placeholder.svg',
+      sizes: product.type === 'variable' ?
+        product.variations?.map(v => {
+          // Extraer talla del atributo
+          const sizeAttr = v.attributes.pa_tamanho || v.attributes.tamanho || 'M';
+          return sizeAttr.toUpperCase() as 'XS' | 'S' | 'M' | 'L' | 'XL';
+        }).filter((size, index, arr) => arr.indexOf(size) === index) || ['M'] :
+        ['M'], // Producto simple siempre talla M
+      features: [], // Se puede expandir si necesario
+      wooCommerceData: {
+        product: {
+          id: product.id,
+          name: product.name,
+          type: product.type,
+          price: product.price,
+          regular_price: product.regular_price,
+          categories: product.categories || [],
+          variations: product.variations || [],
+          acf: product.acf || {}
+        }
+      }
+    };
+  });
+}
+
 export const BikeSelection = ({
   reservation,
   setReservation,
