@@ -222,11 +222,24 @@ exports.handler = async (event, context) => {
   
   try {
     console.log('🚀 MySQL Bikes API started');
-    
-    // Validar configuración
-    if (!MYSQL_CONFIG.host || !MYSQL_CONFIG.database || !MYSQL_CONFIG.user) {
-      throw new Error('MySQL configuration incomplete');
+
+    // Validar configuración detalhadamente
+    const missingConfig = [];
+    if (!MYSQL_CONFIG.host) missingConfig.push('MYSQL_HOST');
+    if (!MYSQL_CONFIG.database) missingConfig.push('MYSQL_DATABASE');
+    if (!MYSQL_CONFIG.user) missingConfig.push('MYSQL_USERNAME');
+    if (!MYSQL_CONFIG.password) missingConfig.push('MYSQL_PASSWORD');
+
+    if (missingConfig.length > 0) {
+      console.error('❌ MySQL configuration incomplete:', missingConfig);
+      return createErrorResponse({
+        message: 'MySQL configuration incomplete',
+        missing_variables: missingConfig,
+        help: 'Configure estas variáveis no painel do Netlify'
+      }, 500);
     }
+
+    console.log(`✅ MySQL Config: ${MYSQL_CONFIG.user}@${MYSQL_CONFIG.host}/${MYSQL_CONFIG.database}`);
 
     // Parámetros de query
     const params = event.queryStringParameters || {};
