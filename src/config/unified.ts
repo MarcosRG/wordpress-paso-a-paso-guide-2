@@ -21,51 +21,51 @@ const getOptionalEnv = (key: string, fallback: string = ''): string => {
 
 // ==================== DATABASE CONFIG ====================
 export const DATABASE_CONFIG = {
-  // Una sola variable para conexión Neon
-  connectionString: getRequiredEnv('DATABASE_URL'),
-  projectId: getRequiredEnv('NEON_PROJECT_ID'),
-  branchId: getOptionalEnv('NEON_BRANCH_ID'),
+  // Una sola variable para conexión Neon (frontend usa VITE_)
+  connectionString: getRequiredEnv('VITE_DATABASE_URL'),
+  projectId: getRequiredEnv('VITE_NEON_PROJECT_ID'),
+  branchId: getOptionalEnv('VITE_NEON_BRANCH_ID'),
   database: 'neondb',
   role: 'neondb_owner',
 } as const;
 
 // ==================== WOOCOMMERCE CONFIG ====================
 export const WOOCOMMERCE_CONFIG = {
-  baseUrl: getRequiredEnv('WOOCOMMERCE_API_BASE'),
-  consumerKey: getRequiredEnv('WOOCOMMERCE_CONSUMER_KEY'),
-  consumerSecret: getRequiredEnv('WOOCOMMERCE_CONSUMER_SECRET'),
+  baseUrl: getRequiredEnv('VITE_WOOCOMMERCE_API_BASE'),
+  consumerKey: getRequiredEnv('VITE_WOOCOMMERCE_CONSUMER_KEY'),
+  consumerSecret: getRequiredEnv('VITE_WOOCOMMERCE_CONSUMER_SECRET'),
   timeout: 30000,
   retries: 3,
 } as const;
 
 // ==================== CRM CONFIG ====================
 export const CRM_CONFIG = {
-  username: getRequiredEnv('CRM_API_USERNAME'),
-  password: getRequiredEnv('CRM_API_PASSWORD'),
-  baseUrl: getOptionalEnv('CRM_API_BASE_URL', 'https://bikesultoursgest.com'),
+  username: getRequiredEnv('VITE_CRM_API_USERNAME'),
+  password: getRequiredEnv('VITE_CRM_API_PASSWORD'),
+  baseUrl: getOptionalEnv('VITE_CRM_API_BASE_URL', 'https://bikesultoursgest.com'),
 } as const;
 
 // ==================== ADMIN CONFIG ====================
 export const ADMIN_CONFIG = {
-  username: getRequiredEnv('ADMIN_USERNAME'),
-  password: getRequiredEnv('ADMIN_PASSWORD'),
-  email: getRequiredEnv('ADMIN_EMAIL'),
-  encryptionKey: getRequiredEnv('ENCRYPTION_KEY'),
+  username: getRequiredEnv('VITE_ADMIN_USERNAME'),
+  password: getRequiredEnv('VITE_ADMIN_PASSWORD'),
+  email: getRequiredEnv('VITE_ADMIN_EMAIL'),
+  encryptionKey: getRequiredEnv('VITE_ENCRYPTION_KEY'),
 } as const;
 
 // ==================== STACK AUTH CONFIG ====================
 export const AUTH_CONFIG = {
-  projectId: getRequiredEnv('STACK_PROJECT_ID'),
-  publishableKey: getRequiredEnv('STACK_PUBLISHABLE_CLIENT_KEY'),
-  secretKey: getRequiredEnv('STACK_SECRET_SERVER_KEY'),
+  projectId: getRequiredEnv('VITE_STACK_PROJECT_ID'),
+  publishableKey: getRequiredEnv('VITE_STACK_PUBLISHABLE_CLIENT_KEY'),
+  secretKey: getRequiredEnv('VITE_STACK_SECRET_SERVER_KEY'),
 } as const;
 
 // ==================== FEATURE FLAGS ====================
 export const FEATURE_FLAGS = {
-  enableDebug: getOptionalEnv('ENABLE_DEBUG', 'false') === 'true',
-  enableMockData: getOptionalEnv('ENABLE_MOCK_DATA', 'false') === 'true',
-  enableAutoSync: getOptionalEnv('ENABLE_AUTO_SYNC', 'true') === 'true',
-  enableRealTimeStock: getOptionalEnv('ENABLE_REAL_TIME_STOCK', 'true') === 'true',
+  enableDebug: getOptionalEnv('VITE_ENABLE_DEBUG', 'false') === 'true',
+  enableMockData: getOptionalEnv('VITE_ENABLE_MOCK_DATA', 'false') === 'true',
+  enableAutoSync: getOptionalEnv('VITE_ENABLE_AUTO_SYNC', 'true') === 'true',
+  enableRealTimeStock: getOptionalEnv('VITE_ENABLE_REAL_TIME_STOCK', 'true') === 'true',
 } as const;
 
 // ==================== SYNC CONFIG ====================
