@@ -117,7 +117,7 @@ export const SystemDiagnostic: React.FC = () => {
             <h3 className="font-semibold text-yellow-800 mb-3">
               ⚠️ Limitações do Ambiente de Desenvolvimento
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <WifiOff className="w-4 h-4 text-red-500" />
