@@ -75,14 +75,29 @@ class NeonDatabaseService {
       }
 
       let data;
+      let responseText;
       try {
-        data = await response.json();
+        // First try to get the response as text to check what we received
+        responseText = await response.text();
+        data = JSON.parse(responseText);
       } catch (jsonError) {
-        // Se não consegue parsear JSON, pode ser problema de configuração
-        const responseText = await response.text().catch(() => 'Resposta não legível');
-        if (responseText.includes('Missing script') || responseText.includes('npm error')) {
-          throw new Error('Netlify Functions não configuradas. Verifique variáveis de ambiente no painel do Netlify.');
+        console.error('❌ Raw response from Neon function:', responseText);
+
+        // Check for common configuration issues
+        if (responseText && (
+          responseText.includes('Missing script') ||
+          responseText.includes('npm error') ||
+          responseText.includes('Variables de entorno faltantes') ||
+          responseText.includes('service unavailable')
+        )) {
+          throw new Error('Neon database not configured - using WooCommerce fallback');
         }
+
+        // If it's HTML, it means function deployment failed
+        if (responseText && responseText.trim().startsWith('<')) {
+          throw new Error('Netlify function deployment error - using WooCommerce fallback');
+        }
+
         throw new Error('Erro parsing JSON - netlify function não está executando corretamente');
       }
 
