@@ -42,12 +42,21 @@ class DirectNeonService {
       }
 
       console.log('🚀 Carregando produtos diretamente do Neon...');
-      
-      // For now, return empty array as direct browser connection to Neon
-      // requires additional setup and security considerations
-      console.warn('⚠️ Conexão direta ao Neon não implementada por segurança');
-      return [];
-      
+
+      // Usar netlify functions en su lugar - más seguro y confiable
+      const response = await fetch('/.netlify/functions/neon-products', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro da API Neon: ${response.status}`);
+      }
+
+      const products = await response.json();
+      console.log(`✅ ${products.length} produtos carregados do Neon`);
+      return products;
+
     } catch (error) {
       console.error('❌ Erro na conexão direta ao Neon:', error);
       throw error;
