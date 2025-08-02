@@ -229,6 +229,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-12">
       <div className="max-w-6xl mx-auto">
+        {/* Validación temporal de configuración unificada */}
+        <ConfigValidationTest />
 
 
 
