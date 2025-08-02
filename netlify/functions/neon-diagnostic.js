@@ -52,7 +52,7 @@ exports.handler = async (event, context) => {
     diagnostic.details.environmentVariables = envVars;
 
     // 2. Verificar qual connection string usar
-    const connectionString = process.env.DATABASE_URL || process.env.NEON_CONNECTION_STRING || process.env.VITE_NEON_CONNECTION_STRING;
+    const connectionString = process.env.NEON_CONNECTION_STRING || process.env.DATABASE_URL || process.env.VITE_NEON_CONNECTION_STRING;
     
     if (!connectionString) {
       diagnostic.details.connectionStringStatus = 'not_found';
