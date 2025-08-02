@@ -95,7 +95,7 @@ export class NeonHttpService {
       };
 
       xhr.onerror = () => reject(new Error('XHR request failed'));
-      xhr.timeout = 10000; // 10 second timeout
+      xhr.timeout = 5000; // 5 second timeout
       xhr.send(options?.body as string);
     });
   }
