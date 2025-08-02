@@ -141,7 +141,27 @@ export const useWooCommerceBikes = () => {
 
       } catch (error) {
         console.error("❌ Erro carregando produtos do WooCommerce:", error);
-        throw error;
+
+        // Adicionar contexto adicional ao erro
+        if (error instanceof Error) {
+          if (error.message.includes('Failed to fetch')) {
+            console.error('🌐 Network connectivity issue detected');
+            console.error('🔧 Troubleshooting suggestions:');
+            console.error('   - Check internet connection');
+            console.error('   - Verify WooCommerce API endpoint is accessible:', import.meta.env.VITE_WOOCOMMERCE_API_BASE);
+            console.error('   - Check CORS configuration on WordPress');
+            console.error('   - Verify SSL/TLS certificates');
+            console.error('   - Test API manually:', `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=1`);
+          } else if (error.message.includes('401') || error.message.includes('403')) {
+            console.error('🔐 Authentication issue detected');
+            console.error('🔧 Check WooCommerce API credentials');
+            console.error('   - Consumer Key:', import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY ? 'Set' : 'Missing');
+            console.error('   - Consumer Secret:', import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET ? 'Set' : 'Missing');
+          }
+        }
+
+        // Re-throw with enhanced error message
+        throw new Error(`WooCommerce Bikes API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutos (mais tempo já que carrega variações)
