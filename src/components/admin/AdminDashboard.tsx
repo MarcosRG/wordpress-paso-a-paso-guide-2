@@ -18,6 +18,7 @@ import { NetlifyDiagnostic } from '../NetlifyDiagnostic';
 import { NetlifyFunctionTest } from '../NetlifyFunctionTest';
 import { ConfigValidationTest } from '../ConfigValidationTest';
 import WooCommerceDiagnostic from '../WooCommerceDiagnostic';
+import SystemRepair from '../SystemRepair';
 
 interface AdminDashboardProps {
   onLogout: () => void;
