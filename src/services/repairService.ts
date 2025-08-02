@@ -172,10 +172,10 @@ class RepairService {
     
     try {
       // 1. Check circuit breaker state
-      const cbState = circuitBreaker.getState();
-      if (cbState !== 'CLOSED') {
-        circuitBreaker.reset();
-        actions.push(`Circuit breaker reseteado (estaba ${cbState})`);
+      const cbState = wooCommerceCircuitBreaker.getState();
+      if (cbState.state !== 'CLOSED') {
+        wooCommerceCircuitBreaker.reset();
+        actions.push(`Circuit breaker reseteado (estaba ${cbState.state})`);
       }
 
       // 2. Check emergency stop
