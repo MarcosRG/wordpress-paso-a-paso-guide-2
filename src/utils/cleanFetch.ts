@@ -61,15 +61,23 @@ export const cleanFetch = async (
 function isLikelyThirdPartyInterference(error: Error): boolean {
   const stack = error.stack || '';
   const message = error.message || '';
-  
-  return (
+
+  const fullStoryInterference = (
     stack.includes('fullstory.com') ||
     stack.includes('edge.fullstory.com') ||
     stack.includes('fs.js') ||
-    (message.includes('Failed to fetch') && 
+    stack.includes('2238effc092a41c0a7d03feabbfe9b2c') || // FullStory domain hash
+    (message.includes('Failed to fetch') &&
      (stack.includes('eval at messageHandler') ||
-      stack.includes('messageHandler')))
+      stack.includes('messageHandler') ||
+      stack.includes('window.fetch (eval at messageHandler')))
   );
+
+  if (fullStoryInterference) {
+    console.log('🔍 FullStory interference detected in error stack:', stack.substring(0, 200));
+  }
+
+  return fullStoryInterference;
 }
 
 /**
