@@ -61,35 +61,24 @@ export const BikeSelection = ({
   const fallbackQuery = useWooCommerceBikes();
   const fallbackCategoriesQuery = useWooCommerceCategories();
 
-  // 🎯 NUEVA LÓGICA: MySQL en producción, fallbacks en desarrollo
-  const useMySQLAPI = !isDev && !mysqlQuery.error && !mysqlQuery.isLoading && mysqlQuery.data;
-  const useNeonDatabase = !useMySQLAPI && neonStatus.data?.connected === true && !neonQuery.error;
+  // 🎯 NUEVA LÓGICA: Solo Neon Database y WooCommerce fallback
+  const useNeonDatabase = neonStatus.data?.connected === true && !neonQuery.error;
 
   // Seleccionar la fuente de datos automáticamente
-  let dataSource = isDev ? 'Desarrollo (Fallback)' : 'MySQL Ultra-Fast ⚡';
-  let bikesQuery = mysqlQuery;
+  let dataSource = 'Neon Database 🗄️';
+  let bikesQuery = neonQuery;
 
-  if (isDev || mysqlQuery.error || (!mysqlQuery.data && !mysqlQuery.isLoading)) {
-    if (useNeonDatabase) {
-      dataSource = 'Neon Database 🗄️';
-      bikesQuery = neonQuery;
-    } else {
-      dataSource = 'WooCommerce Fallback 🐌';
-      bikesQuery = fallbackQuery;
-    }
+  if (!useNeonDatabase) {
+    dataSource = 'WooCommerce Fallback 🐌';
+    bikesQuery = fallbackQuery;
   }
 
   const {
-    data: rawBikes,
+    data: bikes,
     isLoading,
     error,
     refetch: refetchBikes,
   } = bikesQuery;
-
-  // Transformar datos MySQL al formato esperado
-  const bikes = useMySQLAPI && mysqlQuery.data ?
-    transformMySQLToBikes(mysqlQuery.data.products) :
-    rawBikes;
 
   const { data: categories = [], refetch: refetchCategories } =
     useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
