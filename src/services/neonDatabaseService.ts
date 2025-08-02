@@ -108,12 +108,9 @@ class NeonDatabaseService {
     try {
       console.log('🔄 Iniciando sincronização WooCommerce → Neon...');
 
-      // Check if netlify functions are available in development
+      // In development, Netlify functions are not available
       if (this.isDevelopment) {
-        const functionsAvailable = await this.checkNetlifyFunctionsAvailable();
-        if (!functionsAvailable) {
-          throw new Error('Netlify functions não disponíveis em desenvolvimento. Deploy necessário para funcionalidade completa.');
-        }
+        throw new Error('Sync não disponível em desenvolvimento. Netlify functions só funcionam em produção.');
       }
 
       // 1. Buscar produtos do WooCommerce
@@ -255,7 +252,7 @@ class NeonDatabaseService {
             productsCount: data.length
           };
         } else {
-          console.warn('⚠️ Formato de resposta inesperado:', data);
+          console.warn('��️ Formato de resposta inesperado:', data);
           return {
             connected: false,
             message: 'Formato de resposta inesperado da base de dados',
