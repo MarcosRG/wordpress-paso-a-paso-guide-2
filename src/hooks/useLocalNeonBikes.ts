@@ -85,11 +85,16 @@ export const useLocalNeonBikes = () => {
     queryKey: ["neon-bikes"],
     queryFn: async (): Promise<Bike[]> => {
       try {
-        console.log("🚀 Consultando productos directamente desde Neon Database...");
+        if (import.meta.env.DEV) {
+          console.log("🚀 Consultando productos directamente desde Neon Database...");
+        }
 
         // Obtener productos activos directamente de Neon Database
         const products = await neonHttpService.getActiveProducts();
-        console.log(`✅ ${products.length} productos obtenidos de Neon`);
+
+        if (import.meta.env.DEV) {
+          console.log(`✅ ${products.length} productos obtenidos de Neon`);
+        }
 
 
 
