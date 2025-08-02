@@ -124,6 +124,8 @@ class NeonDatabaseService {
         return data.products;
       } else if (Array.isArray(data)) {
         console.log(`�� ${data.length} produtos carregados do Neon`);
+        // Cache successful responses for 2 minutes
+        bikeCache.set(CACHE_KEYS.NEON_PRODUCTS, data, 2 * 60 * 1000);
         return data;
       } else {
         console.warn('⚠️ Formato de resposta inesperado:', data);
