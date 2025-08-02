@@ -224,12 +224,3 @@ class AdminAuthService {
 
 // Exportar instancia singleton
 export const adminAuthService = new AdminAuthService();
-
-// Exponer al scope global para debugging
-if (typeof window !== 'undefined' && import.meta.env.DEV) {
-  (window as any).adminAuthService = adminAuthService;
-  console.log('🔐 Admin Auth Service disponible en window.adminAuthService');
-  console.log('👤 Credenciales cargadas desde configuración unificada');
-  console.log('   Usuario:', config.ADMIN.username);
-  console.log('   Email:', config.ADMIN.email);
-}
