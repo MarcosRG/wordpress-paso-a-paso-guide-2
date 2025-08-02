@@ -39,8 +39,6 @@ class AdminAuthService {
     error?: string;
   }> {
     try {
-      console.log('🔐 Intentando login administrativo:', credentials.username);
-      
       // Validar credenciales
       const isValid = await this.validateCredentials(credentials);
       
