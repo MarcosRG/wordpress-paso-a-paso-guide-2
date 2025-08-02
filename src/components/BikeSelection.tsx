@@ -210,21 +210,31 @@ export const BikeSelection = ({
 
 
 
-  // Función de refresh simple para datos locales
+  // Función de refresh para todas las fuentes de datos
   const handleRefresh = async () => {
     try {
+      console.log(`🔄 Refrescando datos desde ${dataSource}...`);
+
+      // Invalidar cache de MySQL primero
+      queryClient.invalidateQueries({ queryKey: ["mysql-bikes"] });
+
+      // Invalidar otros caches como fallback
       if (useNeonDatabase) {
-        console.log("🔄 Refrescando datos desde Neon Database...");
         queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
         queryClient.invalidateQueries({ queryKey: ["neon-database-categories"] });
         queryClient.invalidateQueries({ queryKey: ["neon-database-status"] });
       } else {
-        console.log("🔄 Refrescando datos desde WooCommerce...");
         queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
         queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
       }
 
-      await Promise.all([refetchBikes(), refetchCategories()]);
+      // Refetch datos principales
+      await Promise.all([
+        mysqlQuery.refetch(),
+        refetchBikes(),
+        refetchCategories()
+      ]);
+
       console.log("✅ Refresh completado");
     } catch (error) {
       console.error("❌ Error en refresh:", error);
