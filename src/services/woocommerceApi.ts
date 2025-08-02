@@ -472,6 +472,13 @@ export const wooCommerceApi = {
   // Get all products from ALUGUERES category (ID: 319)
   async getProducts(): Promise<WooCommerceProduct[]> {
     try {
+      // Check cache first
+      const cachedProducts = bikeCache.get<WooCommerceProduct[]>(CACHE_KEYS.WOO_PRODUCTS);
+      if (cachedProducts) {
+        console.log(`✅ ${cachedProducts.length} produtos carregados do cache WooCommerce`);
+        return cachedProducts;
+      }
+
       // Check circuit breaker status first
       const connectivityStatus = getConnectivityStatus();
       if (connectivityStatus.consecutiveErrors >= 3) {
