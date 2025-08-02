@@ -1,5 +1,6 @@
 // Neon Database Service usando funciones netlify existentes
 // Sistema: WooCommerce API → Netlify Functions → Neon DB → Frontend
+import { cleanFetch } from "@/utils/cleanFetch";
 
 interface NeonProduct {
   id: number;
@@ -28,7 +29,7 @@ class NeonDatabaseService {
   // Check if netlify functions are available
   private async checkNetlifyFunctionsAvailable(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/neon-products`, {
+      const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
@@ -63,7 +64,7 @@ class NeonDatabaseService {
         }
       }
 
-      const response = await fetch(`${this.baseUrl}/neon-products`, {
+      const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -119,7 +120,7 @@ class NeonDatabaseService {
       }
 
       // 1. Buscar produtos do WooCommerce
-      const wooResponse = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
+      const wooResponse = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
         headers: {
           'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
           'Content-Type': 'application/json',
@@ -146,7 +147,7 @@ class NeonDatabaseService {
           // Se tem variações, buscar stocks
           if (product.type === 'variable' && product.variations && product.variations.length > 0) {
             try {
-              const variationsResponse = await fetch(
+              const variationsResponse = await cleanFetch(
                 `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100`,
                 {
                   headers: {
@@ -190,7 +191,7 @@ class NeonDatabaseService {
       // 3. Enviar produtos para Neon através de função netlify
       console.log(`📤 Enviando ${processedProducts.length} produtos para Neon...`);
       
-      const syncResponse = await fetch(`${this.baseUrl}/neon-sync`, {
+      const syncResponse = await cleanFetch(`${this.baseUrl}/neon-sync`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -232,7 +233,7 @@ class NeonDatabaseService {
         }
       }
 
-      const response = await fetch(`${this.baseUrl}/neon-products`, {
+      const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',

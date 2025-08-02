@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Bike } from "@/pages/Index";
+import { cleanFetch } from "@/utils/cleanFetch";
 
 // Hook fallback para carregar bikes do WooCommerce quando MCP não está disponível
 export const useWooCommerceBikes = () => {
@@ -9,7 +10,7 @@ export const useWooCommerceBikes = () => {
       try {
         console.log("🚀 Carregando produtos desde WooCommerce (fallback)...");
 
-        const response = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
+        const response = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
           headers: {
             'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
             'Content-Type': 'application/json',
@@ -47,7 +48,7 @@ export const useWooCommerceBikes = () => {
               console.log(`🔍 Carregando variações para ${product.name}...`);
 
               try {
-                const variationsResponse = await fetch(
+                const variationsResponse = await cleanFetch(
                   `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100`,
                   {
                     headers: {
@@ -125,7 +126,7 @@ export const useWooCommerceCategories = () => {
     queryKey: ["woocommerce-categories-fallback"],
     queryFn: async (): Promise<string[]> => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/categories?per_page=50&parent=319`, {
+        const response = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/categories?per_page=50&parent=319`, {
           headers: {
             'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
             'Content-Type': 'application/json',
