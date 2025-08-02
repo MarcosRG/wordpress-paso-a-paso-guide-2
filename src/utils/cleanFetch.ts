@@ -26,18 +26,19 @@ export const cleanFetch = async (
 ): Promise<Response> => {
   // First try the original fetch
   try {
+    console.log('🔄 cleanFetch: Attempting original fetch for:', input);
     return await originalFetch(input, init);
   } catch (error) {
     // If fetch fails and it's likely due to third-party interference, try alternatives
     if (error instanceof Error && isLikelyThirdPartyInterference(error)) {
-      console.warn('🔧 Third-party script interference detected, trying alternative fetch methods');
-      
+      console.warn('🔧 FullStory interference detected! Using XHR fallback for:', input);
+
       // Method 1: Try XMLHttpRequest fallback
       try {
         return await fetchWithXHR(input, init);
       } catch (xhrError) {
         console.warn('XHR fallback failed, trying iframe method');
-        
+
         // Method 2: Try iframe clean fetch
         try {
           return await fetchWithIframe(input, init);
@@ -47,8 +48,9 @@ export const cleanFetch = async (
         }
       }
     }
-    
+
     // Re-throw if not third-party interference
+    console.error('❌ cleanFetch failed with non-FullStory error:', error);
     throw error;
   }
 };
