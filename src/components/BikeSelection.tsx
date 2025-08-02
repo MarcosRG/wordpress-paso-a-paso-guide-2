@@ -146,7 +146,6 @@ export const BikeSelection = ({
 
       // Refetch datos principales
       await Promise.all([
-        mysqlQuery.refetch(),
         refetchBikes(),
         refetchCategories()
       ]);
