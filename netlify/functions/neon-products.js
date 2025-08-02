@@ -8,15 +8,12 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Validate configuration and provide proper error response
+    // Validate only Neon configuration for this function
     try {
-      config.validateConfig();
+      config.validateNeonConfig();
     } catch (configError) {
-      console.error('❌ Configuration error:', configError.message);
-      return config.createErrorResponse(
-        new Error('Database configuration missing - service unavailable'),
-        503
-      );
+      console.error('❌ Neon configuration error:', configError.message);
+      return config.createConfigErrorResponse();
     }
 
     const sql = neon(config.DATABASE.connectionString);
@@ -41,8 +38,15 @@ exports.handler = async (event, context) => {
 
           return config.createSuccessResponse(variations || []);
         } catch (variationsError) {
-          console.log('Tabla product_variations no existe aún, devolviendo array vacío');
-          return config.createSuccessResponse([]);
+          console.log('⚠️ Tabla product_variations no existe aún en Neon');
+
+          // Si es un error de tabla que no existe, devolver array vacío
+          if (variationsError.message && variationsError.message.includes('relation "product_variations" does not exist')) {
+            return config.createSuccessResponse([]);
+          }
+
+          // Para otros errores, devolver error
+          return config.createNeonErrorResponse(variationsError);
         }
       }
 
@@ -58,6 +62,7 @@ exports.handler = async (event, context) => {
 
           return config.createSuccessResponse(product[0] || null);
         } catch (error) {
+          console.error(`❌ Error obteniendo producto ${productId}:`, error);
           return config.createErrorResponse(new Error('Produto não encontrado'), 404);
         }
       }
@@ -100,8 +105,17 @@ exports.handler = async (event, context) => {
 
         return config.createSuccessResponse(products);
       } catch (tableError) {
-        console.log('Tabla products vacía o no existe');
-        return config.createSuccessResponse([]);
+        console.log('⚠️ Tabla products vacía o no existe en Neon');
+
+        // Si es un error de tabla que no existe, devolver array vacío
+        if (tableError.message && tableError.message.includes('relation "products" does not exist')) {
+          console.log('📊 Neon DB: Tabla products aún no creada - devolviendo array vacío');
+          return config.createSuccessResponse([]);
+        }
+
+        // Para otros errores de BD, devolver error 503
+        console.error('❌ Error de BD en Neon:', tableError);
+        return config.createNeonErrorResponse(tableError);
       }
     }
 
@@ -151,8 +165,8 @@ exports.handler = async (event, context) => {
 
         return config.createSuccessResponse({ success: true, id: result[0].id });
       } catch (error) {
-        console.error('Error insertando/actualizando produto:', error);
-        return config.createErrorResponse(error);
+        console.error('❌ Error insertando/actualizando produto en Neon:', error);
+        return config.createNeonErrorResponse(error);
       }
     }
 
