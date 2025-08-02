@@ -29,7 +29,7 @@ class NeonDatabaseService {
   // Check if netlify functions are available
   private async checkNetlifyFunctionsAvailable(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/neon-products`, {
+      const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
