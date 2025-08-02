@@ -65,13 +65,19 @@ export const useWooCommerceBikes = () => {
               console.log(`🔍 Carregando variações para ${product.name}...`);
 
               try {
+                console.log(`🔍 Fetching variations for product ${product.id}: ${product.name}`);
+
                 const variationsResponse = await cleanFetch(
-                  `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100`,
+                  `${apiBase}/products/${product.id}/variations?per_page=100`,
                   {
                     headers: {
-                      'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+                      'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
                       'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                      'User-Agent': 'BikeSul-App/1.0'
                     },
+                    mode: 'cors',
+                    cache: 'no-cache'
                   }
                 );
 
