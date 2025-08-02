@@ -341,41 +341,6 @@ export const BikeSelection = ({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
-        <div className="flex items-center gap-4">
-          <SyncStatusIndicator showDetails={false} />
-
-          {/* Indicador de estado de Neon */}
-          <div className="flex items-center gap-2 text-sm">
-            <Database className="h-4 w-4" />
-            <span className={neonStatusQuery.data?.connected ? "text-green-600" : "text-orange-600"}>
-              Neon: {neonStatusQuery.data?.connected ? `${neonStatusQuery.data.count} productos` : "Desconectado"}
-            </span>
-          </div>
-
-          {/* Botón de sincronización manual */}
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleManualSync}
-            className="flex items-center gap-2"
-            disabled={manualSync.isPending}
-          >
-            <Download className={`h-4 w-4 ${manualSync.isPending ? 'animate-spin' : ''}`} />
-            {manualSync.isPending ? "Sincronizando..." : "Sincronizar"}
-          </Button>
-
-          {/* Botón de refresh normal */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            className="flex items-center gap-2"
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Actualizar
-          </Button>
-        </div>
       </div>
 
 
