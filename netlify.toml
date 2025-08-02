@@ -36,20 +36,8 @@
   to = "/.netlify/functions/neon-diagnostic"
   status = 200
 
-[[redirects]]
-  from = "/netlify/functions/neon-products"
-  to = "/.netlify/functions/neon-products"
-  status = 200
-
-[[redirects]]
-  from = "/netlify/functions/neon-sync"
-  to = "/.netlify/functions/neon-sync"
-  status = 200
-
-[[redirects]]
-  from = "/netlify/functions/neon-diagnostic"
-  to = "/.netlify/functions/neon-diagnostic"
-  status = 200
+# Direct function access - these should work without redirect
+# /.netlify/functions/* paths are automatically handled by Netlify
 
 # Redirect para SPA routing (React Router) - DEVE SER O ÚLTIMO
 [[redirects]]
