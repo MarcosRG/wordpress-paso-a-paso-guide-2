@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { adminAuthService } from '../../services/adminAuthService';
 import { SystemSettings } from './SystemSettings';
-import { VariableProductDebugger } from '../VariableProductDebugger';
 import { NeonDatabaseAdmin } from '../NeonDatabaseAdmin';
 import { NetlifyDiagnostic } from '../NetlifyDiagnostic';
 import { NetlifyFunctionTest } from '../NetlifyFunctionTest';
