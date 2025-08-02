@@ -191,7 +191,7 @@ class NeonDatabaseService {
       // 3. Enviar produtos para Neon através de função netlify
       console.log(`📤 Enviando ${processedProducts.length} produtos para Neon...`);
       
-      const syncResponse = await fetch(`${this.baseUrl}/neon-sync`, {
+      const syncResponse = await cleanFetch(`${this.baseUrl}/neon-sync`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
