@@ -130,19 +130,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
             </Button>
           </form>
 
-          {import.meta.env.DEV && (
-            <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-xs text-yellow-800 font-medium mb-1">
-                🔧 Credenciales de desarrollo:
-              </p>
-              <p className="text-xs text-yellow-700">
-                Usuario: <code className="bg-yellow-100 px-1 rounded">admin_bikesul</code>
-              </p>
-              <p className="text-xs text-yellow-700">
-                Contraseña: <code className="bg-yellow-100 px-1 rounded">BikeSul2024!Admin#Secure789</code>
-              </p>
-            </div>
-          )}
+
         </CardContent>
       </Card>
     </div>
