@@ -191,7 +191,7 @@ export const SystemDiagnostic: React.FC = () => {
           </h3>
           <div className="space-y-3 text-sm text-green-700">
             <div>
-              <strong>1. Para MySQL e Neon funcionarem:</strong>
+              <strong>1. Para Neon Database funcionar:</strong>
               <p>• Deploy para Netlify (as functions só funcionam lá)</p>
               <p>• Ou usar produção: <a href="https://app.bikesultoursgest.com" className="underline">app.bikesultoursgest.com</a></p>
             </div>
