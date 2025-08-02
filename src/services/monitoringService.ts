@@ -3,7 +3,7 @@
  * Detecta problemas y puede auto-reparar automáticamente
  */
 
-import { circuitBreaker } from './circuitBreaker';
+import { wooCommerceCircuitBreaker } from './circuitBreaker';
 import { emergencyStop } from '@/utils/emergencyFetchBlock';
 import { repairService } from './repairService';
 
@@ -180,7 +180,7 @@ class MonitoringService {
             }
           } catch (e) {
             console.error('❌ Auto-reparación falló:', e);
-            recommendations.push('Ejecutar reparaci��n manual desde el panel de admin');
+            recommendations.push('Ejecutar reparación manual desde el panel de admin');
           }
         }
       } else {
