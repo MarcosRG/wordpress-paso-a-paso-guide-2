@@ -184,10 +184,8 @@ class AdminAuthService {
       }
       
       this.currentUser = session.user;
-      console.log('🔄 Sesión administrativa restaurada:', session.user.username);
-      
+
     } catch (error) {
-      console.error('Error cargando sesión:', error);
       this.clearSession();
     }
   }
