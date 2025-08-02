@@ -1,6 +1,6 @@
 import React from "react";
 
-// Debug: verificar que React está disponible
+// Debug: verificar que React est��� disponible
 if (!React) {
   console.error('❌ React is null or undefined!');
 }
@@ -18,6 +18,7 @@ import AdminPanel from "./pages/AdminPanel";
 
 import { networkRecoveryService } from "./services/networkRecovery";
 import { monitoringService } from "./services/monitoringService";
+import { testWooCommerceAPI } from "./utils/testWooCommerceAPI";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
