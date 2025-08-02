@@ -283,6 +283,33 @@ class DiagnosticService {
   }
 
   /**
+   * Test de conectividad WooCommerce API
+   */
+  async testConnectivity(): Promise<DiagnosticResult> {
+    try {
+      console.log('🌐 Probando conectividad WooCommerce API...');
+
+      const result = await testWooCommerceAPI();
+
+      return {
+        success: result.success,
+        message: result.success ?
+          '✅ Conectividad WooCommerce API exitosa' :
+          `❌ Conectividad falló: ${result.error}`,
+        data: result.details,
+        error: result.success ? undefined : result.error
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Error al probar conectividad WooCommerce',
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      };
+    }
+  }
+
+  /**
    * Ejecutar diagnóstico completo
    */
   async runCompleteTest(): Promise<WooCommerceTestResult> {
