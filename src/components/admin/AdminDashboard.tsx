@@ -174,6 +174,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <WooCommerceDiagnostic />
           </TabsContent>
 
+          {/* System Repair Tab */}
+          <TabsContent value="repair">
+            <SystemRepair />
+          </TabsContent>
+
           {/* Database Management Tab */}
           <TabsContent value="database">
             <NeonDatabaseAdmin />
