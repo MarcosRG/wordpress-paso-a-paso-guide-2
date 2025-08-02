@@ -1,6 +1,7 @@
 // Neon Database Service usando funciones netlify existentes
 // Sistema: WooCommerce API → Netlify Functions → Neon DB → Frontend
 import { cleanFetch } from "@/utils/cleanFetch";
+import { bikeCache, CACHE_KEYS } from '@/utils/bikeCache';
 
 interface NeonProduct {
   id: number;
