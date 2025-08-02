@@ -228,7 +228,7 @@ export class BikeSlSystemDiagnostic {
 
       if (response.ok) {
         this.addResult('CRM API', 'Connection Test', 'PASS', 
-          '�� CRM endpoint respondiendo');
+          '✅ CRM endpoint respondiendo');
       } else {
         this.addResult('CRM API', 'Connection Test', 'WARN', 
           `⚠️ CRM endpoint error ${response.status}`);
@@ -291,6 +291,27 @@ export class BikeSlSystemDiagnostic {
 export const runSystemDiagnostic = async (): Promise<SystemDiagnostic> => {
   const diagnostic = new BikeSlSystemDiagnostic();
   return await diagnostic.runCompleteDiagnostic();
+};
+
+// Export quick diagnostic function
+export const quickDiagnostic = async (): Promise<void> => {
+  console.log('🚀 Running quick diagnostic...');
+  const diagnostic = new BikeSlSystemDiagnostic();
+  const result = await diagnostic.runCompleteDiagnostic();
+
+  // Quick summary for console
+  const failCount = result.results.filter(r => r.status === 'FAIL').length;
+  const warnCount = result.results.filter(r => r.status === 'WARN').length;
+
+  if (failCount === 0 && warnCount === 0) {
+    console.log('✅ System is healthy - all tests passed');
+  } else if (failCount === 0) {
+    console.log(`⚠️ System has ${warnCount} warnings but is functional`);
+  } else {
+    console.log(`❌ System has ${failCount} critical issues and ${warnCount} warnings`);
+  }
+
+  console.log('📋 Run runSystemDiagnostic() for detailed report');
 };
 
 // Make it globally available for console access
