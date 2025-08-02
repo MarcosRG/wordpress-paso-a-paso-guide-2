@@ -15,8 +15,8 @@ const convertNeonProductToBike = (
   // Ya está correctamente calculado en localSyncService.ts
   const totalStock = neonProduct.stock_quantity || 0;
 
-  // Debug simplificado solo para productos con stock > 0
-  if (totalStock > 0 && variations.length > 0) {
+  // Debug simplificado solo en desarrollo
+  if (import.meta.env.DEV && totalStock > 0 && variations.length > 0) {
     console.log(`✅ Stock optimizado para ${neonProduct.name}: ${totalStock} (${variations.length} variaciones)`);
   }
 
