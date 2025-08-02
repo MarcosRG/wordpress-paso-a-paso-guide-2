@@ -100,18 +100,7 @@ export const BikeSelection = ({
 
 
 
-  // Nueva función de sincronización manual mejorada
-  const handleManualSync = async () => {
-    try {
-      console.log("🚀 Iniciando sincronización manual WooCommerce → Neon...");
-      await manualSync.mutateAsync();
 
-      // Refrescar datos después de sincronización exitosa
-      await Promise.all([refetchBikes(), refetchCategories()]);
-    } catch (error) {
-      console.error("❌ Error en sincronización manual:", error);
-    }
-  };
 
   // Función de refresh simple para datos locales
   const handleRefresh = async () => {
