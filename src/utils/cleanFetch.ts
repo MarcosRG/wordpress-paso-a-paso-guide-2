@@ -26,8 +26,12 @@ export const cleanFetch = async (
 ): Promise<Response> => {
   // First try the original fetch
   try {
-    console.log('🔄 cleanFetch: Attempting original fetch for:', input);
-    return await originalFetch(input, init);
+    const url = typeof input === 'string' ? input : input.toString();
+    console.log('🔄 cleanFetch: Attempting original fetch for:', url);
+
+    const response = await originalFetch(input, init);
+    console.log(`✅ cleanFetch: Success ${response.status} for:`, url);
+    return response;
   } catch (error) {
     // If fetch fails and it's likely due to third-party interference, try alternatives
     if (error instanceof Error && isLikelyThirdPartyInterference(error)) {
