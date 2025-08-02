@@ -86,14 +86,9 @@ export const useNeonDatabaseBikes = () => {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
 
-        systemDebugger.reportNeonError(errorMessage);
-
-        // Check if it's a netlify function error
-        if (errorMessage.includes('netlify function') || errorMessage.includes('JSON válido') || errorMessage.includes('Netlify Functions')) {
-          debugLog('warn', 'ℹ️ Netlify functions não disponíveis - fallback ativo');
-        } else if (import.meta.env.DEV) {
-          debugLog('warn', 'ℹ️ Erro esperado em desenvolvimento - fallback ativo');
-        } else {
+        // Only report errors in production
+        if (!import.meta.env.DEV) {
+          systemDebugger.reportNeonError(errorMessage);
           debugLog('error', '❌ Erro inesperado Neon em produção', { error: errorMessage });
         }
 
