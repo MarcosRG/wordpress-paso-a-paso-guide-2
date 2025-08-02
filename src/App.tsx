@@ -26,23 +26,25 @@ const App = () => {
   // Check if running in WordPress iframe
   const isWordPressEmbed = window.location !== window.parent.location;
 
-  // Initialize network recovery service (DESHABILITADO)
+  // Initialize monitoring services
   React.useEffect(() => {
-    // Deshabilitado para evitar fetch calls automáticos que causan conflictos con FullStory
-    // try {
-    //   networkRecoveryService.startMonitoring();
-    // } catch (error) {
-    //   console.error('Error starting network recovery service:', error);
-    // }
+    // Network recovery service deshabilitado para evitar conflictos con FullStory
+    // pero sí iniciamos el monitoreo automático para detectar problemas
+    try {
+      monitoringService.startMonitoring(60000); // Check cada minuto
+      console.log('✅ Monitoreo automático iniciado');
+    } catch (error) {
+      console.error('❌ Error starting monitoring service:', error);
+    }
 
-    // // Cleanup on unmount
-    // return () => {
-    //   try {
-    //     networkRecoveryService.stopMonitoring();
-    //   } catch (error) {
-    //     console.error('Error stopping network recovery service:', error);
-    //   }
-    // };
+    // Cleanup on unmount
+    return () => {
+      try {
+        monitoringService.stopMonitoring();
+      } catch (error) {
+        console.error('Error stopping monitoring service:', error);
+      }
+    };
   }, []);
 
   return (
