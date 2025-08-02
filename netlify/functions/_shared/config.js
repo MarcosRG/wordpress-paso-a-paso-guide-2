@@ -7,7 +7,8 @@ const getRequiredEnv = (key, fallback) => {
   const value = process.env[key] || fallback;
   if (!value) {
     console.error(`❌ Variable de entorno requerida no encontrada: ${key}`);
-    throw new Error(`Variable de entorno requerida: ${key}`);
+    // Don't throw immediately - let validateConfig handle it
+    return null;
   }
   return value;
 };
@@ -77,17 +78,22 @@ const CORS_HEADERS = {
 // ==================== VALIDATION ====================
 const validateConfig = () => {
   const errors = [];
-  
-  if (!DATABASE_CONFIG.connectionString) errors.push('DATABASE_URL or NEON_CONNECTION_STRING');
-  if (!DATABASE_CONFIG.projectId) errors.push('NEON_PROJECT_ID');
-  if (!WOOCOMMERCE_CONFIG.baseUrl) errors.push('WOOCOMMERCE_API_BASE');
-  if (!WOOCOMMERCE_CONFIG.consumerKey) errors.push('WOOCOMMERCE_CONSUMER_KEY');
-  if (!WOOCOMMERCE_CONFIG.consumerSecret) errors.push('WOOCOMMERCE_CONSUMER_SECRET');
-  
-  if (errors.length > 0) {
-    throw new Error(`❌ Variables de entorno faltantes: ${errors.join(', ')}`);
+
+  // Check each required variable directly from process.env
+  if (!process.env.DATABASE_URL && !process.env.NEON_CONNECTION_STRING) {
+    errors.push('DATABASE_URL or NEON_CONNECTION_STRING');
   }
-  
+  if (!process.env.NEON_PROJECT_ID) errors.push('NEON_PROJECT_ID');
+  if (!process.env.WOOCOMMERCE_API_BASE) errors.push('WOOCOMMERCE_API_BASE');
+  if (!process.env.WOOCOMMERCE_CONSUMER_KEY) errors.push('WOOCOMMERCE_CONSUMER_KEY');
+  if (!process.env.WOOCOMMERCE_CONSUMER_SECRET) errors.push('WOOCOMMERCE_CONSUMER_SECRET');
+
+  if (errors.length > 0) {
+    const errorMsg = `Variables de entorno faltantes en Netlify: ${errors.join(', ')}. Configure estas variables en Netlify Dashboard > Site Settings > Environment Variables`;
+    console.error('❌', errorMsg);
+    throw new Error(errorMsg);
+  }
+
   console.log('✅ Configuración Netlify validada correctamente');
   return true;
 };

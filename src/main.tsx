@@ -39,4 +39,8 @@ import "./services/wordpressSyncService";
 //   initializeErrorInterceptor();
 // }
 
+// Performance testing utility for debugging
+import { performanceTest } from "./utils/performanceTest";
+(window as any).performanceTest = performanceTest;
+
 createRoot(document.getElementById("root")!).render(<App />);

@@ -20,6 +20,7 @@ import {
   wooCommerceCircuitBreaker,
 } from "./circuitBreaker";
 import config from '../config/unified';
+import { bikeCache, CACHE_KEYS } from '../utils/bikeCache';
 
 export interface ACFPricing {
   precio_1_2: number;
@@ -471,6 +472,13 @@ export const wooCommerceApi = {
   // Get all products from ALUGUERES category (ID: 319)
   async getProducts(): Promise<WooCommerceProduct[]> {
     try {
+      // Check cache first
+      const cachedProducts = bikeCache.get<WooCommerceProduct[]>(CACHE_KEYS.WOO_PRODUCTS);
+      if (cachedProducts) {
+        console.log(`✅ ${cachedProducts.length} produtos carregados do cache WooCommerce`);
+        return cachedProducts;
+      }
+
       // Check circuit breaker status first
       const connectivityStatus = getConnectivityStatus();
       if (connectivityStatus.consecutiveErrors >= 3) {
@@ -509,8 +517,11 @@ export const wooCommerceApi = {
       const products = await response.json();
 
       // Log para debug - mostrar cuántos productos se obtuvieron
-      console.log(`Products retrieved from WooCommerce: ${products.length}`);
+      console.log(`📦 ${products.length} produtos obtidos do WooCommerce`);
       console.log("Response headers:", response.headers.get("X-WP-Total"));
+
+      // Cache the products for 3 minutes to improve performance on subsequent loads
+      bikeCache.set(CACHE_KEYS.WOO_PRODUCTS, products, 3 * 60 * 1000);
 
       return products;
     } catch (error) {
