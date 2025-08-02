@@ -120,6 +120,12 @@ class NeonDatabaseService {
         return [];
       }
     } catch (error) {
+      // Handle timeout errors specifically
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('⏱️ Neon database timeout - using WooCommerce fallback');
+        throw new Error('Neon database timeout - using WooCommerce fallback');
+      }
+
       console.error('❌ Erro carregando produtos do Neon:', error);
       throw error;
     }
