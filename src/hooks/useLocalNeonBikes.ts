@@ -132,11 +132,11 @@ export const useLocalNeonBikes = () => {
         return [];
       }
     },
-    staleTime: 2 * 60 * 1000, // 2 minutos - datos frescos
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 1 * 60 * 1000, // 1 minuto - datos frescos
+    gcTime: 3 * 60 * 1000, // 3 minutos
     throwOnError: false,
-    retry: 2,
-    retryDelay: 1000,
+    retry: 1, // Solo un reintento
+    retryDelay: 500, // Delay más corto
   });
 };
 
