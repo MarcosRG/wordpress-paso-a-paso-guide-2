@@ -167,6 +167,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
 
+          {/* WooCommerce Diagnostic Tab */}
+          <TabsContent value="woocommerce">
+            <WooCommerceDiagnostic />
+          </TabsContent>
+
           {/* Database Management Tab */}
           <TabsContent value="database">
             <NeonDatabaseAdmin />
