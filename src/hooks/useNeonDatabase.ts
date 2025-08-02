@@ -232,5 +232,6 @@ export const useNeonDatabaseCategories = () => {
       }
     },
     staleTime: 15 * 60 * 1000, // 15 minutos
+    retry: import.meta.env.DEV ? 0 : 1, // No retry in development
   });
 };
