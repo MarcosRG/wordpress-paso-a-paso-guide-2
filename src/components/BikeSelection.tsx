@@ -110,12 +110,6 @@ export const BikeSelection = ({
   React.useEffect(() => {
     if (bikes) {
       console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${dataSource}`);
-
-      // Log de performance si viene de MySQL
-      if (useMySQLAPI && mysqlQuery.data?.performance) {
-        const perf = mysqlQuery.data.performance;
-        console.log(`🏎️ MySQL Performance: ${perf.duration_ms}ms, ${perf.queries_executed} queries`);
-      }
     }
 
     // Log any errors that might be related to FullStory
@@ -129,7 +123,7 @@ export const BikeSelection = ({
         console.warn('🚨 FullStory interference detected in BikeSelection error:', errorMessage);
       }
     }
-  }, [bikes, dataSource, error, useMySQLAPI, mysqlQuery.data]);
+  }, [bikes, dataSource, error]);
 
 
 
