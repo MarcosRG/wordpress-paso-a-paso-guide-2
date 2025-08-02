@@ -1,5 +1,6 @@
 // Servicio de autenticación para panel administrativo
 import bcrypt from 'bcryptjs';
+import config from '../config/unified';
 
 export interface AdminUser {
   id: number;
@@ -18,11 +19,11 @@ class AdminAuthService {
   private currentUser: AdminUser | null = null;
   private sessionKey = 'bikesul_admin_session';
   
-  // Credenciales por defecto (en producción estarían en base de datos)
+  // Credenciales desde configuración unificada
   private defaultCredentials = {
-    username: 'admin_bikesul_pt',
-    password: 'BikeSlPt2024!Adm#Res7', // En producción sería hash
-    email: 'admin@bikesul.com',
+    username: config.ADMIN.username,
+    password: config.ADMIN.password,
+    email: config.ADMIN.email,
     role: 'super_admin' as const
   };
   
@@ -239,7 +240,7 @@ export const adminAuthService = new AdminAuthService();
 if (typeof window !== 'undefined' && import.meta.env.DEV) {
   (window as any).adminAuthService = adminAuthService;
   console.log('🔐 Admin Auth Service disponible en window.adminAuthService');
-  console.log('👤 Credenciales de prueba:');
-  console.log('   Usuario: admin_bikesul_pt');
-  console.log('   Contraseña: BikeSlPt2024!Adm#Res7');
+  console.log('👤 Credenciales cargadas desde configuración unificada');
+  console.log('   Usuario:', config.ADMIN.username);
+  console.log('   Email:', config.ADMIN.email);
 }

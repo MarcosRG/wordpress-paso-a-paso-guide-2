@@ -19,6 +19,7 @@ import {
   recordWooCommerceFailure,
   wooCommerceCircuitBreaker,
 } from "./circuitBreaker";
+import config from '../config/unified';
 
 export interface ACFPricing {
   precio_1_2: number;
@@ -83,20 +84,16 @@ export interface WooCommerceVariation {
 }
 
 // Check if API is disabled for development
-const IS_API_DISABLED = import.meta.env.VITE_DISABLE_API === 'true';
+const IS_API_DISABLED = config.FEATURES.enableMockData;
 
-// Configuración segura usando variables de entorno
+// Configuración segura usando configuración unificada
 // En desarrollo usa proxy local, en producción usa URL directa
-export const WOOCOMMERCE_API_BASE = import.meta.env.DEV
+export const WOOCOMMERCE_API_BASE = config.ENV.isDevelopment
   ? "/api/wc/v3"  // Usa proxy local en desarrollo
-  : (import.meta.env.VITE_WOOCOMMERCE_API_BASE || "https://bikesultoursgest.com/wp-json/wc/v3");
+  : config.WOOCOMMERCE.baseUrl;
 
-const CONSUMER_KEY =
-  import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY ||
-  "ck_d702f875c82d5973562a62579cfa284db06e3a87";
-const CONSUMER_SECRET =
-  import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET ||
-  "cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71";
+const CONSUMER_KEY = config.WOOCOMMERCE.consumerKey;
+const CONSUMER_SECRET = config.WOOCOMMERCE.consumerSecret;
 
 // Validar que las credenciales estén configuradas
 if (!IS_API_DISABLED && (!CONSUMER_KEY || !CONSUMER_SECRET)) {
