@@ -90,13 +90,23 @@ export const BikeSelection = ({
     handleAutoSync();
   }, [useNeonDatabase, bikes, isLoading, syncMutation]);
 
-  // Logging optimizado
+  // Logging optimizado y detección de errores
   React.useEffect(() => {
     if (bikes) {
       const source = useNeonDatabase ? 'Neon Database ⚡' : 'WooCommerce 🐌';
       console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${source}`);
     }
-  }, [bikes, useNeonDatabase]);
+
+    // Log any errors that might be related to FullStory
+    if (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : '';
+
+      if (errorStack && errorStack.includes('fullstory')) {
+        console.warn('🚨 FullStory interference detected in BikeSelection error:', errorMessage);
+      }
+    }
+  }, [bikes, useNeonDatabase, error]);
 
 
 
