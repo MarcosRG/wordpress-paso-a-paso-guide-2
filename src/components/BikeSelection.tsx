@@ -184,8 +184,13 @@ export const BikeSelection = ({
   // Logging optimizado y detección de errores
   React.useEffect(() => {
     if (bikes) {
-      const source = useNeonDatabase ? 'Neon Database ⚡' : 'WooCommerce 🐌';
-      console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${source}`);
+      console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${dataSource}`);
+
+      // Log de performance si viene de MySQL
+      if (useMySQLAPI && mysqlQuery.data?.performance) {
+        const perf = mysqlQuery.data.performance;
+        console.log(`🏎️ MySQL Performance: ${perf.duration_ms}ms, ${perf.queries_executed} queries`);
+      }
     }
 
     // Log any errors that might be related to FullStory
@@ -193,11 +198,13 @@ export const BikeSelection = ({
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const errorStack = error instanceof Error ? error.stack : '';
 
+      console.warn(`❌ Error desde ${dataSource}:`, errorMessage);
+
       if (errorStack && errorStack.includes('fullstory')) {
         console.warn('🚨 FullStory interference detected in BikeSelection error:', errorMessage);
       }
     }
-  }, [bikes, useNeonDatabase, error]);
+  }, [bikes, dataSource, error, useMySQLAPI, mysqlQuery.data]);
 
 
 
