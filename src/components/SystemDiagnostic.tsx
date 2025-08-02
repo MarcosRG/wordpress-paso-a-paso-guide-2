@@ -121,16 +121,6 @@ export const SystemDiagnostic: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <WifiOff className="w-4 h-4 text-red-500" />
-                  <span className="font-medium">MySQL API</span>
-                </div>
-                <p className="text-muted-foreground">
-                  N��o disponível localmente
-                </p>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <WifiOff className="w-4 h-4 text-red-500" />
                   <span className="font-medium">Neon Database</span>
                 </div>
                 <p className="text-muted-foreground">
