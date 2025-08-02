@@ -22,6 +22,22 @@ export default defineConfig(({ mode }) => ({
             console.log('📨 Proxy response:', proxyRes.statusCode, req.url);
           });
         }
+      },
+      '/api/mysql': {
+        target: 'http://localhost:8888',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/mysql/, '/.netlify/functions/mysql'),
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('🚀 MySQL Proxy request:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            console.log('⚡ MySQL Proxy response:', proxyRes.statusCode, req.url);
+          });
+          proxy.on('error', (err, req, res) => {
+            console.log('❌ MySQL Proxy error:', err.message);
+          });
+        }
       }
     }
   },
