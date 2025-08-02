@@ -517,8 +517,11 @@ export const wooCommerceApi = {
       const products = await response.json();
 
       // Log para debug - mostrar cuántos productos se obtuvieron
-      console.log(`Products retrieved from WooCommerce: ${products.length}`);
+      console.log(`📦 ${products.length} produtos obtidos do WooCommerce`);
       console.log("Response headers:", response.headers.get("X-WP-Total"));
+
+      // Cache the products for 3 minutes to improve performance on subsequent loads
+      bikeCache.set(CACHE_KEYS.WOO_PRODUCTS, products, 3 * 60 * 1000);
 
       return products;
     } catch (error) {
