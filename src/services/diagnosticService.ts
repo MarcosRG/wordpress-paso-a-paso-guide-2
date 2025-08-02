@@ -258,6 +258,30 @@ class DiagnosticService {
   }
 
   /**
+   * Test de cleanFetch utility
+   */
+  async testCleanFetch(): Promise<DiagnosticResult> {
+    try {
+      console.log('🧪 Probando cleanFetch utility...');
+
+      const success = await testCleanFetch();
+
+      return {
+        success,
+        message: success ? '✅ cleanFetch funcionando correctamente' : '❌ cleanFetch falló en las pruebas',
+        data: { tested: true, timestamp: new Date().toISOString() }
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Error al probar cleanFetch',
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      };
+    }
+  }
+
+  /**
    * Ejecutar diagnóstico completo
    */
   async runCompleteTest(): Promise<WooCommerceTestResult> {
@@ -269,6 +293,10 @@ class DiagnosticService {
       this.testCategories(),
       this.testVariations()
     ]);
+
+    // Test cleanFetch separately to avoid interference
+    const cleanFetchTest = await this.testCleanFetch();
+    console.log('🧪 CleanFetch Test:', cleanFetchTest.success ? '✅' : '❌', cleanFetchTest.message);
 
     const result: WooCommerceTestResult = {
       auth,
