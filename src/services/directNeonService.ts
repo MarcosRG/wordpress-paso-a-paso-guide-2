@@ -63,9 +63,29 @@ class DirectNeonService {
     }
   }
 
-  // Sync products (not available in direct mode for security)
+  // Sync products using netlify functions
   async syncFromWooCommerce(): Promise<number> {
-    throw new Error('Sincronização não disponível em modo direto. Use netlify functions em produção.');
+    try {
+      console.log('🔄 Iniciando sincronização via Netlify Functions...');
+
+      const response = await fetch('/.netlify/functions/neon-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'sync' })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro na sincronização: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Sincronização completada:', result);
+
+      return result.stats?.total_in_database || 0;
+    } catch (error) {
+      console.error('❌ Erro na sincronização:', error);
+      throw error;
+    }
   }
 
   // Check status
