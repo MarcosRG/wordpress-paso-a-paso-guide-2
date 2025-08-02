@@ -344,10 +344,7 @@ const Index = () => {
           )}
         </div>
 
-        {/* Componente temporal para sincronización inicial */}
-        {import.meta.env.DEV && (
-          <InitialSyncTrigger />
-        )}
+
 
       </div>
     </div>
