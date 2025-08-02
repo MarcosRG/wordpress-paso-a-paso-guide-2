@@ -59,8 +59,8 @@ export class NeonHttpService {
     try {
       return await originalFetch(url, {
         ...options,
-        // Agregar timeout de 10 segundos
-        signal: AbortSignal.timeout(10000),
+        // Timeout más corto para respuesta rápida
+        signal: AbortSignal.timeout(5000),
       });
     } catch (error) {
       // Si el fetch nativo falla, usar XMLHttpRequest como fallback
@@ -95,7 +95,7 @@ export class NeonHttpService {
       };
 
       xhr.onerror = () => reject(new Error('XHR request failed'));
-      xhr.timeout = 10000; // 10 second timeout
+      xhr.timeout = 5000; // 5 second timeout
       xhr.send(options?.body as string);
     });
   }

@@ -15,8 +15,8 @@ const convertNeonProductToBike = (
   // Ya está correctamente calculado en localSyncService.ts
   const totalStock = neonProduct.stock_quantity || 0;
 
-  // Debug simplificado solo para productos con stock > 0
-  if (totalStock > 0 && variations.length > 0) {
+  // Debug simplificado solo en desarrollo
+  if (import.meta.env.DEV && totalStock > 0 && variations.length > 0) {
     console.log(`✅ Stock optimizado para ${neonProduct.name}: ${totalStock} (${variations.length} variaciones)`);
   }
 
@@ -60,7 +60,7 @@ const convertNeonProductToBike = (
         // Mapeo simplificado usando solo stock_quantity
         const vWooStock = parseInt(String(v.stock_quantity)) || 0;
 
-        if (vWooStock > 0) {
+        if (import.meta.env.DEV && vWooStock > 0) {
           console.log(`✅ Variación ${neonProduct.name}:`, {
             woocommerce_id: v.woocommerce_id,
             stock_quantity: vWooStock,
@@ -85,11 +85,16 @@ export const useLocalNeonBikes = () => {
     queryKey: ["neon-bikes"],
     queryFn: async (): Promise<Bike[]> => {
       try {
-        console.log("🚀 Consultando productos directamente desde Neon Database...");
+        if (import.meta.env.DEV) {
+          console.log("🚀 Consultando productos directamente desde Neon Database...");
+        }
 
         // Obtener productos activos directamente de Neon Database
         const products = await neonHttpService.getActiveProducts();
-        console.log(`✅ ${products.length} productos obtenidos de Neon`);
+
+        if (import.meta.env.DEV) {
+          console.log(`✅ ${products.length} productos obtenidos de Neon`);
+        }
 
 
 
@@ -132,11 +137,11 @@ export const useLocalNeonBikes = () => {
         return [];
       }
     },
-    staleTime: 2 * 60 * 1000, // 2 minutos - datos frescos
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 1 * 60 * 1000, // 1 minuto - datos frescos
+    gcTime: 3 * 60 * 1000, // 3 minutos
     throwOnError: false,
-    retry: 2,
-    retryDelay: 1000,
+    retry: 1, // Solo un reintento
+    retryDelay: 500, // Delay más corto
   });
 };
 
@@ -178,10 +183,10 @@ export const useLocalNeonBikesByCategory = (categorySlug: string | null) => {
       return bikes;
     },
     enabled: true,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 3 * 60 * 1000,
     throwOnError: false,
-    retry: 2,
+    retry: 1,
   });
 };
 

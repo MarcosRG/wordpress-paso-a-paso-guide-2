@@ -42,38 +42,76 @@ class DirectNeonService {
       }
 
       console.log('🚀 Carregando produtos diretamente do Neon...');
-      
-      // For now, return empty array as direct browser connection to Neon
-      // requires additional setup and security considerations
-      console.warn('⚠️ Conexão direta ao Neon não implementada por segurança');
-      return [];
-      
+
+      // Usar netlify functions en su lugar - más seguro y confiable
+      const response = await fetch('/.netlify/functions/neon-products', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro da API Neon: ${response.status}`);
+      }
+
+      const products = await response.json();
+      console.log(`✅ ${products.length} produtos carregados do Neon`);
+      return products;
+
     } catch (error) {
       console.error('❌ Erro na conexão direta ao Neon:', error);
       throw error;
     }
   }
 
-  // Sync products (not available in direct mode for security)
+  // Sync products using netlify functions
   async syncFromWooCommerce(): Promise<number> {
-    throw new Error('Sincronização não disponível em modo direto. Use netlify functions em produção.');
+    try {
+      console.log('���� Iniciando sincronização via Netlify Functions...');
+
+      const response = await fetch('/.netlify/functions/neon-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'sync' })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro na sincronização: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Sincronização completada:', result);
+
+      return result.stats?.total_in_database || 0;
+    } catch (error) {
+      console.error('❌ Erro na sincronização:', error);
+      throw error;
+    }
   }
 
   // Check status
   async checkStatus(): Promise<{ connected: boolean; message: string; productsCount: number }> {
-    if (!this.isAvailable()) {
+    try {
+      if (!this.isAvailable()) {
+        return {
+          connected: false,
+          message: 'DATABASE_URL não configurado',
+          productsCount: 0
+        };
+      }
+
+      const products = await this.getProducts();
+      return {
+        connected: true,
+        message: `Conectado via Netlify Functions`,
+        productsCount: products.length
+      };
+    } catch (error) {
       return {
         connected: false,
-        message: 'DATABASE_URL não configurado',
+        message: `Erro de conexão: ${error instanceof Error ? error.message : 'Desconhecido'}`,
         productsCount: 0
       };
     }
-
-    return {
-      connected: false,
-      message: 'Conexão direta não implementada por segurança',
-      productsCount: 0
-    };
   }
 }
 
