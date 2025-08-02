@@ -1,34 +1,20 @@
 const { neon } = require('@neondatabase/serverless');
+const config = require('./_shared/config');
 
 exports.handler = async (event, context) => {
-  // Configurar headers CORS
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Content-Type': 'application/json',
-  };
+  // Validate configuration
+  config.validateConfig();
 
-  // Manejar preflight CORS
+  // Handle preflight CORS
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: '',
-    };
+    return config.createResponse(200, '');
   }
 
   try {
-    // Inicializar conexión con Neon Database
-    const connectionString = process.env.NEON_CONNECTION_STRING || process.env.DATABASE_URL || process.env.VITE_NEON_CONNECTION_STRING;
+    // Initialize connection with Neon Database
+    const sql = neon(config.DATABASE.connectionString);
 
-    if (!connectionString) {
-      throw new Error('No connection string found. Please set NEON_CONNECTION_STRING environment variable.');
-    }
-
-    const sql = neon(connectionString);
-
-    // Obtener todos los productos activos con stock disponible
+    // Get all active products with available stock
     const products = await sql`
       SELECT 
         id,
@@ -60,23 +46,10 @@ exports.handler = async (event, context) => {
 
     console.log(`✅ ${products.length} productos obtenidos de Neon Database`);
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(products),
-    };
+    return config.createSuccessResponse(products);
 
   } catch (error) {
     console.error('❌ Error en endpoint products:', error);
-
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
-        error: 'Error interno del servidor',
-        message: error.message,
-        timestamp: new Date().toISOString()
-      }),
-    };
+    return config.createErrorResponse(error);
   }
 };
