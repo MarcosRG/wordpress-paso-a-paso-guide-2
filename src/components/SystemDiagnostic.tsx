@@ -117,17 +117,7 @@ export const SystemDiagnostic: React.FC = () => {
             <h3 className="font-semibold text-yellow-800 mb-3">
               ⚠️ Limitações do Ambiente de Desenvolvimento
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <WifiOff className="w-4 h-4 text-red-500" />
-                  <span className="font-medium">MySQL API</span>
-                </div>
-                <p className="text-muted-foreground">
-                  N��o disponível localmente
-                </p>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <WifiOff className="w-4 h-4 text-red-500" />
@@ -191,7 +181,7 @@ export const SystemDiagnostic: React.FC = () => {
           </h3>
           <div className="space-y-3 text-sm text-green-700">
             <div>
-              <strong>1. Para MySQL e Neon funcionarem:</strong>
+              <strong>1. Para Neon Database funcionar:</strong>
               <p>• Deploy para Netlify (as functions só funcionam lá)</p>
               <p>• Ou usar produção: <a href="https://app.bikesultoursgest.com" className="underline">app.bikesultoursgest.com</a></p>
             </div>

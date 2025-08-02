@@ -4,15 +4,6 @@
  * esta é uma solução temporária para testar a lógica
  */
 
-interface LocalMySQLConfig {
-  host: string;
-  port: number;
-  database: string;
-  user: string;
-  password: string;
-  tablePrefix: string;
-}
-
 interface DiagnosticResult {
   status: 'OK' | 'ERROR';
   message: string;
@@ -81,15 +72,14 @@ export class LocalFunctionProxy {
   }
 
   /**
-   * Explicar por que MySQL e Neon não funcionam em dev
+   * Explicar por que Neon não funciona em dev
    */
   static getDevLimitations() {
     return {
-      mysql_status: '❌ Não disponível em desenvolvimento (Netlify Functions apenas em produção)',
       neon_status: '❌ Não disponível em desenvolvimento (Netlify Functions apenas em produção)', 
       woocommerce_status: '✅ Disponível (conexão direta)',
       recommendations: [
-        '🔧 Para testar MySQL/Neon: fazer deploy para Netlify',
+        '🔧 Para testar Neon: fazer deploy para Netlify',
         '📱 Em desenvolvimento: app usa apenas WooCommerce API',
         '⚡ Para speed: configurar Netlify Dev CLI',
         '🚀 Ou usar produção: https://app.bikesultoursgest.com'
@@ -98,16 +88,16 @@ export class LocalFunctionProxy {
   }
 
   /**
-   * Simular dados MySQL para desenvolvimento
+   * Simular dados Neon para desenvolvimento
    */
-  static async getMockMySQLData() {
+  static async getMockNeonData() {
     // Retornar dados mock baseados na estrutura real
     return {
       products: [],
       total: 0,
-      source: 'mock_mysql',
-      note: 'MySQL não disponível em desenvolvimento - usando dados mock',
-      real_data_location: 'https://app.bikesultoursgest.com/.netlify/functions/mysql-bikes'
+      source: 'mock_neon',
+      note: 'Neon não disponível em desenvolvimento - usando dados mock',
+      real_data_location: 'https://app.bikesultoursgest.com/.netlify/functions/neon-products'
     };
   }
 }
