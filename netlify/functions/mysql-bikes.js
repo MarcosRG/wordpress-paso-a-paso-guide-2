@@ -249,9 +249,26 @@ exports.handler = async (event, context) => {
 
     console.log(`📊 Fetching products: category=${categorySlug}, limit=${limit}, variations=${includeVariations}`);
 
-    // Crear conexión
+    // Crear conexión com timeout
     const pool = createConnectionPool();
-    
+
+    // Testar conexão primeiro
+    try {
+      await pool.execute('SELECT 1');
+      console.log('✅ MySQL connection successful');
+    } catch (connectionError) {
+      console.error('❌ MySQL connection failed:', connectionError.message);
+      return createErrorResponse({
+        message: 'MySQL connection failed',
+        error: connectionError.message,
+        mysql_config: {
+          host: MYSQL_CONFIG.host,
+          database: MYSQL_CONFIG.database,
+          user: MYSQL_CONFIG.user
+        }
+      }, 500);
+    }
+
     // Query principal de productos
     const productsQuery = getProductsQuery(MYSQL_CONFIG.tablePrefix, categorySlug, limit);
     const [products] = await pool.execute(productsQuery, [categorySlug, limit]);
