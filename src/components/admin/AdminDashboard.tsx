@@ -17,6 +17,7 @@ import { NeonDatabaseAdmin } from '../NeonDatabaseAdmin';
 import { NetlifyDiagnostic } from '../NetlifyDiagnostic';
 import { NetlifyFunctionTest } from '../NetlifyFunctionTest';
 import { ConfigValidationTest } from '../ConfigValidationTest';
+import WooCommerceDiagnostic from '../WooCommerceDiagnostic';
 
 interface AdminDashboardProps {
   onLogout: () => void;
