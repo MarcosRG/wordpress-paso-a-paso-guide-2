@@ -50,24 +50,50 @@ export const BikeSelection = ({
   // Hook para reparación automática del sistema
   useSystemRepair();
 
-  // Usar Neon Database como primary con sincronización automática
+  // 🚀 NUEVA API MYSQL ULTRA-RÁPIDA - Fuente primaria
+  const mysqlQuery = useMySQLBikes({
+    category: 'alugueres',
+    limit: 100,
+    variations: true,
+    enabled: true
+  });
+
+  // Fallbacks anteriores (mantenidos por compatibilidad)
   const neonQuery = useNeonDatabaseBikes();
   const neonCategoriesQuery = useNeonDatabaseCategories();
   const neonStatus = useNeonDatabaseStatus();
-
   const fallbackQuery = useWooCommerceBikes();
   const fallbackCategoriesQuery = useWooCommerceCategories();
 
-  // Determinar se debe usar Neon o fallback
-  const useNeonDatabase = neonStatus.data?.connected === true && !neonQuery.error;
+  // 🎯 NUEVA LÓGICA: MySQL primero, luego fallbacks
+  const useMySQLAPI = !mysqlQuery.error && !mysqlQuery.isLoading;
+  const useNeonDatabase = !useMySQLAPI && neonStatus.data?.connected === true && !neonQuery.error;
 
   // Seleccionar la fuente de datos automáticamente
+  let dataSource = 'MySQL Ultra-Fast ⚡';
+  let bikesQuery = mysqlQuery;
+
+  if (mysqlQuery.error || (!mysqlQuery.data && !mysqlQuery.isLoading)) {
+    if (useNeonDatabase) {
+      dataSource = 'Neon Database 🗄️';
+      bikesQuery = neonQuery;
+    } else {
+      dataSource = 'WooCommerce Fallback 🐌';
+      bikesQuery = fallbackQuery;
+    }
+  }
+
   const {
-    data: bikes,
+    data: rawBikes,
     isLoading,
     error,
     refetch: refetchBikes,
-  } = useNeonDatabase ? neonQuery : fallbackQuery;
+  } = bikesQuery;
+
+  // Transformar datos MySQL al formato esperado
+  const bikes = useMySQLAPI && mysqlQuery.data ?
+    transformMySQLToBikes(mysqlQuery.data.products) :
+    rawBikes;
 
   const { data: categories = [], refetch: refetchCategories } =
     useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
