@@ -56,13 +56,10 @@ class NeonDatabaseService {
     try {
       console.log('🚀 Carregando produtos desde Neon Database...');
 
-      // In development, check if netlify functions are available
+      // In development, Netlify functions are not available
       if (this.isDevelopment) {
-        const functionsAvailable = await this.checkNetlifyFunctionsAvailable();
-        if (!functionsAvailable) {
-          console.warn('⚠️ Netlify functions não disponíveis em desenvolvimento');
-          return [];
-        }
+        console.warn('⚠️ Development mode: Using WooCommerce fallback (Netlify functions only work in production)');
+        return [];
       }
 
       const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
