@@ -296,19 +296,9 @@ export const BikeSelection = ({
             </p>
           )}
           <div className="flex gap-2 justify-center">
-            <Button onClick={handleManualSync} disabled={manualSync.isPending}>
-              <Download className="h-4 w-4 mr-2" />
-              {manualSync.isPending ? "Sincronizando..." : "Sincronizar Neon"}
-            </Button>
             <Button onClick={handleRefresh} variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
-              Reintentar
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => console.error("Error details:", error)}
-            >
-              Ver Error
+              {t("tryAgain")}
             </Button>
           </div>
         </div>
