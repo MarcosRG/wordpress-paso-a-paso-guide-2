@@ -178,10 +178,10 @@ export const useLocalNeonBikesByCategory = (categorySlug: string | null) => {
       return bikes;
     },
     enabled: true,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 3 * 60 * 1000,
     throwOnError: false,
-    retry: 2,
+    retry: 1,
   });
 };
 
