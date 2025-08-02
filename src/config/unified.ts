@@ -112,17 +112,17 @@ export const LOGGING_CONFIG = {
 // ==================== VALIDATION ====================
 export const validateConfig = () => {
   const errors: string[] = [];
-  
-  if (!DATABASE_CONFIG.connectionString) errors.push('DATABASE_URL');
-  if (!DATABASE_CONFIG.projectId) errors.push('NEON_PROJECT_ID');
-  if (!WOOCOMMERCE_CONFIG.baseUrl) errors.push('WOOCOMMERCE_API_BASE');
-  if (!WOOCOMMERCE_CONFIG.consumerKey) errors.push('WOOCOMMERCE_CONSUMER_KEY');
-  if (!WOOCOMMERCE_CONFIG.consumerSecret) errors.push('WOOCOMMERCE_CONSUMER_SECRET');
-  
+
+  if (!DATABASE_CONFIG.connectionString) errors.push('VITE_DATABASE_URL');
+  if (!DATABASE_CONFIG.projectId) errors.push('VITE_NEON_PROJECT_ID');
+  if (!WOOCOMMERCE_CONFIG.baseUrl) errors.push('VITE_WOOCOMMERCE_API_BASE');
+  if (!WOOCOMMERCE_CONFIG.consumerKey) errors.push('VITE_WOOCOMMERCE_CONSUMER_KEY');
+  if (!WOOCOMMERCE_CONFIG.consumerSecret) errors.push('VITE_WOOCOMMERCE_CONSUMER_SECRET');
+
   if (errors.length > 0) {
     throw new Error(`❌ Variables de entorno faltantes: ${errors.join(', ')}`);
   }
-  
+
   console.log('✅ Configuración validada correctamente');
   return true;
 };
