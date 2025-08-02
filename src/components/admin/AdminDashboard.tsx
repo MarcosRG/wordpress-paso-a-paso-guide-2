@@ -180,7 +180,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <NetlifyFunctionTest />
           </TabsContent>
 
-
+          {/* Config Validation Tab */}
+          <TabsContent value="validation">
+            <ConfigValidationTest />
+          </TabsContent>
 
           {/* Settings Tab */}
           <TabsContent value="settings">
