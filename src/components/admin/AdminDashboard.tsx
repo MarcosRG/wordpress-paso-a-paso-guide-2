@@ -175,6 +175,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <NetlifyDiagnostic />
           </TabsContent>
 
+          {/* Function Test Tab */}
+          <TabsContent value="functions">
+            <NetlifyFunctionTest />
+          </TabsContent>
+
           {/* Product Debugger Tab */}
           <TabsContent value="products">
             <VariableProductDebugger />
