@@ -61,8 +61,7 @@ class AdminAuthService {
       // Guardar sesión
       this.currentUser = user;
       this.saveSession(user);
-      
-      console.log('✅ Login exitoso para:', user.username);
+
       return {
         success: true,
         user
