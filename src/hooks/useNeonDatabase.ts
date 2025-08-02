@@ -166,7 +166,7 @@ export const useNeonDatabaseStatus = () => {
     },
     staleTime: 60 * 1000, // 1 minuto
     gcTime: 5 * 60 * 1000, // 5 minutos
-    retry: 1,
+    retry: import.meta.env.DEV ? 0 : 1, // No retry in development
   });
 };
 
