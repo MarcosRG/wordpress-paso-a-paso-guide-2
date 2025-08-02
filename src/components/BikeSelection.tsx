@@ -134,9 +134,6 @@ export const BikeSelection = ({
     try {
       console.log(`🔄 Refrescando datos desde ${dataSource}...`);
 
-      // Invalidar cache de MySQL primero
-      queryClient.invalidateQueries({ queryKey: ["mysql-bikes"] });
-
       // Invalidar otros caches como fallback
       if (useNeonDatabase) {
         queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
