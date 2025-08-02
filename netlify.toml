@@ -80,3 +80,7 @@
 # Variables de entorno para producción
 [context.production.environment]
   NODE_ENV = "production"
+  VITE_ADMIN_USERNAME = "admin_bikesul"
+  VITE_ADMIN_PASSWORD = "BikeSul2024!Admin#Secure789"
+  VITE_ADMIN_EMAIL = "admin@bikesultours.com"
+  VITE_ENCRYPTION_KEY = "BikeSul2024EncryptionKey!SecureKey789"
