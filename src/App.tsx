@@ -19,6 +19,7 @@ import AdminPanel from "./pages/AdminPanel";
 import { networkRecoveryService } from "./services/networkRecovery";
 import { monitoringService } from "./services/monitoringService";
 import { testWooCommerceAPI } from "./utils/testWooCommerceAPI";
+import { runSystemDiagnostic, quickDiagnostic } from "./utils/systemDiagnostic";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
