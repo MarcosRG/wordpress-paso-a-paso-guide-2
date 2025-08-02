@@ -50,11 +50,16 @@ export const useMySQLBikes = ({
           variations: variations.toString()
         });
 
-        // Use different URLs for development vs production
+        // For now, bypass MySQL in development and use fallback
         const isDev = import.meta.env.DEV;
-        const baseUrl = isDev ? '/api/mysql/bikes' : '/.netlify/functions/mysql-bikes';
-        const url = `${baseUrl}?${searchParams.toString()}`;
-        console.log('🔗 MySQL API URL:', url);
+
+        if (isDev) {
+          // In development, skip MySQL and let fallback handle it
+          throw new Error('MySQL API not available in development - using fallback');
+        }
+
+        const url = `/.netlify/functions/mysql-bikes?${searchParams.toString()}`;
+        console.log('🔗 MySQL API URL (production):', url);
 
         // Llamada directa al endpoint MySQL
         const response = await fetch(url, {
