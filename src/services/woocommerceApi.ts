@@ -20,6 +20,7 @@ import {
   wooCommerceCircuitBreaker,
 } from "./circuitBreaker";
 import config from '../config/unified';
+import { bikeCache, CACHE_KEYS } from '../utils/bikeCache';
 
 export interface ACFPricing {
   precio_1_2: number;
