@@ -110,12 +110,13 @@ export const BikeSelection = ({
   // Hook para reparación automática del sistema
   useSystemRepair();
 
-  // 🚀 NUEVA API MYSQL ULTRA-RÁPIDA - Fuente primaria
+  // 🚀 NUEVA API MYSQL ULTRA-RÁPIDA - Solo en producción
+  const isDev = import.meta.env.DEV;
   const mysqlQuery = useMySQLBikes({
     category: 'alugueres',
     limit: 100,
     variations: true,
-    enabled: true
+    enabled: !isDev // Solo habilitar en producción
   });
 
   // Fallbacks anteriores (mantenidos por compatibilidad)
