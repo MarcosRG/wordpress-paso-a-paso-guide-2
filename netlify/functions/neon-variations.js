@@ -1,30 +1,19 @@
-// Endpoint para gestionar variaciones de productos en Neon Database
 const { neon } = require('@neondatabase/serverless');
+const config = require('./_shared/config');
 
 exports.handler = async (event, context) => {
-  // Configurar CORS
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Content-Type': 'application/json',
-  };
+  // Validate configuration
+  config.validateConfig();
 
-  // Manejar preflight OPTIONS
+  // Handle preflight OPTIONS
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+    return config.createResponse(200, '');
   }
 
   try {
-    // Obtener conexión a Neon
-    const connectionString = process.env.NEON_CONNECTION_STRING || process.env.VITE_NEON_CONNECTION_STRING;
-    if (!connectionString) {
-      throw new Error('NEON_CONNECTION_STRING no configurado');
-    }
+    const sql = neon(config.DATABASE.connectionString);
 
-    const sql = neon(connectionString);
-
-    // Crear tabla de variaciones si no existe
+    // Create variations table if it doesn't exist
     try {
       await sql`
         CREATE TABLE IF NOT EXISTS product_variations (
@@ -49,7 +38,7 @@ exports.handler = async (event, context) => {
       console.log('Tabla product_variations ya existe o error creándola:', createError.message);
     }
 
-    // Extraer parámetros de la URL
+    // Extract parameters from URL
     const path = event.path;
     const pathMatch = path.match(/\/\.netlify\/functions\/neon-variations(?:\/(\d+))?/);
     const variationId = pathMatch ? pathMatch[1] : null;
@@ -63,17 +52,9 @@ exports.handler = async (event, context) => {
           LIMIT 1
         `;
 
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify(variation[0] || null),
-        };
+        return config.createSuccessResponse(variation[0] || null);
       } catch (error) {
-        return {
-          statusCode: 404,
-          headers,
-          body: JSON.stringify({ error: 'Variação não encontrada' }),
-        };
+        return config.createErrorResponse(new Error('Variação não encontrada'), 404);
       }
     }
 
@@ -85,7 +66,7 @@ exports.handler = async (event, context) => {
         let variations;
         
         if (productId) {
-          // Obtener variaciones de un producto específico
+          // Get variations of a specific product
           variations = await sql`
             SELECT * FROM product_variations 
             WHERE woocommerce_product_id = ${productId}
@@ -93,7 +74,7 @@ exports.handler = async (event, context) => {
             ORDER BY id ASC
           `;
         } else {
-          // Obtener todas las variaciones
+          // Get all variations
           variations = await sql`
             SELECT * FROM product_variations 
             WHERE stock_quantity > 0
@@ -104,22 +85,14 @@ exports.handler = async (event, context) => {
 
         console.log(`✅ Neon DB: ${variations.length} variações encontradas`);
 
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify(variations),
-        };
+        return config.createSuccessResponse(variations);
       } catch (tableError) {
         console.log('Tabla product_variations vacía o no existe');
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify([]),
-        };
+        return config.createSuccessResponse([]);
       }
     }
 
-    // POST /neon-variations (crear/actualizar variación)
+    // POST /neon-variations (create/update variation)
     if (event.httpMethod === 'POST') {
       const variationData = JSON.parse(event.body);
       
@@ -151,18 +124,10 @@ exports.handler = async (event, context) => {
           RETURNING id
         `;
 
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({ success: true, id: result[0].id }),
-        };
+        return config.createSuccessResponse({ success: true, id: result[0].id });
       } catch (error) {
         console.error('Error insertando/actualizando variação:', error);
-        return {
-          statusCode: 500,
-          headers,
-          body: JSON.stringify({ error: 'Error insertando variação', message: error.message }),
-        };
+        return config.createErrorResponse(error);
       }
     }
 
@@ -174,37 +139,17 @@ exports.handler = async (event, context) => {
           WHERE woocommerce_id = ${variationId}
         `;
 
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({ success: true, message: 'Variação deletada' }),
-        };
+        return config.createSuccessResponse({ success: true, message: 'Variação deletada' });
       } catch (error) {
-        return {
-          statusCode: 500,
-          headers,
-          body: JSON.stringify({ error: 'Error deletando variação', message: error.message }),
-        };
+        return config.createErrorResponse(error);
       }
     }
 
-    // Método no soportado
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Método no permitido' }),
-    };
+    // Unsupported method
+    return config.createErrorResponse(new Error('Método no permitido'), 405);
 
   } catch (error) {
     console.error('Error en neon-variations function:', error);
-    
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
-        error: 'Error consultando variaciones en Neon Database',
-        message: error.message,
-      }),
-    };
+    return config.createErrorResponse(error);
   }
 };
