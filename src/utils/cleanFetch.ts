@@ -26,8 +26,12 @@ export const cleanFetch = async (
 ): Promise<Response> => {
   // First try the original fetch
   try {
-    console.log('🔄 cleanFetch: Attempting original fetch for:', input);
-    return await originalFetch(input, init);
+    const url = typeof input === 'string' ? input : input.toString();
+    console.log('🔄 cleanFetch: Attempting original fetch for:', url);
+
+    const response = await originalFetch(input, init);
+    console.log(`✅ cleanFetch: Success ${response.status} for:`, url);
+    return response;
   } catch (error) {
     // If fetch fails and it's likely due to third-party interference, try alternatives
     if (error instanceof Error && isLikelyThirdPartyInterference(error)) {
@@ -50,7 +54,22 @@ export const cleanFetch = async (
     }
 
     // Re-throw if not third-party interference
+    const url = typeof input === 'string' ? input : input.toString();
     console.error('❌ cleanFetch failed with non-FullStory error:', error);
+    console.error('🔍 Failed URL:', url);
+    console.error('🔍 Request init:', init);
+
+    // Add more context to the error
+    if (error instanceof Error && error.message.includes('Failed to fetch')) {
+      console.error('🌐 This appears to be a network connectivity issue');
+      console.error('🔧 Possible causes:');
+      console.error('   - Network is offline');
+      console.error('   - Server is unreachable');
+      console.error('   - CORS policy blocking request');
+      console.error('   - SSL/TLS certificate issues');
+      console.error('   - Firewall or proxy blocking request');
+    }
+
     throw error;
   }
 };

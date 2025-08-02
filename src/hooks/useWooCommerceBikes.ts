@@ -10,15 +10,40 @@ export const useWooCommerceBikes = () => {
       try {
         console.log("🚀 Carregando produtos desde WooCommerce (fallback)...");
 
-        const response = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
+        // Verificar configuración antes de hacer la llamada
+        const apiBase = import.meta.env.VITE_WOOCOMMERCE_API_BASE;
+        const consumerKey = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY;
+        const consumerSecret = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET;
+
+        if (!apiBase || !consumerKey || !consumerSecret) {
+          throw new Error('WooCommerce configuration incomplete - check environment variables');
+        }
+
+        console.log('🔗 WooCommerce API URL:', `${apiBase}/products?per_page=50&category=319&status=publish`);
+        console.log('🔐 Consumer Key exists:', !!consumerKey);
+        console.log('🔐 Consumer Secret exists:', !!consumerSecret);
+
+        const response = await cleanFetch(`${apiBase}/products?per_page=50&category=319&status=publish`, {
           headers: {
-            'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+            'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'BikeSul-App/1.0'
           },
+          mode: 'cors',
+          cache: 'no-cache'
         });
 
         if (!response.ok) {
-          throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText}`);
+          const errorText = await response.text().catch(() => 'Unable to read error response');
+          console.error('❌ WooCommerce API Error Details:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url,
+            headers: Object.fromEntries(response.headers.entries()),
+            body: errorText.substring(0, 500)
+          });
+          throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
         }
 
         const products = await response.json();
@@ -48,13 +73,19 @@ export const useWooCommerceBikes = () => {
               console.log(`🔍 Carregando variações para ${product.name}...`);
 
               try {
+                console.log(`🔍 Fetching variations for product ${product.id}: ${product.name}`);
+
                 const variationsResponse = await cleanFetch(
-                  `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100`,
+                  `${apiBase}/products/${product.id}/variations?per_page=100`,
                   {
                     headers: {
-                      'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+                      'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
                       'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                      'User-Agent': 'BikeSul-App/1.0'
                     },
+                    mode: 'cors',
+                    cache: 'no-cache'
                   }
                 );
 
@@ -110,7 +141,27 @@ export const useWooCommerceBikes = () => {
 
       } catch (error) {
         console.error("❌ Erro carregando produtos do WooCommerce:", error);
-        throw error;
+
+        // Adicionar contexto adicional ao erro
+        if (error instanceof Error) {
+          if (error.message.includes('Failed to fetch')) {
+            console.error('🌐 Network connectivity issue detected');
+            console.error('🔧 Troubleshooting suggestions:');
+            console.error('   - Check internet connection');
+            console.error('   - Verify WooCommerce API endpoint is accessible:', import.meta.env.VITE_WOOCOMMERCE_API_BASE);
+            console.error('   - Check CORS configuration on WordPress');
+            console.error('   - Verify SSL/TLS certificates');
+            console.error('   - Test API manually:', `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=1`);
+          } else if (error.message.includes('401') || error.message.includes('403')) {
+            console.error('🔐 Authentication issue detected');
+            console.error('🔧 Check WooCommerce API credentials');
+            console.error('   - Consumer Key:', import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY ? 'Set' : 'Missing');
+            console.error('   - Consumer Secret:', import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET ? 'Set' : 'Missing');
+          }
+        }
+
+        // Re-throw with enhanced error message
+        throw new Error(`WooCommerce Bikes API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutos (mais tempo já que carrega variações)
@@ -126,11 +177,31 @@ export const useWooCommerceCategories = () => {
     queryKey: ["woocommerce-categories-fallback"],
     queryFn: async (): Promise<string[]> => {
       try {
-        const response = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/categories?per_page=50&parent=319`, {
+        const apiBase = import.meta.env.VITE_WOOCOMMERCE_API_BASE;
+        const consumerKey = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY;
+        const consumerSecret = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET;
+
+        if (!apiBase || !consumerKey || !consumerSecret) {
+          console.warn('⚠️ WooCommerce configuration incomplete, using default categories');
+          return [
+            "btt",
+            "e-bike",
+            "estrada",
+            "extras-alugueres",
+            "gravel-alugueres",
+            "junior-alugueres",
+            "touring-alugueres",
+          ];
+        }
+
+        const response = await cleanFetch(`${apiBase}/products/categories?per_page=50&parent=319`, {
           headers: {
-            'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+            'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
+          mode: 'cors',
+          cache: 'no-cache'
         });
 
         if (!response.ok) {
