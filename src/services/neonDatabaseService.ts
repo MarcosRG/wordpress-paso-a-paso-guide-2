@@ -28,6 +28,11 @@ class NeonDatabaseService {
 
   // Check if netlify functions are available
   private async checkNetlifyFunctionsAvailable(): Promise<boolean> {
+    // In development, Netlify functions are not available
+    if (this.isDevelopment) {
+      console.log('🔧 Development mode: Netlify functions not available');
+      return false;
+    }
     try {
       const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
