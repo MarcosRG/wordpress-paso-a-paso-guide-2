@@ -48,7 +48,7 @@ export const useWooCommerceBikes = () => {
               console.log(`🔍 Carregando variações para ${product.name}...`);
 
               try {
-                const variationsResponse = await fetch(
+                const variationsResponse = await cleanFetch(
                   `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100`,
                   {
                     headers: {
