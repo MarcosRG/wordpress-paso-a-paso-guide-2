@@ -30,7 +30,7 @@ import {
   extractDayBasedPricing,
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useManualSync, useNeonStatus } from "@/hooks/useManualSync";
+
 
 
 interface BikeSelectionProps {
