@@ -34,16 +34,12 @@ class NeonDatabaseService {
         headers: { 'Accept': 'application/json' }
       });
 
-      // Check if response is actually JSON and not the raw JS file
-      const contentType = response.headers.get('content-type');
-      const isJson = contentType && contentType.includes('application/json');
-
-      if (!isJson) {
-        console.warn('⚠️ Netlify function retornando JS ao invés de JSON - não disponível');
-        return false;
+      // Se recebe resposta 200, considera disponível
+      if (response.status === 200) {
+        return true;
       }
 
-      return response.status !== 404;
+      return false;
     } catch (error) {
       console.warn('⚠️ Erro verificando netlify functions:', error);
       return false;
@@ -76,16 +72,15 @@ class NeonDatabaseService {
         throw new Error(`Neon API Error: ${response.status} ${response.statusText}`);
       }
 
-      // Check if response is JSON before parsing
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Netlify Functions não configuradas. Verifique variáveis de ambiente no painel do Netlify.');
-      }
-
       let data;
       try {
         data = await response.json();
       } catch (jsonError) {
+        // Se não consegue parsear JSON, pode ser problema de configuração
+        const responseText = await response.text().catch(() => 'Resposta não legível');
+        if (responseText.includes('Missing script') || responseText.includes('npm error')) {
+          throw new Error('Netlify Functions não configuradas. Verifique variáveis de ambiente no painel do Netlify.');
+        }
         throw new Error('Erro parsing JSON - netlify function não está executando corretamente');
       }
 
@@ -175,7 +170,7 @@ class NeonDatabaseService {
             availableStock = product.stock_quantity || 0;
           }
 
-          // Só processar se tem stock
+          // S�� processar se tem stock
           if (availableStock > 0) {
             processedProducts.push({
               ...product,
@@ -242,13 +237,12 @@ class NeonDatabaseService {
       });
 
       if (response.ok) {
-        // Check content type before parsing
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('Variáveis de ambiente não configuradas no Netlify. Configure NEON_CONNECTION_STRING no painel do Netlify.');
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          throw new Error('Variáveis de ambiente não configuradas no Netlify. Configure DATABASE_URL e NEON_PROJECT_ID no painel do Netlify.');
         }
-
-        const data = await response.json();
 
         // Verificar se a resposta tem o formato esperado
         if (Array.isArray(data)) {
