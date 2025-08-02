@@ -214,13 +214,9 @@ export const useNeonDatabaseCategories = () => {
           "touring-alugueres",
         ];
       } catch (error) {
-        console.error("❌ Erro carregando categorias do Neon:", error);
-
-        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-
-        // Check if it's a netlify function error
-        if (errorMessage.includes('netlify function') || errorMessage.includes('JSON válido')) {
-          console.log("ℹ️ Netlify functions não disponíveis para categorias - usar padrão");
+        // Only show errors in production
+        if (!import.meta.env.DEV) {
+          console.error("❌ Erro carregando categorias do Neon:", error);
         }
 
         // Retornar categorias padrão
