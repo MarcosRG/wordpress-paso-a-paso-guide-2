@@ -31,8 +31,7 @@ import {
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSystemRepair } from "@/hooks/useSystemRepair";
-import { useMySQLBikes } from "@/hooks/useMySQLBikes";
-import type { WooCommerceProduct } from "@/services/mysqlDirect";
+
 
 
 
