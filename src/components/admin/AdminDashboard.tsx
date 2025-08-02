@@ -161,6 +161,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         <Tabs defaultValue="woocommerce" className="space-y-6">
           <TabsList>
             <TabsTrigger value="woocommerce">WooCommerce</TabsTrigger>
+            <TabsTrigger value="repair">Reparar Sistema</TabsTrigger>
             <TabsTrigger value="database">Base de Dados</TabsTrigger>
             <TabsTrigger value="diagnostic">Diagnóstico Netlify</TabsTrigger>
             <TabsTrigger value="functions">Test Functions</TabsTrigger>
