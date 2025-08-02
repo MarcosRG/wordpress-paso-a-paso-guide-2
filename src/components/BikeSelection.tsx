@@ -46,6 +46,9 @@ export const BikeSelection = ({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const queryClient = useQueryClient();
 
+  // Hook para reparación automática del sistema
+  useSystemRepair();
+
   // Usar Neon Database como primary con sincronización automática
   const neonQuery = useNeonDatabaseBikes();
   const neonCategoriesQuery = useNeonDatabaseCategories();
