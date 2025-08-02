@@ -80,7 +80,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                 <Input
                   id="username"
                   type="text"
-                  placeholder="admin_bikesul_pt"
+                  placeholder="admin_bikesul"
                   value={credentials.username}
                   onChange={(e) => handleInputChange('username', e.target.value)}
                   className="pl-10"
