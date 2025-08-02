@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AdminLogin } from '../components/admin/AdminLogin';
-import { AdminDashboard } from '../components/admin/AdminDashboard';
+import { SimplifiedAdminDashboard } from '../components/admin/SimplifiedAdminDashboard';
 import { adminAuthService } from '../services/adminAuthService';
 
 export const AdminPanel: React.FC = () => {
@@ -47,7 +47,7 @@ export const AdminPanel: React.FC = () => {
   return (
     <>
       {isAuthenticated ? (
-        <AdminDashboard onLogout={handleLogout} />
+        <SimplifiedAdminDashboard onLogout={handleLogout} />
       ) : (
         <AdminLogin onLoginSuccess={handleLoginSuccess} />
       )}

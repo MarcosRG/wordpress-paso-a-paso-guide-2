@@ -31,8 +31,7 @@ import {
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSystemRepair } from "@/hooks/useSystemRepair";
-import { useMySQLBikes } from "@/hooks/useMySQLBikes";
-import type { WooCommerceProduct } from "@/services/mysqlDirect";
+
 
 
 
@@ -41,64 +40,7 @@ interface BikeSelectionProps {
   setReservation: (reservation: ReservationData) => void;
 }
 
-/**
- * Transformar productos MySQL al formato Bike esperado por el frontend
- */
-function transformMySQLToBikes(mysqlProducts: WooCommerceProduct[]): Bike[] {
-  return mysqlProducts.map(product => {
-    // Calcular precio principal
-    let pricePerDay = parseFloat(product.price || '0');
 
-    // Usar precios ACF si están disponibles (preferir precio_1_2)
-    if (product.acf?.precio_1_2) {
-      pricePerDay = product.acf.precio_1_2;
-    } else if (product.acf?.precio_3_6) {
-      pricePerDay = product.acf.precio_3_6;
-    } else if (product.acf?.precio_7_mais) {
-      pricePerDay = product.acf.precio_7_mais;
-    }
-
-    // Calcular stock disponible
-    let availableStock = product.stock_quantity || 0;
-
-    // Si es producto variable, calcular stock total de variaciones
-    if (product.type === 'variable' && product.variations?.length > 0) {
-      availableStock = product.variations.reduce((total, variation) => {
-        return total + (variation.stock_status === 'instock' ? variation.stock_quantity : 0);
-      }, 0);
-    }
-
-    return {
-      id: product.id.toString(),
-      name: product.name,
-      type: product.type === 'variable' ? 'bike' : 'simple', // Mapear tipos
-      pricePerDay,
-      available: availableStock,
-      description: product.short_description || product.description || '',
-      image: product.image_url || '/placeholder.svg',
-      sizes: product.type === 'variable' ?
-        product.variations?.map(v => {
-          // Extraer talla del atributo
-          const sizeAttr = v.attributes.pa_tamanho || v.attributes.tamanho || 'M';
-          return sizeAttr.toUpperCase() as 'XS' | 'S' | 'M' | 'L' | 'XL';
-        }).filter((size, index, arr) => arr.indexOf(size) === index) || ['M'] :
-        ['M'], // Producto simple siempre talla M
-      features: [], // Se puede expandir si necesario
-      wooCommerceData: {
-        product: {
-          id: product.id,
-          name: product.name,
-          type: product.type,
-          price: product.price,
-          regular_price: product.regular_price,
-          categories: product.categories || [],
-          variations: product.variations || [],
-          acf: product.acf || {}
-        }
-      }
-    };
-  });
-}
 
 export const BikeSelection = ({
   reservation,
@@ -110,14 +52,7 @@ export const BikeSelection = ({
   // Hook para reparación automática del sistema
   useSystemRepair();
 
-  // 🚀 NUEVA API MYSQL ULTRA-RÁPIDA - Solo en producción
-  const isDev = import.meta.env.DEV;
-  const mysqlQuery = useMySQLBikes({
-    category: 'alugueres',
-    limit: 100,
-    variations: true,
-    enabled: !isDev // Solo habilitar en producción
-  });
+
 
   // Fallbacks anteriores (mantenidos por compatibilidad)
   const neonQuery = useNeonDatabaseBikes();
@@ -126,35 +61,24 @@ export const BikeSelection = ({
   const fallbackQuery = useWooCommerceBikes();
   const fallbackCategoriesQuery = useWooCommerceCategories();
 
-  // 🎯 NUEVA LÓGICA: MySQL en producción, fallbacks en desarrollo
-  const useMySQLAPI = !isDev && !mysqlQuery.error && !mysqlQuery.isLoading && mysqlQuery.data;
-  const useNeonDatabase = !useMySQLAPI && neonStatus.data?.connected === true && !neonQuery.error;
+  // 🎯 NUEVA LÓGICA: Solo Neon Database y WooCommerce fallback
+  const useNeonDatabase = neonStatus.data?.connected === true && !neonQuery.error;
 
   // Seleccionar la fuente de datos automáticamente
-  let dataSource = isDev ? 'Desarrollo (Fallback)' : 'MySQL Ultra-Fast ⚡';
-  let bikesQuery = mysqlQuery;
+  let dataSource = 'Neon Database 🗄️';
+  let bikesQuery = neonQuery;
 
-  if (isDev || mysqlQuery.error || (!mysqlQuery.data && !mysqlQuery.isLoading)) {
-    if (useNeonDatabase) {
-      dataSource = 'Neon Database 🗄️';
-      bikesQuery = neonQuery;
-    } else {
-      dataSource = 'WooCommerce Fallback 🐌';
-      bikesQuery = fallbackQuery;
-    }
+  if (!useNeonDatabase) {
+    dataSource = 'WooCommerce Fallback 🐌';
+    bikesQuery = fallbackQuery;
   }
 
   const {
-    data: rawBikes,
+    data: bikes,
     isLoading,
     error,
     refetch: refetchBikes,
   } = bikesQuery;
-
-  // Transformar datos MySQL al formato esperado
-  const bikes = useMySQLAPI && mysqlQuery.data ?
-    transformMySQLToBikes(mysqlQuery.data.products) :
-    rawBikes;
 
   const { data: categories = [], refetch: refetchCategories } =
     useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
@@ -186,12 +110,6 @@ export const BikeSelection = ({
   React.useEffect(() => {
     if (bikes) {
       console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${dataSource}`);
-
-      // Log de performance si viene de MySQL
-      if (useMySQLAPI && mysqlQuery.data?.performance) {
-        const perf = mysqlQuery.data.performance;
-        console.log(`🏎️ MySQL Performance: ${perf.duration_ms}ms, ${perf.queries_executed} queries`);
-      }
     }
 
     // Log any errors that might be related to FullStory
@@ -205,7 +123,7 @@ export const BikeSelection = ({
         console.warn('🚨 FullStory interference detected in BikeSelection error:', errorMessage);
       }
     }
-  }, [bikes, dataSource, error, useMySQLAPI, mysqlQuery.data]);
+  }, [bikes, dataSource, error]);
 
 
 
@@ -215,9 +133,6 @@ export const BikeSelection = ({
   const handleRefresh = async () => {
     try {
       console.log(`🔄 Refrescando datos desde ${dataSource}...`);
-
-      // Invalidar cache de MySQL primero
-      queryClient.invalidateQueries({ queryKey: ["mysql-bikes"] });
 
       // Invalidar otros caches como fallback
       if (useNeonDatabase) {
@@ -231,7 +146,6 @@ export const BikeSelection = ({
 
       // Refetch datos principales
       await Promise.all([
-        mysqlQuery.refetch(),
         refetchBikes(),
         refetchCategories()
       ]);
