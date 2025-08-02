@@ -225,10 +225,10 @@ class RepairService {
     report += '=====================================\n\n';
 
     // Circuit Breaker Status
-    const cbState = circuitBreaker.getState();
-    report += `🛡️ CIRCUIT BREAKER: ${cbState}\n`;
-    if (cbState !== 'CLOSED') {
-      report += `   ⚠️ Circuit breaker está ${cbState} - las peticiones están bloqueadas\n`;
+    const cbState = wooCommerceCircuitBreaker.getState();
+    report += `🛡️ CIRCUIT BREAKER: ${cbState.state}\n`;
+    if (cbState.state !== 'CLOSED') {
+      report += `   ⚠️ Circuit breaker está ${cbState.state} - las peticiones están bloqueadas\n`;
     } else {
       report += `   ✅ Circuit breaker funcionando normalmente\n`;
     }
