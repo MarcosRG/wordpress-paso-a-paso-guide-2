@@ -58,7 +58,7 @@ class AdminAuthService {
         last_login: new Date().toISOString()
       };
       
-      // Guardar sesión
+      // Guardar sesi��n
       this.currentUser = user;
       this.saveSession(user);
 
@@ -134,7 +134,6 @@ class AdminAuthService {
       return true;
       
     } catch (error) {
-      console.error('❌ Error cambiando contraseña:', error);
       return false;
     }
   }
