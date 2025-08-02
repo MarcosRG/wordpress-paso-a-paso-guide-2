@@ -177,11 +177,31 @@ export const useWooCommerceCategories = () => {
     queryKey: ["woocommerce-categories-fallback"],
     queryFn: async (): Promise<string[]> => {
       try {
-        const response = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/categories?per_page=50&parent=319`, {
+        const apiBase = import.meta.env.VITE_WOOCOMMERCE_API_BASE;
+        const consumerKey = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY;
+        const consumerSecret = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET;
+
+        if (!apiBase || !consumerKey || !consumerSecret) {
+          console.warn('⚠️ WooCommerce configuration incomplete, using default categories');
+          return [
+            "btt",
+            "e-bike",
+            "estrada",
+            "extras-alugueres",
+            "gravel-alugueres",
+            "junior-alugueres",
+            "touring-alugueres",
+          ];
+        }
+
+        const response = await cleanFetch(`${apiBase}/products/categories?per_page=50&parent=319`, {
           headers: {
-            'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+            'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
+          mode: 'cors',
+          cache: 'no-cache'
         });
 
         if (!response.ok) {
