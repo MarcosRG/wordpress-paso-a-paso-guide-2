@@ -1,81 +1,75 @@
-/**
- * DIAGNÓSTICO RÁPIDO DE CONFIGURAÇÃO
- * Verifica se todas as variáveis estão configuradas
- */
+const config = require('./_shared/config');
 
 exports.handler = async (event, context) => {
+  // CORS headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Content-Type': 'application/json',
+  };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
+
   const requiredVars = [
     'DATABASE_URL',
-    'NEON_PROJECT_ID', 
+    'NEON_PROJECT_ID',
     'WOOCOMMERCE_API_BASE',
     'WOOCOMMERCE_CONSUMER_KEY',
-    'WOOCOMMERCE_CONSUMER_SECRET',
-    'MYSQL_HOST',
-    'MYSQL_DATABASE',
-    'MYSQL_USERNAME',
-    'MYSQL_PASSWORD'
+    'WOOCOMMERCE_CONSUMER_SECRET'
   ];
 
   const diagnostic = {
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    missing_vars: [],
+    environment: process.env.NODE_ENV || 'unknown',
     present_vars: [],
-    mysql_config: {},
     neon_config: {},
-    woocommerce_config: {}
+    woocommerce_config: {},
+    status: 'unknown'
   };
 
-  // Verificar variáveis obrigatórias
-  requiredVars.forEach(varName => {
-    if (process.env[varName]) {
-      diagnostic.present_vars.push(varName);
+  try {
+    // Check environment variables
+    diagnostic.present_vars = requiredVars.filter(v => !!process.env[v]);
+    const missing_vars = requiredVars.filter(v => !process.env[v]);
+
+    // Neon Database
+    diagnostic.neon_config = {
+      database_url: process.env.DATABASE_URL ? '✅ Configurado' : '❌ Faltando',
+      project_id: process.env.NEON_PROJECT_ID ? '✅ Configurado' : '❌ Faltando',
+      branch_id: process.env.NEON_BRANCH_ID ? '✅ Configurado' : '⚪ Opcional'
+    };
+
+    // WooCommerce
+    diagnostic.woocommerce_config = {
+      api_base: process.env.WOOCOMMERCE_API_BASE ? '✅ Configurado' : '❌ Faltando',
+      consumer_key: process.env.WOOCOMMERCE_CONSUMER_KEY ? '✅ Configurado' : '❌ Faltando',
+      consumer_secret: process.env.WOOCOMMERCE_CONSUMER_SECRET ? '✅ Configurado' : '❌ Faltando'
+    };
+
+    if (missing_vars.length === 0) {
+      diagnostic.status = 'OK - Todas as variáveis configuradas';
     } else {
-      diagnostic.missing_vars.push(varName);
+      diagnostic.status = `ERRO - Faltam: ${missing_vars.join(', ')}`;
     }
-  });
 
-  // MySQL
-  diagnostic.mysql_config = {
-    host: process.env.MYSQL_HOST ? '✅ Configurado' : '❌ Faltando',
-    database: process.env.MYSQL_DATABASE ? '✅ Configurado' : '❌ Faltando',
-    username: process.env.MYSQL_USERNAME ? '✅ Configurado' : '❌ Faltando',
-    password: process.env.MYSQL_PASSWORD ? '✅ Configurado' : '❌ Faltando',
-    port: process.env.MYSQL_PORT || '3306 (default)'
-  };
+    console.log(`📋 Quick diagnostic: ${diagnostic.status}`);
 
-  // Neon
-  diagnostic.neon_config = {
-    database_url: process.env.DATABASE_URL ? '✅ Configurado' : '❌ Faltando',
-    project_id: process.env.NEON_PROJECT_ID ? '✅ Configurado' : '❌ Faltando',
-    branch_id: process.env.NEON_BRANCH_ID || '(opcional - usa default)'
-  };
+    return {
+      statusCode: missing_vars.length === 0 ? 200 : 503,
+      headers,
+      body: JSON.stringify(diagnostic, null, 2)
+    };
 
-  // WooCommerce
-  diagnostic.woocommerce_config = {
-    base_url: process.env.WOOCOMMERCE_API_BASE ? '✅ Configurado' : '❌ Faltando',
-    consumer_key: process.env.WOOCOMMERCE_CONSUMER_KEY ? '✅ Configurado' : '❌ Faltando',
-    consumer_secret: process.env.WOOCOMMERCE_CONSUMER_SECRET ? '✅ Configurado' : '❌ Faltando'
-  };
-
-  const allConfigured = diagnostic.missing_vars.length === 0;
-
-  return {
-    statusCode: allConfigured ? 200 : 500,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    },
-    body: JSON.stringify({
-      status: allConfigured ? 'OK' : 'INCOMPLETE_CONFIG',
-      diagnostic,
-      recommendations: allConfigured ? 
-        ['✅ Todas as variáveis estão configuradas'] :
-        [
-          '❌ Configurar variáveis faltantes no painel do Netlify',
-          '🔧 Ir para: Netlify Dashboard > Site Settings > Environment Variables',
-          '📝 Adicionar as variáveis faltantes listadas acima'
-        ]
-    }, null, 2)
-  };
+  } catch (error) {
+    diagnostic.status = `ERRO: ${error.message}`;
+    
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify(diagnostic, null, 2)
+    };
+  }
 };
