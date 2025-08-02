@@ -68,7 +68,6 @@ class AdminAuthService {
       };
       
     } catch (error) {
-      console.error('❌ Error en login administrativo:', error);
       return {
         success: false,
         error: 'Error interno del servidor'
