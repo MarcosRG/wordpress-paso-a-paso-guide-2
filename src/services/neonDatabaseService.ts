@@ -233,7 +233,7 @@ class NeonDatabaseService {
         }
       }
 
-      const response = await fetch(`${this.baseUrl}/neon-products`, {
+      const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
