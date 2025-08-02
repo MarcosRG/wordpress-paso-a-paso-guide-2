@@ -19,6 +19,7 @@ import AdminPanel from "./pages/AdminPanel";
 import { networkRecoveryService } from "./services/networkRecovery";
 import { monitoringService } from "./services/monitoringService";
 import { testWooCommerceAPI } from "./utils/testWooCommerceAPI";
+import { runSystemDiagnostic, quickDiagnostic } from "./utils/systemDiagnostic";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
@@ -40,8 +41,12 @@ const App = () => {
 
     // Make test functions available globally for debugging
     (window as any).testWooAPI = testWooCommerceAPI;
+    (window as any).runSystemDiagnostic = runSystemDiagnostic;
+    (window as any).quickDiagnostic = quickDiagnostic;
     console.log('🧪 Debug functions available:');
     console.log('   - testWooAPI() - Test WooCommerce API connectivity');
+    console.log('   - runSystemDiagnostic() - Complete system diagnostic');
+    console.log('   - quickDiagnostic() - Quick problem detection');
 
     // Cleanup on unmount
     return () => {
