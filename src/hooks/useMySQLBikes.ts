@@ -50,7 +50,10 @@ export const useMySQLBikes = ({
           variations: variations.toString()
         });
 
-        const url = `/netlify/functions/mysql-bikes?${searchParams.toString()}`;
+        // Use different URLs for development vs production
+        const isDev = import.meta.env.DEV;
+        const baseUrl = isDev ? '/api/mysql/bikes' : '/.netlify/functions/mysql-bikes';
+        const url = `${baseUrl}?${searchParams.toString()}`;
         console.log('🔗 MySQL API URL:', url);
 
         // Llamada directa al endpoint MySQL
