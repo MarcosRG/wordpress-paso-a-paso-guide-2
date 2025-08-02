@@ -58,7 +58,7 @@ class AdminAuthService {
         last_login: new Date().toISOString()
       };
       
-      // Guardar sesi��n
+      // Guardar sesión
       this.currentUser = user;
       this.saveSession(user);
 
@@ -165,7 +165,7 @@ class AdminAuthService {
       
       localStorage.setItem(this.sessionKey, JSON.stringify(sessionData));
     } catch (error) {
-      console.error('Error guardando sesión:', error);
+      // Error silencioso
     }
   }
   
