@@ -322,7 +322,10 @@ class DiagnosticService {
       this.testVariations()
     ]);
 
-    // Test cleanFetch separately to avoid interference
+    // Test connectivity and cleanFetch separately to avoid interference
+    const connectivityTest = await this.testConnectivity();
+    console.log('🌐 Connectivity Test:', connectivityTest.success ? '✅' : '❌', connectivityTest.message);
+
     const cleanFetchTest = await this.testCleanFetch();
     console.log('🧪 CleanFetch Test:', cleanFetchTest.success ? '✅' : '❌', cleanFetchTest.message);
 
