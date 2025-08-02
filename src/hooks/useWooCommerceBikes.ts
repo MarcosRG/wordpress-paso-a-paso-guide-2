@@ -10,7 +10,7 @@ export const useWooCommerceBikes = () => {
       try {
         console.log("🚀 Carregando produtos desde WooCommerce (fallback)...");
 
-        const response = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
+        const response = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
           headers: {
             'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
             'Content-Type': 'application/json',
