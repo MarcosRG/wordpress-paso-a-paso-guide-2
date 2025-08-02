@@ -60,7 +60,7 @@ const convertNeonProductToBike = (
         // Mapeo simplificado usando solo stock_quantity
         const vWooStock = parseInt(String(v.stock_quantity)) || 0;
 
-        if (vWooStock > 0) {
+        if (import.meta.env.DEV && vWooStock > 0) {
           console.log(`✅ Variación ${neonProduct.name}:`, {
             woocommerce_id: v.woocommerce_id,
             stock_quantity: vWooStock,
