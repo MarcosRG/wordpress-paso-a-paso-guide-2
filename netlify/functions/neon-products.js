@@ -2,15 +2,23 @@ const { neon } = require('@neondatabase/serverless');
 const config = require('./_shared/config');
 
 exports.handler = async (event, context) => {
-  // Validate configuration
-  config.validateConfig();
-
   // Handle preflight OPTIONS
   if (event.httpMethod === 'OPTIONS') {
     return config.createResponse(200, '');
   }
 
   try {
+    // Validate configuration and provide proper error response
+    try {
+      config.validateConfig();
+    } catch (configError) {
+      console.error('❌ Configuration error:', configError.message);
+      return config.createErrorResponse(
+        new Error('Database configuration missing - service unavailable'),
+        503
+      );
+    }
+
     const sql = neon(config.DATABASE.connectionString);
 
     // Handle different routes
