@@ -4,9 +4,10 @@
  * NO hardcodear valores aquí - solo usar variables de entorno
  */
 
-// Función helper para validar variables requeridas
+// Función helper para validar variables requeridas (browser-compatible)
 const getRequiredEnv = (key: string, fallback?: string): string => {
-  const value = import.meta.env?.[key] || process.env?.[key] || fallback;
+  // En el navegador solo usar import.meta.env
+  const value = import.meta.env?.[key] || fallback;
   if (!value) {
     console.error(`❌ Variable de entorno requerida no encontrada: ${key}`);
   }
@@ -14,7 +15,8 @@ const getRequiredEnv = (key: string, fallback?: string): string => {
 };
 
 const getOptionalEnv = (key: string, fallback: string = ''): string => {
-  return import.meta.env?.[key] || process.env?.[key] || fallback;
+  // En el navegador solo usar import.meta.env
+  return import.meta.env?.[key] || fallback;
 };
 
 // ==================== DATABASE CONFIG ====================
