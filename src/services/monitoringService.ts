@@ -82,16 +82,16 @@ class MonitoringService {
       }
 
       // 2. Verificar Emergency Stop
-      if (emergencyStop.isActive()) {
+      if (isFetchBlocked()) {
         issues.push('Emergency stop está activo');
-        
+
         // Auto-reparar emergency stop si lleva más de 5 minutos activo
         try {
           const emergencyData = localStorage.getItem('bikesul_emergency_stop');
           if (emergencyData) {
             const data = JSON.parse(emergencyData);
             if (Date.now() - data.timestamp > 300000) { // 5 minutos
-              emergencyStop.clear();
+              disableFetchBlock();
               autoRepaired = true;
               console.log('🔧 Emergency stop auto-reparado (timeout)');
             }
