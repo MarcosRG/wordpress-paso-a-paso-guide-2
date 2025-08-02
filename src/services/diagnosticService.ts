@@ -4,6 +4,7 @@
  */
 
 import { WOOCOMMERCE_CONFIG } from '@/config/unified';
+import { testCleanFetch } from '@/utils/testCleanFetch';
 
 interface DiagnosticResult {
   success: boolean;
