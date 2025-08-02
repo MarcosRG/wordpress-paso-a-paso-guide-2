@@ -22,8 +22,8 @@ class RepairService {
     
     try {
       // 1. Reset circuit breaker
-      if (circuitBreaker.getState() !== 'CLOSED') {
-        circuitBreaker.reset();
+      if (wooCommerceCircuitBreaker.getState().state !== 'CLOSED') {
+        wooCommerceCircuitBreaker.reset();
         actions.push('Circuit breaker reseteado');
       }
 
