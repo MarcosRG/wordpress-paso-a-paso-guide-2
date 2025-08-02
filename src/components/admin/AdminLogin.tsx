@@ -136,10 +136,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                 🔧 Credenciales de desarrollo:
               </p>
               <p className="text-xs text-yellow-700">
-                Usuario: <code className="bg-yellow-100 px-1 rounded">admin_bikesul_pt</code>
+                Usuario: <code className="bg-yellow-100 px-1 rounded">admin_bikesul</code>
               </p>
               <p className="text-xs text-yellow-700">
-                Contraseña: <code className="bg-yellow-100 px-1 rounded">BikeSlPt2024!Adm#Res7</code>
+                Contraseña: <code className="bg-yellow-100 px-1 rounded">BikeSul2024!Admin#Secure789</code>
               </p>
             </div>
           )}
