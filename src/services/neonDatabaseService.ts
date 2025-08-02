@@ -55,6 +55,13 @@ class NeonDatabaseService {
   // Obter produtos da base de dados Neon
   async getProducts(): Promise<NeonProduct[]> {
     try {
+      // Check cache first
+      const cachedProducts = bikeCache.get<NeonProduct[]>(CACHE_KEYS.NEON_PRODUCTS);
+      if (cachedProducts) {
+        console.log(`✅ ${cachedProducts.length} produtos carregados do cache Neon`);
+        return cachedProducts;
+      }
+
       console.log('🚀 Carregando produtos desde Neon Database...');
 
       // In development, Netlify functions are not available
