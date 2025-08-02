@@ -77,7 +77,6 @@ class AdminAuthService {
   
   // Logout
   logout(): void {
-    console.log('🚪 Cerrando sesión administrativa');
     this.currentUser = null;
     this.clearSession();
   }
