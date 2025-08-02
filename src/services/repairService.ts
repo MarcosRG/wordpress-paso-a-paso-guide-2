@@ -28,8 +28,8 @@ class RepairService {
       }
 
       // 2. Clear emergency stop
-      if (emergencyStop.isActive()) {
-        emergencyStop.clear();
+      if (isFetchBlocked()) {
+        disableFetchBlock();
         actions.push('Emergency stop desactivado');
       }
 
