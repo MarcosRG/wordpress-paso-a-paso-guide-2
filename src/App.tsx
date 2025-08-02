@@ -1,6 +1,6 @@
 import React from "react";
 
-// Debug: verificar que React est��� disponible
+// Debug: verificar que React est�� disponible
 if (!React) {
   console.error('❌ React is null or undefined!');
 }
@@ -37,6 +37,11 @@ const App = () => {
     } catch (error) {
       console.error('❌ Error starting monitoring service:', error);
     }
+
+    // Make test functions available globally for debugging
+    (window as any).testWooAPI = testWooCommerceAPI;
+    console.log('🧪 Debug functions available:');
+    console.log('   - testWooAPI() - Test WooCommerce API connectivity');
 
     // Cleanup on unmount
     return () => {
