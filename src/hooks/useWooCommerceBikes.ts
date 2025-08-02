@@ -35,7 +35,15 @@ export const useWooCommerceBikes = () => {
         });
 
         if (!response.ok) {
-          throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText}`);
+          const errorText = await response.text().catch(() => 'Unable to read error response');
+          console.error('❌ WooCommerce API Error Details:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url,
+            headers: Object.fromEntries(response.headers.entries()),
+            body: errorText.substring(0, 500)
+          });
+          throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
         }
 
         const products = await response.json();
