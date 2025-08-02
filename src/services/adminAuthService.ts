@@ -43,7 +43,6 @@ class AdminAuthService {
       const isValid = await this.validateCredentials(credentials);
       
       if (!isValid) {
-        console.warn('❌ Credenciales inválidas para:', credentials.username);
         return {
           success: false,
           error: 'Usuario o contraseña incorrectos'
