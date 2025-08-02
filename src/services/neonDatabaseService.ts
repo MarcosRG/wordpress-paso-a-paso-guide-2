@@ -72,16 +72,15 @@ class NeonDatabaseService {
         throw new Error(`Neon API Error: ${response.status} ${response.statusText}`);
       }
 
-      // Check if response is JSON before parsing
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Netlify Functions não configuradas. Verifique variáveis de ambiente no painel do Netlify.');
-      }
-
       let data;
       try {
         data = await response.json();
       } catch (jsonError) {
+        // Se não consegue parsear JSON, pode ser problema de configuração
+        const responseText = await response.text().catch(() => 'Resposta não legível');
+        if (responseText.includes('Missing script') || responseText.includes('npm error')) {
+          throw new Error('Netlify Functions não configuradas. Verifique variáveis de ambiente no painel do Netlify.');
+        }
         throw new Error('Erro parsing JSON - netlify function não está executando corretamente');
       }
 
