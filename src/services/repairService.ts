@@ -235,7 +235,7 @@ class RepairService {
     report += '\n';
 
     // Emergency Stop Status
-    const emergencyActive = emergencyStop.isActive();
+    const emergencyActive = isFetchBlocked();
     report += `🚨 EMERGENCY STOP: ${emergencyActive ? 'ACTIVO' : 'INACTIVO'}\n`;
     if (emergencyActive) {
       report += `   ⚠️ Emergency stop está activo - todas las peticiones están bloqueadas\n`;
