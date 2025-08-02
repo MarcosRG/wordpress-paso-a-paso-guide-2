@@ -58,16 +58,16 @@ export const testCleanFetch = async () => {
   }
 };
 
-// Auto-run test if in development mode
-if (import.meta.env.DEV && typeof window !== 'undefined') {
-  // Delay test to allow app to initialize
-  setTimeout(() => {
-    testCleanFetch().then(success => {
-      if (success) {
-        console.log('🎉 cleanFetch is working correctly!');
-      } else {
-        console.log('⚠️ cleanFetch test failed - check console for details');
-      }
-    });
-  }, 2000);
-}
+// Auto-run test disabled to prevent startup errors
+// To test manually, call testCleanFetch() from browser console
+// or use the diagnostic tools in the admin panel
+
+export const runCleanFetchTest = () => {
+  testCleanFetch().then(success => {
+    if (success) {
+      console.log('🎉 cleanFetch is working correctly!');
+    } else {
+      console.log('⚠️ cleanFetch test failed - check console for details');
+    }
+  });
+};
