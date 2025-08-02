@@ -34,7 +34,13 @@ exports.handler = async (event, context) => {
     }
 
     // Inicializar conexión con Neon Database
-    const sql = neon(process.env.DATABASE_URL);
+    const connectionString = process.env.NEON_CONNECTION_STRING || process.env.DATABASE_URL || process.env.VITE_NEON_CONNECTION_STRING;
+
+    if (!connectionString) {
+      throw new Error('No connection string found. Please set NEON_CONNECTION_STRING environment variable.');
+    }
+
+    const sql = neon(connectionString);
 
     // Obtener productos filtrados por categoría
     const products = await sql`
