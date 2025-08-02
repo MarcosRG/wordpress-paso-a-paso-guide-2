@@ -18,7 +18,7 @@ const getOptionalEnv = (key, fallback = '') => {
 
 // ==================== DATABASE CONFIG ====================
 const DATABASE_CONFIG = {
-  connectionString: getRequiredEnv('DATABASE_URL'),
+  connectionString: getRequiredEnv('DATABASE_URL', process.env.NEON_CONNECTION_STRING),
   projectId: getRequiredEnv('NEON_PROJECT_ID'),
   branchId: getOptionalEnv('NEON_BRANCH_ID'),
   database: 'neondb',
@@ -78,7 +78,7 @@ const CORS_HEADERS = {
 const validateConfig = () => {
   const errors = [];
   
-  if (!DATABASE_CONFIG.connectionString) errors.push('DATABASE_URL');
+  if (!DATABASE_CONFIG.connectionString) errors.push('DATABASE_URL or NEON_CONNECTION_STRING');
   if (!DATABASE_CONFIG.projectId) errors.push('NEON_PROJECT_ID');
   if (!WOOCOMMERCE_CONFIG.baseUrl) errors.push('WOOCOMMERCE_API_BASE');
   if (!WOOCOMMERCE_CONFIG.consumerKey) errors.push('WOOCOMMERCE_CONSUMER_KEY');
