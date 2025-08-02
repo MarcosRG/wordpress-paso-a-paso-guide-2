@@ -70,9 +70,7 @@ export const BikeSelection = ({
   // Hook para sincronização WooCommerce → Neon (original)
   const syncMutation = useNeonDatabaseSync();
 
-  // Nuevos hooks para sincronización manual
-  const manualSync = useManualSync();
-  const neonStatusQuery = useNeonStatus();
+
 
   const { language, setLanguage, t } = useLanguage();
 
