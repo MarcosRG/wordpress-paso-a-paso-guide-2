@@ -170,7 +170,7 @@ class NeonDatabaseService {
             availableStock = product.stock_quantity || 0;
           }
 
-          // Só processar se tem stock
+          // S�� processar se tem stock
           if (availableStock > 0) {
             processedProducts.push({
               ...product,
@@ -237,13 +237,12 @@ class NeonDatabaseService {
       });
 
       if (response.ok) {
-        // Check content type before parsing
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('Variáveis de ambiente não configuradas no Netlify. Configure NEON_CONNECTION_STRING no painel do Netlify.');
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          throw new Error('Variáveis de ambiente não configuradas no Netlify. Configure DATABASE_URL e NEON_PROJECT_ID no painel do Netlify.');
         }
-
-        const data = await response.json();
 
         // Verificar se a resposta tem o formato esperado
         if (Array.isArray(data)) {
