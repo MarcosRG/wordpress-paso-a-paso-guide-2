@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
 
 import { networkRecoveryService } from "./services/networkRecovery";
+import { monitoringService } from "./services/monitoringService";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
