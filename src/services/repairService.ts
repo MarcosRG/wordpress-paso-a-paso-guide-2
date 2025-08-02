@@ -4,7 +4,7 @@
  */
 
 import { wooCommerceCircuitBreaker } from './circuitBreaker';
-import { emergencyStop } from '@/utils/emergencyFetchBlock';
+import { isFetchBlocked, disableFetchBlock } from '@/utils/emergencyFetchBlock';
 
 interface RepairResult {
   success: boolean;
