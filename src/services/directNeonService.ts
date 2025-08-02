@@ -66,7 +66,7 @@ class DirectNeonService {
   // Sync products using netlify functions
   async syncFromWooCommerce(): Promise<number> {
     try {
-      console.log('🔄 Iniciando sincronização via Netlify Functions...');
+      console.log('���� Iniciando sincronização via Netlify Functions...');
 
       const response = await fetch('/.netlify/functions/neon-sync', {
         method: 'POST',
@@ -90,19 +90,28 @@ class DirectNeonService {
 
   // Check status
   async checkStatus(): Promise<{ connected: boolean; message: string; productsCount: number }> {
-    if (!this.isAvailable()) {
+    try {
+      if (!this.isAvailable()) {
+        return {
+          connected: false,
+          message: 'DATABASE_URL não configurado',
+          productsCount: 0
+        };
+      }
+
+      const products = await this.getProducts();
+      return {
+        connected: true,
+        message: `Conectado via Netlify Functions`,
+        productsCount: products.length
+      };
+    } catch (error) {
       return {
         connected: false,
-        message: 'DATABASE_URL não configurado',
+        message: `Erro de conexão: ${error instanceof Error ? error.message : 'Desconhecido'}`,
         productsCount: 0
       };
     }
-
-    return {
-      connected: false,
-      message: 'Conexão direta não implementada por segurança',
-      productsCount: 0
-    };
   }
 }
 
