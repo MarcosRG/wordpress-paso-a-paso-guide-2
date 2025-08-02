@@ -7,7 +7,8 @@ const getRequiredEnv = (key, fallback) => {
   const value = process.env[key] || fallback;
   if (!value) {
     console.error(`❌ Variable de entorno requerida no encontrada: ${key}`);
-    throw new Error(`Variable de entorno requerida: ${key}`);
+    // Don't throw immediately - let validateConfig handle it
+    return null;
   }
   return value;
 };
