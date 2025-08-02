@@ -65,14 +65,14 @@ class MonitoringService {
 
     try {
       // 1. Verificar Circuit Breaker
-      const cbState = circuitBreaker.getState();
-      if (cbState !== 'CLOSED') {
-        issues.push(`Circuit breaker está ${cbState}`);
-        
+      const cbState = wooCommerceCircuitBreaker.getState();
+      if (cbState.state !== 'CLOSED') {
+        issues.push(`Circuit breaker está ${cbState.state}`);
+
         // Auto-reparar si lleva mucho tiempo abierto
-        if (cbState === 'OPEN') {
+        if (cbState.state === 'OPEN') {
           try {
-            circuitBreaker.reset();
+            wooCommerceCircuitBreaker.reset();
             autoRepaired = true;
             console.log('🔧 Circuit breaker auto-reparado');
           } catch (e) {
