@@ -59,8 +59,8 @@ export class NeonHttpService {
     try {
       return await originalFetch(url, {
         ...options,
-        // Agregar timeout de 10 segundos
-        signal: AbortSignal.timeout(10000),
+        // Timeout más corto para respuesta rápida
+        signal: AbortSignal.timeout(5000),
       });
     } catch (error) {
       // Si el fetch nativo falla, usar XMLHttpRequest como fallback
