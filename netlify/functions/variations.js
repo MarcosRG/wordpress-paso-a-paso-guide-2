@@ -1,25 +1,17 @@
 const { neon } = require('@neondatabase/serverless');
+const config = require('./_shared/config');
 
 exports.handler = async (event, context) => {
-  // Configurar headers CORS
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Content-Type': 'application/json',
-  };
+  // Validate configuration
+  config.validateConfig();
 
-  // Manejar preflight CORS
+  // Handle preflight CORS
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: '',
-    };
+    return config.createResponse(200, '');
   }
 
   try {
-    // Extraer productId del path o query parameters
+    // Extract productId from path or query parameters
     const pathParams = event.path.split('/');
     const productIdFromPath = pathParams[pathParams.length - 2]; // /api/products/{id}/variations
     const productIdFromQuery = event.queryStringParameters?.product_id;
@@ -27,26 +19,16 @@ exports.handler = async (event, context) => {
     const productId = productIdFromPath || productIdFromQuery;
 
     if (!productId) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({
-          error: 'ID de producto requerido',
-          message: 'Proporciona product_id como parámetro de query o en el path'
-        }),
-      };
+      return config.createErrorResponse(
+        new Error('ID de producto requerido. Proporciona product_id como parámetro de query o en el path'), 
+        400
+      );
     }
 
-    // Inicializar conexión con Neon Database
-    const connectionString = process.env.NEON_CONNECTION_STRING || process.env.DATABASE_URL || process.env.VITE_NEON_CONNECTION_STRING;
+    // Initialize connection with Neon Database
+    const sql = neon(config.DATABASE.connectionString);
 
-    if (!connectionString) {
-      throw new Error('No connection string found. Please set NEON_CONNECTION_STRING environment variable.');
-    }
-
-    const sql = neon(connectionString);
-
-    // Primero, buscar el producto para obtener el product_id interno
+    // First, search for the product to get the internal product_id
     const products = await sql`
       SELECT id, woocommerce_id, name 
       FROM products 
@@ -54,19 +36,15 @@ exports.handler = async (event, context) => {
     `;
 
     if (products.length === 0) {
-      return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({
-          error: 'Producto no encontrado',
-          message: `No existe producto con woocommerce_id ${productId}`
-        }),
-      };
+      return config.createErrorResponse(
+        new Error(`No existe producto con woocommerce_id ${productId}`), 
+        404
+      );
     }
 
     const product = products[0];
 
-    // Obtener variaciones del producto con stock disponible
+    // Get product variations with available stock
     const variations = await sql`
       SELECT 
         id,
@@ -98,23 +76,10 @@ exports.handler = async (event, context) => {
 
     console.log(`✅ ${variations.length} variaciones obtenidas para producto ${product.name} (WC ID: ${productId})`);
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(variations),
-    };
+    return config.createSuccessResponse(variations);
 
   } catch (error) {
     console.error('❌ Error en endpoint variations:', error);
-
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
-        error: 'Error interno del servidor',
-        message: error.message,
-        timestamp: new Date().toISOString()
-      }),
-    };
+    return config.createErrorResponse(error);
   }
 };
