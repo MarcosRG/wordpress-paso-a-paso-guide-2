@@ -62,13 +62,20 @@ class NeonDatabaseService {
         return [];
       }
 
+      // Add timeout for faster fallback to WooCommerce
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
       const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-        }
+        },
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Neon API Error: ${response.status} ${response.statusText}`);
