@@ -106,7 +106,7 @@ export enum LogLevel {
 export const LOGGING_CONFIG = {
   enableConsoleLogging: FEATURE_FLAGS.enableDebug,
   enableErrorLogging: true,
-  logLevel: getOptionalEnv('LOG_LEVEL', 'info') as LogLevel,
+  logLevel: getOptionalEnv('VITE_LOG_LEVEL', 'info') as LogLevel,
 } as const;
 
 // ==================== VALIDATION ====================
