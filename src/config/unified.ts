@@ -70,18 +70,18 @@ export const FEATURE_FLAGS = {
 
 // ==================== SYNC CONFIG ====================
 export const SYNC_CONFIG = {
-  syncInterval: parseInt(getOptionalEnv('SYNC_INTERVAL', '600000')), // 10 min
-  stockUpdateInterval: parseInt(getOptionalEnv('STOCK_UPDATE_INTERVAL', '120000')), // 2 min
-  maxRetries: parseInt(getOptionalEnv('MAX_RETRIES', '3')),
-  dbTimeout: parseInt(getOptionalEnv('DB_TIMEOUT', '30')), // seconds
+  syncInterval: parseInt(getOptionalEnv('VITE_SYNC_INTERVAL', '600000')), // 10 min
+  stockUpdateInterval: parseInt(getOptionalEnv('VITE_STOCK_UPDATE_INTERVAL', '120000')), // 2 min
+  maxRetries: parseInt(getOptionalEnv('VITE_MAX_RETRIES', '3')),
+  dbTimeout: parseInt(getOptionalEnv('VITE_DB_TIMEOUT', '30')), // seconds
   autoSync: FEATURE_FLAGS.enableAutoSync,
   realTimeStock: FEATURE_FLAGS.enableRealTimeStock,
 } as const;
 
 // ==================== ENVIRONMENT INFO ====================
 export const ENV_INFO = {
-  isProduction: getOptionalEnv('NODE_ENV') === 'production',
-  isDevelopment: getOptionalEnv('NODE_ENV') === 'development',
+  isProduction: getOptionalEnv('VITE_NODE_ENV', import.meta.env.MODE) === 'production',
+  isDevelopment: getOptionalEnv('VITE_NODE_ENV', import.meta.env.MODE) === 'development',
   isClient: typeof window !== 'undefined',
   isServer: typeof window === 'undefined',
 } as const;
