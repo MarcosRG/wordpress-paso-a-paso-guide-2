@@ -3,7 +3,7 @@
  * Sistema que detecta y soluciona automáticamente problemas comunes
  */
 
-import { circuitBreaker } from './circuitBreaker';
+import { wooCommerceCircuitBreaker } from './circuitBreaker';
 import { emergencyStop } from '@/utils/emergencyFetchBlock';
 
 interface RepairResult {
