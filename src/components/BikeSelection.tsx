@@ -22,7 +22,7 @@ import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { isMCPAvailable } from "@/utils/mcpClient";
-import { Bike as BikeIcon, AlertCircle, RefreshCw, Download, Database } from "lucide-react";
+import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
 import SimpleBikeCard from "./SimpleBikeCard";
 import {
