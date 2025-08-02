@@ -10,11 +10,28 @@ export const useWooCommerceBikes = () => {
       try {
         console.log("🚀 Carregando produtos desde WooCommerce (fallback)...");
 
-        const response = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
+        // Verificar configuración antes de hacer la llamada
+        const apiBase = import.meta.env.VITE_WOOCOMMERCE_API_BASE;
+        const consumerKey = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY;
+        const consumerSecret = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET;
+
+        if (!apiBase || !consumerKey || !consumerSecret) {
+          throw new Error('WooCommerce configuration incomplete - check environment variables');
+        }
+
+        console.log('🔗 WooCommerce API URL:', `${apiBase}/products?per_page=50&category=319&status=publish`);
+        console.log('🔐 Consumer Key exists:', !!consumerKey);
+        console.log('🔐 Consumer Secret exists:', !!consumerSecret);
+
+        const response = await cleanFetch(`${apiBase}/products?per_page=50&category=319&status=publish`, {
           headers: {
-            'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+            'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'BikeSul-App/1.0'
           },
+          mode: 'cors',
+          cache: 'no-cache'
         });
 
         if (!response.ok) {
