@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Bike } from "@/pages/Index";
 import { useState, useEffect } from "react";
-import { getAllProducts, testNeonConnection, initializeDatabase } from "@/services/neonDirectService";
+import { neonUnifiedService } from "@/services/neonUnifiedService";
 import { useProgressiveWooCommerceBikes } from "@/hooks/useProgressiveWooCommerceBikes";
 
 export const useNeonFirstBikes = () => {
