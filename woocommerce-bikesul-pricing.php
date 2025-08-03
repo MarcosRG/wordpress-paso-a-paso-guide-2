@@ -4,9 +4,19 @@
  * Versión 2.0 - Corrige inconsistencias de precios entre app y checkout
  */
 
+// Verificar que WordPress está cargado
+if (!defined('ABSPATH')) {
+    exit; // Salir si WordPress no está cargado
+}
+
 // Cargar funciones de seguro si no están disponibles
 if (!function_exists('bikesul_encontrar_produto_seguro')) {
-    require_once __DIR__ . '/woocommerce-insurance-handler.php';
+    $insurance_file = __DIR__ . '/woocommerce-insurance-handler.php';
+    if (file_exists($insurance_file)) {
+        require_once $insurance_file;
+    } else {
+        error_log('BIKESUL ERROR: woocommerce-insurance-handler.php not found');
+    }
 }
 
 // ===============================================
