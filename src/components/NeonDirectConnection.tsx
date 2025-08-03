@@ -143,15 +143,12 @@ export const NeonDirectConnection: React.FC = () => {
       });
       
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('❌ Erro na sincronização:', error);
-        toast({
-          title: "❌ Erro na sincronização",
-          description: error instanceof Error ? error.message : 'Erro desconhecido',
-          variant: "destructive"
-        });
-      }
-      // Em produção, silenciar completamente os erros de sincronização
+      console.error('❌ Erro na sincronização:', error);
+      toast({
+        title: "❌ Erro na sincronização",
+        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        variant: "destructive"
+      });
     } finally {
       setIsConnecting(false);
     }

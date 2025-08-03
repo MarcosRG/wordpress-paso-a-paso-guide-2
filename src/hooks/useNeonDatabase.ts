@@ -142,18 +142,17 @@ export const useNeonDatabaseSync = () => {
       }
     },
     onError: (error) => {
-      if (import.meta.env.DEV) {
-        console.error("❌ Erro na sincronização Neon:", error);
+      console.error("❌ Erro na sincronização Neon:", error);
 
-        const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
 
-        toast({
-          title: "❌ Erro de sincronização",
-          description: "Funcionalidade completa disponível após deploy",
-          variant: "destructive",
-        });
-      }
-      // Em produção, silenciar completamente os erros de sincronização
+      toast({
+        title: "❌ Erro de sincronização",
+        description: import.meta.env.DEV
+          ? "Funcionalidade completa disponível após deploy"
+          : errorMessage,
+        variant: "destructive",
+      });
     },
   });
 };
@@ -217,7 +216,7 @@ export const useNeonDatabaseCategories = () => {
       } catch (error) {
         // Only show errors in production
         if (!import.meta.env.DEV) {
-          console.error("�� Erro carregando categorias do Neon:", error);
+          console.error("❌ Erro carregando categorias do Neon:", error);
         }
 
         // Retornar categorias padrão
