@@ -61,7 +61,7 @@ export const BikeSelection = ({
     refetch: refetchBikes
   } = neonFirstResult;
 
-  // Obtener categorías desde el hook de caché para compatibilidad
+  // Obtener categorías desde el hook de cach�� para compatibilidad
   const cachedBikesResult = useCachedBikes();
   const { categories } = cachedBikesResult;
 
@@ -83,21 +83,19 @@ export const BikeSelection = ({
     }
   }, [bikes, dataSource, neonAvailable]);
 
-  // Auto-sync simplificado
+  // Sync simplificado - solo si Neon no está disponible
   React.useEffect(() => {
-    const shouldSync = dataSource === 'cache' &&
-                      cacheAge > 300 && // más de 5 minutos
-                      !syncMutation.isPending;
+    const shouldSync = dataSource === 'woocommerce' && neonAvailable === false && !syncMutation.isPending;
 
     if (shouldSync) {
       if (import.meta.env.DEV) {
-        console.log('🔄 Caché antiguo, intentando sync en background...');
+        console.log('🔄 Neon no disponible, manteniendo sync tradicional...');
       }
       syncMutation.mutateAsync().catch(() => {
-        // Silently fail - cache is still valid
+        // Silently fail - WooCommerce is working
       });
     }
-  }, [dataSource, cacheAge, syncMutation]);
+  }, [dataSource, neonAvailable, syncMutation]);
 
 
 
