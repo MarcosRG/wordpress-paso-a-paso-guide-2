@@ -97,8 +97,9 @@ export class SystemDebugger {
       }
     } catch (error) {
       status.apis.woocommerce = 'error';
-      status.errors.push(`WooCommerce connection failed: ${error.message}`);
-      this.log('error', '❌ WooCommerce falhou', error);
+      const errorMessage = error?.message || 'Unknown error';
+      status.errors.push(`WooCommerce connection failed: ${errorMessage}`);
+      this.log('error', '❌ WooCommerce falhou', { message: errorMessage });
     }
 
     // Analisar limitações de desenvolvimento
