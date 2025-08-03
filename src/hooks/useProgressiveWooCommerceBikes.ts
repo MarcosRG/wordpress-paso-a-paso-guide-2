@@ -215,6 +215,24 @@ export const useProgressiveWooCommerceBikes = () => {
             processedBikes.push(bike);
             // Actualizar el estado inmediatamente para mostrar la bicicleta
             setLoadedBikes(current => [...current, bike]);
+
+            // Sincronizar con Neon en background (no bloquear UI)
+            try {
+              if (bike.wooCommerceData?.variations && bike.wooCommerceData.variations.length > 0) {
+                await syncCompleteProduct(bike.wooCommerceData.product, bike.wooCommerceData.variations);
+              } else {
+                await syncCompleteProduct(bike.wooCommerceData?.product || product, []);
+              }
+              if (import.meta.env.DEV) {
+                console.log(`🔄 Sincronizado con Neon: ${bike.name}`);
+              }
+            } catch (syncError) {
+              // No bloquear por errores de sync
+              if (import.meta.env.DEV) {
+                console.warn(`⚠️ Error sync Neon para ${bike.name}:`, syncError);
+              }
+            }
+
             if (import.meta.env.DEV) {
               console.log(`✅ Bicicleta adicionada: ${bike.name} (${processedBikes.length} total)`);
             }
