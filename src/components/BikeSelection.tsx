@@ -98,13 +98,17 @@ export const BikeSelection = ({
   React.useEffect(() => {
     const handleAutoSync = async () => {
       if (needsSync && !syncMutation.isPending) {
-        console.log('🔄 Neon conectado pero sin datos, sincronizando...');
+        if (import.meta.env.DEV) {
+          console.log('🔄 Neon conectado pero sin datos, sincronizando...');
+        }
         try {
           await syncMutation.mutateAsync();
           // Refrescar datos de Neon después del sync
           await refetchBikes();
         } catch (error) {
-          console.warn('⚠️ Auto-sync falló, usando fallback WooCommerce');
+          if (import.meta.env.DEV) {
+            console.warn('⚠️ Auto-sync falló, usando fallback WooCommerce');
+          }
         }
       }
     };
@@ -133,7 +137,7 @@ export const BikeSelection = ({
   // Función de refresh inteligente que preserva caché cuando es posible
   const handleRefresh = async () => {
     try {
-      console.log(`🔄 Refrescando datos desde ${dataSource}...`);
+      console.log(`�� Refrescando datos desde ${dataSource}...`);
 
       // Solo invalidar si realmente es necesario
       if (useNeonDatabase) {
