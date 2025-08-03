@@ -11,11 +11,17 @@ class DevelopmentFunctionService {
       
       // Check if we got HTML/JS instead of JSON (indicating function isn't running)
       const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('text/html') || contentType?.includes('text/javascript')) {
+      if (contentType && (contentType.includes('text/html') || contentType.includes('text/javascript'))) {
         console.warn(`⚠️ Function ${functionName} returned HTML/JS instead of JSON - using fallback`);
         return this.getFallbackResponse(functionName);
       }
-      
+
+      // Check for 404 or other error status codes in development
+      if (!response.ok && this.isDevelopment) {
+        console.warn(`⚠️ Function ${functionName} returned ${response.status} ${response.statusText} - using fallback`);
+        return this.getFallbackResponse(functionName);
+      }
+
       return response;
     } catch (error) {
       console.warn(`⚠️ Function ${functionName} failed - using fallback:`, error);
