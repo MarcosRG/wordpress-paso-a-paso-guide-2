@@ -189,6 +189,21 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
             </Card>
           </TabsContent>
 
+          {/* System Diagnostic Tab */}
+          <TabsContent value="system">
+            <Card>
+              <CardHeader>
+                <CardTitle>Diagnóstico Sistema Completo</CardTitle>
+                <CardDescription>
+                  Diagnóstico completo de conectividade e configuração do sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SystemDiagnostic />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Settings Tab */}
           <TabsContent value="settings">
             <Card>
