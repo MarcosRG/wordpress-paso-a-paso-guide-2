@@ -3,9 +3,7 @@
 class DevelopmentFunctionService {
   private isDevelopment = import.meta.env.DEV;
 
-  constructor() {
-    console.log('🔧 DevelopmentFunctionService initialized - isDevelopment:', this.isDevelopment);
-  }
+
 
   async callFunction(functionName: string, options: RequestInit = {}): Promise<Response> {
     const url = `/.netlify/functions/${functionName}`;
