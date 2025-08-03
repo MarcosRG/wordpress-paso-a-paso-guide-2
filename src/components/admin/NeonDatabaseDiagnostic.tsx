@@ -129,42 +129,52 @@ export const NeonDatabaseDiagnostic = () => {
 
   const testNeonQuery = async (): Promise<NeonTestResult> => {
     const startTime = Date.now();
-    
+
     try {
+      if (!config.DATABASE.connectionString) {
+        throw new Error('Database connection string not configured');
+      }
+
       const { neon } = await import('@neondatabase/serverless');
       const sql = neon(config.DATABASE.connectionString);
-      
-      // Test a more complex query
+
+      // Test a more complex query to verify database functionality
       const result = await sql`
-        SELECT 
+        SELECT
           current_database() as database_name,
           current_user as user_name,
-          version() as postgres_version,
-          inet_server_addr() as server_ip,
-          inet_server_port() as server_port
+          version() as postgres_version
       `;
-      
+
       const responseTime = Date.now() - startTime;
-      
-      return {
-        success: true,
-        message: 'Database query test successful',
-        details: {
-          ...result[0],
-          tables_accessible: true
-        },
-        responseTime
-      };
-      
+
+      if (result && result.length > 0) {
+        return {
+          success: true,
+          message: 'Database query test successful',
+          details: {
+            database_name: result[0]?.database_name,
+            user_name: result[0]?.user_name,
+            postgres_version: result[0]?.postgres_version,
+            query_executed: true,
+            response_time_ms: responseTime
+          },
+          responseTime
+        };
+      } else {
+        throw new Error('Query executed but returned no results');
+      }
+
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      
+
       return {
         success: false,
         message: `Query test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         details: {
           error: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
+          responseTime,
+          queryType: 'System information query'
         },
         responseTime
       };
