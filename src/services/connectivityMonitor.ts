@@ -225,6 +225,7 @@ export const recordApiSuccess = () => connectivityMonitor.recordSuccess();
 export const recordApiTimeout = () => connectivityMonitor.recordTimeout();
 export const recordApiNetworkError = (isThirdPartyConflict = false) =>
   connectivityMonitor.recordNetworkError(isThirdPartyConflict);
+export const recordApiAuthError = () => connectivityMonitor.recordAuthError();
 export const getConnectivityStatus = () => connectivityMonitor.getMetrics();
 export const generateConnectivityReport = () =>
   connectivityMonitor.generateStatusReport();
