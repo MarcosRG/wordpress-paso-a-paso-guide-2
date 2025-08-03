@@ -281,12 +281,38 @@ export const BikeSelection = ({
     }
   };
 
+  // Obtener información de progreso si estamos usando carga progresiva
+  const progressInfo = !useNeonDatabase && progressiveFallbackQuery ? {
+    processingCount: progressiveFallbackQuery.processingCount,
+    totalProducts: progressiveFallbackQuery.totalProducts,
+    isProcessing: progressiveFallbackQuery.isProcessing,
+    progressPercentage: progressiveFallbackQuery.progressPercentage
+  } : null;
+
   if (isLoading) {
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
         <div className="text-center mb-6">
-          <p className="text-muted-foreground">Carregando bicicletas...</p>
+          {progressInfo && progressInfo.isProcessing ? (
+            <div className="space-y-3">
+              <p className="text-muted-foreground">
+                Carregando bicicletas desde WooCommerce...
+              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
+                <div
+                  className="bg-red-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progressInfo.progressPercentage}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos processados
+                ({progressInfo.progressPercentage}%)
+              </p>
+            </div>
+          ) : (
+            <p className="text-muted-foreground">Carregando bicicletas...</p>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
