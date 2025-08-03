@@ -307,54 +307,7 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
       </div>
 
-      {/* Barra de progreso mejorada con diseño acorde a la app */}
-      {progressInfo && progressInfo.isProcessing && (
-        <div className="mb-6 p-6 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="flex-shrink-0">
-              <div className="relative">
-                <RefreshCw className="h-8 w-8 animate-spin text-red-600" />
-                <div className="absolute inset-0 rounded-full border-2 border-red-200 opacity-30"></div>
-              </div>
-            </div>
-            <div className="flex-1 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-red-900">
-                  {t("loadingBikes")}
-                </h3>
-                <span className="text-2xl font-bold text-red-600">
-                  {progressInfo.progressPercentage}%
-                </span>
-              </div>
 
-              {/* Barra de progreso principal */}
-              <div className="w-full bg-red-200 rounded-full h-4 shadow-inner">
-                <div
-                  className="bg-gradient-to-r from-red-500 to-red-600 h-4 rounded-full transition-all duration-500 ease-out shadow-sm relative overflow-hidden"
-                  style={{ width: `${progressInfo.progressPercentage}%` }}
-                >
-                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-                </div>
-              </div>
-
-              {/* Información detallada */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-red-700 font-medium">
-                  {progressInfo.processingCount} de {progressInfo.totalProducts} bicicletas cargadas
-                </span>
-                <span className="text-red-600">
-                  Procesando...
-                </span>
-              </div>
-
-              <p className="text-sm text-red-600 bg-red-100/50 px-3 py-2 rounded-lg">
-                🚴‍♂️ Estamos cargando las bicicletas disponibles desde nuestro sistema.
-                Las bicicletas aparecerán automáticamente a medida que se cargan.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       <CategoryFilter
         categories={categories}
