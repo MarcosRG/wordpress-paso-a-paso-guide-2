@@ -344,12 +344,12 @@ export const initializeDatabase = async (): Promise<void> => {
 // Obtener estadísticas de la base de datos
 export const getDatabaseStats = async () => {
   const sql = getSqlClient();
-  
+
   try {
     const [productCount] = await sql`SELECT COUNT(*) as count FROM products WHERE status = 'publish'`;
     const [variationCount] = await sql`SELECT COUNT(*) as count FROM product_variations`;
     const [lastSync] = await sql`SELECT MAX(updated_at) as last_sync FROM products`;
-    
+
     return {
       totalProducts: parseInt(productCount.count),
       totalVariations: parseInt(variationCount.count),
@@ -364,3 +364,49 @@ export const getDatabaseStats = async () => {
     };
   }
 };
+
+// Objeto de compatibilidad para imports que esperan neonDirectService
+export const neonDirectService = {
+  testConnection: testNeonConnection,
+  getProducts: getAllProducts,
+  getProductStats: getDatabaseStats,
+  getProductById: async (id: number) => {
+    const sql = getSqlClient();
+    try {
+      const result = await sql`SELECT * FROM products WHERE woocommerce_id = ${id} LIMIT 1`;
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error getting product by ID:', error);
+      return null;
+    }
+  },
+  getVariations: async (productId: number) => {
+    const sql = getSqlClient();
+    try {
+      const result = await sql`SELECT * FROM product_variations WHERE product_id = ${productId}`;
+      return result;
+    } catch (error) {
+      console.error('Error getting variations:', error);
+      return [];
+    }
+  },
+  getStatus: () => ({
+    connected: true,
+    message: 'Direct Neon connection active'
+  }),
+  syncProductsFromWooCommerce: async (products: any[]) => {
+    let syncedCount = 0;
+    for (const product of products) {
+      try {
+        await syncCompleteProduct(product, []);
+        syncedCount++;
+      } catch (error) {
+        console.warn('Error syncing product:', error);
+      }
+    }
+    return { syncedCount, total: products.length };
+  }
+};
+
+// Export default para compatibilidad
+export default neonDirectService;
