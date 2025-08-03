@@ -140,6 +140,7 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
             <TabsTrigger value="validation">Validación Variables</TabsTrigger>
             <TabsTrigger value="database">Base de Dados Neon</TabsTrigger>
             <TabsTrigger value="diagnostic">Diagnóstico WooCommerce</TabsTrigger>
+            <TabsTrigger value="system">Diagnóstico Sistema</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
 
