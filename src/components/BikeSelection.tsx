@@ -8,7 +8,6 @@ import {
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
 import { useProgressiveWooCommerceBikes } from "@/hooks/useProgressiveWooCommerceBikes";
-import { useNeonFirstBikes } from "@/hooks/useNeonFirstBikes";
 import {
   useNeonDatabaseBikes,
   useNeonDatabaseSync,
@@ -49,21 +48,18 @@ export const BikeSelection = ({
   // Hook para reparación automática del sistema
   useSystemRepair();
 
-  // 🎯 NUEVO: Hook que prioriza Neon y usa WooCommerce progresivo como fallback
-  const neonFirstResult = useNeonFirstBikes();
+  // 🎯 NUEVO: Hook unificado con caché robusto
+  const cachedBikesResult = useCachedBikes();
   const {
     data: bikes,
+    categories,
     isLoading,
     error,
-    dataSource,
-    neonAvailable,
-    progressInfo,
-    refetch: refetchBikes
-  } = neonFirstResult;
-
-  // Obtener categorías desde el hook de caché para compatibilidad
-  const cachedBikesResult = useCachedBikes();
-  const { categories } = cachedBikesResult;
+    isFromCache,
+    cacheAge,
+    refetch: refetchBikes,
+    source: dataSource
+  } = cachedBikesResult;
 
   // Mantener hooks originales para compatibilidad y sync
   const syncMutation = useNeonDatabaseSync();
@@ -75,27 +71,29 @@ export const BikeSelection = ({
 
   const { language, setLanguage, t } = useLanguage();
 
-  // Logging del nuevo sistema Neon-first (solo en desarrollo)
+  // Logging del nuevo sistema de caché (solo en desarrollo)
   React.useEffect(() => {
     if (import.meta.env.DEV && bikes) {
-      const neonStatus = neonAvailable ? '✅' : '❌';
-      console.log(`🚴 ${bikes.length} bicicletas desde ${dataSource} ${neonStatus}`);
+      const cacheIndicator = isFromCache ? `(caché, ${cacheAge}s)` : '(fresh)';
+      console.log(`🚴 ${bikes.length} bicicletas desde ${dataSource} ${cacheIndicator}`);
     }
-  }, [bikes, dataSource, neonAvailable]);
+  }, [bikes, dataSource, isFromCache, cacheAge]);
 
-  // Sync simplificado - solo si Neon no está disponible
+  // Auto-sync simplificado
   React.useEffect(() => {
-    const shouldSync = dataSource === 'woocommerce' && neonAvailable === false && !syncMutation.isPending;
+    const shouldSync = dataSource === 'cache' &&
+                      cacheAge > 300 && // más de 5 minutos
+                      !syncMutation.isPending;
 
     if (shouldSync) {
       if (import.meta.env.DEV) {
-        console.log('🔄 Neon no disponible, manteniendo sync tradicional...');
+        console.log('🔄 Caché antiguo, intentando sync en background...');
       }
       syncMutation.mutateAsync().catch(() => {
-        // Silently fail - WooCommerce is working
+        // Silently fail - cache is still valid
       });
     }
-  }, [dataSource, neonAvailable, syncMutation]);
+  }, [dataSource, cacheAge, syncMutation]);
 
 
 
@@ -243,7 +241,14 @@ export const BikeSelection = ({
     }
   };
 
-  // La información de progreso ya viene del hook neonFirstResult
+  // Obtener información de progreso solo si no hay caché y estamos cargando desde WooCommerce
+  const progressiveFallbackQuery = useProgressiveWooCommerceBikes();
+  const progressInfo = dataSource === 'woocommerce' && !isFromCache && progressiveFallbackQuery ? {
+    processingCount: progressiveFallbackQuery.processingCount,
+    totalProducts: progressiveFallbackQuery.totalProducts,
+    isProcessing: progressiveFallbackQuery.isProcessing,
+    progressPercentage: progressiveFallbackQuery.progressPercentage
+  } : null;
 
   if (isLoading) {
     return (
@@ -251,31 +256,18 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
         <div className="text-center mb-6">
           <p className="text-muted-foreground">
-            {dataSource === 'neon' ? `${t("loadingBikes")} (desde base de datos...)` :
-             dataSource === 'woocommerce' ? `${t("loadingBikes")} (desde WooCommerce...)` :
-             t("loadingBikes")}
+            {isFromCache ? `${t("loadingBikes")} (a actualizar...)` : t("loadingBikes")}
           </p>
-          {neonAvailable === false && (
-            <p className="text-sm text-amber-600 mt-2">
-              Base de datos no disponible, cargando desde WooCommerce...
-            </p>
-          )}
           {progressInfo && progressInfo.isProcessing && (
-            <div className="mt-6 space-y-3 max-w-md mx-auto">
-              <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+            <div className="mt-4 space-y-2">
+              <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
                 <div
-                  className="bg-gradient-to-r from-red-500 to-red-600 h-3 rounded-full transition-all duration-500 relative overflow-hidden"
+                  className="bg-red-600 h-2 rounded-full transition-all duration-500"
                   style={{ width: `${progressInfo.progressPercentage}%` }}
-                >
-                  <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
-                </div>
+                ></div>
               </div>
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>{progressInfo.processingCount} de {progressInfo.totalProducts} produtos</span>
-                <span className="font-semibold text-red-600">{progressInfo.progressPercentage}%</span>
-              </div>
-              <p className="text-xs text-center text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                Las bicicletas aparecerán automáticamente mientras se cargan
+              <p className="text-sm text-muted-foreground">
+                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos
               </p>
             </div>
           )}
@@ -333,49 +325,30 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
       </div>
 
-      {/* Barra de progreso mejorada con diseño acorde a la app */}
+      {/* Mostrar progreso visible e informativo para el cliente */}
       {progressInfo && progressInfo.isProcessing && (
-        <div className="mb-6 p-6 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="flex-shrink-0">
-              <div className="relative">
-                <RefreshCw className="h-8 w-8 animate-spin text-red-600" />
-                <div className="absolute inset-0 rounded-full border-2 border-red-200 opacity-30"></div>
-              </div>
-            </div>
-            <div className="flex-1 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-red-900">
-                  {t("loadingBikes")}
-                </h3>
-                <span className="text-2xl font-bold text-red-600">
-                  {progressInfo.progressPercentage}%
-                </span>
-              </div>
-
-              {/* Barra de progreso principal */}
-              <div className="w-full bg-red-200 rounded-full h-4 shadow-inner">
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-3">
+            <RefreshCw className="h-5 w-5 animate-spin text-blue-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900 mb-2">
+                {t("loadingBikes")} - Carregando do sistema...
+              </p>
+              <div className="w-full bg-blue-200 rounded-full h-3">
                 <div
-                  className="bg-gradient-to-r from-red-500 to-red-600 h-4 rounded-full transition-all duration-500 ease-out shadow-sm relative overflow-hidden"
+                  className="bg-blue-600 h-3 rounded-full transition-all duration-300 flex items-center justify-center"
                   style={{ width: `${progressInfo.progressPercentage}%` }}
                 >
-                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                  <span className="text-white text-xs font-medium">
+                    {progressInfo.progressPercentage}%
+                  </span>
                 </div>
               </div>
-
-              {/* Información detallada */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-red-700 font-medium">
-                  {progressInfo.processingCount} de {progressInfo.totalProducts} bicicletas cargadas
-                </span>
-                <span className="text-red-600">
-                  Procesando...
-                </span>
-              </div>
-
-              <p className="text-sm text-red-600 bg-red-100/50 px-3 py-2 rounded-lg">
-                🚴‍♂️ Estamos cargando las bicicletas disponibles desde nuestro sistema.
-                Las bicicletas aparecerán automáticamente a medida que se cargan.
+              <p className="text-xs text-blue-700 mt-2">
+                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos processados
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                Por favor aguarde enquanto carregamos as bicicletas disponíveis...
               </p>
             </div>
           </div>

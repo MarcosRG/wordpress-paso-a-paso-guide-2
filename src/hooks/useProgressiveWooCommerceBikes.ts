@@ -4,7 +4,6 @@ import { cleanFetch } from "@/utils/cleanFetch";
 import { recordApiSuccess, recordApiNetworkError, recordApiAuthError } from "@/services/connectivityMonitor";
 import { fallbackBikes } from "@/data/fallbackBikes";
 import { useState, useCallback, useRef } from "react";
-import { syncCompleteProduct } from "@/services/neonDirectService";
 
 // Hook que carga bicicletas de WooCommerce progresivamente (una por una)
 export const useProgressiveWooCommerceBikes = () => {
@@ -215,26 +214,6 @@ export const useProgressiveWooCommerceBikes = () => {
             processedBikes.push(bike);
             // Actualizar el estado inmediatamente para mostrar la bicicleta
             setLoadedBikes(current => [...current, bike]);
-
-            // Sincronizar con Neon en background (no bloquear UI)
-            Promise.resolve().then(async () => {
-              try {
-                if (bike.wooCommerceData?.variations && bike.wooCommerceData.variations.length > 0) {
-                  await syncCompleteProduct(bike.wooCommerceData.product, bike.wooCommerceData.variations);
-                } else {
-                  await syncCompleteProduct(bike.wooCommerceData?.product || product, []);
-                }
-                if (import.meta.env.DEV) {
-                  console.log(`🔄 ✅ Sincronizado con Neon: ${bike.name}`);
-                }
-              } catch (syncError) {
-                // No bloquear por errores de sync - continuar
-                if (import.meta.env.DEV) {
-                  console.warn(`⚠️ Error sync Neon para ${bike.name}:`, syncError);
-                }
-              }
-            });
-
             if (import.meta.env.DEV) {
               console.log(`✅ Bicicleta adicionada: ${bike.name} (${processedBikes.length} total)`);
             }
