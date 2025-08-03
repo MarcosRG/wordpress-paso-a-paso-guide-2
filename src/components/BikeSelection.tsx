@@ -48,18 +48,21 @@ export const BikeSelection = ({
   // Hook para reparación automática del sistema
   useSystemRepair();
 
-  // 🎯 NUEVO: Hook unificado con caché robusto
-  const cachedBikesResult = useCachedBikes();
+  // 🎯 NUEVO: Hook que prioriza Neon y usa WooCommerce progresivo como fallback
+  const neonFirstResult = useNeonFirstBikes();
   const {
     data: bikes,
-    categories,
     isLoading,
     error,
-    isFromCache,
-    cacheAge,
-    refetch: refetchBikes,
-    source: dataSource
-  } = cachedBikesResult;
+    dataSource,
+    neonAvailable,
+    progressInfo,
+    refetch: refetchBikes
+  } = neonFirstResult;
+
+  // Obtener categorías desde el hook de caché para compatibilidad
+  const cachedBikesResult = useCachedBikes();
+  const { categories } = cachedBikesResult;
 
   // Mantener hooks originales para compatibilidad y sync
   const syncMutation = useNeonDatabaseSync();
