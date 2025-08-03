@@ -192,7 +192,34 @@ export const useProgressiveWooCommerceBikes = () => {
           }
         }
 
-        const products = await response.json();
+        // Robust JSON parsing with better error handling
+        let products;
+        try {
+          const responseText = await response.text();
+          console.log(`📄 Response length: ${responseText.length} chars`);
+
+          // Check for common JSON corruption issues
+          if (responseText.includes('\uFEFF')) {
+            console.warn('⚠️ BOM detected in response, cleaning...');
+            const cleanedText = responseText.replace(/^\uFEFF/, '');
+            products = JSON.parse(cleanedText);
+          } else {
+            products = JSON.parse(responseText);
+          }
+        } catch (jsonError) {
+          console.error('❌ JSON Parse Error:', jsonError);
+
+          // Try to get raw response for debugging
+          try {
+            const rawText = await response.clone().text();
+            console.error('📄 Raw response preview:', rawText.substring(0, 1000));
+            console.error('📄 Characters around error position:', rawText.substring(740, 760));
+          } catch (debugError) {
+            console.error('❌ Could not debug response:', debugError);
+          }
+
+          throw new Error(`Invalid JSON response from WooCommerce API: ${jsonError.message}`);
+        }
         recordApiSuccess();
         console.log(`📦 ${products.length} produtos obtidos do WooCommerce`);
         
