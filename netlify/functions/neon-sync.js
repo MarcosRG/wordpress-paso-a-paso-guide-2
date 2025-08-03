@@ -65,23 +65,23 @@ exports.handler = async (event, context) => {
 
     for (const product of products) {
       try {
-        // Preparar dados com validação rigorosa
+        // Preparar dados
         const productData = {
-          woocommerce_id: parseInt(product.id) || 0,
-          name: String(product.name || '').substring(0, 500),
-          type: String(product.type || 'simple'),
-          status: String(product.status || 'publish'),
+          woocommerce_id: product.id,
+          name: (product.name || '').substring(0, 500), // Limitar tamanho
+          type: product.type || 'simple',
+          status: product.status || 'publish',
           price: parseFloat(product.price) || parseFloat(product.regular_price) || 0,
           regular_price: parseFloat(product.regular_price) || 0,
-          stock_quantity: parseInt(product.stock_quantity) || 0,
-          stock_status: String(product.stock_status || 'instock'),
-          categories: JSON.stringify(Array.isArray(product.categories) ? product.categories : []),
-          images: JSON.stringify(Array.isArray(product.images) ? product.images : []),
-          short_description: String(product.short_description || '').substring(0, 1000),
-          description: String(product.description || '').substring(0, 5000),
-          variations_ids: JSON.stringify(Array.isArray(product.variations) ? product.variations.map(v => v.id) : []),
-          acf_data: JSON.stringify(product.acf && typeof product.acf === 'object' ? product.acf : {}),
-          meta_data: JSON.stringify(Array.isArray(product.meta_data) ? product.meta_data : [])
+          stock_quantity: product.stock_quantity || 0,
+          stock_status: product.stock_status || 'instock',
+          categories: JSON.stringify(product.categories || []),
+          images: JSON.stringify(product.images || []),
+          short_description: (product.short_description || '').substring(0, 1000),
+          description: (product.description || '').substring(0, 5000),
+          variations_ids: JSON.stringify(product.variations?.map(v => v.id) || []),
+          acf_data: JSON.stringify(product.acf || {}),
+          meta_data: JSON.stringify(product.meta_data || [])
         };
 
         // Inserir ou atualizar
@@ -118,15 +118,25 @@ exports.handler = async (event, context) => {
         `;
 
         if (result.length > 0) {
-          // Simplificar - considerar como inserção se houve resultado
-          // O RETURNING sempre retorna dados, seja inserção ou atualização
-          insertedCount++;
+          // Verificar se foi inserção ou atualização baseado no timestamp
+          const checkResult = await sql`
+            SELECT created_at, updated_at 
+            FROM products 
+            WHERE woocommerce_id = ${productData.woocommerce_id}
+          `;
+          
+          if (checkResult.length > 0) {
+            const row = checkResult[0];
+            if (new Date(row.created_at).getTime() === new Date(row.updated_at).getTime()) {
+              insertedCount++;
+            } else {
+              updatedCount++;
+            }
+          }
         }
 
       } catch (productError) {
-        console.error(`Erro processando produto ${product.id}:`, productError.message);
-        // Continuar com o próximo produto em caso de erro
-        continue;
+        console.error(`Erro processando produto ${product.id}:`, productError);
       }
     }
 
