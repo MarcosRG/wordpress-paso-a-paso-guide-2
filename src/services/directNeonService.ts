@@ -168,9 +168,7 @@ class DirectNeonService {
 
       return result.stats?.total_in_database || 0;
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('❌ Erro na sincronização:', error);
-      }
+      console.error('❌ Erro na sincronização:', error);
       throw error;
     }
   }

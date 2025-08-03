@@ -113,7 +113,7 @@ class NeonDatabaseService {
 
       // Verificar se a resposta tem o formato esperado
       if (data.connected && Array.isArray(data.products)) {
-        console.log(`���� ${data.products.length} produtos carregados do Neon`);
+        console.log(`��� ${data.products.length} produtos carregados do Neon`);
         // Cache successful responses for 2 minutes
         bikeCache.set(CACHE_KEYS.NEON_PRODUCTS, data.products, 2 * 60 * 1000);
         return data.products;
@@ -244,9 +244,7 @@ class NeonDatabaseService {
       return processedProducts.length;
 
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('❌ Erro na sincronização:', error);
-      }
+      console.error('❌ Erro na sincronização:', error);
       throw error;
     }
   }
@@ -350,9 +348,7 @@ class NeonDatabaseService {
       return syncedCount;
 
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('❌ Erro na sincronização direta:', error);
-      }
+      console.error('❌ Erro na sincronização direta:', error);
       throw error;
     }
   }

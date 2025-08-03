@@ -56,17 +56,11 @@ export const useNeonFirstBikes = () => {
   });
 
   // Cuando Neon falla, usar datos de WooCommerce progresivo
-  const finalData = query.isError && dataSource === 'woocommerce'
-    ? woocommerceHook.data
+  const finalData = query.isError && dataSource === 'woocommerce' 
+    ? woocommerceHook.data 
     : query.data;
 
-  // Mostrar loading solo si no hay datos parciales disponibles
-  const finalLoading = query.isLoading || (
-    query.isError &&
-    dataSource === 'woocommerce' &&
-    woocommerceHook.isLoading &&
-    (!woocommerceHook.data || woocommerceHook.data.length === 0)
-  );
+  const finalLoading = query.isLoading || (query.isError && dataSource === 'woocommerce' && woocommerceHook.isLoading);
   
   const finalError = query.isError && woocommerceHook.isError ? woocommerceHook.error : null;
 
