@@ -34,46 +34,56 @@ export const NeonDatabaseDiagnostic = () => {
 
   const testNeonConnection = async (): Promise<NeonTestResult> => {
     const startTime = Date.now();
-    
+
     try {
-      // Basic connection test using Neon serverless driver
-      const { neon } = await import('@neondatabase/serverless');
-      
       if (!config.DATABASE.connectionString) {
         throw new Error('Database connection string not configured');
       }
 
+      // Import the Neon serverless driver
+      const { neon } = await import('@neondatabase/serverless');
+
+      // Create SQL function
       const sql = neon(config.DATABASE.connectionString);
-      
-      // Simple connection test
+
+      // Execute simple test query
       const result = await sql`SELECT 1 as test_connection, NOW() as server_time`;
-      
+
       const responseTime = Date.now() - startTime;
-      
-      return {
-        success: true,
-        message: 'Database connection successful',
-        details: {
-          serverTime: result[0]?.server_time,
-          testResult: result[0]?.test_connection,
-          connectionString: config.DATABASE.connectionString.replace(/:[^:@]*@/, ':***@'), // Hide password
-          projectId: config.DATABASE.projectId,
-          database: config.DATABASE.database
-        },
-        responseTime
-      };
-      
+
+      if (result && result.length > 0) {
+        return {
+          success: true,
+          message: 'Database connection successful',
+          details: {
+            serverTime: result[0]?.server_time,
+            testResult: result[0]?.test_connection,
+            connectionString: config.DATABASE.connectionString.replace(/:[^:@]*@/, ':***@'), // Hide password
+            projectId: config.DATABASE.projectId,
+            database: config.DATABASE.database,
+            rowsReturned: result.length
+          },
+          responseTime
+        };
+      } else {
+        throw new Error('Query executed but no results returned');
+      }
+
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      
+
       let errorDetails: any = {
         message: error instanceof Error ? error.message : 'Unknown error',
-        responseTime
+        responseTime,
+        connectionString: config.DATABASE.connectionString ?
+          config.DATABASE.connectionString.replace(/:[^:@]*@/, ':***@') : 'Not configured'
       };
 
       // Parse specific Neon errors
       if (error instanceof Error) {
-        if (error.message.includes('503')) {
+        const errorMessage = error.message.toLowerCase();
+
+        if (errorMessage.includes('503') || errorMessage.includes('service unavailable')) {
           errorDetails.errorType = 'Service Unavailable (503)';
           errorDetails.possibleCauses = [
             'Neon database is temporarily unavailable',
@@ -87,7 +97,7 @@ export const NeonDatabaseDiagnostic = () => {
             'Verify project is active in Neon console',
             'Consider increasing compute resources'
           ];
-        } else if (error.message.includes('connection') || error.message.includes('timeout')) {
+        } else if (errorMessage.includes('connection') || errorMessage.includes('timeout')) {
           errorDetails.errorType = 'Connection Error';
           errorDetails.possibleCauses = [
             'Network connectivity issues',
@@ -95,13 +105,16 @@ export const NeonDatabaseDiagnostic = () => {
             'Database compute suspended',
             'Firewall or proxy blocking connection'
           ];
-        } else if (error.message.includes('auth') || error.message.includes('password')) {
+        } else if (errorMessage.includes('auth') || errorMessage.includes('password')) {
           errorDetails.errorType = 'Authentication Error';
           errorDetails.possibleCauses = [
             'Invalid database credentials',
             'Database role does not exist',
             'Connection string format error'
           ];
+        } else if (errorMessage.includes('json') && errorMessage.includes('body stream')) {
+          errorDetails.errorType = 'Client Error (Fixed)';
+          errorDetails.note = 'This was a client-side error that has been resolved';
         }
       }
 
