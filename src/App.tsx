@@ -93,6 +93,10 @@ const App = () => {
     (window as any).getNeonStats = () => neonDirectService.getProductStats();
     (window as any).getNeonProducts = () => neonDirectService.getProducts();
 
+    // 🔧 FUNCIONES DE DIAGNÓSTICO
+    (window as any).configDiagnostic = printConfigDiagnostic;
+    (window as any).testWooConnectivity = testWooCommerceConnectivity;
+
     debugLog('info', '🧪 Debug functions available:');
     console.log('   - testWooAPI() - Test WooCommerce API connectivity');
     console.log('   - runSystemDiagnostic() - Complete system diagnostic');
@@ -111,7 +115,7 @@ const App = () => {
     if (import.meta.env.DEV) {
       setTimeout(() => {
         systemDebugger.analyzeSystemStatus().then(status => {
-          debugLog('info', '�� Análise inicial do sistema completa', status);
+          debugLog('info', '📊 Análise inicial do sistema completa', status);
         });
       }, 3000); // Delay para permitir inicialização completa
     }
