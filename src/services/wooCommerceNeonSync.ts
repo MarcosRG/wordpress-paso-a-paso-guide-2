@@ -1,4 +1,3 @@
-Neon">
 import { neonDirectService } from './neonDirectService';
 import { cleanFetch } from '@/utils/cleanFetch';
 
