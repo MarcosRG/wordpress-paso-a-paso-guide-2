@@ -48,48 +48,24 @@ export const BikeSelection = ({
   // Hook para reparación automática del sistema
   useSystemRepair();
 
-
-
-  // Fallbacks anteriores (mantenidos por compatibilidad)
-  const neonQuery = useNeonDatabaseBikes();
-  const neonCategoriesQuery = useNeonDatabaseCategories();
-  const neonStatus = useNeonDatabaseStatus();
-  const fallbackQuery = useWooCommerceBikes();
-  const progressiveFallbackQuery = useProgressiveWooCommerceBikes();
-  const fallbackCategoriesQuery = useWooCommerceCategories();
-
-  // 🎯 PRIORIDAD: Neon Database primero, WooCommerce solo como fallback
-  const neonIsReady = neonStatus.data?.connected === true &&
-                      !neonQuery.error &&
-                      !neonQuery.isLoading;
-
-  // Si Neon está disponible y tiene datos, úsalo
-  const useNeonDatabase = neonIsReady && neonQuery.data && neonQuery.data.length > 0;
-
-  // Si Neon no tiene datos pero está conectado, intentar sync automático
-  const needsSync = neonIsReady && (!neonQuery.data || neonQuery.data.length === 0);
-
-  // Seleccionar la fuente de datos
-  let dataSource = 'Neon Database';
-  let bikesQuery = neonQuery;
-
-  if (!useNeonDatabase && !needsSync) {
-    dataSource = 'WooCommerce Fallback';
-    bikesQuery = progressiveFallbackQuery;
-  }
-
+  // 🎯 NUEVO: Hook unificado con caché robusto
+  const cachedBikesResult = useCachedBikes();
   const {
     data: bikes,
+    categories,
     isLoading,
     error,
+    isFromCache,
+    cacheAge,
     refetch: refetchBikes,
-  } = bikesQuery;
+    source: dataSource
+  } = cachedBikesResult;
 
-  const { data: categories = [], refetch: refetchCategories } =
-    useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
-
-  // Hook para sincronização WooCommerce → Neon (original)
+  // Mantener hooks originales para compatibilidad y sync
   const syncMutation = useNeonDatabaseSync();
+
+  // Función unificada de refetch
+  const refetchCategories = refetchBikes;
 
 
 
