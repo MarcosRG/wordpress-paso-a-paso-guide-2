@@ -65,23 +65,23 @@ exports.handler = async (event, context) => {
 
     for (const product of products) {
       try {
-        // Preparar dados
+        // Preparar dados com validação rigorosa
         const productData = {
-          woocommerce_id: product.id,
-          name: (product.name || '').substring(0, 500), // Limitar tamanho
-          type: product.type || 'simple',
-          status: product.status || 'publish',
+          woocommerce_id: parseInt(product.id) || 0,
+          name: String(product.name || '').substring(0, 500),
+          type: String(product.type || 'simple'),
+          status: String(product.status || 'publish'),
           price: parseFloat(product.price) || parseFloat(product.regular_price) || 0,
           regular_price: parseFloat(product.regular_price) || 0,
-          stock_quantity: product.stock_quantity || 0,
-          stock_status: product.stock_status || 'instock',
-          categories: JSON.stringify(product.categories || []),
-          images: JSON.stringify(product.images || []),
-          short_description: (product.short_description || '').substring(0, 1000),
-          description: (product.description || '').substring(0, 5000),
-          variations_ids: JSON.stringify(product.variations?.map(v => v.id) || []),
-          acf_data: JSON.stringify(product.acf || {}),
-          meta_data: JSON.stringify(product.meta_data || [])
+          stock_quantity: parseInt(product.stock_quantity) || 0,
+          stock_status: String(product.stock_status || 'instock'),
+          categories: JSON.stringify(Array.isArray(product.categories) ? product.categories : []),
+          images: JSON.stringify(Array.isArray(product.images) ? product.images : []),
+          short_description: String(product.short_description || '').substring(0, 1000),
+          description: String(product.description || '').substring(0, 5000),
+          variations_ids: JSON.stringify(Array.isArray(product.variations) ? product.variations.map(v => v.id) : []),
+          acf_data: JSON.stringify(product.acf && typeof product.acf === 'object' ? product.acf : {}),
+          meta_data: JSON.stringify(Array.isArray(product.meta_data) ? product.meta_data : [])
         };
 
         // Inserir ou atualizar
