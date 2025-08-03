@@ -1,4 +1,4 @@
-Neon (corregido)">
+Neon">
 import { neonDirectService } from './neonDirectService';
 import { cleanFetch } from '@/utils/cleanFetch';
 
@@ -124,56 +124,6 @@ export class WooCommerceNeonSync {
     }
 
     return products;
-  }
-
-  async getWooCommerceProductById(productId: number): Promise<any> {
-    const apiBase = import.meta.env.VITE_WOOCOMMERCE_API_BASE;
-    const consumerKey = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY;
-    const consumerSecret = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET;
-
-    if (!apiBase || !consumerKey || !consumerSecret) {
-      throw new Error('Configuración de WooCommerce incompleta');
-    }
-
-    const credentials = btoa(`${consumerKey}:${consumerSecret}`);
-    const apiUrl = `${apiBase}/products/${productId}`;
-
-    const response = await cleanFetch(apiUrl, {
-      headers: {
-        'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      mode: 'cors',
-      cache: 'no-cache'
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error fetching product ${productId}: ${response.status} ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async syncSingleProduct(productId: number): Promise<{ success: boolean; message: string }> {
-    try {
-      console.log(`🔄 Sincronizando producto ${productId}...`);
-
-      const product = await this.getWooCommerceProductById(productId);
-      const result = await neonDirectService.insertProduct(product);
-
-      return result;
-    } catch (error) {
-      console.error(`❌ Error sincronizando producto ${productId}:`, error);
-      return {
-        success: false,
-        message: error instanceof Error ? error.message : 'Error desconocido'
-      };
-    }
-  }
-
-  async getNeonProductStats() {
-    return await neonDirectService.getProductStats();
   }
 
   async testConnections(): Promise<{
