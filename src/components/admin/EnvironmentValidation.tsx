@@ -237,6 +237,9 @@ export const EnvironmentValidation = () => {
 
   return (
     <div className="space-y-6">
+      {/* Security Alert */}
+      <SecurityAlert />
+
       {/* Overview */}
       <Card>
         <CardHeader>
