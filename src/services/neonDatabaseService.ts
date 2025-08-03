@@ -72,6 +72,7 @@ class NeonDatabaseService {
       }
 
       // Use development function service in development mode
+      console.log('🔍 CALLING developmentFunctionService.callFunction for neon-products');
       const response = await developmentFunctionService.callFunction('neon-products', {
         method: 'GET',
         headers: {
