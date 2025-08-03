@@ -4,20 +4,27 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
 import {
+  useNeonMCPBikes,
+  useNeonMCPCategories,
+  useWooCommerceToNeonSync,
+} from "@/hooks/useNeonMCP";
+import {
   useWooCommerceBikes,
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
 import { useProgressiveWooCommerceBikes } from "@/hooks/useProgressiveWooCommerceBikes";
+import QuickWooCommerceDiagnostic from "./QuickWooCommerceDiagnostic";
 import {
   useNeonDatabaseBikes,
   useNeonDatabaseSync,
   useNeonDatabaseCategories,
   useNeonDatabaseStatus,
 } from "@/hooks/useNeonDatabase";
-import { useCachedBikes } from "@/hooks/useCachedBikes";
 import { CategoryFilter } from "./CategoryFilter";
+import { MCPConnectionStatus } from "./MCPConnectionStatus";
 
 import { useLanguage } from "@/contexts/LanguageContext";
+import { isMCPAvailable } from "@/utils/mcpClient";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
 import SimpleBikeCard from "./SimpleBikeCard";
@@ -48,74 +55,108 @@ export const BikeSelection = ({
   // Hook para reparación automática del sistema
   useSystemRepair();
 
-  // 🎯 NUEVO: Hook unificado con caché robusto
-  const cachedBikesResult = useCachedBikes();
+
+
+  // Fallbacks anteriores (mantenidos por compatibilidad)
+  const neonQuery = useNeonDatabaseBikes();
+  const neonCategoriesQuery = useNeonDatabaseCategories();
+  const neonStatus = useNeonDatabaseStatus();
+  const fallbackQuery = useWooCommerceBikes();
+  const progressiveFallbackQuery = useProgressiveWooCommerceBikes();
+  const fallbackCategoriesQuery = useWooCommerceCategories();
+
+  // 🎯 NUEVA LÓGICA: Solo Neon Database y WooCommerce fallback progresivo
+  const useNeonDatabase = neonStatus.data?.connected === true && !neonQuery.error;
+
+  // Seleccionar la fuente de datos automáticamente
+  let dataSource = 'Neon Database 🗄️';
+  let bikesQuery = neonQuery;
+
+  if (!useNeonDatabase) {
+    dataSource = 'WooCommerce Progressive Fallback 🚴‍♂️';
+    bikesQuery = progressiveFallbackQuery;
+  }
+
   const {
     data: bikes,
-    categories,
     isLoading,
     error,
-    isFromCache,
-    cacheAge,
     refetch: refetchBikes,
-    source: dataSource
-  } = cachedBikesResult;
+  } = bikesQuery;
 
-  // Mantener hooks originales para compatibilidad y sync
+  const { data: categories = [], refetch: refetchCategories } =
+    useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
+
+  // Hook para sincronização WooCommerce → Neon (original)
   const syncMutation = useNeonDatabaseSync();
-
-  // Función unificada de refetch
-  const refetchCategories = refetchBikes;
 
 
 
   const { language, setLanguage, t } = useLanguage();
 
-  // Logging del nuevo sistema de caché (solo en desarrollo)
+  // Auto-sync si Neon está vacía
   React.useEffect(() => {
-    if (import.meta.env.DEV && bikes) {
-      const cacheIndicator = isFromCache ? `(caché, ${cacheAge}s)` : '(fresh)';
-      console.log(`🚴 ${bikes.length} bicicletas desde ${dataSource} ${cacheIndicator}`);
-    }
-  }, [bikes, dataSource, isFromCache, cacheAge]);
-
-  // Auto-sync simplificado
-  React.useEffect(() => {
-    const shouldSync = dataSource === 'cache' &&
-                      cacheAge > 300 && // más de 5 minutos
-                      !syncMutation.isPending;
-
-    if (shouldSync) {
-      if (import.meta.env.DEV) {
-        console.log('🔄 Caché antiguo, intentando sync en background...');
+    const handleAutoSync = async () => {
+      if (useNeonDatabase && bikes && bikes.length === 0 && !isLoading && !syncMutation.isPending) {
+        console.log('🔄 Neon Database vacía, iniciando sincronización automática...');
+        try {
+          await syncMutation.mutateAsync();
+        } catch (error) {
+          console.warn('⚠️ Auto-sync falló, usando fallback WooCommerce');
+        }
       }
-      syncMutation.mutateAsync().catch(() => {
-        // Silently fail - cache is still valid
-      });
+    };
+
+    handleAutoSync();
+  }, [useNeonDatabase, bikes, isLoading, syncMutation]);
+
+  // Logging optimizado y detección de errores
+  React.useEffect(() => {
+    if (bikes) {
+      console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${dataSource}`);
     }
-  }, [dataSource, cacheAge, syncMutation]);
+
+    // Log any errors that might be related to FullStory
+    if (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : '';
+
+      console.warn(`❌ Error desde ${dataSource}:`, errorMessage);
+
+      if (errorStack && errorStack.includes('fullstory')) {
+        console.warn('🚨 FullStory interference detected in BikeSelection error:', errorMessage);
+      }
+    }
+  }, [bikes, dataSource, error]);
 
 
 
 
 
-  // Función de refresh simplificada con nuevo sistema de caché
+  // Función de refresh para todas las fuentes de datos
   const handleRefresh = async () => {
     try {
-      if (import.meta.env.DEV) {
-        console.log(`🔄 Refrescando datos (${dataSource})...`);
+      console.log(`🔄 Refrescando datos desde ${dataSource}...`);
+
+      // Invalidar otros caches como fallback
+      if (useNeonDatabase) {
+        queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
+        queryClient.invalidateQueries({ queryKey: ["neon-database-categories"] });
+        queryClient.invalidateQueries({ queryKey: ["neon-database-status"] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
+        queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
       }
 
-      // El nuevo hook maneja toda la lógica de invalidación
-      await refetchBikes();
+      // Refetch datos principales
+      await Promise.all([
+        refetchBikes(),
+        refetchCategories()
+      ]);
 
-      if (import.meta.env.DEV) {
-        console.log("✅ Refresh completado");
-      }
+      console.log("✅ Refresh completado");
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error("❌ Error en refresh:", error);
-      }
+      console.error("❌ Error en refresh:", error);
     }
   };
 
@@ -241,9 +282,8 @@ export const BikeSelection = ({
     }
   };
 
-  // Obtener información de progreso solo si no hay caché y estamos cargando desde WooCommerce
-  const progressiveFallbackQuery = useProgressiveWooCommerceBikes();
-  const progressInfo = dataSource === 'woocommerce' && !isFromCache && progressiveFallbackQuery ? {
+  // Obtener información de progreso si estamos usando carga progresiva
+  const progressInfo = !useNeonDatabase && progressiveFallbackQuery ? {
     processingCount: progressiveFallbackQuery.processingCount,
     totalProducts: progressiveFallbackQuery.totalProducts,
     isProcessing: progressiveFallbackQuery.isProcessing,
@@ -255,21 +295,24 @@ export const BikeSelection = ({
       <div>
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
         <div className="text-center mb-6">
-          <p className="text-muted-foreground">
-            {isFromCache ? `${t("loadingBikes")} (a actualizar...)` : t("loadingBikes")}
-          </p>
-          {progressInfo && progressInfo.isProcessing && (
-            <div className="mt-4 space-y-2">
+          {progressInfo && progressInfo.isProcessing ? (
+            <div className="space-y-3">
+              <p className="text-muted-foreground">
+                Carregando bicicletas desde WooCommerce...
+              </p>
               <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
                 <div
-                  className="bg-red-600 h-2 rounded-full transition-all duration-500"
+                  className="bg-red-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progressInfo.progressPercentage}%` }}
                 ></div>
               </div>
               <p className="text-sm text-muted-foreground">
-                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos
+                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos processados
+                ({progressInfo.progressPercentage}%)
               </p>
             </div>
+          ) : (
+            <p className="text-muted-foreground">Carregando bicicletas...</p>
           )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -288,18 +331,30 @@ export const BikeSelection = ({
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-        <h2 className="text-xl font-semibold mb-2">
-          {t("loadingBikes")}
-        </h2>
-        <p className="text-gray-600 mb-4">
-          {t("tryAgain")}
-        </p>
-        <Button onClick={handleRefresh} variant="outline">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          {t("tryAgain")}
-        </Button>
+      <div className="space-y-6">
+        {/* Show MCP connection status if not available */}
+        {!isMCPAvailable() && <MCPConnectionStatus />}
+
+        <div className="text-center py-8">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">
+            Error al cargar las bicicletas
+          </h2>
+          {!isMCPAvailable() && (
+            <p className="text-gray-600 mb-4">
+              Este erro pode estar relacionado com a conexão MCP Neon em falta.
+            </p>
+          )}
+          <div className="flex gap-2 justify-center">
+            <Button onClick={handleRefresh} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              {t("tryAgain")}
+            </Button>
+            {!useNeonDatabase && (
+              <QuickWooCommerceDiagnostic hasWooCommerceError={true} />
+            )}
+          </div>
+        </div>
       </div>
     );
   }
@@ -311,10 +366,15 @@ export const BikeSelection = ({
         <h2 className="text-xl font-semibold mb-2">
           {t("loadingBikes")}
         </h2>
-        <Button onClick={handleRefresh} variant="outline" className="mt-4">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          {t("tryAgain")}
-        </Button>
+        <div className="flex gap-2 justify-center mt-4">
+          <Button onClick={handleRefresh} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {t("tryAgain")}
+          </Button>
+          {!useNeonDatabase && (
+            <QuickWooCommerceDiagnostic hasWooCommerceError={false} showWhenError={false} />
+          )}
+        </div>
       </div>
     );
   }
@@ -325,30 +385,23 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
       </div>
 
-      {/* Mostrar progreso visible e informativo para el cliente */}
+      {/* Mostrar progreso si estamos en carga progresiva */}
       {progressInfo && progressInfo.isProcessing && (
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
           <div className="flex items-center gap-3">
-            <RefreshCw className="h-5 w-5 animate-spin text-blue-600" />
+            <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-blue-900 mb-2">
-                {t("loadingBikes")} - Carregando do sistema...
+              <p className="text-sm font-medium text-blue-900">
+                Carregando bicicletas desde WooCommerce
               </p>
-              <div className="w-full bg-blue-200 rounded-full h-3">
+              <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
                 <div
-                  className="bg-blue-600 h-3 rounded-full transition-all duration-300 flex items-center justify-center"
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progressInfo.progressPercentage}%` }}
-                >
-                  <span className="text-white text-xs font-medium">
-                    {progressInfo.progressPercentage}%
-                  </span>
-                </div>
+                ></div>
               </div>
-              <p className="text-xs text-blue-700 mt-2">
+              <p className="text-xs text-blue-700 mt-1">
                 {progressInfo.processingCount} de {progressInfo.totalProducts} produtos processados
-              </p>
-              <p className="text-xs text-blue-600 mt-1">
-                Por favor aguarde enquanto carregamos as bicicletas disponíveis...
               </p>
             </div>
           </div>
