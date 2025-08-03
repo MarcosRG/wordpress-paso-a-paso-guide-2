@@ -25,13 +25,23 @@ class DevelopmentFunctionService {
 
   private getFallbackResponse(functionName: string): Response {
     let data: any = {};
-    
+
     switch (functionName) {
       case 'neon-products':
         data = [];
+        console.log('📊 Development mode: Returning empty products array');
         break;
       case 'neon-categories':
         data = [];
+        console.log('📊 Development mode: Returning empty categories array');
+        break;
+      case 'neon-sync':
+        data = {
+          success: true,
+          message: 'Sync completed in development mode',
+          products_synced: 0
+        };
+        console.log('📊 Development mode: Sync operation simulated');
         break;
       case 'neon-diagnostic':
         data = {
@@ -42,6 +52,7 @@ class DevelopmentFunctionService {
         break;
       default:
         data = { error: 'Function not available in development mode' };
+        console.log(`📊 Development mode: Function ${functionName} not implemented`);
     }
 
     return new Response(JSON.stringify(data), {
