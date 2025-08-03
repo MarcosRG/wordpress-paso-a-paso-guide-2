@@ -368,24 +368,21 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
       </div>
 
-      {/* Mostrar progreso si estamos en carga progresiva */}
+      {/* Mostrar progreso discreto si estamos en carga progresiva */}
       {progressInfo && progressInfo.isProcessing && (
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg border-l-4 border-red-600">
           <div className="flex items-center gap-3">
-            <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
+            <RefreshCw className="h-4 w-4 animate-spin text-red-600" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-blue-900">
-                Carregando bicicletas desde WooCommerce
+              <p className="text-sm font-medium text-gray-900">
+                {t("loadingBikes")}
               </p>
-              <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
+              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-red-600 h-1.5 rounded-full transition-all duration-500"
                   style={{ width: `${progressInfo.progressPercentage}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-blue-700 mt-1">
-                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos processados
-              </p>
             </div>
           </div>
         </div>
