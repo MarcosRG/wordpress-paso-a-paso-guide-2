@@ -340,19 +340,7 @@ export const BikeSelection = ({
           );
         })}
 
-        {/* Mostrar skeletons para productos que aún se están procesando */}
-        {progressInfo && progressInfo.isProcessing && progressInfo.processingCount < progressInfo.totalProducts && (
-          <>
-            {Array.from({ length: Math.min(3, progressInfo.totalProducts - progressInfo.processingCount) }).map((_, i) => (
-              <Card key={`skeleton-${i}`} className="opacity-50">
-                <CardContent className="p-4">
-                  <Skeleton className="h-32 w-full mb-4" />
-                  <Skeleton className="h-20 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </>
-        )}
+
       </div>
 
       {/* Resumen de selección */}
