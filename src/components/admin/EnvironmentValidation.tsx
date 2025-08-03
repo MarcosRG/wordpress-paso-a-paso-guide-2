@@ -17,6 +17,7 @@ import {
   Shield
 } from 'lucide-react';
 import config from '@/config/unified';
+import SecurityAlert from './SecurityAlert';
 
 interface EnvVariable {
   name: string;
