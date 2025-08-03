@@ -304,6 +304,54 @@ class NeonDatabaseService {
       };
     }
   }
+
+  // Direct sync from WooCommerce for development mode
+  private async syncDirectFromWooCommerce(): Promise<number> {
+    try {
+      console.log('🔄 Sincronização direta WooCommerce (development mode)...');
+
+      // 1. Buscar produtos do WooCommerce
+      const consumerKey = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY;
+      const consumerSecret = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET;
+
+      if (!consumerKey || !consumerSecret) {
+        throw new Error('Credenciais WooCommerce não configuradas');
+      }
+
+      const authParams = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
+      const wooUrl = `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/wp-json/wc/v3/products?per_page=50&category=319&status=publish&${authParams}`;
+
+      console.log('🔗 Fetching from WooCommerce:', wooUrl.replace(consumerSecret, '***'));
+
+      const wooResponse = await fetch(wooUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!wooResponse.ok) {
+        throw new Error(`WooCommerce API Error: ${wooResponse.status} - ${wooResponse.statusText}`);
+      }
+
+      const wooProducts = await wooResponse.json();
+      console.log(`📦 ${wooProducts.length} produtos obtidos do WooCommerce`);
+
+      // 2. Em desenvolvimento, apenas simular que foram sincronizados
+      const syncedCount = wooProducts.length;
+
+      console.log(`✅ Sincronização simulada: ${syncedCount} produtos`);
+      console.log('💡 Em produção, estes produtos seriam salvos na Neon Database');
+
+      // 3. Limpar cache para forçar nova busca
+      this.clearCache();
+
+      return syncedCount;
+
+    } catch (error) {
+      console.error('❌ Erro na sincronização direta:', error);
+      throw error;
+    }
+  }
 }
 
 export const neonDatabaseService = new NeonDatabaseService();
