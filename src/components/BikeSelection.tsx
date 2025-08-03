@@ -99,31 +99,15 @@ export const BikeSelection = ({
 
 
 
-  // Función de refresh inteligente que preserva caché cuando es posible
+  // Función de refresh simplificada con nuevo sistema de caché
   const handleRefresh = async () => {
     try {
       if (import.meta.env.DEV) {
-        console.log(`🔄 Refrescando datos desde ${dataSource}...`);
+        console.log(`🔄 Refrescando datos (${dataSource})...`);
       }
 
-      // Solo invalidar si realmente es necesario
-      if (useNeonDatabase) {
-        // Para Neon, solo refetch sin invalidar caché para preservar navegación
-        await Promise.all([
-          refetchBikes(),
-          refetchCategories()
-        ]);
-      } else {
-        // Para WooCommerce fallback, invalidar solo si hay error
-        if (error) {
-          queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
-          queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
-        }
-        await Promise.all([
-          refetchBikes(),
-          refetchCategories()
-        ]);
-      }
+      // El nuevo hook maneja toda la lógica de invalidación
+      await refetchBikes();
 
       if (import.meta.env.DEV) {
         console.log("✅ Refresh completado");
