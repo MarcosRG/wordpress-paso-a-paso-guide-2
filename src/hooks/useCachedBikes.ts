@@ -41,22 +41,13 @@ export const useCachedBikes = (): CachedBikesResult => {
     }
   }, []);
 
-  // Hooks de datos
-  const neonStatus = useNeonDatabaseStatus();
-  const neonQuery = useNeonDatabaseBikes();
+  // Hook de datos - solo WooCommerce progresivo
   const progressiveQuery = useProgressiveWooCommerceBikes();
 
-  // Determinar qué fuente usar
-  const neonIsReady = neonStatus.data?.connected === true && 
-                      !neonQuery.error && 
-                      !neonQuery.isLoading;
-  const useNeon = neonIsReady && neonQuery.data && neonQuery.data.length > 0;
-
-  // Seleccionar query activo
-  const activeQuery = useNeon ? neonQuery : progressiveQuery;
-  const source: 'neon' | 'woocommerce' | 'cache' | 'fallback' = 
+  // Usar directamente WooCommerce
+  const activeQuery = progressiveQuery;
+  const source: 'neon' | 'woocommerce' | 'cache' | 'fallback' =
     cachedData && isFromCache ? 'cache' :
-    useNeon ? 'neon' : 
     activeQuery.data ? 'woocommerce' : 'fallback';
 
   // Guardar en caché cuando se obtienen nuevos datos
