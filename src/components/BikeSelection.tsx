@@ -325,21 +325,31 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
       </div>
 
-      {/* Mostrar progreso discreto si estamos en carga progresiva */}
+      {/* Mostrar progreso visible e informativo para el cliente */}
       {progressInfo && progressInfo.isProcessing && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg border-l-4 border-red-600">
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="flex items-center gap-3">
-            <RefreshCw className="h-4 w-4 animate-spin text-red-600" />
+            <RefreshCw className="h-5 w-5 animate-spin text-blue-600" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">
-                {t("loadingBikes")}
+              <p className="text-sm font-medium text-blue-900 mb-2">
+                {t("loadingBikes")} - Carregando do sistema...
               </p>
-              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+              <div className="w-full bg-blue-200 rounded-full h-3">
                 <div
-                  className="bg-red-600 h-1.5 rounded-full transition-all duration-500"
+                  className="bg-blue-600 h-3 rounded-full transition-all duration-300 flex items-center justify-center"
                   style={{ width: `${progressInfo.progressPercentage}%` }}
-                ></div>
+                >
+                  <span className="text-white text-xs font-medium">
+                    {progressInfo.progressPercentage}%
+                  </span>
+                </div>
               </div>
+              <p className="text-xs text-blue-700 mt-2">
+                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos processados
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                Por favor aguarde enquanto carregamos as bicicletas disponíveis...
+              </p>
             </div>
           </div>
         </div>
