@@ -4,6 +4,7 @@ import { neon } from '@neondatabase/serverless';
 const getDatabaseUrl = (): string => {
   const url = import.meta.env.DATABASE_URL;
   if (!url) {
+    console.warn('⚠️ DATABASE_URL not available - Neon features disabled');
     throw new Error('DATABASE_URL environment variable is required');
   }
   return url;
