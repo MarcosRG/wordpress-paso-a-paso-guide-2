@@ -57,15 +57,23 @@ export const BikeSelection = ({
   const progressiveFallbackQuery = useProgressiveWooCommerceBikes();
   const fallbackCategoriesQuery = useWooCommerceCategories();
 
-  // 🎯 NUEVA LÓGICA: Solo Neon Database y WooCommerce fallback progresivo
-  const useNeonDatabase = neonStatus.data?.connected === true && !neonQuery.error;
+  // 🎯 PRIORIDAD: Neon Database primero, WooCommerce solo como fallback
+  const neonIsReady = neonStatus.data?.connected === true &&
+                      !neonQuery.error &&
+                      !neonQuery.isLoading;
 
-  // Seleccionar la fuente de datos automáticamente
-  let dataSource = 'Neon Database 🗄️';
+  // Si Neon está disponible y tiene datos, úsalo
+  const useNeonDatabase = neonIsReady && neonQuery.data && neonQuery.data.length > 0;
+
+  // Si Neon no tiene datos pero está conectado, intentar sync automático
+  const needsSync = neonIsReady && (!neonQuery.data || neonQuery.data.length === 0);
+
+  // Seleccionar la fuente de datos
+  let dataSource = 'Neon Database';
   let bikesQuery = neonQuery;
 
-  if (!useNeonDatabase) {
-    dataSource = 'WooCommerce Progressive Fallback 🚴‍♂️';
+  if (!useNeonDatabase && !needsSync) {
+    dataSource = 'WooCommerce Fallback';
     bikesQuery = progressiveFallbackQuery;
   }
 
