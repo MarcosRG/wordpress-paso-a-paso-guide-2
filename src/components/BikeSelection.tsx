@@ -13,7 +13,6 @@ import {
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
 import { useProgressiveWooCommerceBikes } from "@/hooks/useProgressiveWooCommerceBikes";
-import QuickWooCommerceDiagnostic from "./QuickWooCommerceDiagnostic";
 import {
   useNeonDatabaseBikes,
   useNeonDatabaseSync,
@@ -21,10 +20,8 @@ import {
   useNeonDatabaseStatus,
 } from "@/hooks/useNeonDatabase";
 import { CategoryFilter } from "./CategoryFilter";
-import { MCPConnectionStatus } from "./MCPConnectionStatus";
 
 import { useLanguage } from "@/contexts/LanguageContext";
-import { isMCPAvailable } from "@/utils/mcpClient";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
 import SimpleBikeCard from "./SimpleBikeCard";
@@ -331,30 +328,18 @@ export const BikeSelection = ({
 
   if (error) {
     return (
-      <div className="space-y-6">
-        {/* Show MCP connection status if not available */}
-        {!isMCPAvailable() && <MCPConnectionStatus />}
-
-        <div className="text-center py-8">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">
-            Error al cargar las bicicletas
-          </h2>
-          {!isMCPAvailable() && (
-            <p className="text-gray-600 mb-4">
-              Este erro pode estar relacionado com a conexão MCP Neon em falta.
-            </p>
-          )}
-          <div className="flex gap-2 justify-center">
-            <Button onClick={handleRefresh} variant="outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              {t("tryAgain")}
-            </Button>
-            {!useNeonDatabase && (
-              <QuickWooCommerceDiagnostic hasWooCommerceError={true} />
-            )}
-          </div>
-        </div>
+      <div className="text-center py-8">
+        <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-semibold mb-2">
+          {t("loadingBikes")}
+        </h2>
+        <p className="text-gray-600 mb-4">
+          {t("tryAgain")}
+        </p>
+        <Button onClick={handleRefresh} variant="outline">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          {t("tryAgain")}
+        </Button>
       </div>
     );
   }
@@ -366,15 +351,10 @@ export const BikeSelection = ({
         <h2 className="text-xl font-semibold mb-2">
           {t("loadingBikes")}
         </h2>
-        <div className="flex gap-2 justify-center mt-4">
-          <Button onClick={handleRefresh} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            {t("tryAgain")}
-          </Button>
-          {!useNeonDatabase && (
-            <QuickWooCommerceDiagnostic hasWooCommerceError={false} showWhenError={false} />
-          )}
-        </div>
+        <Button onClick={handleRefresh} variant="outline" className="mt-4">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          {t("tryAgain")}
+        </Button>
       </div>
     );
   }
