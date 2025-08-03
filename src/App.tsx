@@ -24,6 +24,7 @@ import { runSystemDiagnostic, quickDiagnostic } from "./utils/systemDiagnostic";
 import { debugLog, systemDebugger } from "@/utils/systemDebugger";
 import { wooCommerceNeonSync } from "@/services/wooCommerceNeonSync";
 import { neonDirectService } from "@/services/neonDirectService";
+import { printConfigDiagnostic, testWooCommerceConnectivity } from "@/utils/configDiagnostic";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient({
@@ -99,7 +100,7 @@ const App = () => {
     console.log('   - systemAnalysis() - Análise completa do sistema');
     console.log('   - debugLogs() - Ver logs recentes do sistema');
     console.log('');
-    console.log('����️ NEON DATABASE FUNCTIONS:');
+    console.log('🗄️ NEON DATABASE FUNCTIONS:');
     console.log('   - testNeonConnection() - Test connection to Neon');
     console.log('   - testAllConnections() - Test both WooCommerce & Neon');
     console.log('   - syncWooToNeon() - Sync all products WooCommerce -> Neon');
@@ -110,7 +111,7 @@ const App = () => {
     if (import.meta.env.DEV) {
       setTimeout(() => {
         systemDebugger.analyzeSystemStatus().then(status => {
-          debugLog('info', '📊 Análise inicial do sistema completa', status);
+          debugLog('info', '�� Análise inicial do sistema completa', status);
         });
       }, 3000); // Delay para permitir inicialização completa
     }
