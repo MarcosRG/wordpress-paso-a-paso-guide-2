@@ -13,6 +13,7 @@ import {
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
 import { useProgressiveWooCommerceBikes } from "@/hooks/useProgressiveWooCommerceBikes";
+import QuickWooCommerceDiagnostic from "./QuickWooCommerceDiagnostic";
 import {
   useNeonDatabaseBikes,
   useNeonDatabaseSync,
@@ -155,7 +156,7 @@ export const BikeSelection = ({
 
       console.log("✅ Refresh completado");
     } catch (error) {
-      console.error("❌ Error en refresh:", error);
+      console.error("�� Error en refresh:", error);
     }
   };
 
