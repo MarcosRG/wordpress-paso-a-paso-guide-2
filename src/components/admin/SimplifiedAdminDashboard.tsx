@@ -142,6 +142,21 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
 
+          {/* Environment Validation Tab */}
+          <TabsContent value="validation">
+            <Card>
+              <CardHeader>
+                <CardTitle>Validación de Variables de Entorno</CardTitle>
+                <CardDescription>
+                  Verificar configuración de todas las variables del sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <EnvironmentValidation />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Database Management Tab */}
           <TabsContent value="database">
             <Card>
