@@ -61,9 +61,10 @@ export const BikeSelection = ({
   const neonCategoriesQuery = useNeonDatabaseCategories();
   const neonStatus = useNeonDatabaseStatus();
   const fallbackQuery = useWooCommerceBikes();
+  const progressiveFallbackQuery = useProgressiveWooCommerceBikes();
   const fallbackCategoriesQuery = useWooCommerceCategories();
 
-  // 🎯 NUEVA LÓGICA: Solo Neon Database y WooCommerce fallback
+  // 🎯 NUEVA LÓGICA: Solo Neon Database y WooCommerce fallback progresivo
   const useNeonDatabase = neonStatus.data?.connected === true && !neonQuery.error;
 
   // Seleccionar la fuente de datos automáticamente
@@ -71,8 +72,8 @@ export const BikeSelection = ({
   let bikesQuery = neonQuery;
 
   if (!useNeonDatabase) {
-    dataSource = 'WooCommerce Fallback 🐌';
-    bikesQuery = fallbackQuery;
+    dataSource = 'WooCommerce Progressive Fallback 🚴‍♂️';
+    bikesQuery = progressiveFallbackQuery;
   }
 
   const {
@@ -119,7 +120,7 @@ export const BikeSelection = ({
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const errorStack = error instanceof Error ? error.stack : '';
 
-      console.warn(`�� Error desde ${dataSource}:`, errorMessage);
+      console.warn(`❌ Error desde ${dataSource}:`, errorMessage);
 
       if (errorStack && errorStack.includes('fullstory')) {
         console.warn('🚨 FullStory interference detected in BikeSelection error:', errorMessage);
@@ -197,7 +198,7 @@ export const BikeSelection = ({
     return selectedBike?.quantity || 0;
   };
 
-  // Para productos simples (sin tama��os)
+  // Para productos simples (sin tamaños)
   const getQuantityForBike = (bikeId: string) => {
     const selectedBike = reservation.selectedBikes.find(
       (b) => b.id === bikeId && b.size === "M", // Usar M como tamaño por defecto para productos simples
