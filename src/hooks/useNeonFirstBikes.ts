@@ -31,41 +31,9 @@ export const useNeonFirstBikes = () => {
           console.log(`✅ ${neonProducts.length} productos cargados desde Neon`);
           setDataSource('neon');
           setNeonAvailable(true);
-          
-          // Convertir productos Neon a formato Bike
-          const bikes: Bike[] = neonProducts.map(product => ({
-            id: product.woocommerce_id.toString(),
-            name: product.name,
-            type: product.type,
-            pricePerDay: parseFloat(product.price.toString()),
-            available: product.stock_quantity,
-            image: product.images && product.images.length > 0 
-              ? (product.images as any[])[0]?.src || "/placeholder.svg"
-              : "/placeholder.svg",
-            description: product.short_description || product.description,
-            wooCommerceData: {
-              product: {
-                id: product.woocommerce_id,
-                name: product.name,
-                type: product.type,
-                status: product.status,
-                price: product.price.toString(),
-                regular_price: product.regular_price.toString(),
-                stock_quantity: product.stock_quantity,
-                stock_status: product.stock_status,
-                categories: product.categories || [],
-                images: product.images || [],
-                short_description: product.short_description,
-                description: product.description,
-                variations: product.variations_ids || [],
-                acf: product.acf_data || {},
-                meta_data: product.meta_data || []
-              },
-              variations: [],
-              acfData: product.acf_data || {}
-            }
-          }));
 
+          // Convertir productos Neon a formato Bike usando el servicio
+          const bikes = neonUnifiedService.convertNeonToBikes(neonProducts);
           return bikes;
         } else {
           throw new Error('No products found in Neon');
