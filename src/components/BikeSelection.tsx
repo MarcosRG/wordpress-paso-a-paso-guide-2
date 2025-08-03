@@ -300,24 +300,19 @@ export const BikeSelection = ({
       <div>
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
         <div className="text-center mb-6">
-          {progressInfo && progressInfo.isProcessing ? (
-            <div className="space-y-3">
-              <p className="text-muted-foreground">
-                Carregando bicicletas desde WooCommerce...
-              </p>
+          <p className="text-muted-foreground">{t("loadingBikes")}</p>
+          {progressInfo && progressInfo.isProcessing && (
+            <div className="mt-4 space-y-2">
               <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
                 <div
-                  className="bg-red-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-red-600 h-2 rounded-full transition-all duration-500"
                   style={{ width: `${progressInfo.progressPercentage}%` }}
                 ></div>
               </div>
               <p className="text-sm text-muted-foreground">
-                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos processados
-                ({progressInfo.progressPercentage}%)
+                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos
               </p>
             </div>
-          ) : (
-            <p className="text-muted-foreground">Carregando bicicletas...</p>
           )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
