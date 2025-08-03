@@ -4,6 +4,7 @@ import { cleanFetch } from "@/utils/cleanFetch";
 import { recordApiSuccess, recordApiNetworkError, recordApiAuthError } from "@/services/connectivityMonitor";
 import { fallbackBikes } from "@/data/fallbackBikes";
 import { useState, useCallback, useRef } from "react";
+import { syncCompleteProduct } from "@/services/neonDirectService";
 
 // Hook que carga bicicletas de WooCommerce progresivamente (una por una)
 export const useProgressiveWooCommerceBikes = () => {
