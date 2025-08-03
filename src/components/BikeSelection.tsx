@@ -71,41 +71,29 @@ export const BikeSelection = ({
 
   const { language, setLanguage, t } = useLanguage();
 
-  // Auto-sync si Neon está conectado pero vacío
+  // Logging del nuevo sistema de caché (solo en desarrollo)
   React.useEffect(() => {
-    const handleAutoSync = async () => {
-      if (needsSync && !syncMutation.isPending) {
-        if (import.meta.env.DEV) {
-          console.log('🔄 Neon conectado pero sin datos, sincronizando...');
-        }
-        try {
-          await syncMutation.mutateAsync();
-          // Refrescar datos de Neon después del sync
-          await refetchBikes();
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.warn('⚠️ Auto-sync falló, usando fallback WooCommerce');
-          }
-        }
-      }
-    };
-
-    handleAutoSync();
-  }, [needsSync, syncMutation, refetchBikes]);
-
-  // Logging interno optimizado (solo en desarrollo)
-  React.useEffect(() => {
-    if (import.meta.env.DEV) {
-      if (bikes) {
-        console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${dataSource}`);
-      }
-
-      if (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.warn(`❌ Error desde ${dataSource}:`, errorMessage);
-      }
+    if (import.meta.env.DEV && bikes) {
+      const cacheIndicator = isFromCache ? `(caché, ${cacheAge}s)` : '(fresh)';
+      console.log(`🚴 ${bikes.length} bicicletas desde ${dataSource} ${cacheIndicator}`);
     }
-  }, [bikes, dataSource, error]);
+  }, [bikes, dataSource, isFromCache, cacheAge]);
+
+  // Auto-sync simplificado
+  React.useEffect(() => {
+    const shouldSync = dataSource === 'cache' &&
+                      cacheAge > 300 && // más de 5 minutos
+                      !syncMutation.isPending;
+
+    if (shouldSync) {
+      if (import.meta.env.DEV) {
+        console.log('🔄 Caché antiguo, intentando sync en background...');
+      }
+      syncMutation.mutateAsync().catch(() => {
+        // Silently fail - cache is still valid
+      });
+    }
+  }, [dataSource, cacheAge, syncMutation]);
 
 
 
