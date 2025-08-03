@@ -1,7 +1,7 @@
 // Development fallback for Netlify functions when they can't be served properly
 
 class DevelopmentFunctionService {
-  private isDevelopment = import.meta.env.DEV;
+  private isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname.includes('d0c7198e0a50411d931307948caa2012');
 
 
 
