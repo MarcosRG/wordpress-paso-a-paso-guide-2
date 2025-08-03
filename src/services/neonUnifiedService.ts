@@ -30,14 +30,20 @@ class NeonUnifiedService {
   // Inicializar la conexión y base de datos
   private async initialize(): Promise<void> {
     if (this.initialized) return;
-    
+
     try {
+      // Check if DATABASE_URL is available
+      if (!import.meta.env.DATABASE_URL) {
+        console.warn('⚠️ DATABASE_URL not configured - Neon features disabled');
+        return; // Don't throw, just disable Neon features
+      }
+
       await initializeDatabase();
       this.initialized = true;
       console.log('✅ Neon Unified Service inicializado');
     } catch (error) {
-      console.error('❌ Error inicializando Neon Unified Service:', error);
-      throw error;
+      console.warn('⚠️ Neon Unified Service initialization failed, continuing without Neon:', error?.message || error);
+      // Don't throw error - let the app continue with WooCommerce fallback
     }
   }
 
