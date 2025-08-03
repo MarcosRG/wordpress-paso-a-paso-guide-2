@@ -327,30 +327,49 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
       </div>
 
-      {/* Mostrar progreso visible e informativo para el cliente */}
+      {/* Barra de progreso mejorada con diseño acorde a la app */}
       {progressInfo && progressInfo.isProcessing && (
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex items-center gap-3">
-            <RefreshCw className="h-5 w-5 animate-spin text-blue-600" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-blue-900 mb-2">
-                {t("loadingBikes")} - Carregando do sistema...
-              </p>
-              <div className="w-full bg-blue-200 rounded-full h-3">
+        <div className="mb-6 p-6 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0">
+              <div className="relative">
+                <RefreshCw className="h-8 w-8 animate-spin text-red-600" />
+                <div className="absolute inset-0 rounded-full border-2 border-red-200 opacity-30"></div>
+              </div>
+            </div>
+            <div className="flex-1 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-red-900">
+                  {t("loadingBikes")}
+                </h3>
+                <span className="text-2xl font-bold text-red-600">
+                  {progressInfo.progressPercentage}%
+                </span>
+              </div>
+
+              {/* Barra de progreso principal */}
+              <div className="w-full bg-red-200 rounded-full h-4 shadow-inner">
                 <div
-                  className="bg-blue-600 h-3 rounded-full transition-all duration-300 flex items-center justify-center"
+                  className="bg-gradient-to-r from-red-500 to-red-600 h-4 rounded-full transition-all duration-500 ease-out shadow-sm relative overflow-hidden"
                   style={{ width: `${progressInfo.progressPercentage}%` }}
                 >
-                  <span className="text-white text-xs font-medium">
-                    {progressInfo.progressPercentage}%
-                  </span>
+                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
                 </div>
               </div>
-              <p className="text-xs text-blue-700 mt-2">
-                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos processados
-              </p>
-              <p className="text-xs text-blue-600 mt-1">
-                Por favor aguarde enquanto carregamos as bicicletas disponíveis...
+
+              {/* Información detallada */}
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-red-700 font-medium">
+                  {progressInfo.processingCount} de {progressInfo.totalProducts} bicicletas cargadas
+                </span>
+                <span className="text-red-600">
+                  Procesando...
+                </span>
+              </div>
+
+              <p className="text-sm text-red-600 bg-red-100/50 px-3 py-2 rounded-lg">
+                🚴‍♂️ Estamos cargando las bicicletas disponibles desde nuestro sistema.
+                Las bicicletas aparecerán automáticamente a medida que se cargan.
               </p>
             </div>
           </div>
