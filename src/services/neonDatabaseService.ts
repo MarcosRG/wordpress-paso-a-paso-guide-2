@@ -149,9 +149,13 @@ class NeonDatabaseService {
       }
 
       // 1. Buscar produtos do WooCommerce
-      const wooResponse = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
+      const consumerKey = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY;
+      const consumerSecret = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET;
+      const authParams = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
+      const wooUrl = `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish&${authParams}`;
+
+      const wooResponse = await cleanFetch(wooUrl, {
         headers: {
-          'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
           'Content-Type': 'application/json',
         },
       });
