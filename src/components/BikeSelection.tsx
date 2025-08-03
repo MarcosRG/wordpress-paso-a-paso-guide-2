@@ -8,12 +8,8 @@ import {
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
 import { useProgressiveWooCommerceBikes } from "@/hooks/useProgressiveWooCommerceBikes";
-import { useNeonFirstBikes } from "@/hooks/useNeonFirstBikes";
 import {
-  useNeonDatabaseBikes,
   useNeonDatabaseSync,
-  useNeonDatabaseCategories,
-  useNeonDatabaseStatus,
 } from "@/hooks/useNeonDatabase";
 import { useCachedBikes } from "@/hooks/useCachedBikes";
 import { CategoryFilter } from "./CategoryFilter";
