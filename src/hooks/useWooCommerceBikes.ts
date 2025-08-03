@@ -181,8 +181,12 @@ export const useWooCommerceBikes = () => {
           }
         }
 
-        // Re-throw with enhanced error message
-        throw new Error(`WooCommerce Bikes API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        // Use fallback data instead of failing completely
+        console.warn('⚠️ Using fallback bike data due to API failure');
+        console.warn('🔄 API Error:', error instanceof Error ? error.message : 'Unknown error');
+
+        // Return fallback bikes instead of throwing error
+        return fallbackBikes;
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutos (mais tempo já que carrega variações)
