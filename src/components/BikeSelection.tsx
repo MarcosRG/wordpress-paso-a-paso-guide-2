@@ -12,6 +12,7 @@ import {
   useWooCommerceBikes,
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
+import { useProgressiveWooCommerceBikes } from "@/hooks/useProgressiveWooCommerceBikes";
 import {
   useNeonDatabaseBikes,
   useNeonDatabaseSync,
@@ -118,7 +119,7 @@ export const BikeSelection = ({
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const errorStack = error instanceof Error ? error.stack : '';
 
-      console.warn(`❌ Error desde ${dataSource}:`, errorMessage);
+      console.warn(`�� Error desde ${dataSource}:`, errorMessage);
 
       if (errorStack && errorStack.includes('fullstory')) {
         console.warn('🚨 FullStory interference detected in BikeSelection error:', errorMessage);
@@ -196,7 +197,7 @@ export const BikeSelection = ({
     return selectedBike?.quantity || 0;
   };
 
-  // Para productos simples (sin tamaños)
+  // Para productos simples (sin tama��os)
   const getQuantityForBike = (bikeId: string) => {
     const selectedBike = reservation.selectedBikes.find(
       (b) => b.id === bikeId && b.size === "M", // Usar M como tamaño por defecto para productos simples
