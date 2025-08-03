@@ -261,15 +261,21 @@ export const BikeSelection = ({
             </p>
           )}
           {progressInfo && progressInfo.isProcessing && (
-            <div className="mt-4 space-y-2">
-              <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
+            <div className="mt-6 space-y-3 max-w-md mx-auto">
+              <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
                 <div
-                  className="bg-red-600 h-2 rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-red-500 to-red-600 h-3 rounded-full transition-all duration-500 relative overflow-hidden"
                   style={{ width: `${progressInfo.progressPercentage}%` }}
-                ></div>
+                >
+                  <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>{progressInfo.processingCount} de {progressInfo.totalProducts} produtos</span>
+                <span className="font-semibold text-red-600">{progressInfo.progressPercentage}%</span>
+              </div>
+              <p className="text-xs text-center text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+                Las bicicletas aparecerán automáticamente mientras se cargan
               </p>
             </div>
           )}
