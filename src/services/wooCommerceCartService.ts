@@ -440,7 +440,9 @@ export class WooCommerceCartService {
       // Redirigir al checkout con la orden creada
       return `${this.checkoutUrl}/order-pay/${order.id}/?pay_for_order=true&key=${order.order_key}`;
     } catch (error) {
-      console.error("❌ Error creating direct order:", error);
+      if (import.meta.env.DEV) {
+        console.error("❌ Error creating direct order:", error);
+      }
       throw error;
     }
   }
