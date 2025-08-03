@@ -113,6 +113,21 @@ export const EnvironmentValidation = () => {
       sensitive: true,
       description: 'Data encryption key'
     },
+    {
+      name: 'VITE_ADMIN_ALT_USERNAME',
+      value: import.meta.env.VITE_ADMIN_ALT_USERNAME,
+      required: false,
+      category: 'admin',
+      description: 'Alternative admin username (optional)'
+    },
+    {
+      name: 'VITE_ADMIN_ALT_PASSWORD',
+      value: import.meta.env.VITE_ADMIN_ALT_PASSWORD,
+      required: false,
+      category: 'admin',
+      sensitive: true,
+      description: 'Alternative admin password (optional)'
+    },
 
     // Auth Stack
     {
