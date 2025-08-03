@@ -135,26 +135,29 @@ export const BikeSelection = ({
 
 
 
-  // Función de refresh para todas las fuentes de datos
+  // Función de refresh inteligente que preserva caché cuando es posible
   const handleRefresh = async () => {
     try {
       console.log(`🔄 Refrescando datos desde ${dataSource}...`);
 
-      // Invalidar otros caches como fallback
+      // Solo invalidar si realmente es necesario
       if (useNeonDatabase) {
-        queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
-        queryClient.invalidateQueries({ queryKey: ["neon-database-categories"] });
-        queryClient.invalidateQueries({ queryKey: ["neon-database-status"] });
+        // Para Neon, solo refetch sin invalidar caché para preservar navegación
+        await Promise.all([
+          refetchBikes(),
+          refetchCategories()
+        ]);
       } else {
-        queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
-        queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
+        // Para WooCommerce fallback, invalidar solo si hay error
+        if (error) {
+          queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
+          queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
+        }
+        await Promise.all([
+          refetchBikes(),
+          refetchCategories()
+        ]);
       }
-
-      // Refetch datos principales
-      await Promise.all([
-        refetchBikes(),
-        refetchCategories()
-      ]);
 
       console.log("✅ Refresh completado");
     } catch (error) {
