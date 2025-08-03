@@ -118,21 +118,9 @@ exports.handler = async (event, context) => {
         `;
 
         if (result.length > 0) {
-          // Verificar se foi inserção ou atualização baseado no timestamp
-          const checkResult = await sql`
-            SELECT created_at, updated_at 
-            FROM products 
-            WHERE woocommerce_id = ${productData.woocommerce_id}
-          `;
-          
-          if (checkResult.length > 0) {
-            const row = checkResult[0];
-            if (new Date(row.created_at).getTime() === new Date(row.updated_at).getTime()) {
-              insertedCount++;
-            } else {
-              updatedCount++;
-            }
-          }
+          // Simplificar - considerar como inserção se houve resultado
+          // O RETURNING sempre retorna dados, seja inserção ou atualização
+          insertedCount++;
         }
 
       } catch (productError) {
