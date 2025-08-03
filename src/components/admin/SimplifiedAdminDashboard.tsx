@@ -16,6 +16,7 @@ import { adminAuthService } from '../../services/adminAuthService';
 import { SystemSettings } from './SystemSettings';
 import { NeonDatabaseAdmin } from '../NeonDatabaseAdmin';
 import WooCommerceDiagnostic from '../WooCommerceDiagnostic';
+import EnvironmentValidation from './EnvironmentValidation';
 
 interface SimplifiedAdminDashboardProps {
   onLogout: () => void;
