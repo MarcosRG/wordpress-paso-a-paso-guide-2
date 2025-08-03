@@ -162,17 +162,31 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
 
           {/* Database Management Tab */}
           <TabsContent value="database">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestión Base de Dados Neon</CardTitle>
-                <CardDescription>
-                  Sistema migrado completamente a Neon PostgreSQL serverless
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <NeonDatabaseAdmin />
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Diagnóstico Neon Database</CardTitle>
+                  <CardDescription>
+                    Test de conectividad y rendimiento de la base de datos
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <NeonDatabaseDiagnostic />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Gestión Base de Dados Neon</CardTitle>
+                  <CardDescription>
+                    Sistema migrado completamente a Neon PostgreSQL serverless
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <NeonDatabaseAdmin />
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* WooCommerce Diagnostic Tab */}
