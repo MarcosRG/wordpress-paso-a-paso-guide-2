@@ -203,21 +203,25 @@ export const useProgressiveWooCommerceBikes = () => {
         for (let i = 0; i < products.length; i++) {
           const product = products[i];
           setProcessingCount(i + 1);
-          
-          console.log(`🔄 Processando produto ${i + 1}/${products.length}: ${product.name}`);
-          
+
+          if (import.meta.env.DEV) {
+            console.log(`🔄 Processando produto ${i + 1}/${products.length}: ${product.name}`);
+          }
+
           const bike = await processProduct(product, apiBase, credentials);
-          
+
           if (bike) {
             processedBikes.push(bike);
             // Actualizar el estado inmediatamente para mostrar la bicicleta
             setLoadedBikes(current => [...current, bike]);
-            console.log(`✅ Bicicleta adicionada: ${bike.name} (${processedBikes.length} total)`);
+            if (import.meta.env.DEV) {
+              console.log(`✅ Bicicleta adicionada: ${bike.name} (${processedBikes.length} total)`);
+            }
           }
 
           // Pequeña pausa para permitir que la UI se actualice
           if (i < products.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 50)); // Reducir pausa a 50ms
           }
         }
 
