@@ -115,16 +115,15 @@ const App = () => {
     console.log('   - configDiagnostic() - Check all environment variables');
     console.log('   - testWooConnectivity() - Test WooCommerce API connectivity');
 
-    // Análise inicial do sistema em desenvolvimento (DISABLED due to FullStory conflicts)
-    if (import.meta.env.DEV && false) { // Disabled to avoid FullStory fetch conflicts
+    // Análise inicial do sistema em desenvolvimento (safe mode)
+    if (import.meta.env.DEV) {
       setTimeout(() => {
-        systemDebugger.analyzeSystemStatus()
-          .then(status => {
-            debugLog('info', '📊 Análise inicial do sistema completa', status);
-          })
-          .catch(error => {
-            console.warn('⚠️ Error en análisis del sistema:', error?.message || error);
-          });
+        try {
+          const status = systemDebugger.analyzeSystemStatusSafe();
+          debugLog('info', '📊 Análise inicial do sistema completa (safe mode)', status);
+        } catch (error) {
+          console.warn('⚠️ Error en análisis del sistema:', error?.message || error);
+        }
       }, 3000); // Delay para permitir inicialização completa
     }
 
