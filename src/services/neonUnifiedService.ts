@@ -50,10 +50,16 @@ class NeonUnifiedService {
   // Test de conexión
   async testConnection(): Promise<boolean> {
     try {
+      // Quick check for DATABASE_URL
+      if (!import.meta.env.DATABASE_URL) {
+        console.warn('⚠️ DATABASE_URL not configured');
+        return false;
+      }
+
       await this.initialize();
       return await testNeonConnection();
     } catch (error) {
-      console.error('❌ Error test conexión Neon:', error);
+      console.warn('⚠️ Neon test connection failed:', error?.message || error);
       return false;
     }
   }
