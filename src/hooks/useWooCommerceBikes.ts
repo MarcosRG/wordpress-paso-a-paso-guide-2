@@ -206,12 +206,13 @@ export const useWooCommerceCategories = () => {
           ];
         }
 
-        // Use query parameters for WooCommerce authentication
-        const authParams = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
-        const categoriesUrl = `${apiBase}/products/categories?per_page=50&parent=319&${authParams}`;
+        // Use Basic Auth for WooCommerce authentication
+        const credentials = btoa(`${consumerKey}:${consumerSecret}`);
+        const categoriesUrl = `${apiBase}/products/categories?per_page=50&parent=319`;
 
         const response = await cleanFetch(categoriesUrl, {
           headers: {
+            'Authorization': `Basic ${credentials}`,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
