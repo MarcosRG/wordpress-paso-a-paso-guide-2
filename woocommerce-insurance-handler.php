@@ -4,6 +4,11 @@
  * Versión 2.0 - Soluciona problemas de productos faltantes y cálculos incorrectos
  */
 
+// Verificar que WordPress está cargado
+if (!defined('ABSPATH')) {
+    exit; // Salir si WordPress no está cargado
+}
+
 // ===============================================
 // 1. CREAR PRODUCTOS DE SEGURO AUTOMÁTICAMENTE
 // ===============================================
