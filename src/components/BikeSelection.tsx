@@ -8,6 +8,7 @@ import {
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
 import { useProgressiveWooCommerceBikes } from "@/hooks/useProgressiveWooCommerceBikes";
+import { useNeonFirstBikes } from "@/hooks/useNeonFirstBikes";
 import {
   useNeonDatabaseBikes,
   useNeonDatabaseSync,
