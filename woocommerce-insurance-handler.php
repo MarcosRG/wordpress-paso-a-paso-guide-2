@@ -387,8 +387,10 @@ function bikesul_get_insurance_products() {
 }
 
 // Add missing function for URL handling compatibility
-function bikesul_encontrar_produto_seguro($type) {
-    return bikesul_find_insurance_product($type);
+if (!function_exists('bikesul_encontrar_produto_seguro')) {
+    function bikesul_encontrar_produto_seguro($type) {
+        return bikesul_find_insurance_product($type);
+    }
 }
 
 error_log("BIKESUL: Insurance handler v2 loaded successfully");
