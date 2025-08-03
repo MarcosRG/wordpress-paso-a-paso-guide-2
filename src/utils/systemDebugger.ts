@@ -57,45 +57,6 @@ export class SystemDebugger {
     }
   }
 
-  // Safe version without external fetch calls
-  analyzeSystemStatusSafe(): SystemStatus {
-    this.log('info', '🔍 Analisando status do sistema (safe mode)...');
-
-    const status: SystemStatus = {
-      timestamp: new Date().toISOString(),
-      environment: import.meta.env.DEV ? 'development' : 'production',
-      apis: {
-        neon: import.meta.env.DATABASE_URL ? 'configured' : 'not-configured',
-        woocommerce: import.meta.env.VITE_WOOCOMMERCE_API_BASE ? 'configured' : 'not-configured',
-        mcp: 'disabled'
-      },
-      errors: [],
-      recommendations: []
-    };
-
-    // Check environment variables without making fetch calls
-    if (!import.meta.env.VITE_WOOCOMMERCE_API_BASE) {
-      status.errors.push('VITE_WOOCOMMERCE_API_BASE not configured');
-    }
-    if (!import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY) {
-      status.errors.push('VITE_WOOCOMMERCE_CONSUMER_KEY not configured');
-    }
-    if (!import.meta.env.DATABASE_URL) {
-      status.errors.push('DATABASE_URL not configured');
-    }
-
-    if (status.environment === 'development') {
-      status.recommendations.push(
-        '🔧 In development mode - using fallback systems',
-        '🚀 Para testar completamente: deploy para produção',
-        '📊 Use /admin para monitorear estado en tiempo real'
-      );
-    }
-
-    this.log('info', '✅ Análise segura completa', status);
-    return status;
-  }
-
   async analyzeSystemStatus(): Promise<SystemStatus> {
     this.log('info', '🔍 Analisando status do sistema...');
 
@@ -114,12 +75,6 @@ export class SystemDebugger {
     // Testar WooCommerce
     try {
       this.log('info', '🧪 Testando WooCommerce API...');
-
-      // Check if required env vars exist
-      if (!import.meta.env.VITE_WOOCOMMERCE_API_BASE || !import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY || !import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET) {
-        throw new Error('WooCommerce environment variables not configured');
-      }
-
       const wooResponse = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=1`, {
         headers: {
           'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`
@@ -136,9 +91,8 @@ export class SystemDebugger {
       }
     } catch (error) {
       status.apis.woocommerce = 'error';
-      const errorMessage = error?.message || 'Unknown error';
-      status.errors.push(`WooCommerce connection failed: ${errorMessage}`);
-      this.log('error', '❌ WooCommerce falhou', { message: errorMessage });
+      status.errors.push(`WooCommerce connection failed: ${error.message}`);
+      this.log('error', '❌ WooCommerce falhou', error);
     }
 
     // Analisar limitações de desenvolvimento
