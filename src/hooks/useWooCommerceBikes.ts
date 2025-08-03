@@ -208,15 +208,7 @@ export const useWooCommerceCategories = () => {
 
         if (!apiBase || !consumerKey || !consumerSecret) {
           console.warn('⚠️ WooCommerce configuration incomplete, using default categories');
-          return [
-            "btt",
-            "e-bike",
-            "estrada",
-            "extras-alugueres",
-            "gravel-alugueres",
-            "junior-alugueres",
-            "touring-alugueres",
-          ];
+          return fallbackCategories;
         }
 
         // Use Basic Auth for WooCommerce authentication
