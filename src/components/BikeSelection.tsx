@@ -241,8 +241,9 @@ export const BikeSelection = ({
     }
   };
 
-  // Obtener información de progreso si estamos usando carga progresiva
-  const progressInfo = !useNeonDatabase && progressiveFallbackQuery ? {
+  // Obtener información de progreso solo si no hay caché y estamos cargando desde WooCommerce
+  const progressiveFallbackQuery = useProgressiveWooCommerceBikes();
+  const progressInfo = dataSource === 'woocommerce' && !isFromCache && progressiveFallbackQuery ? {
     processingCount: progressiveFallbackQuery.processingCount,
     totalProducts: progressiveFallbackQuery.totalProducts,
     isProcessing: progressiveFallbackQuery.isProcessing,
