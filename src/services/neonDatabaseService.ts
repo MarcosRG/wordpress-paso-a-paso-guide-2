@@ -244,7 +244,9 @@ class NeonDatabaseService {
       return processedProducts.length;
 
     } catch (error) {
-      console.error('❌ Erro na sincronização:', error);
+      if (import.meta.env.DEV) {
+        console.error('❌ Erro na sincronização:', error);
+      }
       throw error;
     }
   }
