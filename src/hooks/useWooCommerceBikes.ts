@@ -19,16 +19,17 @@ export const useWooCommerceBikes = () => {
           throw new Error('WooCommerce configuration incomplete - check environment variables');
         }
 
-        // Use query parameters for WooCommerce authentication (more reliable than Basic Auth)
-        const authParams = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
-        const apiUrl = `${apiBase}/products?per_page=50&category=319&status=publish&${authParams}`;
+        // Use Basic Auth for WooCommerce API authentication (required for REST API)
+        const credentials = btoa(`${consumerKey}:${consumerSecret}`);
+        const apiUrl = `${apiBase}/products?per_page=50&category=319&status=publish`;
 
-        console.log('🔗 WooCommerce API URL:', apiUrl.replace(/consumer_secret=[^&]+/, 'consumer_secret=***'));
+        console.log('🔗 WooCommerce API URL:', apiUrl);
         console.log('🔐 Consumer Key exists:', !!consumerKey);
         console.log('🔐 Consumer Secret exists:', !!consumerSecret);
 
         const response = await cleanFetch(apiUrl, {
           headers: {
+            'Authorization': `Basic ${credentials}`,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'User-Agent': 'BikeSul-App/1.0'
@@ -46,7 +47,15 @@ export const useWooCommerceBikes = () => {
             headers: Object.fromEntries(response.headers.entries()),
             body: errorText.substring(0, 500)
           });
-          throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
+
+          // Handle authentication errors specifically
+          if (response.status === 401) {
+            throw new Error(`WooCommerce Authentication Failed: Please check API credentials. ${errorText.substring(0, 100)}`);
+          } else if (response.status === 403) {
+            throw new Error(`WooCommerce Access Forbidden: API key may not have sufficient permissions. ${errorText.substring(0, 100)}`);
+          } else {
+            throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
+          }
         }
 
         const products = await response.json();
