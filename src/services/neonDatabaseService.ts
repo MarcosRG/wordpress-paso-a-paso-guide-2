@@ -36,7 +36,7 @@ class NeonDatabaseService {
       return false;
     }
     try {
-      const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
+      const response = await developmentFunctionService.callFunction('neon-products', {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
@@ -113,7 +113,7 @@ class NeonDatabaseService {
 
       // Verificar se a resposta tem o formato esperado
       if (data.connected && Array.isArray(data.products)) {
-        console.log(`✅ ${data.products.length} produtos carregados do Neon`);
+        console.log(`��� ${data.products.length} produtos carregados do Neon`);
         // Cache successful responses for 2 minutes
         bikeCache.set(CACHE_KEYS.NEON_PRODUCTS, data.products, 2 * 60 * 1000);
         return data.products;
@@ -145,7 +145,7 @@ class NeonDatabaseService {
 
       // In development, Netlify functions are not available
       if (this.isDevelopment) {
-        throw new Error('Sync não disponível em desenvolvimento. Netlify functions só funcionam em produção.');
+        throw new Error('Sync não dispon��vel em desenvolvimento. Netlify functions só funcionam em produção.');
       }
 
       // 1. Buscar produtos do WooCommerce
