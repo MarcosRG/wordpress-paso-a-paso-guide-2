@@ -156,7 +156,7 @@ export const BikeSelection = ({
 
       console.log("✅ Refresh completado");
     } catch (error) {
-      console.error("�� Error en refresh:", error);
+      console.error("❌ Error en refresh:", error);
     }
   };
 
@@ -350,6 +350,9 @@ export const BikeSelection = ({
               <RefreshCw className="h-4 w-4 mr-2" />
               {t("tryAgain")}
             </Button>
+            {!useNeonDatabase && (
+              <QuickWooCommerceDiagnostic hasWooCommerceError={true} />
+            )}
           </div>
         </div>
       </div>
