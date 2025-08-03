@@ -16,7 +16,6 @@ import { wooCommerceCartService } from "@/services/wooCommerceCartService";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConnectivityAlert } from "@/hooks/useConnectivityAlert";
-import { SystemDiagnostic } from "@/components/SystemDiagnostic";
 import {
   extractACFPricing,
   getPricePerDayFromACF,
