@@ -8,8 +8,12 @@ import {
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
 import { useProgressiveWooCommerceBikes } from "@/hooks/useProgressiveWooCommerceBikes";
+import { useNeonFirstBikes } from "@/hooks/useNeonFirstBikes";
 import {
+  useNeonDatabaseBikes,
   useNeonDatabaseSync,
+  useNeonDatabaseCategories,
+  useNeonDatabaseStatus,
 } from "@/hooks/useNeonDatabase";
 import { useCachedBikes } from "@/hooks/useCachedBikes";
 import { CategoryFilter } from "./CategoryFilter";
@@ -45,14 +49,17 @@ export const BikeSelection = ({
   // Hook para reparación automática del sistema
   useSystemRepair();
 
-  // 🎯 DIRECTO: Hook progresivo de WooCommerce (sin Neon)
-  const progressiveQuery = useProgressiveWooCommerceBikes();
+  // 🎯 NUEVO: Hook que prioriza Neon y usa WooCommerce progresivo como fallback
+  const neonFirstResult = useNeonFirstBikes();
   const {
     data: bikes,
     isLoading,
     error,
+    dataSource,
+    neonAvailable,
+    progressInfo,
     refetch: refetchBikes
-  } = progressiveQuery;
+  } = neonFirstResult;
 
   // Obtener categorías desde el hook de caché para compatibilidad
   const cachedBikesResult = useCachedBikes();
@@ -68,24 +75,40 @@ export const BikeSelection = ({
 
   const { language, setLanguage, t } = useLanguage();
 
-  // Logging simple (solo en desarrollo)
+  // Logging del nuevo sistema Neon-first (solo en desarrollo)
   React.useEffect(() => {
     if (import.meta.env.DEV && bikes) {
-      console.log(`🚴 ${bikes.length} bicicletas desde WooCommerce API`);
+      const neonStatus = neonAvailable ? '✅' : '❌';
+      console.log(`🚴 ${bikes.length} bicicletas desde ${dataSource} ${neonStatus}`);
     }
-  }, [bikes]);
+  }, [bikes, dataSource, neonAvailable]);
+
+  // Sync simplificado - solo si Neon no está disponible
+  React.useEffect(() => {
+    const shouldSync = dataSource === 'woocommerce' && neonAvailable === false && !syncMutation.isPending;
+
+    if (shouldSync) {
+      if (import.meta.env.DEV) {
+        console.log('🔄 Neon no disponible, manteniendo sync tradicional...');
+      }
+      syncMutation.mutateAsync().catch(() => {
+        // Silently fail - WooCommerce is working
+      });
+    }
+  }, [dataSource, neonAvailable, syncMutation]);
 
 
 
 
 
-  // Función de refresh simplificada
+  // Función de refresh simplificada con nuevo sistema de caché
   const handleRefresh = async () => {
     try {
       if (import.meta.env.DEV) {
-        console.log(`🔄 Refrescando datos desde WooCommerce...`);
+        console.log(`🔄 Refrescando datos (${dataSource})...`);
       }
 
+      // El nuevo hook maneja toda la lógica de invalidación
       await refetchBikes();
 
       if (import.meta.env.DEV) {
