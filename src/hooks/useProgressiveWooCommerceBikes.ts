@@ -152,10 +152,25 @@ export const useProgressiveWooCommerceBikes = () => {
           // Handle authentication errors specifically
           if (response.status === 401 || response.status === 403) {
             recordApiAuthError();
+
+            // Parse error response for more specific details
+            let errorDetails = '';
+            try {
+              const errorJson = JSON.parse(errorText);
+              if (errorJson.code === 'woocommerce_rest_cannot_view') {
+                errorDetails = 'API key lacks "Read" permissions for products. ';
+              } else if (errorJson.code === 'woocommerce_rest_authentication_error') {
+                errorDetails = 'Invalid API credentials. ';
+              }
+              errorDetails += `Error: ${errorJson.message || 'Unknown WooCommerce error'}`;
+            } catch {
+              errorDetails = errorText.substring(0, 200);
+            }
+
             if (response.status === 401) {
-              throw new Error(`WooCommerce Authentication Failed: Please check API credentials. ${errorText.substring(0, 100)}`);
+              throw new Error(`WooCommerce Authentication Failed: Invalid credentials. ${errorDetails}`);
             } else {
-              throw new Error(`WooCommerce Access Forbidden: API key may not have sufficient permissions. ${errorText.substring(0, 100)}`);
+              throw new Error(`WooCommerce Access Forbidden: ${errorDetails}. Check API key permissions in WooCommerce > Settings > Advanced > REST API.`);
             }
           } else {
             throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
