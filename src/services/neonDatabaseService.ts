@@ -259,7 +259,7 @@ class NeonDatabaseService {
         };
       }
 
-      const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
+      const response = await developmentFunctionService.callFunction('neon-products', {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
