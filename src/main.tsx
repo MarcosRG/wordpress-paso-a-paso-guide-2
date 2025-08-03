@@ -13,10 +13,7 @@ const initializeServices = async () => {
     import("./utils/testCleanFetch");
   }
 
-  // Initialize MCP client
-  import("./utils/mcpClient").then(({ initializeMCP }) => {
-    initializeMCP();
-  });
+  // MCP client removed - using direct Neon connection instead
 
   // Initialize connectivity debugger in development
   if (import.meta.env.DEV) {

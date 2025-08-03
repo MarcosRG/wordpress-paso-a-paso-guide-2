@@ -19,6 +19,7 @@ import { NetlifyFunctionTest } from '../NetlifyFunctionTest';
 import { ConfigValidationTest } from '../ConfigValidationTest';
 import WooCommerceDiagnostic from '../WooCommerceDiagnostic';
 import SystemRepair from '../SystemRepair';
+import { NeonSyncStatus } from '../NeonSyncStatus';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -158,8 +159,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="woocommerce" className="space-y-6">
+        <Tabs defaultValue="neon-sync" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="neon-sync">Neon Database</TabsTrigger>
             <TabsTrigger value="woocommerce">WooCommerce</TabsTrigger>
             <TabsTrigger value="repair">Reparar Sistema</TabsTrigger>
             <TabsTrigger value="database">Base de Dados</TabsTrigger>
@@ -168,6 +170,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <TabsTrigger value="validation">Validación Sistema</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
+
+          {/* Neon Sync Tab */}
+          <TabsContent value="neon-sync">
+            <NeonSyncStatus showDetails={true} />
+          </TabsContent>
 
           {/* WooCommerce Diagnostic Tab */}
           <TabsContent value="woocommerce">
