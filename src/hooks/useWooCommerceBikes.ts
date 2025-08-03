@@ -160,9 +160,10 @@ export const useWooCommerceBikes = () => {
       } catch (error) {
         console.error("❌ Erro carregando produtos do WooCommerce:", error);
 
-        // Adicionar contexto adicional ao erro
+        // Track different types of errors appropriately
         if (error instanceof Error) {
           if (error.message.includes('Failed to fetch')) {
+            recordApiNetworkError();
             console.error('🌐 Network connectivity issue detected');
             console.error('🔧 Troubleshooting suggestions:');
             console.error('   - Check internet connection');
@@ -170,7 +171,8 @@ export const useWooCommerceBikes = () => {
             console.error('   - Check CORS configuration on WordPress');
             console.error('   - Verify SSL/TLS certificates');
             console.error('   - Test API manually:', `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=1`);
-          } else if (error.message.includes('401') || error.message.includes('403')) {
+          } else if (error.message.includes('Authentication Failed') || error.message.includes('Access Forbidden')) {
+            // Auth errors already tracked above, don't double-count
             console.error('🔐 Authentication issue detected');
             console.error('🔧 Check WooCommerce API credentials');
             console.error('   - Consumer Key:', import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY ? 'Set' : 'Missing');
