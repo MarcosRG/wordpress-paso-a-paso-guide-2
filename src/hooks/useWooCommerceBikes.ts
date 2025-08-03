@@ -50,16 +50,21 @@ export const useWooCommerceBikes = () => {
           });
 
           // Handle authentication errors specifically
-          if (response.status === 401) {
-            throw new Error(`WooCommerce Authentication Failed: Please check API credentials. ${errorText.substring(0, 100)}`);
-          } else if (response.status === 403) {
-            throw new Error(`WooCommerce Access Forbidden: API key may not have sufficient permissions. ${errorText.substring(0, 100)}`);
+          if (response.status === 401 || response.status === 403) {
+            recordApiAuthError();
+            if (response.status === 401) {
+              throw new Error(`WooCommerce Authentication Failed: Please check API credentials. ${errorText.substring(0, 100)}`);
+            } else {
+              throw new Error(`WooCommerce Access Forbidden: API key may not have sufficient permissions. ${errorText.substring(0, 100)}`);
+            }
           } else {
+            // Other HTTP errors are not auth issues
             throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
           }
         }
 
         const products = await response.json();
+        recordApiSuccess(); // Record successful API call
         console.log(`📦 ${products.length} produtos obtidos do WooCommerce`);
 
         // Converter produtos WooCommerce para formato Bike com variações
