@@ -143,9 +143,10 @@ class NeonDatabaseService {
     try {
       console.log('🔄 Iniciando sincronização WooCommerce → Neon...');
 
-      // In development, Netlify functions are not available
+      // In development, use direct WooCommerce integration instead of Netlify functions
       if (this.isDevelopment) {
-        throw new Error('Sync não dispon��vel em desenvolvimento. Netlify functions só funcionam em produção.');
+        console.warn('⚠️ Development mode: Using direct WooCommerce API (Netlify functions not available)');
+        return await this.syncDirectFromWooCommerce();
       }
 
       // 1. Buscar produtos do WooCommerce
