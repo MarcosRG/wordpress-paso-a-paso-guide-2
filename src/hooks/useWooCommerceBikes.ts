@@ -3,6 +3,7 @@ import { Bike } from "@/pages/Index";
 import { cleanFetch } from "@/utils/cleanFetch";
 import { recordApiSuccess, recordApiNetworkError, recordApiAuthError } from "@/services/connectivityMonitor";
 import { fallbackBikes, fallbackCategories } from "@/data/fallbackBikes";
+import { WooCommerceErrorHandler } from "@/services/wooCommerceErrorHandler";
 
 // Hook fallback para carregar bikes do WooCommerce quando MCP não está disponível
 export const useWooCommerceBikes = () => {
