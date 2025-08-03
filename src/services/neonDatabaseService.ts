@@ -80,9 +80,7 @@ class NeonDatabaseService {
         }
       });
 
-      console.log('🔍 RESPONSE STATUS:', response.status, response.ok);
       if (!response.ok) {
-        console.log('🔍 THROWING ERROR - response not ok');
         throw new Error(`Neon API Error: ${response.status} ${response.statusText}`);
       }
 
