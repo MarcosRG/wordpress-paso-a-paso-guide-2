@@ -251,15 +251,7 @@ export const useWooCommerceCategories = () => {
       } catch (error) {
         console.error("❌ Erro carregando categorias:", error);
         // Retornar categorias padrão
-        return [
-          "btt",
-          "e-bike", 
-          "estrada",
-          "extras-alugueres",
-          "gravel-alugueres",
-          "junior-alugueres",
-          "touring-alugueres",
-        ];
+        return fallbackCategories;
       }
     },
     staleTime: 10 * 60 * 1000,
