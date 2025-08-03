@@ -254,10 +254,17 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Diagnóstico do Sistema */}
+        {/* Diagnóstico moved to admin panel */}
         {showDiagnostic && (
           <div className="mb-8">
-            <SystemDiagnostic />
+            <div className="text-center p-8 bg-blue-50 rounded-lg">
+              <Activity className="h-12 w-12 mx-auto mb-4 text-blue-600" />
+              <h3 className="text-lg font-semibold mb-2">Sistema de Diagnóstico</h3>
+              <p className="text-gray-600 mb-4">Las herramientas de diagnóstico se han movido al panel de administración para mayor seguridad.</p>
+              <Button onClick={() => window.open('/admin', '_blank')} className="bg-blue-600 hover:bg-blue-700">
+                Abrir Panel de Administración
+              </Button>
+            </div>
           </div>
         )}
 
