@@ -124,7 +124,9 @@ exports.handler = async (event, context) => {
         }
 
       } catch (productError) {
-        console.error(`Erro processando produto ${product.id}:`, productError);
+        console.error(`Erro processando produto ${product.id}:`, productError.message);
+        // Continuar com o próximo produto em caso de erro
+        continue;
       }
     }
 
