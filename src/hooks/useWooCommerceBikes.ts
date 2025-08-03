@@ -43,41 +43,32 @@ export const useWooCommerceBikes = () => {
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unable to read error response');
-          console.error('❌ WooCommerce API Error Details:', {
-            status: response.status,
-            statusText: response.statusText,
-            url: response.url,
-            headers: Object.fromEntries(response.headers.entries()),
-            body: errorText.substring(0, 500)
-          });
 
-          // Handle authentication errors specifically
+          // Use the new error handler
+          const errorResult = WooCommerceErrorHandler.handleApiError(response, errorText);
+
+          // Track authentication errors
           if (response.status === 401 || response.status === 403) {
             recordApiAuthError();
-
-            // Parse error response for more specific details
-            let errorDetails = '';
-            try {
-              const errorJson = JSON.parse(errorText);
-              if (errorJson.code === 'woocommerce_rest_cannot_view') {
-                errorDetails = 'API key lacks "Read" permissions for products. ';
-              } else if (errorJson.code === 'woocommerce_rest_authentication_error') {
-                errorDetails = 'Invalid API credentials. ';
-              }
-              errorDetails += `Error: ${errorJson.message || 'Unknown WooCommerce error'}`;
-            } catch {
-              errorDetails = errorText.substring(0, 200);
-            }
-
-            if (response.status === 401) {
-              throw new Error(`WooCommerce Authentication Failed: Invalid credentials. ${errorDetails}`);
-            } else {
-              throw new Error(`WooCommerce Access Forbidden: ${errorDetails}. Check API key permissions in WooCommerce > Settings > Advanced > REST API.`);
-            }
-          } else {
-            // Other HTTP errors are not auth issues
-            throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
           }
+
+          // Log for debugging in development
+          if (import.meta.env.DEV) {
+            console.error('❌ WooCommerce API Error Details:', {
+              status: response.status,
+              statusText: response.statusText,
+              userMessage: errorResult.userMessage,
+              technicalMessage: errorResult.technicalMessage,
+            });
+
+            if (errorResult.requiresAdminAction) {
+              const instructions = WooCommerceErrorHandler.getInstructions(errorResult);
+              instructions.forEach(instruction => console.warn(instruction));
+            }
+          }
+
+          // Always throw error for query to handle appropriately
+          throw new Error(errorResult.technicalMessage || errorResult.userMessage);
         }
 
         const products = await response.json();
