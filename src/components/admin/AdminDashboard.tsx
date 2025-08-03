@@ -19,6 +19,7 @@ import { NetlifyFunctionTest } from '../NetlifyFunctionTest';
 import { ConfigValidationTest } from '../ConfigValidationTest';
 import WooCommerceDiagnostic from '../WooCommerceDiagnostic';
 import SystemRepair from '../SystemRepair';
+import { NeonSyncStatus } from '../NeonSyncStatus';
 
 interface AdminDashboardProps {
   onLogout: () => void;
