@@ -53,11 +53,8 @@ export const useCachedBikes = (): CachedBikesResult => {
   // Guardar en caché cuando se obtienen nuevos datos
   useEffect(() => {
     if (activeQuery.data && activeQuery.data.length > 0 && !activeQuery.isLoading) {
-      LocalBikeCache.saveBikes(
-        activeQuery.data, 
-        useNeon ? 'neon' : 'woocommerce'
-      );
-      
+      LocalBikeCache.saveBikes(activeQuery.data, 'woocommerce');
+
       // Actualizar estado si no hay datos cacheados o si son más recientes
       if (!cachedData || activeQuery.data.length !== cachedData.bikes.length) {
         setCachedData({
@@ -67,7 +64,7 @@ export const useCachedBikes = (): CachedBikesResult => {
         setIsFromCache(false);
       }
     }
-  }, [activeQuery.data, activeQuery.isLoading, useNeon, cachedData]);
+  }, [activeQuery.data, activeQuery.isLoading, cachedData]);
 
   // Función de refetch personalizada
   const refetch = async () => {
