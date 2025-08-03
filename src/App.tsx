@@ -22,6 +22,8 @@ import { monitoringService } from "./services/monitoringService";
 import { testWooCommerceAPI } from "./utils/testWooCommerceAPI";
 import { runSystemDiagnostic, quickDiagnostic } from "./utils/systemDiagnostic";
 import { debugLog, systemDebugger } from "@/utils/systemDebugger";
+import { wooCommerceNeonSync } from "@/services/wooCommerceNeonSync";
+import { neonDirectService } from "@/services/neonDirectService";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient({
