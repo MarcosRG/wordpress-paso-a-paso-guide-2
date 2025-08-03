@@ -14,6 +14,7 @@ import {
   useNeonDatabaseCategories,
   useNeonDatabaseStatus,
 } from "@/hooks/useNeonDatabase";
+import { useCachedBikes } from "@/hooks/useCachedBikes";
 import { CategoryFilter } from "./CategoryFilter";
 
 import { useLanguage } from "@/contexts/LanguageContext";
