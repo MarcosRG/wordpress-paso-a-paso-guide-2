@@ -96,6 +96,7 @@ const App = () => {
     // 🔧 FUNCIONES DE DIAGNÓSTICO
     (window as any).configDiagnostic = printConfigDiagnostic;
     (window as any).testWooConnectivity = testWooCommerceConnectivity;
+    (window as any).systemAnalysisSafe = () => systemDebugger.analyzeSystemStatusSafe();
 
     debugLog('info', '🧪 Debug functions available:');
     console.log('   - testWooAPI() - Test WooCommerce API connectivity');
