@@ -361,9 +361,7 @@ class NeonDatabaseService {
 
   // Clear cache method
   private clearCache(): void {
-    this.productsCache = null;
-    this.categoriesCache = null;
-    this.cacheExpiry = 0;
+    bikeCache.clear();
     console.log('🗑️ Cache limpo');
   }
 }
