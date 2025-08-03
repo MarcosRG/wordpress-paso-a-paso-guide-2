@@ -82,7 +82,7 @@ const App = () => {
     (window as any).runSystemDiagnostic = runSystemDiagnostic;
     (window as any).quickDiagnostic = quickDiagnostic;
 
-    // Adicionar novas fun��ões de debug
+    // Adicionar novas funções de debug
     (window as any).systemAnalysis = () => systemDebugger.analyzeSystemStatus();
     (window as any).debugLogs = () => systemDebugger.getRecentLogs();
 
@@ -115,8 +115,8 @@ const App = () => {
     console.log('   - configDiagnostic() - Check all environment variables');
     console.log('   - testWooConnectivity() - Test WooCommerce API connectivity');
 
-    // Análise inicial do sistema em desenvolvimento
-    if (import.meta.env.DEV) {
+    // Análise inicial do sistema em desenvolvimento (DISABLED due to FullStory conflicts)
+    if (import.meta.env.DEV && false) { // Disabled to avoid FullStory fetch conflicts
       setTimeout(() => {
         systemDebugger.analyzeSystemStatus()
           .then(status => {
