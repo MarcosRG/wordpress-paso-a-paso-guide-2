@@ -14,6 +14,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { testWooCommerceAPI } from '@/utils/testWooCommerceAPI';
+import WooCommercePermissionsFix from './admin/WooCommercePermissionsFix';
 
 interface DiagnosticResult {
   success: boolean;
