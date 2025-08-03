@@ -197,9 +197,12 @@ export const useWooCommerceCategories = () => {
           ];
         }
 
-        const response = await cleanFetch(`${apiBase}/products/categories?per_page=50&parent=319`, {
+        // Use query parameters for WooCommerce authentication
+        const authParams = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
+        const categoriesUrl = `${apiBase}/products/categories?per_page=50&parent=319&${authParams}`;
+
+        const response = await cleanFetch(categoriesUrl, {
           headers: {
-            'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
