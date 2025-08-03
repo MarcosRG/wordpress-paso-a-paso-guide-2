@@ -226,15 +226,7 @@ export const useWooCommerceCategories = () => {
         });
 
         if (!response.ok) {
-          return [
-            "btt",
-            "e-bike", 
-            "estrada",
-            "extras-alugueres",
-            "gravel-alugueres",
-            "junior-alugueres",
-            "touring-alugueres",
-          ];
+          return fallbackCategories;
         }
 
         const categories = await response.json();
