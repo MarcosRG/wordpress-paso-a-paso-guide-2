@@ -81,7 +81,9 @@ export const useProgressiveWooCommerceBikes = () => {
       } else {
         // Produto simples - usar stock direto
         availableStock = product.stock_quantity || 0;
-        console.log(`📊 ${product.name} (simples): stock ${availableStock}`);
+        if (import.meta.env.DEV) {
+          console.log(`📊 ${product.name} (simples): stock ${availableStock}`);
+        }
       }
 
       // Só retornar se tem stock disponível
