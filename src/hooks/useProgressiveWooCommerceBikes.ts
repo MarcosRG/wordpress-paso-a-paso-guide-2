@@ -30,9 +30,7 @@ export const useProgressiveWooCommerceBikes = () => {
 
       // Se o produto tem variações, buscar as variações
       if (product.type === 'variable' && product.variations && product.variations.length > 0) {
-        if (import.meta.env.DEV) {
-          console.log(`🔍 Carregando variações para ${product.name}...`);
-        }
+        console.log(`🔍 Carregando variações para ${product.name}...`);
 
         try {
           const variationsResponse = await cleanFetch(
@@ -61,29 +59,17 @@ export const useProgressiveWooCommerceBikes = () => {
               )
               .reduce((total: number, variation: any) => total + (variation.stock_quantity || 0), 0);
 
-            if (import.meta.env.DEV) {
-              console.log(`📊 ${product.name}: ${productVariations.length} variações, stock total: ${availableStock}`);
-            }
+            console.log(`📊 ${product.name}: ${productVariations.length} variações, stock total: ${availableStock}`);
           } else {
-            if (import.meta.env.DEV) {
-              console.warn(`⚠️ Não foi possível carregar variações para ${product.name} (${variationsResponse.status})`);
-            }
-            // Fallback: usar stock do produto principal
-            availableStock = product.stock_quantity || 0;
+            console.warn(`⚠️ Não foi possível carregar variações para ${product.name}`);
           }
         } catch (variationError) {
-          if (import.meta.env.DEV) {
-            console.warn(`⚠️ Erro de rede carregando variações para ${product.name}, usando stock principal`);
-          }
-          // Fallback robusto: usar stock do produto principal
-          availableStock = product.stock_quantity || 0;
+          console.error(`❌ Erro carregando variações para ${product.name}:`, variationError);
         }
       } else {
         // Produto simples - usar stock direto
         availableStock = product.stock_quantity || 0;
-        if (import.meta.env.DEV) {
-          console.log(`📊 ${product.name} (simples): stock ${availableStock}`);
-        }
+        console.log(`📊 ${product.name} (simples): stock ${availableStock}`);
       }
 
       // Só retornar se tem stock disponível
@@ -203,25 +189,21 @@ export const useProgressiveWooCommerceBikes = () => {
         for (let i = 0; i < products.length; i++) {
           const product = products[i];
           setProcessingCount(i + 1);
-
-          if (import.meta.env.DEV) {
-            console.log(`🔄 Processando produto ${i + 1}/${products.length}: ${product.name}`);
-          }
-
+          
+          console.log(`🔄 Processando produto ${i + 1}/${products.length}: ${product.name}`);
+          
           const bike = await processProduct(product, apiBase, credentials);
-
+          
           if (bike) {
             processedBikes.push(bike);
             // Actualizar el estado inmediatamente para mostrar la bicicleta
             setLoadedBikes(current => [...current, bike]);
-            if (import.meta.env.DEV) {
-              console.log(`✅ Bicicleta adicionada: ${bike.name} (${processedBikes.length} total)`);
-            }
+            console.log(`✅ Bicicleta adicionada: ${bike.name} (${processedBikes.length} total)`);
           }
 
           // Pequeña pausa para permitir que la UI se actualice
           if (i < products.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 50)); // Reducir pausa a 50ms
+            await new Promise(resolve => setTimeout(resolve, 100));
           }
         }
 
