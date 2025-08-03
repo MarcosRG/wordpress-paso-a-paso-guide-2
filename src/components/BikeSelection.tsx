@@ -251,8 +251,15 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
         <div className="text-center mb-6">
           <p className="text-muted-foreground">
-            {isFromCache ? `${t("loadingBikes")} (a actualizar...)` : t("loadingBikes")}
+            {dataSource === 'neon' ? `${t("loadingBikes")} (desde base de datos...)` :
+             dataSource === 'woocommerce' ? `${t("loadingBikes")} (desde WooCommerce...)` :
+             t("loadingBikes")}
           </p>
+          {neonAvailable === false && (
+            <p className="text-sm text-amber-600 mt-2">
+              Base de datos no disponible, cargando desde WooCommerce...
+            </p>
+          )}
           {progressInfo && progressInfo.isProcessing && (
             <div className="mt-4 space-y-2">
               <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
