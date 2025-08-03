@@ -94,13 +94,15 @@ export const BikeSelection = ({
 
   const { language, setLanguage, t } = useLanguage();
 
-  // Auto-sync si Neon está vacía
+  // Auto-sync si Neon está conectado pero vacío
   React.useEffect(() => {
     const handleAutoSync = async () => {
-      if (useNeonDatabase && bikes && bikes.length === 0 && !isLoading && !syncMutation.isPending) {
-        console.log('🔄 Neon Database vacía, iniciando sincronización automática...');
+      if (needsSync && !syncMutation.isPending) {
+        console.log('🔄 Neon conectado pero sin datos, sincronizando...');
         try {
           await syncMutation.mutateAsync();
+          // Refrescar datos de Neon después del sync
+          await refetchBikes();
         } catch (error) {
           console.warn('⚠️ Auto-sync falló, usando fallback WooCommerce');
         }
@@ -108,7 +110,7 @@ export const BikeSelection = ({
     };
 
     handleAutoSync();
-  }, [useNeonDatabase, bikes, isLoading, syncMutation]);
+  }, [needsSync, syncMutation, refetchBikes]);
 
   // Logging optimizado y detección de errores
   React.useEffect(() => {
