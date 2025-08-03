@@ -32,7 +32,7 @@ class NeonDatabaseService {
   private async checkNetlifyFunctionsAvailable(): Promise<boolean> {
     // In development, Netlify functions are not available
     if (this.isDevelopment) {
-      console.log('🔧 Development mode: Netlify functions not available');
+      console.log('���� Development mode: Netlify functions not available');
       return false;
     }
     try {
@@ -220,7 +220,7 @@ class NeonDatabaseService {
       // 3. Enviar produtos para Neon através de função netlify
       console.log(`📤 Enviando ${processedProducts.length} produtos para Neon...`);
       
-      const syncResponse = await cleanFetch(`${this.baseUrl}/neon-sync`, {
+      const syncResponse = await developmentFunctionService.callFunction('neon-sync', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
