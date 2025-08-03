@@ -75,6 +75,12 @@ export class SystemDebugger {
     // Testar WooCommerce
     try {
       this.log('info', '🧪 Testando WooCommerce API...');
+
+      // Check if required env vars exist
+      if (!import.meta.env.VITE_WOOCOMMERCE_API_BASE || !import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY || !import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET) {
+        throw new Error('WooCommerce environment variables not configured');
+      }
+
       const wooResponse = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=1`, {
         headers: {
           'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`
