@@ -255,7 +255,9 @@ export const BikeSelection = ({
       <div>
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
         <div className="text-center mb-6">
-          <p className="text-muted-foreground">{t("loadingBikes")}</p>
+          <p className="text-muted-foreground">
+            {isFromCache ? `${t("loadingBikes")} (a actualizar...)` : t("loadingBikes")}
+          </p>
           {progressInfo && progressInfo.isProcessing && (
             <div className="mt-4 space-y-2">
               <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
