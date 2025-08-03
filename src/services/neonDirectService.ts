@@ -1,185 +1,291 @@
-/**
- * SERVICIO DIRECTO A NEON - BACKUP FALLBACK
- * Solo se usa cuando Netlify Functions fallan
- * 🚨 ADVERTENCIA: Requiere variables VITE_ expuestas
- */
-
 import { neon } from '@neondatabase/serverless';
-import { DATABASE_CONFIG } from '../config/unified';
 
-export interface NeonProduct {
+interface WooCommerceProduct {
   id: number;
-  woocommerce_id: number;
   name: string;
-  slug: string;
   type: string;
   status: string;
-  description: string;
-  short_description: string;
-  price: number;
-  regular_price: number;
-  sale_price: number;
-  categories: any[];
-  images: any[];
-  attributes: any[];
-  variations: any[];
+  price: string;
+  regular_price: string;
   stock_quantity: number;
   stock_status: string;
-  meta_data: any;
-  acf_data: any;
-  last_updated: string;
-  created_at: string;
+  categories: any[];
+  images: any[];
+  short_description: string;
+  description: string;
+  variations?: number[];
+  acf?: any;
+  meta_data?: any[];
 }
 
-class NeonDirectService {
-  private sql: any = null;
-  private isInitialized = false;
-  private lastError: string | null = null;
+interface NeonProduct {
+  woocommerce_id: number;
+  name: string;
+  type: string;
+  status: string;
+  price: number;
+  regular_price: number;
+  stock_quantity: number;
+  stock_status: string;
+  categories: any[];
+  images: any[];
+  short_description: string;
+  description: string;
+  variations_ids: number[];
+  acf_data: any;
+  meta_data: any[];
+}
 
+export class NeonDirectService {
+  private sql: any;
+  
   constructor() {
-    this.initializeConnection();
+    const databaseUrl = import.meta.env.DATABASE_URL || 
+                       'postgresql://neondb_owner:npg_D9uFOlw3YvTX@ep-polished-rice-abacexjj-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require';
+    this.sql = neon(databaseUrl);
   }
 
-  private initializeConnection() {
+  async testConnection(): Promise<{ success: boolean; message: string; data?: any }> {
     try {
-      if (!DATABASE_CONFIG.connectionString) {
-        throw new Error('DATABASE_URL no configurado para conexión directa');
+      const result = await this.sql`SELECT NOW() as server_time, version() as pg_version`;
+      
+      return {
+        success: true,
+        message: "Conexión exitosa a Neon Database",
+        data: result[0]
+      };
+    } catch (error) {
+      console.error('❌ Error conectando a Neon:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Error desconocido'
+      };
+    }
+  }
+
+  async createProductsTable(): Promise<{ success: boolean; message: string }> {
+    try {
+      await this.sql`
+        CREATE TABLE IF NOT EXISTS products (
+          id SERIAL PRIMARY KEY,
+          woocommerce_id INTEGER UNIQUE NOT NULL,
+          name VARCHAR NOT NULL,
+          type VARCHAR NOT NULL DEFAULT 'simple',
+          status VARCHAR NOT NULL DEFAULT 'publish',
+          price NUMERIC DEFAULT 0,
+          regular_price NUMERIC DEFAULT 0,
+          stock_quantity INTEGER DEFAULT 0,
+          stock_status VARCHAR DEFAULT 'instock',
+          categories JSONB DEFAULT '[]',
+          images JSONB DEFAULT '[]',
+          short_description TEXT DEFAULT '',
+          description TEXT DEFAULT '',
+          variations_ids JSONB DEFAULT '[]',
+          acf_data JSONB DEFAULT '{}',
+          meta_data JSONB DEFAULT '[]',
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW()
+        )
+      `;
+
+      return {
+        success: true,
+        message: "Tabla 'products' creada/verificada exitosamente"
+      };
+    } catch (error) {
+      console.error('❌ Error creando tabla:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Error creando tabla'
+      };
+    }
+  }
+
+  async insertProduct(product: WooCommerceProduct): Promise<{ success: boolean; message: string; id?: number }> {
+    try {
+      const neonProduct: NeonProduct = {
+        woocommerce_id: product.id,
+        name: product.name,
+        type: product.type || 'simple',
+        status: product.status || 'publish',
+        price: parseFloat(product.price) || 0,
+        regular_price: parseFloat(product.regular_price) || 0,
+        stock_quantity: product.stock_quantity || 0,
+        stock_status: product.stock_status || 'instock',
+        categories: product.categories || [],
+        images: product.images || [],
+        short_description: product.short_description || '',
+        description: product.description || '',
+        variations_ids: product.variations || [],
+        acf_data: product.acf || {},
+        meta_data: product.meta_data || []
+      };
+
+      const result = await this.sql`
+        INSERT INTO products (
+          woocommerce_id, name, type, status, price, regular_price,
+          stock_quantity, stock_status, categories, images,
+          short_description, description, variations_ids, acf_data, meta_data
+        ) VALUES (
+          ${neonProduct.woocommerce_id}, ${neonProduct.name}, ${neonProduct.type}, 
+          ${neonProduct.status}, ${neonProduct.price}, ${neonProduct.regular_price},
+          ${neonProduct.stock_quantity}, ${neonProduct.stock_status}, 
+          ${JSON.stringify(neonProduct.categories)}, ${JSON.stringify(neonProduct.images)},
+          ${neonProduct.short_description}, ${neonProduct.description}, 
+          ${JSON.stringify(neonProduct.variations_ids)}, ${JSON.stringify(neonProduct.acf_data)}, 
+          ${JSON.stringify(neonProduct.meta_data)}
+        )
+        ON CONFLICT (woocommerce_id) 
+        DO UPDATE SET
+          name = EXCLUDED.name,
+          type = EXCLUDED.type,
+          status = EXCLUDED.status,
+          price = EXCLUDED.price,
+          regular_price = EXCLUDED.regular_price,
+          stock_quantity = EXCLUDED.stock_quantity,
+          stock_status = EXCLUDED.stock_status,
+          categories = EXCLUDED.categories,
+          images = EXCLUDED.images,
+          short_description = EXCLUDED.short_description,
+          description = EXCLUDED.description,
+          variations_ids = EXCLUDED.variations_ids,
+          acf_data = EXCLUDED.acf_data,
+          meta_data = EXCLUDED.meta_data,
+          updated_at = NOW()
+        RETURNING id
+      `;
+
+      return {
+        success: true,
+        message: `Producto '${product.name}' guardado exitosamente`,
+        id: result[0]?.id
+      };
+    } catch (error) {
+      console.error('❌ Error insertando producto:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Error insertando producto'
+      };
+    }
+  }
+
+  async syncProductsFromWooCommerce(products: WooCommerceProduct[]): Promise<{ 
+    success: boolean; 
+    message: string; 
+    inserted: number; 
+    errors: number; 
+  }> {
+    let inserted = 0;
+    let errors = 0;
+
+    console.log(`🔄 Iniciando sincronización de ${products.length} productos a Neon...`);
+
+    // Asegurar que la tabla existe
+    const tableResult = await this.createProductsTable();
+    if (!tableResult.success) {
+      return {
+        success: false,
+        message: `Error preparando tabla: ${tableResult.message}`,
+        inserted: 0,
+        errors: products.length
+      };
+    }
+
+    for (const product of products) {
+      try {
+        const result = await this.insertProduct(product);
+        if (result.success) {
+          inserted++;
+          if (import.meta.env.DEV) {
+            console.log(`✅ ${product.name} sincronizado`);
+          }
+        } else {
+          errors++;
+          console.warn(`⚠️ Error con ${product.name}: ${result.message}`);
+        }
+      } catch (error) {
+        errors++;
+        console.error(`❌ Error procesando ${product.name}:`, error);
       }
-
-      console.log('🔗 Inicializando conexión directa a Neon...');
-      this.sql = neon(DATABASE_CONFIG.connectionString);
-      this.isInitialized = true;
-      this.lastError = null;
-      console.log('✅ Conexión directa a Neon inicializada');
-    } catch (error) {
-      console.error('❌ Error inicializando conexión directa:', error);
-      this.lastError = error instanceof Error ? error.message : 'Error desconocido';
-      this.isInitialized = false;
-    }
-  }
-
-  async testConnection(): Promise<boolean> {
-    if (!this.isInitialized) {
-      return false;
     }
 
-    try {
-      await this.sql`SELECT 1`;
-      console.log('✅ Test conexión Neon directo: OK');
-      return true;
-    } catch (error) {
-      console.error('❌ Test conexión Neon directo falló:', error);
-      this.lastError = error instanceof Error ? error.message : 'Error de conexión';
-      return false;
-    }
+    const success = inserted > 0;
+    const message = `Sincronización completa: ${inserted} productos insertados, ${errors} errores`;
+
+    console.log(success ? '✅' : '⚠️', message);
+
+    return {
+      success,
+      message,
+      inserted,
+      errors
+    };
   }
 
   async getProducts(): Promise<NeonProduct[]> {
-    if (!this.isInitialized) {
-      throw new Error(`Conexión directa no inicializada: ${this.lastError}`);
-    }
-
     try {
-      console.log('🔄 Obteniendo productos directamente de Neon...');
-      
       const products = await this.sql`
-        SELECT 
-          id,
-          woocommerce_id,
-          name,
-          slug,
-          type,
-          status,
-          description,
-          short_description,
-          price,
-          regular_price,
-          sale_price,
-          categories,
-          images,
-          attributes,
-          variations,
-          stock_quantity,
-          stock_status,
-          meta_data,
-          acf_data,
-          last_updated,
-          created_at
-        FROM products
-        WHERE status = 'publish'
-        AND stock_quantity > 0
+        SELECT * FROM products 
+        WHERE status = 'publish' AND stock_quantity > 0
         ORDER BY name ASC
       `;
 
-      console.log(`✅ Neon directo: ${products.length} productos obtenidos`);
       return products;
     } catch (error) {
-      console.error('❌ Error obteniendo productos de Neon directo:', error);
-      
-      // Si la tabla no existe, devolver array vacío
-      if (error instanceof Error && error.message.includes('relation "products" does not exist')) {
-        console.log('⚠️ Tabla products no existe en Neon - devolviendo array vacío');
-        return [];
-      }
-      
-      throw error;
-    }
-  }
-
-  async getProductById(id: number): Promise<NeonProduct | null> {
-    if (!this.isInitialized) {
-      throw new Error(`Conexión directa no inicializada: ${this.lastError}`);
-    }
-
-    try {
-      const result = await this.sql`
-        SELECT * FROM products 
-        WHERE woocommerce_id = ${id}
-        AND status = 'publish'
-        LIMIT 1
-      `;
-
-      return result[0] || null;
-    } catch (error) {
-      console.error(`❌ Error obteniendo producto ${id} de Neon directo:`, error);
-      return null;
-    }
-  }
-
-  async getVariations(productId: number): Promise<any[]> {
-    if (!this.isInitialized) {
-      throw new Error(`Conexión directa no inicializada: ${this.lastError}`);
-    }
-
-    try {
-      const variations = await this.sql`
-        SELECT * FROM product_variations 
-        WHERE product_id = ${productId}
-        AND stock_quantity > 0
-        ORDER BY id ASC
-      `;
-
-      return variations || [];
-    } catch (error) {
-      console.error(`❌ Error obteniendo variaciones de producto ${productId}:`, error);
-      // Si la tabla no existe, devolver array vacío
-      if (error instanceof Error && error.message.includes('relation "product_variations" does not exist')) {
-        return [];
-      }
+      console.error('❌ Error obteniendo productos de Neon:', error);
       return [];
     }
   }
 
-  getStatus() {
-    return {
-      isInitialized: this.isInitialized,
-      lastError: this.lastError,
-      hasConnection: !!this.sql,
-      connectionString: DATABASE_CONFIG.connectionString ? '***configured***' : 'missing'
-    };
+  async getProductStats(): Promise<{ 
+    total: number; 
+    published: number; 
+    inStock: number; 
+    lastUpdate: string | null;
+  }> {
+    try {
+      const stats = await this.sql`
+        SELECT 
+          COUNT(*) as total,
+          COUNT(*) FILTER (WHERE status = 'publish') as published,
+          COUNT(*) FILTER (WHERE status = 'publish' AND stock_quantity > 0) as in_stock,
+          MAX(updated_at) as last_update
+        FROM products
+      `;
+
+      return {
+        total: parseInt(stats[0].total),
+        published: parseInt(stats[0].published),
+        inStock: parseInt(stats[0].in_stock),
+        lastUpdate: stats[0].last_update
+      };
+    } catch (error) {
+      console.error('❌ Error obteniendo estadísticas:', error);
+      return {
+        total: 0,
+        published: 0,
+        inStock: 0,
+        lastUpdate: null
+      };
+    }
+  }
+
+  async clearAllProducts(): Promise<{ success: boolean; message: string }> {
+    try {
+      const result = await this.sql`DELETE FROM products`;
+      return {
+        success: true,
+        message: `${result.length} productos eliminados`
+      };
+    } catch (error) {
+      console.error('❌ Error limpiando productos:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Error limpiando productos'
+      };
+    }
   }
 }
 
-// Singleton instance
+// Instancia singleton
 export const neonDirectService = new NeonDirectService();
-export default neonDirectService;

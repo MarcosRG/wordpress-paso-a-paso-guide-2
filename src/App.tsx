@@ -22,9 +22,41 @@ import { monitoringService } from "./services/monitoringService";
 import { testWooCommerceAPI } from "./utils/testWooCommerceAPI";
 import { runSystemDiagnostic, quickDiagnostic } from "./utils/systemDiagnostic";
 import { debugLog, systemDebugger } from "@/utils/systemDebugger";
+import { wooCommerceNeonSync } from "@/services/wooCommerceNeonSync";
+import { neonDirectService } from "@/services/neonDirectService";
+import { printConfigDiagnostic, testWooCommerceConnectivity } from "@/utils/configDiagnostic";
 import "./wordpress-embed.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Caché más agresivo para mejorar navegación entre pasos
+      staleTime: 5 * 60 * 1000, // 5 minutos
+      gcTime: 30 * 60 * 1000, // 30 minutos
+
+      // Mantener datos en caché durante navegación
+      refetchOnWindowFocus: false,
+      refetchOnMount: "always", // Siempre intentar refetch pero mostrar cache primero
+      refetchOnReconnect: true,
+
+      // Retry más agresivo para mejor experiencia
+      retry: (failureCount, error) => {
+        // No retry para errores de auth
+        if (error instanceof Error &&
+           (error.message.includes('Authentication Failed') ||
+            error.message.includes('Access Forbidden'))) {
+          return false;
+        }
+        // Retry hasta 2 veces para otros errores
+        return failureCount < 2;
+      },
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 5000),
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
 const App = () => {
   // Check if running in WordPress iframe
@@ -54,12 +86,34 @@ const App = () => {
     (window as any).systemAnalysis = () => systemDebugger.analyzeSystemStatus();
     (window as any).debugLogs = () => systemDebugger.getRecentLogs();
 
+    // 🚀 NUEVAS FUNCIONES DE NEON
+    (window as any).testNeonConnection = () => neonDirectService.testConnection();
+    (window as any).testAllConnections = () => wooCommerceNeonSync.testConnections();
+    (window as any).syncWooToNeon = () => wooCommerceNeonSync.syncAllProducts();
+    (window as any).getNeonStats = () => neonDirectService.getProductStats();
+    (window as any).getNeonProducts = () => neonDirectService.getProducts();
+
+    // 🔧 FUNCIONES DE DIAGNÓSTICO
+    (window as any).configDiagnostic = printConfigDiagnostic;
+    (window as any).testWooConnectivity = testWooCommerceConnectivity;
+
     debugLog('info', '🧪 Debug functions available:');
     console.log('   - testWooAPI() - Test WooCommerce API connectivity');
     console.log('   - runSystemDiagnostic() - Complete system diagnostic');
     console.log('   - quickDiagnostic() - Quick problem detection');
     console.log('   - systemAnalysis() - Análise completa do sistema');
     console.log('   - debugLogs() - Ver logs recentes do sistema');
+    console.log('');
+    console.log('🗄️ NEON DATABASE FUNCTIONS:');
+    console.log('   - testNeonConnection() - Test connection to Neon');
+    console.log('   - testAllConnections() - Test both WooCommerce & Neon');
+    console.log('   - syncWooToNeon() - Sync all products WooCommerce -> Neon');
+    console.log('   - getNeonStats() - Get Neon database statistics');
+    console.log('   - getNeonProducts() - Get all products from Neon');
+    console.log('');
+    console.log('🔧 DIAGNOSTIC FUNCTIONS:');
+    console.log('   - configDiagnostic() - Check all environment variables');
+    console.log('   - testWooConnectivity() - Test WooCommerce API connectivity');
 
     // Análise inicial do sistema em desenvolvimento
     if (import.meta.env.DEV) {
