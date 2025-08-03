@@ -64,7 +64,6 @@ class NeonDatabaseService {
       }
 
       console.log('🚀 Carregando produtos desde Neon Database...');
-      console.log('🔍 isDevelopment check:', this.isDevelopment, 'import.meta.env.DEV:', import.meta.env.DEV);
 
       // In development, Netlify functions are not available
       if (this.isDevelopment) {
