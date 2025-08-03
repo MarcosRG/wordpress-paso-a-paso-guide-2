@@ -96,6 +96,7 @@ const App = () => {
     // 🔧 FUNCIONES DE DIAGNÓSTICO
     (window as any).configDiagnostic = printConfigDiagnostic;
     (window as any).testWooConnectivity = testWooCommerceConnectivity;
+    (window as any).systemAnalysisSafe = () => systemDebugger.analyzeSystemStatusSafe();
 
     debugLog('info', '🧪 Debug functions available:');
     console.log('   - testWooAPI() - Test WooCommerce API connectivity');
@@ -114,13 +115,17 @@ const App = () => {
     console.log('🔧 DIAGNOSTIC FUNCTIONS:');
     console.log('   - configDiagnostic() - Check all environment variables');
     console.log('   - testWooConnectivity() - Test WooCommerce API connectivity');
+    console.log('   - systemAnalysisSafe() - Safe system analysis without fetch calls');
 
-    // Análise inicial do sistema em desenvolvimento
+    // Análise inicial do sistema em desenvolvimento (safe mode)
     if (import.meta.env.DEV) {
       setTimeout(() => {
-        systemDebugger.analyzeSystemStatus().then(status => {
-          debugLog('info', '📊 Análise inicial do sistema completa', status);
-        });
+        try {
+          const status = systemDebugger.analyzeSystemStatusSafe();
+          debugLog('info', '📊 Análise inicial do sistema completa (safe mode)', status);
+        } catch (error) {
+          console.warn('⚠️ Error en análisis del sistema:', error?.message || error);
+        }
       }, 3000); // Delay para permitir inicialização completa
     }
 
