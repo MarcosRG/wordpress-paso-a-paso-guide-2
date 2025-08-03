@@ -114,6 +114,7 @@ const App = () => {
     console.log('🔧 DIAGNOSTIC FUNCTIONS:');
     console.log('   - configDiagnostic() - Check all environment variables');
     console.log('   - testWooConnectivity() - Test WooCommerce API connectivity');
+    console.log('   - systemAnalysisSafe() - Safe system analysis without fetch calls');
 
     // Análise inicial do sistema em desenvolvimento (safe mode)
     if (import.meta.env.DEV) {
