@@ -352,6 +352,14 @@ class NeonDatabaseService {
       throw error;
     }
   }
+
+  // Clear cache method
+  private clearCache(): void {
+    this.productsCache = null;
+    this.categoriesCache = null;
+    this.cacheExpiry = 0;
+    console.log('🗑️ Cache limpo');
+  }
 }
 
 export const neonDatabaseService = new NeonDatabaseService();
