@@ -1,6 +1,9 @@
-// Direct Neon service for development when netlify functions aren't available
-// This will work directly in the browser with the Neon serverless driver
+/**
+ * SERVICIO DIRECTO A NEON DATABASE
+ * Conexión directa sin Netlify Functions para máxima velocidad
+ */
 import config from '../config/unified';
+import { neon } from '@neondatabase/serverless';
 
 interface DirectNeonProduct {
   id: number;
@@ -24,60 +27,123 @@ interface DirectNeonProduct {
 
 class DirectNeonService {
   private connectionString: string;
-  
+  private sql: any;
+
   constructor() {
     this.connectionString = config.DATABASE.connectionString;
+
+    // Inicializar conexión directa si está disponible
+    if (this.connectionString) {
+      try {
+        this.sql = neon(this.connectionString);
+        console.log('✅ Conexión directa a Neon inicializada');
+      } catch (error) {
+        console.error('❌ Error inicializando conexión Neon:', error);
+        this.sql = null;
+      }
+    }
   }
 
   // Check if direct Neon connection is possible
   isAvailable(): boolean {
-    return !!this.connectionString;
+    return !!(this.connectionString && this.sql);
   }
 
-  // Get products directly from Neon (using HTTP interface)
+  // Get products directly from Neon (CONEXIÓN DIRECTA - SIN FUNCTIONS)
   async getProducts(): Promise<DirectNeonProduct[]> {
+    try {
+      if (!this.isAvailable()) {
+        throw new Error('DATABASE_URL não configurado para conexão direta');
+      }
+
+      console.log('🚀 Carregando produtos DIRETAMENTE do Neon (sem functions)...');
+
+      // CONEXIÓN DIRECTA - SIN NETLIFY FUNCTIONS
+      const products = await this.sql`
+        SELECT
+          id,
+          woocommerce_id,
+          name,
+          slug,
+          type,
+          status,
+          description,
+          short_description,
+          price,
+          regular_price,
+          sale_price,
+          categories,
+          images,
+          attributes,
+          variations,
+          stock_quantity,
+          stock_status,
+          meta_data,
+          acf_data,
+          last_updated,
+          created_at
+        FROM products
+        WHERE status = 'publish'
+        AND stock_quantity > 0
+        ORDER BY name ASC
+      `;
+
+      console.log(`✅ ${products.length} produtos carregados DIRETAMENTE do Neon`);
+      return products || [];
+
+    } catch (tableError) {
+      // Si la tabla no existe, devolver array vacío
+      if (tableError.message && tableError.message.includes('relation "products" does not exist')) {
+        console.log('📊 Tabla products aún no creada en Neon - devolviendo array vacío');
+        return [];
+      }
+
+      console.error('❌ Error en conexión directa a Neon:', tableError);
+      throw new Error(`Neon connection failed: ${tableError.message}`);
+    }
+  }
+
+  // Get specific product with variations
+  async getProductWithVariations(productId: number): Promise<DirectNeonProduct | null> {
     try {
       if (!this.isAvailable()) {
         throw new Error('DATABASE_URL não configurado');
       }
 
-      console.log('🚀 Carregando produtos diretamente do Neon...');
+      console.log(`🔍 Buscando produto ${productId} diretamente no Neon...`);
 
-      // Usar netlify functions en su lugar - más seguro y confiable
-      const response = await fetch('/.netlify/functions/neon-products', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const product = await this.sql`
+        SELECT * FROM products
+        WHERE woocommerce_id = ${productId}
+        AND status = 'publish'
+        LIMIT 1
+      `;
 
-      if (!response.ok) {
-        // Check if it's a configuration error (503)
-        if (response.status === 503) {
-          throw new Error('Neon database not configured - using WooCommerce fallback');
-        }
-        throw new Error(`Erro da API Neon: ${response.status}`);
+      if (!product || product.length === 0) {
+        return null;
       }
 
-      const responseText = await response.text();
-
-      // Try to parse JSON
-      let products;
+      // Buscar variaciones si existen
       try {
-        products = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('❌ Erro parsing JSON response from Neon function:', responseText);
-        throw new Error('Erro parsing JSON - netlify function não está executando corretamente');
+        const variations = await this.sql`
+          SELECT * FROM product_variations
+          WHERE product_id = ${productId}
+          AND stock_quantity > 0
+          ORDER BY id ASC
+        `;
+
+        // Agregar variaciones al producto
+        product[0].variations_data = variations || [];
+      } catch (variationsError) {
+        // Si no existe tabla de variaciones, continuar sin ellas
+        product[0].variations_data = [];
       }
 
-      // Handle case where products is wrapped in an error response
-      if (products.error) {
-        throw new Error(products.error);
-      }
-
-      console.log(`✅ ${products.length || 0} produtos carregados do Neon`);
-      return products || [];
+      console.log(`✅ Produto ${productId} encontrado no Neon`);
+      return product[0];
 
     } catch (error) {
-      console.error('❌ Erro na conexão direta ao Neon:', error);
+      console.error(`❌ Error buscando produto ${productId}:`, error);
       throw error;
     }
   }
