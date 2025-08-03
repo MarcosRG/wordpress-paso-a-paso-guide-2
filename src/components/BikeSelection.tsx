@@ -4,11 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bike, SelectedBike, ReservationData } from "@/pages/Index";
 import {
-  useNeonMCPBikes,
-  useNeonMCPCategories,
-  useWooCommerceToNeonSync,
-} from "@/hooks/useNeonMCP";
-import {
   useWooCommerceBikes,
   useWooCommerceCategories,
 } from "@/hooks/useWooCommerceBikes";
