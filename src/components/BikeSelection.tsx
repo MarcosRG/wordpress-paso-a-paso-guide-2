@@ -83,14 +83,13 @@ export const BikeSelection = ({
 
 
 
-  // Función de refresh simplificada con nuevo sistema de caché
+  // Función de refresh simplificada
   const handleRefresh = async () => {
     try {
       if (import.meta.env.DEV) {
-        console.log(`🔄 Refrescando datos (${dataSource})...`);
+        console.log(`🔄 Refrescando datos desde WooCommerce...`);
       }
 
-      // El nuevo hook maneja toda la lógica de invalidación
       await refetchBikes();
 
       if (import.meta.env.DEV) {
