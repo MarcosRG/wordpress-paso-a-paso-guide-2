@@ -251,34 +251,8 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
         <div className="text-center mb-6">
           <p className="text-muted-foreground">
-            {dataSource === 'neon' ? `${t("loadingBikes")} (desde base de datos...)` :
-             dataSource === 'woocommerce' ? `${t("loadingBikes")} (desde WooCommerce...)` :
-             t("loadingBikes")}
+            {t("loadingBikes")}
           </p>
-          {neonAvailable === false && (
-            <p className="text-sm text-amber-600 mt-2">
-              Base de datos no disponible, cargando desde WooCommerce...
-            </p>
-          )}
-          {progressInfo && progressInfo.isProcessing && (
-            <div className="mt-6 space-y-3 max-w-md mx-auto">
-              <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
-                <div
-                  className="bg-gradient-to-r from-red-500 to-red-600 h-3 rounded-full transition-all duration-500 relative overflow-hidden"
-                  style={{ width: `${progressInfo.progressPercentage}%` }}
-                >
-                  <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
-                </div>
-              </div>
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>{progressInfo.processingCount} de {progressInfo.totalProducts} produtos</span>
-                <span className="font-semibold text-red-600">{progressInfo.progressPercentage}%</span>
-              </div>
-              <p className="text-xs text-center text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                Las bicicletas aparecerán automáticamente mientras se cargan
-              </p>
-            </div>
-          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
