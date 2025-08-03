@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Bike } from "@/pages/Index";
 import { LocalBikeCache } from "@/services/localBikeCache";
-import { useNeonDatabaseBikes, useNeonDatabaseStatus } from "./useNeonDatabase";
+
 import { useProgressiveWooCommerceBikes } from "./useProgressiveWooCommerceBikes";
 import { fallbackBikes, fallbackCategories } from "@/data/fallbackBikes";
 
