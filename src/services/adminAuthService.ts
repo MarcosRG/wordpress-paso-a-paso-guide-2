@@ -147,18 +147,24 @@ class AdminAuthService {
   
   // Validar credenciales
   private async validateCredentials(credentials: LoginCredentials): Promise<boolean> {
-    // Credenciales predeterminadas del sistema
+    // Credenciales predeterminadas del sistema desde variables de entorno
     const systemCredentials = [
       {
         username: this.defaultCredentials.username,
         password: this.defaultCredentials.password
-      },
-      // Credenciales alternativas para casos de emergencia
-      {
-        username: 'admin_bikesul',
-        password: 'BikeSul2024!Admin#Secure789'
       }
     ];
+
+    // Credenciales alternativas desde variables de entorno (si están configuradas)
+    const altUsername = import.meta.env.VITE_ADMIN_ALT_USERNAME;
+    const altPassword = import.meta.env.VITE_ADMIN_ALT_PASSWORD;
+
+    if (altUsername && altPassword) {
+      systemCredentials.push({
+        username: altUsername,
+        password: altPassword
+      });
+    }
 
     // Verificar contra todas las credenciales válidas
     return systemCredentials.some(cred =>
