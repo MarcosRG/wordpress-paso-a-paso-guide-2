@@ -245,6 +245,13 @@ export const WooCommerceDiagnostic = () => {
               )}
             </div>
           )}
+
+          {/* Show permissions fix guide if there's an authentication error */}
+          {result && !result.success && result.error?.includes('Authentication Failed') && (
+            <div className="mt-6">
+              <WooCommercePermissionsFix />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
