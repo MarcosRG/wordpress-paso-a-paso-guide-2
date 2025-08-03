@@ -49,17 +49,14 @@ export const BikeSelection = ({
   // Hook para reparación automática del sistema
   useSystemRepair();
 
-  // 🎯 NUEVO: Hook que prioriza Neon y usa WooCommerce progresivo como fallback
-  const neonFirstResult = useNeonFirstBikes();
+  // 🎯 DIRECTO: Hook progresivo de WooCommerce (sin Neon)
+  const progressiveQuery = useProgressiveWooCommerceBikes();
   const {
     data: bikes,
     isLoading,
     error,
-    dataSource,
-    neonAvailable,
-    progressInfo,
     refetch: refetchBikes
-  } = neonFirstResult;
+  } = progressiveQuery;
 
   // Obtener categorías desde el hook de caché para compatibilidad
   const cachedBikesResult = useCachedBikes();
