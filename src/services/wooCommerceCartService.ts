@@ -661,7 +661,9 @@ export class WooCommerceCartService {
         window.location.href = checkoutUrl;
       }
     } catch (error) {
-      console.error("❌ Error en proceso de checkout:", error);
+      if (import.meta.env.DEV) {
+        console.error("❌ Error en proceso de checkout:", error);
+      }
       throw error;
     }
   }
