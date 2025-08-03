@@ -10,7 +10,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Activity } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { orderService } from "@/services/orderService";
 import { wooCommerceCartService } from "@/services/wooCommerceCartService";
 import { useToast } from "@/hooks/use-toast";
