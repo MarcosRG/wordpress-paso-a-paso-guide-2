@@ -110,6 +110,10 @@ const App = () => {
     console.log('   - syncWooToNeon() - Sync all products WooCommerce -> Neon');
     console.log('   - getNeonStats() - Get Neon database statistics');
     console.log('   - getNeonProducts() - Get all products from Neon');
+    console.log('');
+    console.log('🔧 DIAGNOSTIC FUNCTIONS:');
+    console.log('   - configDiagnostic() - Check all environment variables');
+    console.log('   - testWooConnectivity() - Test WooCommerce API connectivity');
 
     // Análise inicial do sistema em desenvolvimento
     if (import.meta.env.DEV) {
