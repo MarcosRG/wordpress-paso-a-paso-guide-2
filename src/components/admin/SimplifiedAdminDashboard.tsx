@@ -136,6 +136,7 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
         <Tabs defaultValue="database" className="space-y-6">
           <TabsList>
             <TabsTrigger value="database">Base de Dados Neon</TabsTrigger>
+            <TabsTrigger value="diagnostic">Diagnóstico WooCommerce</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
 
