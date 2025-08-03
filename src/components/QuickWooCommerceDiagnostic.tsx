@@ -91,7 +91,9 @@ export const QuickWooCommerceDiagnostic: React.FC<QuickWooCommerceDiagnosticProp
             <Alert className="border-red-200 bg-red-50">
               <AlertTriangle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
-                WooCommerce API errors detected. Run a diagnostic to identify the issue.
+                <strong>WooCommerce API Error:</strong> "API key lacks Read permissions for products"
+                <br />
+                <span className="text-sm">Tu API key necesita permisos de lectura en WordPress.</span>
               </AlertDescription>
             </Alert>
           )}
