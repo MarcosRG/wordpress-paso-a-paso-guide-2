@@ -180,15 +180,12 @@ class NeonDatabaseService {
           // Se tem variações, buscar stocks
           if (product.type === 'variable' && product.variations && product.variations.length > 0) {
             try {
-              const variationsResponse = await cleanFetch(
-                `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100`,
-                {
-                  headers: {
-                    'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
-                    'Content-Type': 'application/json',
-                  },
-                }
-              );
+              const variationsUrl = `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100&${authParams}`;
+              const variationsResponse = await cleanFetch(variationsUrl, {
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
 
               if (variationsResponse.ok) {
                 productVariations = await variationsResponse.json();
