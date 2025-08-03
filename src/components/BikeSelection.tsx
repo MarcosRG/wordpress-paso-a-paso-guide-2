@@ -112,21 +112,16 @@ export const BikeSelection = ({
     handleAutoSync();
   }, [needsSync, syncMutation, refetchBikes]);
 
-  // Logging optimizado y detección de errores
+  // Logging interno optimizado (solo en desarrollo)
   React.useEffect(() => {
-    if (bikes) {
-      console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${dataSource}`);
-    }
+    if (import.meta.env.DEV) {
+      if (bikes) {
+        console.log(`🚴 ${bikes.length} bicicletas cargadas desde ${dataSource}`);
+      }
 
-    // Log any errors that might be related to FullStory
-    if (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      const errorStack = error instanceof Error ? error.stack : '';
-
-      console.warn(`❌ Error desde ${dataSource}:`, errorMessage);
-
-      if (errorStack && errorStack.includes('fullstory')) {
-        console.warn('🚨 FullStory interference detected in BikeSelection error:', errorMessage);
+      if (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.warn(`❌ Error desde ${dataSource}:`, errorMessage);
       }
     }
   }, [bikes, dataSource, error]);
