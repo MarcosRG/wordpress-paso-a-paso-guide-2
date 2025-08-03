@@ -155,6 +155,21 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
             </Card>
           </TabsContent>
 
+          {/* WooCommerce Diagnostic Tab */}
+          <TabsContent value="diagnostic">
+            <Card>
+              <CardHeader>
+                <CardTitle>Diagnóstico WooCommerce API</CardTitle>
+                <CardDescription>
+                  Teste de conectividade e autenticação com WooCommerce
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <WooCommerceDiagnostic />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Settings Tab */}
           <TabsContent value="settings">
             <Card>
