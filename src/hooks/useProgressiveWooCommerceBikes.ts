@@ -59,12 +59,22 @@ export const useProgressiveWooCommerceBikes = () => {
               )
               .reduce((total: number, variation: any) => total + (variation.stock_quantity || 0), 0);
 
-            console.log(`📊 ${product.name}: ${productVariations.length} variações, stock total: ${availableStock}`);
+            if (import.meta.env.DEV) {
+              console.log(`📊 ${product.name}: ${productVariations.length} variações, stock total: ${availableStock}`);
+            }
           } else {
-            console.warn(`⚠️ Não foi possível carregar variações para ${product.name}`);
+            if (import.meta.env.DEV) {
+              console.warn(`⚠️ Não foi possível carregar variações para ${product.name} (${variationsResponse.status})`);
+            }
+            // Fallback: usar stock do produto principal
+            availableStock = product.stock_quantity || 0;
           }
         } catch (variationError) {
-          console.error(`❌ Erro carregando variações para ${product.name}:`, variationError);
+          if (import.meta.env.DEV) {
+            console.warn(`⚠️ Erro de rede carregando variações para ${product.name}, usando stock principal`);
+          }
+          // Fallback robusto: usar stock do produto principal
+          availableStock = product.stock_quantity || 0;
         }
       } else {
         // Produto simples - usar stock direto
