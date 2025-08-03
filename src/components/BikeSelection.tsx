@@ -378,15 +378,34 @@ export const BikeSelection = ({
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
       </div>
 
-
+      {/* Mostrar progreso si estamos en carga progresiva */}
+      {progressInfo && progressInfo.isProcessing && (
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="flex items-center gap-3">
+            <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900">
+                Carregando bicicletas desde WooCommerce
+              </p>
+              <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progressInfo.progressPercentage}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-blue-700 mt-1">
+                {progressInfo.processingCount} de {progressInfo.totalProducts} produtos processados
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <CategoryFilter
         categories={categories}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
       />
-
-
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBikes.map((bike) => {
@@ -412,6 +431,20 @@ export const BikeSelection = ({
             />
           );
         })}
+
+        {/* Mostrar skeletons para productos que aún se están procesando */}
+        {progressInfo && progressInfo.isProcessing && progressInfo.processingCount < progressInfo.totalProducts && (
+          <>
+            {Array.from({ length: Math.min(3, progressInfo.totalProducts - progressInfo.processingCount) }).map((_, i) => (
+              <Card key={`skeleton-${i}`} className="opacity-50">
+                <CardContent className="p-4">
+                  <Skeleton className="h-32 w-full mb-4" />
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </>
+        )}
       </div>
 
       {/* Resumen de selección */}
