@@ -28,6 +28,12 @@ class NeonDatabaseService {
   private baseUrl = '/netlify/functions';
   private isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname.includes('d0c7198e0a50411d931307948caa2012');
 
+  // Cache properties
+  private productsCache: NeonProduct[] | null = null;
+  private categoriesCache: any[] | null = null;
+  private cacheExpiry: number = 0;
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
   // Check if netlify functions are available
   private async checkNetlifyFunctionsAvailable(): Promise<boolean> {
     // In development, Netlify functions are not available
