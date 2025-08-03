@@ -30,9 +30,12 @@ class DevelopmentFunctionService {
       }
 
       // Check for 404 or other error status codes in development
-      if (!response.ok && this.isDevelopment) {
-        console.warn(`⚠️ Function ${functionName} returned ${response.status} ${response.statusText} - using fallback`);
-        return this.getFallbackResponse(functionName);
+      if (!response.ok) {
+        console.log(`🔍 Response not ok: ${response.status}, isDevelopment: ${this.isDevelopment}`);
+        if (this.isDevelopment) {
+          console.warn(`⚠️ Function ${functionName} returned ${response.status} ${response.statusText} - using fallback`);
+          return this.getFallbackResponse(functionName);
+        }
       }
 
       return response;
