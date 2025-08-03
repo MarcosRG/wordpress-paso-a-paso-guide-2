@@ -82,7 +82,7 @@ const App = () => {
     (window as any).runSystemDiagnostic = runSystemDiagnostic;
     (window as any).quickDiagnostic = quickDiagnostic;
 
-    // Adicionar novas funções de debug
+    // Adicionar novas fun��ões de debug
     (window as any).systemAnalysis = () => systemDebugger.analyzeSystemStatus();
     (window as any).debugLogs = () => systemDebugger.getRecentLogs();
 
@@ -118,9 +118,13 @@ const App = () => {
     // Análise inicial do sistema em desenvolvimento
     if (import.meta.env.DEV) {
       setTimeout(() => {
-        systemDebugger.analyzeSystemStatus().then(status => {
-          debugLog('info', '📊 Análise inicial do sistema completa', status);
-        });
+        systemDebugger.analyzeSystemStatus()
+          .then(status => {
+            debugLog('info', '📊 Análise inicial do sistema completa', status);
+          })
+          .catch(error => {
+            console.warn('⚠️ Error en análisis del sistema:', error?.message || error);
+          });
       }, 3000); // Delay para permitir inicialização completa
     }
 
