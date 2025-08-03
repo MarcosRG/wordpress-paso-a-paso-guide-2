@@ -91,7 +91,7 @@ export const useWooCommerceBikes = () => {
                   `${apiBase}/products/${product.id}/variations?per_page=100`,
                   {
                     headers: {
-                      'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
+                      'Authorization': `Basic ${credentials}`,
                       'Content-Type': 'application/json',
                       'Accept': 'application/json',
                       'User-Agent': 'BikeSul-App/1.0'
