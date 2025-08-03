@@ -4,6 +4,11 @@
  * Versión 2.0 - Corrige inconsistencias de precios entre app y checkout
  */
 
+// Cargar funciones de seguro si no están disponibles
+if (!function_exists('bikesul_encontrar_produto_seguro')) {
+    require_once __DIR__ . '/woocommerce-insurance-handler.php';
+}
+
 // ===============================================
 // 1. FUNCIÓN PRINCIPAL: Ajustar precios en el checkout
 // ===============================================
