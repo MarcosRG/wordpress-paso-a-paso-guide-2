@@ -61,7 +61,7 @@ export const BikeSelection = ({
     refetch: refetchBikes
   } = neonFirstResult;
 
-  // Obtener categorías desde el hook de cach�� para compatibilidad
+  // Obtener categorías desde el hook de caché para compatibilidad
   const cachedBikesResult = useCachedBikes();
   const { categories } = cachedBikesResult;
 
@@ -243,14 +243,7 @@ export const BikeSelection = ({
     }
   };
 
-  // Obtener información de progreso solo si no hay caché y estamos cargando desde WooCommerce
-  const progressiveFallbackQuery = useProgressiveWooCommerceBikes();
-  const progressInfo = dataSource === 'woocommerce' && !isFromCache && progressiveFallbackQuery ? {
-    processingCount: progressiveFallbackQuery.processingCount,
-    totalProducts: progressiveFallbackQuery.totalProducts,
-    isProcessing: progressiveFallbackQuery.isProcessing,
-    progressPercentage: progressiveFallbackQuery.progressPercentage
-  } : null;
+  // La información de progreso ya viene del hook neonFirstResult
 
   if (isLoading) {
     return (
