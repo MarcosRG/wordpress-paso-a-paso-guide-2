@@ -19,16 +19,13 @@ export const useNeonFirstBikes = () => {
       
       try {
         // 1. Test conexión Neon
-        const connectionOk = await testNeonConnection();
+        const connectionOk = await neonUnifiedService.testConnection();
         if (!connectionOk) {
           throw new Error('Neon connection failed');
         }
 
-        // 2. Inicializar base de datos si es necesario
-        await initializeDatabase();
-
-        // 3. Obtener productos de Neon
-        const neonProducts = await getAllProducts();
+        // 2. Obtener productos de Neon (inicialización automática)
+        const neonProducts = await neonUnifiedService.getProducts();
         
         if (neonProducts && neonProducts.length > 0) {
           console.log(`✅ ${neonProducts.length} productos cargados desde Neon`);
