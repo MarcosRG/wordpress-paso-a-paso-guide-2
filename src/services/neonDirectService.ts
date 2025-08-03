@@ -320,12 +320,18 @@ export const syncCompleteProduct = async (woocommerceProduct: any, variations: a
 // Test de conexión
 export const testNeonConnection = async (): Promise<boolean> => {
   try {
+    // Check if DATABASE_URL is available first
+    if (!import.meta.env.DATABASE_URL) {
+      console.warn('⚠️ DATABASE_URL not configured - Neon unavailable');
+      return false;
+    }
+
     const sql = getSqlClient();
     const result = await sql`SELECT 1 as test`;
     console.log('✅ Conexión Neon verificada');
     return true;
   } catch (error) {
-    console.error('❌ Error de conexión Neon:', error);
+    console.warn('⚠️ Neon connection failed, using WooCommerce fallback:', error?.message || error);
     return false;
   }
 };
