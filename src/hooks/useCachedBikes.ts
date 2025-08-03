@@ -74,8 +74,7 @@ export const useCachedBikes = (): CachedBikesResult => {
       setCachedData(null);
       setIsFromCache(false);
 
-      // Invalidar queries
-      queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
+      // Invalidar queries de WooCommerce
       queryClient.invalidateQueries({ queryKey: ["progressive-woocommerce-bikes"] });
       queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
 
