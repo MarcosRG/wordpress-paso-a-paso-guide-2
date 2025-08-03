@@ -72,27 +72,12 @@ export const BikeSelection = ({
 
   const { language, setLanguage, t } = useLanguage();
 
-  // Logging del nuevo sistema Neon-first (solo en desarrollo)
+  // Logging simple (solo en desarrollo)
   React.useEffect(() => {
     if (import.meta.env.DEV && bikes) {
-      const neonStatus = neonAvailable ? '✅' : '❌';
-      console.log(`🚴 ${bikes.length} bicicletas desde ${dataSource} ${neonStatus}`);
+      console.log(`🚴 ${bikes.length} bicicletas desde WooCommerce API`);
     }
-  }, [bikes, dataSource, neonAvailable]);
-
-  // Sync simplificado - solo si Neon no está disponible
-  React.useEffect(() => {
-    const shouldSync = dataSource === 'woocommerce' && neonAvailable === false && !syncMutation.isPending;
-
-    if (shouldSync) {
-      if (import.meta.env.DEV) {
-        console.log('🔄 Neon no disponible, manteniendo sync tradicional...');
-      }
-      syncMutation.mutateAsync().catch(() => {
-        // Silently fail - WooCommerce is working
-      });
-    }
-  }, [dataSource, neonAvailable, syncMutation]);
+  }, [bikes]);
 
 
 
