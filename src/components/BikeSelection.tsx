@@ -137,7 +137,9 @@ export const BikeSelection = ({
   // Función de refresh inteligente que preserva caché cuando es posible
   const handleRefresh = async () => {
     try {
-      console.log(`�� Refrescando datos desde ${dataSource}...`);
+      if (import.meta.env.DEV) {
+        console.log(`🔄 Refrescando datos desde ${dataSource}...`);
+      }
 
       // Solo invalidar si realmente es necesario
       if (useNeonDatabase) {
@@ -158,9 +160,13 @@ export const BikeSelection = ({
         ]);
       }
 
-      console.log("✅ Refresh completado");
+      if (import.meta.env.DEV) {
+        console.log("✅ Refresh completado");
+      }
     } catch (error) {
-      console.error("❌ Error en refresh:", error);
+      if (import.meta.env.DEV) {
+        console.error("❌ Error en refresh:", error);
+      }
     }
   };
 
