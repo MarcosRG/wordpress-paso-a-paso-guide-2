@@ -5,10 +5,19 @@ class DevelopmentFunctionService {
 
   async callFunction(functionName: string, options: RequestInit = {}): Promise<Response> {
     const url = `/.netlify/functions/${functionName}`;
-    
+
+    if (this.isDevelopment) {
+      console.log(`🔧 Development mode: Calling function ${functionName} at ${url}`);
+    }
+
     try {
       const response = await fetch(url, options);
-      
+
+      if (this.isDevelopment) {
+        console.log(`📡 Function ${functionName} response: ${response.status} ${response.statusText}`);
+        console.log(`📡 Content-Type: ${response.headers.get('content-type')}`);
+      }
+
       // Check if we got HTML/JS instead of JSON (indicating function isn't running)
       const contentType = response.headers.get('content-type');
       if (contentType && (contentType.includes('text/html') || contentType.includes('text/javascript'))) {
