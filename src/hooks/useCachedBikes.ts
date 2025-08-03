@@ -71,9 +71,7 @@ export const useCachedBikes = (): CachedBikesResult => {
       if (!cachedData || activeQuery.data.length !== cachedData.bikes.length) {
         setCachedData({
           bikes: activeQuery.data,
-          categories: LocalBikeCache.extractCategories ? 
-            LocalBikeCache.extractCategories(activeQuery.data) : 
-            fallbackCategories
+          categories: extractCategories(activeQuery.data)
         });
         setIsFromCache(false);
       }
