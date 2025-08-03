@@ -51,9 +51,6 @@ export const ADMIN_CONFIG = {
   password: getRequiredEnv('VITE_ADMIN_PASSWORD'),
   email: getRequiredEnv('VITE_ADMIN_EMAIL'),
   encryptionKey: getRequiredEnv('VITE_ENCRYPTION_KEY'),
-  // Credenciales alternativas (opcionales)
-  altUsername: getOptionalEnv('VITE_ADMIN_ALT_USERNAME'),
-  altPassword: getOptionalEnv('VITE_ADMIN_ALT_PASSWORD'),
 } as const;
 
 // ==================== STACK AUTH CONFIG ====================
