@@ -159,11 +159,14 @@ export const QuickWooCommerceDiagnostic: React.FC<QuickWooCommerceDiagnosticProp
 
                 {!result.success && (
                   <div className="mt-3 text-xs text-gray-600">
-                    <p className="font-medium mb-1">Common solutions:</p>
+                    <p className="font-medium mb-1 text-red-700">🔑 Solución específica para este error:</p>
+                    <div className="bg-yellow-50 border border-yellow-200 p-2 rounded text-yellow-800 mb-2">
+                      <p className="font-medium">Tu API key necesita permisos de "Read"</p>
+                    </div>
                     <ul className="space-y-1">
-                      <li>• Verify API credentials in admin panel</li>
-                      <li>• Check API key permissions (needs "Read" access)</li>
-                      <li>• Ensure WooCommerce REST API is enabled</li>
+                      <li>• Ir a WordPress → WooCommerce → Settings → Advanced → REST API</li>
+                      <li>• Editar tu API key y cambiar Permissions a "Read"</li>
+                      <li>• Guardar cambios y volver a probar</li>
                     </ul>
                   </div>
                 )}
