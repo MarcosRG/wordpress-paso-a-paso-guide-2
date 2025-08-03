@@ -30,7 +30,9 @@ export const useProgressiveWooCommerceBikes = () => {
 
       // Se o produto tem variações, buscar as variações
       if (product.type === 'variable' && product.variations && product.variations.length > 0) {
-        console.log(`🔍 Carregando variações para ${product.name}...`);
+        if (import.meta.env.DEV) {
+          console.log(`🔍 Carregando variações para ${product.name}...`);
+        }
 
         try {
           const variationsResponse = await cleanFetch(
