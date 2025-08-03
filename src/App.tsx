@@ -85,12 +85,26 @@ const App = () => {
     (window as any).systemAnalysis = () => systemDebugger.analyzeSystemStatus();
     (window as any).debugLogs = () => systemDebugger.getRecentLogs();
 
+    // 🚀 NUEVAS FUNCIONES DE NEON
+    (window as any).testNeonConnection = () => neonDirectService.testConnection();
+    (window as any).testAllConnections = () => wooCommerceNeonSync.testConnections();
+    (window as any).syncWooToNeon = () => wooCommerceNeonSync.syncAllProducts();
+    (window as any).getNeonStats = () => neonDirectService.getProductStats();
+    (window as any).getNeonProducts = () => neonDirectService.getProducts();
+
     debugLog('info', '🧪 Debug functions available:');
     console.log('   - testWooAPI() - Test WooCommerce API connectivity');
     console.log('   - runSystemDiagnostic() - Complete system diagnostic');
     console.log('   - quickDiagnostic() - Quick problem detection');
     console.log('   - systemAnalysis() - Análise completa do sistema');
     console.log('   - debugLogs() - Ver logs recentes do sistema');
+    console.log('');
+    console.log('����️ NEON DATABASE FUNCTIONS:');
+    console.log('   - testNeonConnection() - Test connection to Neon');
+    console.log('   - testAllConnections() - Test both WooCommerce & Neon');
+    console.log('   - syncWooToNeon() - Sync all products WooCommerce -> Neon');
+    console.log('   - getNeonStats() - Get Neon database statistics');
+    console.log('   - getNeonProducts() - Get all products from Neon');
 
     // Análise inicial do sistema em desenvolvimento
     if (import.meta.env.DEV) {
