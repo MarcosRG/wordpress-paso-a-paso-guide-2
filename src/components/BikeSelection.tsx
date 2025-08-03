@@ -75,13 +75,13 @@ export const BikeSelection = ({
 
   const { language, setLanguage, t } = useLanguage();
 
-  // Logging del nuevo sistema de caché (solo en desarrollo)
+  // Logging del nuevo sistema Neon-first (solo en desarrollo)
   React.useEffect(() => {
     if (import.meta.env.DEV && bikes) {
-      const cacheIndicator = isFromCache ? `(caché, ${cacheAge}s)` : '(fresh)';
-      console.log(`🚴 ${bikes.length} bicicletas desde ${dataSource} ${cacheIndicator}`);
+      const neonStatus = neonAvailable ? '✅' : '❌';
+      console.log(`🚴 ${bikes.length} bicicletas desde ${dataSource} ${neonStatus}`);
     }
-  }, [bikes, dataSource, isFromCache, cacheAge]);
+  }, [bikes, dataSource, neonAvailable]);
 
   // Auto-sync simplificado
   React.useEffect(() => {
