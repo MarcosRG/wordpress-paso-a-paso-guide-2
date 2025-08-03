@@ -332,12 +332,15 @@ export const useWooCommerceToNeonSync = () => {
       });
     },
     onError: (error) => {
-      console.error("❌ Erro na sincronização:", error);
-      toast({
-        title: "Erro de sincronização",
-        description: error instanceof Error ? error.message : "Erro desconhecido",
-        variant: "destructive",
-      });
+      if (import.meta.env.DEV) {
+        console.error("❌ Erro na sincronização:", error);
+        toast({
+          title: "Erro de sincronização",
+          description: error instanceof Error ? error.message : "Erro desconhecido",
+          variant: "destructive",
+        });
+      }
+      // Em produção, silenciar completamente os erros de sincronização
     },
   });
 };

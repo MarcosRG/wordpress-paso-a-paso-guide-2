@@ -80,12 +80,15 @@ export const useLocalDatabaseSync = () => {
       console.log(`✅ Sincronização manual concluída: ${count} produtos`);
     },
     onError: (error) => {
-      console.error("❌ Erro na sincronização manual:", error);
-      toast({
-        title: "❌ Erro de sincronização",
-        description: error instanceof Error ? error.message : "Erro desconhecido",
-        variant: "destructive",
-      });
+      if (import.meta.env.DEV) {
+        console.error("❌ Erro na sincronização manual:", error);
+        toast({
+          title: "❌ Erro de sincronização",
+          description: error instanceof Error ? error.message : "Erro desconhecido",
+          variant: "destructive",
+        });
+      }
+      // Em produção, silenciar completamente os erros de sincronização
     },
   });
 };

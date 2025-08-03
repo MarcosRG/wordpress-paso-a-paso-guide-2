@@ -440,7 +440,9 @@ export class WooCommerceCartService {
       // Redirigir al checkout con la orden creada
       return `${this.checkoutUrl}/order-pay/${order.id}/?pay_for_order=true&key=${order.order_key}`;
     } catch (error) {
-      console.error("❌ Error creating direct order:", error);
+      if (import.meta.env.DEV) {
+        console.error("❌ Error creating direct order:", error);
+      }
       throw error;
     }
   }
@@ -627,8 +629,11 @@ export class WooCommerceCartService {
 
         return;
       } catch (orderError) {
-        console.error("❌ Error creando orden directa, detalles:", orderError);
-        console.warn("⚠️ Fallback: usando URL con parámetros");
+        if (import.meta.env.DEV) {
+          console.error("❌ Error creando orden directa, detalles:", orderError);
+          console.warn("⚠️ Fallback: usando URL con parámetros");
+        }
+        // Em produção, usar silenciosamente o fallback
 
         // Fallback: usar URL con parámetros
         const checkoutUrl = this.generateCheckoutUrl(
@@ -656,7 +661,9 @@ export class WooCommerceCartService {
         window.location.href = checkoutUrl;
       }
     } catch (error) {
-      console.error("❌ Error en proceso de checkout:", error);
+      if (import.meta.env.DEV) {
+        console.error("❌ Error en proceso de checkout:", error);
+      }
       throw error;
     }
   }
