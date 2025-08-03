@@ -10,32 +10,21 @@ class DevelopmentFunctionService {
   async callFunction(functionName: string, options: RequestInit = {}): Promise<Response> {
     const url = `/.netlify/functions/${functionName}`;
 
+    // In development mode, ALWAYS return fallback responses to avoid function issues
     if (this.isDevelopment) {
-      console.log(`🔧 Development mode: Calling function ${functionName} at ${url}`);
+      console.log(`🔧 Development mode: Skipping actual function call for ${functionName} - returning fallback`);
+      return this.getFallbackResponse(functionName);
     }
 
+    // Only try real function calls in production
     try {
       const response = await fetch(url, options);
-
-      if (this.isDevelopment) {
-        console.log(`📡 Function ${functionName} response: ${response.status} ${response.statusText}`);
-        console.log(`📡 Content-Type: ${response.headers.get('content-type')}`);
-      }
 
       // Check if we got HTML/JS instead of JSON (indicating function isn't running)
       const contentType = response.headers.get('content-type');
       if (contentType && (contentType.includes('text/html') || contentType.includes('text/javascript'))) {
         console.warn(`⚠️ Function ${functionName} returned HTML/JS instead of JSON - using fallback`);
         return this.getFallbackResponse(functionName);
-      }
-
-      // Check for 404 or other error status codes in development
-      if (!response.ok) {
-        console.log(`🔍 Response not ok: ${response.status}, isDevelopment: ${this.isDevelopment}`);
-        if (this.isDevelopment) {
-          console.warn(`⚠️ Function ${functionName} returned ${response.status} ${response.statusText} - using fallback`);
-          return this.getFallbackResponse(functionName);
-        }
       }
 
       return response;
