@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Bike } from "@/pages/Index";
 import { LocalBikeCache } from "@/services/localBikeCache";
-
+import { useNeonDatabaseBikes, useNeonDatabaseStatus } from "./useNeonDatabase";
 import { useProgressiveWooCommerceBikes } from "./useProgressiveWooCommerceBikes";
 import { fallbackBikes, fallbackCategories } from "@/data/fallbackBikes";
 
@@ -41,20 +41,32 @@ export const useCachedBikes = (): CachedBikesResult => {
     }
   }, []);
 
-  // Hook de datos - solo WooCommerce progresivo
+  // Hooks de datos
+  const neonStatus = useNeonDatabaseStatus();
+  const neonQuery = useNeonDatabaseBikes();
   const progressiveQuery = useProgressiveWooCommerceBikes();
 
-  // Usar directamente WooCommerce
-  const activeQuery = progressiveQuery;
-  const source: 'neon' | 'woocommerce' | 'cache' | 'fallback' =
+  // Determinar qué fuente usar
+  const neonIsReady = neonStatus.data?.connected === true && 
+                      !neonQuery.error && 
+                      !neonQuery.isLoading;
+  const useNeon = neonIsReady && neonQuery.data && neonQuery.data.length > 0;
+
+  // Seleccionar query activo
+  const activeQuery = useNeon ? neonQuery : progressiveQuery;
+  const source: 'neon' | 'woocommerce' | 'cache' | 'fallback' = 
     cachedData && isFromCache ? 'cache' :
+    useNeon ? 'neon' : 
     activeQuery.data ? 'woocommerce' : 'fallback';
 
   // Guardar en caché cuando se obtienen nuevos datos
   useEffect(() => {
     if (activeQuery.data && activeQuery.data.length > 0 && !activeQuery.isLoading) {
-      LocalBikeCache.saveBikes(activeQuery.data, 'woocommerce');
-
+      LocalBikeCache.saveBikes(
+        activeQuery.data, 
+        useNeon ? 'neon' : 'woocommerce'
+      );
+      
       // Actualizar estado si no hay datos cacheados o si son más recientes
       if (!cachedData || activeQuery.data.length !== cachedData.bikes.length) {
         setCachedData({
@@ -64,7 +76,7 @@ export const useCachedBikes = (): CachedBikesResult => {
         setIsFromCache(false);
       }
     }
-  }, [activeQuery.data, activeQuery.isLoading, cachedData]);
+  }, [activeQuery.data, activeQuery.isLoading, useNeon, cachedData]);
 
   // Función de refetch personalizada
   const refetch = async () => {
@@ -74,7 +86,8 @@ export const useCachedBikes = (): CachedBikesResult => {
       setCachedData(null);
       setIsFromCache(false);
 
-      // Invalidar queries de WooCommerce
+      // Invalidar queries
+      queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
       queryClient.invalidateQueries({ queryKey: ["progressive-woocommerce-bikes"] });
       queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
 
