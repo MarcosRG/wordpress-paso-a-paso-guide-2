@@ -255,16 +255,25 @@ export const useWooCommerceCategories = () => {
         });
 
         if (!response.ok) {
-          return fallbackCategories;
+          const errorText = await response.text().catch(() => 'Unable to read error response');
+          throw new Error(`WooCommerce Categories API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
         }
 
-        const categories = await response.json();
+        // Safe JSON parsing for categories
+        let categories;
+        try {
+          const responseText = await response.text();
+          categories = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Failed to parse categories JSON:', parseError);
+          throw new Error(`Invalid categories JSON response: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`);
+        }
+
         return categories.map((cat: any) => cat.slug).filter((slug: string) => slug !== "alugueres");
 
       } catch (error) {
         console.error("❌ Erro carregando categorias:", error);
-        // Retornar categorias padrão
-        return fallbackCategories;
+        throw error;
       }
     },
     staleTime: 10 * 60 * 1000,
