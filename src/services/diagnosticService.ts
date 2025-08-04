@@ -46,7 +46,7 @@ class DiagnosticService {
     try {
       console.log('🔐 Probando autenticación WooCommerce...');
       
-      const response = await fetch(`${this.baseUrl}/products?per_page=1`, {
+      const response = await cleanFetch(`${this.baseUrl}/products?per_page=1`, {
         method: 'GET',
         headers: this.getAuthHeaders()
       });
