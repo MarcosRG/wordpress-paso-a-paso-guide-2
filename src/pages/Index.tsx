@@ -218,8 +218,6 @@ const Index = () => {
       case 3:
         return t("insurance");
       case 4:
-        return t("contactData");
-      case 5:
         return t("confirmReservation");
       default:
         return "";
