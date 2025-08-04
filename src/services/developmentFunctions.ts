@@ -18,7 +18,7 @@ class DevelopmentFunctionService {
 
     // Only try real function calls in production
     try {
-      const response = await fetch(url, options);
+      const response = await cleanFetch(url, options);
 
       // Check if we got HTML/JS instead of JSON (indicating function isn't running)
       const contentType = response.headers.get('content-type');
