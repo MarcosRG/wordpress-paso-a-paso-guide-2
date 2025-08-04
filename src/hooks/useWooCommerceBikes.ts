@@ -71,7 +71,23 @@ export const useWooCommerceBikes = () => {
           throw new Error(errorResult.technicalMessage || errorResult.userMessage);
         }
 
-        const products = await response.json();
+        // Safe JSON parsing for successful responses
+        let products;
+        try {
+          const responseText = await response.text();
+          if (!responseText.trim()) {
+            throw new Error('Empty response from WooCommerce API');
+          }
+
+          console.log('🔍 Raw WooCommerce response (first 1000 chars):', responseText.substring(0, 1000));
+
+          products = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Failed to parse WooCommerce response as JSON:', parseError);
+          console.error('🔍 Response content (first 500 chars):', responseText?.substring(0, 500) || 'Unable to read response');
+          throw new Error(`Invalid JSON response from WooCommerce API: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`);
+        }
+
         recordApiSuccess(); // Record successful API call
         console.log(`📦 ${products.length} produtos obtidos do WooCommerce`);
 
