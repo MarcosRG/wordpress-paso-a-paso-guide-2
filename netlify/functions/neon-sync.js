@@ -31,10 +31,10 @@ exports.handler = async (event, context) => {
       return config.createErrorResponse(new Error('JSON inválido no body da requisição'), 400);
     }
 
-    let { products } = bodyData;
+    let { products, action } = bodyData;
 
-    // Se não houver produtos no body, usar sync automático
-    if (!Array.isArray(products) || products.length === 0) {
+    // Se não houver produtos no body OU se for ação de sync, usar sync automático
+    if (!Array.isArray(products) || products.length === 0 || action === 'sync') {
       console.log('🔄 Nenhum produto no body - iniciando sincronização automática...');
 
       // Sync automático: obter produtos do WooCommerce
