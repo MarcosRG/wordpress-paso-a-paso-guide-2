@@ -129,11 +129,26 @@ const validateWooCommerceConfig = () => {
 };
 
 // ==================== RESPONSE HELPERS ====================
-const createResponse = (statusCode, data, headers = {}) => ({
-  statusCode,
-  headers: { ...CORS_HEADERS, ...headers },
-  body: JSON.stringify(data),
-});
+const createResponse = (statusCode, data, headers = {}) => {
+  let body;
+  try {
+    body = JSON.stringify(data);
+  } catch (jsonError) {
+    console.error('❌ JSON stringify error:', jsonError);
+    // Fallback para evitar crash
+    body = JSON.stringify({
+      error: 'Erro interno do servidor - resposta não serializável',
+      timestamp: new Date().toISOString(),
+      service: 'netlify-functions'
+    });
+  }
+
+  return {
+    statusCode,
+    headers: { ...CORS_HEADERS, ...headers },
+    body,
+  };
+};
 
 const createSuccessResponse = (data) => createResponse(200, data);
 

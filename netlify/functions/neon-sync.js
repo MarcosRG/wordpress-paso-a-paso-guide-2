@@ -20,10 +20,58 @@ exports.handler = async (event, context) => {
     // Obter conexão a Neon usando configuração unificada
     const sql = neon(config.DATABASE.connectionString);
 
-    // Parse do body
-    const { products } = JSON.parse(event.body || '{}');
-    if (!Array.isArray(products) || products.length === 0) {
-      throw new Error('Array de produtos requerido');
+    // Parse do body com validação mais robusta
+    let bodyData = {};
+    try {
+      if (event.body && event.body.trim()) {
+        bodyData = JSON.parse(event.body);
+      }
+    } catch (parseError) {
+      console.error('❌ Erro parsing JSON body:', parseError);
+      return config.createErrorResponse(new Error('JSON inválido no body da requisição'), 400);
+    }
+
+    let { products, action } = bodyData;
+
+    // Se não houver produtos no body OU se for ação de sync, usar sync automático
+    if (!Array.isArray(products) || products.length === 0 || action === 'sync') {
+      console.log('🔄 Nenhum produto no body - iniciando sincronização automática...');
+
+      // Verificar se WooCommerce está configurado para sync automático
+      if (!config.WOOCOMMERCE.baseUrl || !config.WOOCOMMERCE.consumerKey || !config.WOOCOMMERCE.consumerSecret) {
+        return config.createSuccessResponse({
+          success: true,
+          message: 'Sincronização automática não disponível - WooCommerce não configurado',
+          stats: { processed: 0, inserted: 0, updated: 0, total_in_database: 0 }
+        });
+      }
+
+      // Sync automático: obter produtos do WooCommerce
+      const wooResponse = await fetch(config.WOOCOMMERCE.baseUrl + '/wp-json/wc/v3/products?per_page=50&category=319&status=publish', {
+        headers: {
+          'Authorization': 'Basic ' + Buffer.from(config.WOOCOMMERCE.consumerKey + ':' + config.WOOCOMMERCE.consumerSecret).toString('base64'),
+          'Content-Type': 'application/json',
+        },
+        timeout: config.WOOCOMMERCE.timeout,
+      });
+
+      if (!wooResponse.ok) {
+        throw new Error(`Erro WooCommerce: ${wooResponse.status} ${wooResponse.statusText}`);
+      }
+
+      const wooProducts = await wooResponse.json();
+      console.log(`📦 ${wooProducts.length} produtos obtidos do WooCommerce`);
+
+      if (!Array.isArray(wooProducts) || wooProducts.length === 0) {
+        return config.createSuccessResponse({
+          success: true,
+          message: 'Nenhum produto para sincronizar',
+          stats: { processed: 0, inserted: 0, updated: 0, total_in_database: 0 }
+        });
+      }
+
+      // Usar produtos do WooCommerce
+      products = wooProducts;
     }
 
     console.log(`🔄 Sincronizando ${products.length} produtos para Neon...`);
@@ -151,6 +199,11 @@ exports.handler = async (event, context) => {
 
   } catch (error) {
     console.error('❌ Erro na sincronização Neon:', error);
-    return config.createErrorResponse(error);
+
+    // Garantir que sempre retornamos um JSON válido
+    const errorMessage = error?.message || error?.toString() || 'Erro desconhecido na sincronização';
+    console.error('❌ Error details:', { error: errorMessage, stack: error?.stack });
+
+    return config.createErrorResponse(new Error(errorMessage));
   }
 };
