@@ -262,12 +262,12 @@ export const useProgressiveWooCommerceBikes = () => {
           }
         }
 
-        // Use fallback data instead of failing completely
-        console.warn('⚠️ Using fallback bike data due to API failure');
-        console.warn('🔄 API Error:', error instanceof Error ? error.message : 'Unknown error');
+        // Throw error instead of using fallback data
+        console.error('🔄 API Error:', error instanceof Error ? error.message : 'Unknown error');
+        console.error('❌ No fallback data will be used - only real WooCommerce data');
 
-        setLoadedBikes(fallbackBikes);
-        return fallbackBikes;
+        // Throw the error to be handled by the error state
+        throw error;
       }
     },
     staleTime: 5 * 60 * 1000,
