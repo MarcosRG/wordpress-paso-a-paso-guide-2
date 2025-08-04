@@ -2,6 +2,8 @@
  * Test utility to verify WooCommerce API connectivity
  */
 
+import { cleanFetch } from './cleanFetch';
+
 export const testWooCommerceAPI = async () => {
   console.log('🧪 Testing WooCommerce API connectivity...');
   
@@ -33,7 +35,7 @@ export const testWooCommerceAPI = async () => {
     console.log('🔗 Test 1: Basic connectivity...');
     const testUrl = `${apiBase}/products?per_page=1`;
     
-    const response = await fetch(testUrl, {
+    const response = await cleanFetch(testUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,

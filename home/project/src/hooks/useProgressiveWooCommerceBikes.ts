@@ -50,13 +50,7 @@ export const useProgressiveWooCommerceBikes = () => {
           );
 
           if (variationsResponse.ok) {
-            try {
-              const variationsText = await variationsResponse.text();
-              productVariations = JSON.parse(variationsText);
-            } catch (parseError) {
-              console.error(`❌ Failed to parse variations JSON for ${product.name}:`, parseError);
-              productVariations = [];
-            }
+            productVariations = await variationsResponse.json();
 
             // Calcular stock total das variações ativas
             availableStock = productVariations
@@ -176,14 +170,21 @@ export const useProgressiveWooCommerceBikes = () => {
             // Parse error response for more specific details
             let errorDetails = '';
             try {
-              const errorJson = JSON.parse(errorText);
-              if (errorJson.code === 'woocommerce_rest_cannot_view') {
-                errorDetails = 'API key lacks "Read" permissions for products. ';
-              } else if (errorJson.code === 'woocommerce_rest_authentication_error') {
-                errorDetails = 'Invalid API credentials. ';
+              // Only try to parse JSON if content type suggests it's JSON
+              const contentType = response.headers.get('content-type') || '';
+              if (contentType.includes('application/json') && errorText.trim().startsWith('{')) {
+                const errorJson = JSON.parse(errorText);
+                if (errorJson.code === 'woocommerce_rest_cannot_view') {
+                  errorDetails = 'API key lacks "Read" permissions for products. ';
+                } else if (errorJson.code === 'woocommerce_rest_authentication_error') {
+                  errorDetails = 'Invalid API credentials. ';
+                }
+                errorDetails += `Error: ${errorJson.message || 'Unknown WooCommerce error'}`;
+              } else {
+                errorDetails = errorText.substring(0, 200);
               }
-              errorDetails += `Error: ${errorJson.message || 'Unknown WooCommerce error'}`;
-            } catch {
+            } catch (parseError) {
+              console.warn('⚠️ Could not parse error response as JSON:', parseError);
               errorDetails = errorText.substring(0, 200);
             }
 
@@ -204,16 +205,12 @@ export const useProgressiveWooCommerceBikes = () => {
           if (!responseText.trim()) {
             throw new Error('Empty response from WooCommerce API');
           }
-
-          console.log('🔍 Raw WooCommerce response (first 1000 chars):', responseText.substring(0, 1000));
-
           products = JSON.parse(responseText);
         } catch (parseError) {
           console.error('❌ Failed to parse WooCommerce response as JSON:', parseError);
-          console.error('🔍 Response content (first 500 chars):', responseText?.substring(0, 500) || 'Unable to read response');
+          console.error('🔍 Response content (first 500 chars):', (await response.text().catch(() => 'Unable to read response')).substring(0, 500));
           throw new Error(`Invalid JSON response from WooCommerce API: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`);
         }
-
         recordApiSuccess();
         console.log(`📦 ${products.length} produtos obtidos do WooCommerce`);
         
@@ -265,12 +262,12 @@ export const useProgressiveWooCommerceBikes = () => {
           }
         }
 
-        // Use fallback data instead of failing completely
-        console.warn('⚠️ Using fallback bike data due to API failure');
-        console.warn('🔄 API Error:', error instanceof Error ? error.message : 'Unknown error');
+        // Throw error instead of using fallback data
+        console.error('🔄 API Error:', error instanceof Error ? error.message : 'Unknown error');
+        console.error('❌ No fallback data will be used - only real WooCommerce data');
 
-        setLoadedBikes(fallbackBikes);
-        return fallbackBikes;
+        // Throw the error to be handled by the error state
+        throw error;
       }
     },
     staleTime: 5 * 60 * 1000,
