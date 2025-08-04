@@ -206,6 +206,7 @@ module.exports = {
   CORS_HEADERS,
   validateConfig,
   validateNeonConfig,
+  validateNeonDataApiConfig,
   validateWooCommerceConfig,
   createResponse,
   createSuccessResponse,
