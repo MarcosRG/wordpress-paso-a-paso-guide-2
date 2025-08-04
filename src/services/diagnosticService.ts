@@ -6,6 +6,7 @@
 import { WOOCOMMERCE_CONFIG } from '@/config/unified';
 import { testCleanFetch } from '@/utils/testCleanFetch';
 import { testWooCommerceAPI } from '@/utils/testWooCommerceAPI';
+import { cleanFetch } from '@/utils/cleanFetch';
 
 interface DiagnosticResult {
   success: boolean;
