@@ -3,6 +3,8 @@
  * Para entender melhor os problemas do sistema
  */
 
+import { cleanFetch } from "./cleanFetch";
+
 export interface SystemStatus {
   timestamp: string;
   environment: 'development' | 'production';
