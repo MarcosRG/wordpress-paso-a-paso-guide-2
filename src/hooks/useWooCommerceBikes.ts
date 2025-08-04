@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Bike } from "@/pages/Index";
 import { cleanFetch } from "@/utils/cleanFetch";
+import { recordApiSuccess, recordApiNetworkError, recordApiAuthError } from "@/services/connectivityMonitor";
+import { fallbackBikes, fallbackCategories } from "@/data/fallbackBikes";
 
 // Hook fallback para carregar bikes do WooCommerce quando MCP não está disponível
 export const useWooCommerceBikes = () => {
@@ -19,16 +21,17 @@ export const useWooCommerceBikes = () => {
           throw new Error('WooCommerce configuration incomplete - check environment variables');
         }
 
-        // Use query parameters for WooCommerce authentication (more reliable than Basic Auth)
-        const authParams = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
-        const apiUrl = `${apiBase}/products?per_page=50&category=319&status=publish&${authParams}`;
+        // Use Basic Auth for WooCommerce API authentication (required for REST API)
+        const credentials = btoa(`${consumerKey}:${consumerSecret}`);
+        const apiUrl = `${apiBase}/products?per_page=50&category=319&status=publish`;
 
-        console.log('🔗 WooCommerce API URL:', apiUrl.replace(/consumer_secret=[^&]+/, 'consumer_secret=***'));
+        console.log('🔗 WooCommerce API URL:', apiUrl);
         console.log('🔐 Consumer Key exists:', !!consumerKey);
         console.log('🔐 Consumer Secret exists:', !!consumerSecret);
 
         const response = await cleanFetch(apiUrl, {
           headers: {
+            'Authorization': `Basic ${credentials}`,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'User-Agent': 'BikeSul-App/1.0'
@@ -46,10 +49,23 @@ export const useWooCommerceBikes = () => {
             headers: Object.fromEntries(response.headers.entries()),
             body: errorText.substring(0, 500)
           });
-          throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
+
+          // Handle authentication errors specifically
+          if (response.status === 401 || response.status === 403) {
+            recordApiAuthError();
+            if (response.status === 401) {
+              throw new Error(`WooCommerce Authentication Failed: Please check API credentials. ${errorText.substring(0, 100)}`);
+            } else {
+              throw new Error(`WooCommerce Access Forbidden: API key may not have sufficient permissions. ${errorText.substring(0, 100)}`);
+            }
+          } else {
+            // Other HTTP errors are not auth issues
+            throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
+          }
         }
 
         const products = await response.json();
+        recordApiSuccess(); // Record successful API call
         console.log(`📦 ${products.length} produtos obtidos do WooCommerce`);
 
         // Converter produtos WooCommerce para formato Bike com variações
@@ -82,7 +98,7 @@ export const useWooCommerceBikes = () => {
                   `${apiBase}/products/${product.id}/variations?per_page=100`,
                   {
                     headers: {
-                      'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
+                      'Authorization': `Basic ${credentials}`,
                       'Content-Type': 'application/json',
                       'Accept': 'application/json',
                       'User-Agent': 'BikeSul-App/1.0'
@@ -145,9 +161,10 @@ export const useWooCommerceBikes = () => {
       } catch (error) {
         console.error("❌ Erro carregando produtos do WooCommerce:", error);
 
-        // Adicionar contexto adicional ao erro
+        // Track different types of errors appropriately
         if (error instanceof Error) {
           if (error.message.includes('Failed to fetch')) {
+            recordApiNetworkError();
             console.error('🌐 Network connectivity issue detected');
             console.error('🔧 Troubleshooting suggestions:');
             console.error('   - Check internet connection');
@@ -155,7 +172,8 @@ export const useWooCommerceBikes = () => {
             console.error('   - Check CORS configuration on WordPress');
             console.error('   - Verify SSL/TLS certificates');
             console.error('   - Test API manually:', `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=1`);
-          } else if (error.message.includes('401') || error.message.includes('403')) {
+          } else if (error.message.includes('Authentication Failed') || error.message.includes('Access Forbidden')) {
+            // Auth errors already tracked above, don't double-count
             console.error('🔐 Authentication issue detected');
             console.error('🔧 Check WooCommerce API credentials');
             console.error('   - Consumer Key:', import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY ? 'Set' : 'Missing');
@@ -163,8 +181,12 @@ export const useWooCommerceBikes = () => {
           }
         }
 
-        // Re-throw with enhanced error message
-        throw new Error(`WooCommerce Bikes API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        // Use fallback data instead of failing completely
+        console.warn('⚠️ Using fallback bike data due to API failure');
+        console.warn('🔄 API Error:', error instanceof Error ? error.message : 'Unknown error');
+
+        // Return fallback bikes instead of throwing error
+        return fallbackBikes;
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutos (mais tempo já que carrega variações)
@@ -186,23 +208,16 @@ export const useWooCommerceCategories = () => {
 
         if (!apiBase || !consumerKey || !consumerSecret) {
           console.warn('⚠️ WooCommerce configuration incomplete, using default categories');
-          return [
-            "btt",
-            "e-bike",
-            "estrada",
-            "extras-alugueres",
-            "gravel-alugueres",
-            "junior-alugueres",
-            "touring-alugueres",
-          ];
+          return fallbackCategories;
         }
 
-        // Use query parameters for WooCommerce authentication
-        const authParams = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
-        const categoriesUrl = `${apiBase}/products/categories?per_page=50&parent=319&${authParams}`;
+        // Use Basic Auth for WooCommerce authentication
+        const credentials = btoa(`${consumerKey}:${consumerSecret}`);
+        const categoriesUrl = `${apiBase}/products/categories?per_page=50&parent=319`;
 
         const response = await cleanFetch(categoriesUrl, {
           headers: {
+            'Authorization': `Basic ${credentials}`,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
@@ -211,15 +226,7 @@ export const useWooCommerceCategories = () => {
         });
 
         if (!response.ok) {
-          return [
-            "btt",
-            "e-bike", 
-            "estrada",
-            "extras-alugueres",
-            "gravel-alugueres",
-            "junior-alugueres",
-            "touring-alugueres",
-          ];
+          return fallbackCategories;
         }
 
         const categories = await response.json();
@@ -228,15 +235,7 @@ export const useWooCommerceCategories = () => {
       } catch (error) {
         console.error("❌ Erro carregando categorias:", error);
         // Retornar categorias padrão
-        return [
-          "btt",
-          "e-bike", 
-          "estrada",
-          "extras-alugueres",
-          "gravel-alugueres",
-          "junior-alugueres",
-          "touring-alugueres",
-        ];
+        return fallbackCategories;
       }
     },
     staleTime: 10 * 60 * 1000,
