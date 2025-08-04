@@ -31,7 +31,7 @@ exports.handler = async (event, context) => {
       return config.createErrorResponse(new Error('JSON inválido no body da requisição'), 400);
     }
 
-    const { products } = bodyData;
+    let { products } = bodyData;
 
     // Se não houver produtos no body, usar sync automático
     if (!Array.isArray(products) || products.length === 0) {
