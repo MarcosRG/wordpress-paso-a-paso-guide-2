@@ -50,7 +50,13 @@ export const useProgressiveWooCommerceBikes = () => {
           );
 
           if (variationsResponse.ok) {
-            productVariations = await variationsResponse.json();
+            try {
+              const variationsText = await variationsResponse.text();
+              productVariations = JSON.parse(variationsText);
+            } catch (parseError) {
+              console.error(`❌ Failed to parse variations JSON for ${product.name}:`, parseError);
+              productVariations = [];
+            }
 
             // Calcular stock total das variações ativas
             availableStock = productVariations
