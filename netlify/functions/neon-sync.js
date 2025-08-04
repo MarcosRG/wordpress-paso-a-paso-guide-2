@@ -199,6 +199,11 @@ exports.handler = async (event, context) => {
 
   } catch (error) {
     console.error('❌ Erro na sincronização Neon:', error);
-    return config.createErrorResponse(error);
+
+    // Garantir que sempre retornamos um JSON válido
+    const errorMessage = error?.message || error?.toString() || 'Erro desconhecido na sincronização';
+    console.error('❌ Error details:', { error: errorMessage, stack: error?.stack });
+
+    return config.createErrorResponse(new Error(errorMessage));
   }
 };
