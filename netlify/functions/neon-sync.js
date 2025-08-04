@@ -20,10 +20,49 @@ exports.handler = async (event, context) => {
     // Obter conexão a Neon usando configuração unificada
     const sql = neon(config.DATABASE.connectionString);
 
-    // Parse do body
-    const { products } = JSON.parse(event.body || '{}');
+    // Parse do body com validação mais robusta
+    let bodyData = {};
+    try {
+      if (event.body && event.body.trim()) {
+        bodyData = JSON.parse(event.body);
+      }
+    } catch (parseError) {
+      console.error('❌ Erro parsing JSON body:', parseError);
+      return config.createErrorResponse(new Error('JSON inválido no body da requisição'), 400);
+    }
+
+    const { products } = bodyData;
+
+    // Se não houver produtos no body, usar sync automático
     if (!Array.isArray(products) || products.length === 0) {
-      throw new Error('Array de produtos requerido');
+      console.log('🔄 Nenhum produto no body - iniciando sincronização automática...');
+
+      // Sync automático: obter produtos do WooCommerce
+      const wooResponse = await fetch(config.WOOCOMMERCE.baseUrl + '/wp-json/wc/v3/products?per_page=50&category=319&status=publish', {
+        headers: {
+          'Authorization': 'Basic ' + Buffer.from(config.WOOCOMMERCE.consumerKey + ':' + config.WOOCOMMERCE.consumerSecret).toString('base64'),
+          'Content-Type': 'application/json',
+        },
+        timeout: config.WOOCOMMERCE.timeout,
+      });
+
+      if (!wooResponse.ok) {
+        throw new Error(`Erro WooCommerce: ${wooResponse.status} ${wooResponse.statusText}`);
+      }
+
+      const wooProducts = await wooResponse.json();
+      console.log(`📦 ${wooProducts.length} produtos obtidos do WooCommerce`);
+
+      if (!Array.isArray(wooProducts) || wooProducts.length === 0) {
+        return config.createSuccessResponse({
+          success: true,
+          message: 'Nenhum produto para sincronizar',
+          stats: { processed: 0, inserted: 0, updated: 0, total_in_database: 0 }
+        });
+      }
+
+      // Usar produtos do WooCommerce
+      products = wooProducts;
     }
 
     console.log(`🔄 Sincronizando ${products.length} produtos para Neon...`);
