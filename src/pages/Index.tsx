@@ -10,13 +10,12 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Activity } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { orderService } from "@/services/orderService";
 import { wooCommerceCartService } from "@/services/wooCommerceCartService";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConnectivityAlert } from "@/hooks/useConnectivityAlert";
-import { SystemDiagnostic } from "@/components/SystemDiagnostic";
 import {
   extractACFPricing,
   getPricePerDayFromACF,
@@ -94,7 +93,6 @@ const calculateTotalPrice = (reservation: ReservationData): number => {
 const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
-  const [showDiagnostic, setShowDiagnostic] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -242,25 +240,11 @@ const Index = () => {
               <p className="text-lg text-gray-700">{t("subtitle")}</p>
             </div>
 
-            {/* Botão de Diagnóstico */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowDiagnostic(!showDiagnostic)}
-              className="ml-4"
-            >
-              <Activity className="w-4 h-4 mr-2" />
-              {showDiagnostic ? 'Ocultar' : 'Diagnóstico'}
-            </Button>
+
           </div>
         </div>
 
-        {/* Diagnóstico do Sistema */}
-        {showDiagnostic && (
-          <div className="mb-8">
-            <SystemDiagnostic />
-          </div>
-        )}
+
 
 
 
