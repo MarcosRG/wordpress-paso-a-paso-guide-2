@@ -2,6 +2,8 @@
  * Test utility to verify WooCommerce API connectivity
  */
 
+import { cleanFetch } from './cleanFetch';
+
 export const testWooCommerceAPI = async () => {
   console.log('🧪 Testing WooCommerce API connectivity...');
   
