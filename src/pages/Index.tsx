@@ -302,13 +302,6 @@ const Index = () => {
           )}
 
           {currentStep === 4 && (
-            <PurchaseForm
-              customerData={customerData}
-              onCustomerDataChange={setCustomerData}
-            />
-          )}
-
-          {currentStep === 5 && (
             <ReservationSummary reservation={reservation} />
           )}
         </Card>
