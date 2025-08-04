@@ -3,6 +3,7 @@
  * Herramienta para identificar problemas de configuración y conectividad
  */
 import config from '../config/unified';
+import { cleanFetch } from './cleanFetch';
 
 interface DiagnosticResult {
   category: string;
