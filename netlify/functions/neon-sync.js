@@ -37,6 +37,15 @@ exports.handler = async (event, context) => {
     if (!Array.isArray(products) || products.length === 0 || action === 'sync') {
       console.log('🔄 Nenhum produto no body - iniciando sincronização automática...');
 
+      // Verificar se WooCommerce está configurado para sync automático
+      if (!config.WOOCOMMERCE.baseUrl || !config.WOOCOMMERCE.consumerKey || !config.WOOCOMMERCE.consumerSecret) {
+        return config.createSuccessResponse({
+          success: true,
+          message: 'Sincronização automática não disponível - WooCommerce não configurado',
+          stats: { processed: 0, inserted: 0, updated: 0, total_in_database: 0 }
+        });
+      }
+
       // Sync automático: obter produtos do WooCommerce
       const wooResponse = await fetch(config.WOOCOMMERCE.baseUrl + '/wp-json/wc/v3/products?per_page=50&category=319&status=publish', {
         headers: {
