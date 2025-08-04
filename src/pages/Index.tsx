@@ -269,7 +269,7 @@ const Index = () => {
                 <div className="ml-2 text-xs font-medium hidden sm:block">
                   {getStepTitle(step)}
                 </div>
-                {step < 5 && (
+                {step < 4 && (
                   <div
                     className={`ml-2 mr-2 w-4 h-0.5 ${step < currentStep ? "bg-red-600" : "bg-gray-300"}`}
                   ></div>
