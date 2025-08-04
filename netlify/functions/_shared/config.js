@@ -121,6 +121,16 @@ const validateNeonConfig = () => {
   return true;
 };
 
+const validateNeonDataApiConfig = () => {
+  if (!process.env.NEON_DATA_API_URL) {
+    throw new Error('NEON_DATA_API_URL required for Data API operations');
+  }
+  if (!process.env.NEON_OAUTH_TOKEN) {
+    throw new Error('NEON_OAUTH_TOKEN required for Data API operations');
+  }
+  return true;
+};
+
 const validateWooCommerceConfig = () => {
   if (!process.env.WOOCOMMERCE_API_BASE) {
     throw new Error('WOOCOMMERCE_API_BASE required for WooCommerce operations');
