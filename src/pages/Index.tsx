@@ -177,10 +177,22 @@ const Index = () => {
       );
 
       // Usar el nuevo servicio de carrito para redirigir al checkout
+      // CustomerData vacío - será completado en WooCommerce checkout
+      const emptyCustomerData = {
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        postalCode: "",
+        country: "Portugal",
+      };
+
       await wooCommerceCartService.redirectToCheckout(
         reservation.selectedBikes,
         reservation,
-        customerData,
+        emptyCustomerData,
       );
 
       // Mostrar sucesso
