@@ -318,7 +318,7 @@ const Index = () => {
             {t("previous")}
           </Button>
 
-          {currentStep < 5 ? (
+          {currentStep < 4 ? (
             <Button
               onClick={handleNext}
               disabled={!canProceed()}
