@@ -150,12 +150,7 @@ const Index = () => {
       case 3:
         return reservation.insurance !== undefined;
       case 4:
-        return (
-          customerData.firstName &&
-          customerData.lastName &&
-          customerData.email &&
-          customerData.phone
-        );
+        return true;
       default:
         return true;
     }
