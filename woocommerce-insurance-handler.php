@@ -261,7 +261,7 @@ function bikesul_procesar_seguro_en_orden_v2($item, $cart_item_key, $values, $or
             $product_title = $item->get_name();
             if ($insurance_price_per_bike_per_day > 0) {
                 // Para seguro premium: mostrar cálculo en el nombre
-                $new_product_name = "{$product_title} x {$insurance_total_bikes} bicis x {$insurance_total_days} días";
+                $new_product_name = "{$product_title}";
                 $item->set_name($new_product_name);
             } else {
                 // Para seguro básico: agregar "(Incluido)" al nombre
@@ -269,8 +269,12 @@ function bikesul_procesar_seguro_en_orden_v2($item, $cart_item_key, $values, $or
                 $item->set_name($new_product_name);
             }
 
-            // Forzar cantidad a 1 y precio total correcto
-            $item->set_quantity(1);
+            // RESTAURAR cantidad correcta: bicis × días (como funcionaba antes)
+            $insurance_quantity = $insurance_total_bikes * $insurance_total_days;
+            $price_per_unit = $insurance_price_per_bike_per_day;
+
+            $item->set_quantity($insurance_quantity);
+            $item->set_price($price_per_unit);
             $item->set_total($total_insurance_price);
             $item->set_subtotal($total_insurance_price);
 
