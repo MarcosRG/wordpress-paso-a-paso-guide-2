@@ -94,12 +94,17 @@ export const DatabaseConnectionDebug: React.FC = () => {
       // Test 1: Verificar Neon Database
       if (neonStatus.data && neonStatus.isSuccess) {
         const responseTime = Date.now() - startTime;
+        const dbInfo = extractDatabaseInfo();
         setConnectionStatus({
           isConnected: true,
           responseTime,
           lastChecked: new Date(),
           source: 'neon',
-          details: `Neon Database conectado - ${neonStatus.data.length || 0} tablas disponibles`
+          details: `Neon Database conectado - ${neonStatus.data.length || 0} tablas disponibles`,
+          databaseInfo: {
+            ...dbInfo,
+            tables: neonStatus.data.length || 0
+          }
         });
         return;
       }
