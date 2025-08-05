@@ -358,6 +358,9 @@ const Index = () => {
 
       {/* WooCommerce Permissions Fix - Aparece automáticamente si hay errores */}
       <WooCommercePermissionsFix />
+
+      {/* Debug Info - Solo en desarrollo */}
+      <DataSourceDebugInfo compact={true} />
     </div>
   );
 };
