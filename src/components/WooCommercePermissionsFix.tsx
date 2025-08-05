@@ -27,7 +27,15 @@ interface PermissionTestResult {
   details?: string;
 }
 
-export const WooCommercePermissionsFix: React.FC = () => {
+interface WooCommercePermissionsFixProps {
+  forceVisible?: boolean;
+  embedded?: boolean;
+}
+
+export const WooCommercePermissionsFix: React.FC<WooCommercePermissionsFixProps> = ({
+  forceVisible = false,
+  embedded = false
+}) => {
   const { shouldShowPermissionsFix, hasAuthError, hasPermissionError, lastError, clearErrors } = useWooCommerceErrorDetection();
   const [isVisible, setIsVisible] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
