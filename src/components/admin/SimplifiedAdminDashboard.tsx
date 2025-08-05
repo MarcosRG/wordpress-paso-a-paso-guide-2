@@ -191,6 +191,21 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
             </div>
           </TabsContent>
 
+          {/* Database Connection Debug Tab */}
+          <TabsContent value="connection">
+            <Card>
+              <CardHeader>
+                <CardTitle>Debug Conexión Base de Datos</CardTitle>
+                <CardDescription>
+                  Monitoreo en tiempo real del estado de conexión a todas las fuentes de datos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DatabaseConnectionDebug />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* WooCommerce Diagnostic Tab */}
           <TabsContent value="diagnostic">
             <Card>
