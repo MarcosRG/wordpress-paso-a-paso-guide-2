@@ -217,7 +217,16 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <WooCommerceDiagnostic />
+                <div className="space-y-6">
+                  <WooCommerceDiagnostic />
+
+                  <div className="border-t pt-6">
+                    <h3 className="text-lg font-semibold mb-4">Test de Permisos API</h3>
+                    <div className="relative">
+                      <WooCommercePermissionsFix />
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
