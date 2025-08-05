@@ -42,7 +42,7 @@ export const BikeSelection = ({
   reservation,
   setReservation,
 }: BikeSelectionProps) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("estrada");
   const queryClient = useQueryClient();
 
   // Hook para reparación automática del sistema
