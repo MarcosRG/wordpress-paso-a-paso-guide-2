@@ -286,6 +286,67 @@ export const DatabaseConnectionDebug: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Información Detallada de Base de Datos */}
+      {connectionStatus.databaseInfo && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Database className="h-4 w-4 text-blue-500" />
+              Información de Base de Datos
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="space-y-2">
+                <div>
+                  <span className="text-muted-foreground">Nombre BD:</span>
+                  <div className="font-mono font-medium">{connectionStatus.databaseInfo.name}</div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Host:</span>
+                  <div className="font-mono font-medium">{connectionStatus.databaseInfo.host}</div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Proyecto:</span>
+                  <div className="font-mono font-medium">{connectionStatus.databaseInfo.projectId}</div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <span className="text-muted-foreground">Branch:</span>
+                  <div className="font-mono font-medium">{connectionStatus.databaseInfo.branchId}</div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Role:</span>
+                  <div className="font-mono font-medium">{connectionStatus.databaseInfo.role}</div>
+                </div>
+                {connectionStatus.databaseInfo.tables !== undefined && (
+                  <div>
+                    <span className="text-muted-foreground">Tablas:</span>
+                    <div className="font-mono font-medium">{connectionStatus.databaseInfo.tables}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">Connection String:</span>
+              <div className="bg-muted p-2 rounded text-xs font-mono break-all">
+                {connectionStatus.databaseInfo.connectionString}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => copyToClipboard(connectionStatus.databaseInfo?.connectionString || '')}
+                  className="ml-2 h-6 w-6 p-0"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recomendaciones */}
       {!connectionStatus.isConnected && (
         <Card>
