@@ -4,7 +4,7 @@ import { Bike } from "@/pages/Index";
 import { LocalBikeCache } from "@/services/localBikeCache";
 import { useNeonDatabaseBikes, useNeonDatabaseStatus } from "./useNeonDatabase";
 import { useProgressiveWooCommerceBikes } from "./useProgressiveWooCommerceBikes";
-import { fallbackBikes, fallbackCategories } from "@/data/fallbackBikes";
+// DATOS FALLBACK ELIMINADOS - Solo datos reales
 
 interface CachedBikesResult {
   data: Bike[] | undefined;
