@@ -35,9 +35,19 @@ export const WooCommercePermissionsFix: React.FC = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Test inicial automático
-    runPermissionTests();
-  }, []);
+    // Mostrar automáticamente si se detectan errores
+    if (shouldShowPermissionsFix && !isVisible) {
+      setIsVisible(true);
+      runPermissionTests();
+    }
+  }, [shouldShowPermissionsFix]);
+
+  useEffect(() => {
+    // Test inicial automático solo si ya es visible
+    if (isVisible) {
+      runPermissionTests();
+    }
+  }, [isVisible]);
 
   const runPermissionTests = async () => {
     setIsTesting(true);
