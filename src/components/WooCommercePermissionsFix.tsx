@@ -28,7 +28,8 @@ interface PermissionTestResult {
 }
 
 export const WooCommercePermissionsFix: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(true);
+  const { shouldShowPermissionsFix, hasAuthError, hasPermissionError, lastError, clearErrors } = useWooCommerceErrorDetection();
+  const [isVisible, setIsVisible] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResults, setTestResults] = useState<PermissionTestResult[]>([]);
   const { toast } = useToast();
