@@ -22,6 +22,7 @@ import {
   calculateTotalPriceACF,
 } from "@/services/woocommerceApi";
 import WooCommercePermissionsFix from "@/components/WooCommercePermissionsFix";
+import DataSourceDebugInfo from "@/components/DataSourceDebugInfo";
 
 export interface Bike {
   id: string;
