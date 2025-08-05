@@ -99,9 +99,9 @@ export const useCachedBikes = (): CachedBikesResult => {
     }
   };
 
-  // Datos finales - priorizar caché válido sobre loading
-  const finalData = cachedData?.bikes || activeQuery.data || fallbackBikes;
-  const finalCategories = cachedData?.categories || fallbackCategories;
+  // Datos finales - SOLO datos reales, no fallback
+  const finalData = cachedData?.bikes || activeQuery.data || [];
+  const finalCategories = cachedData?.categories || [];
   
   // Loading solo si no hay caché y está cargando
   const isLoading = !cachedData && activeQuery.isLoading;
