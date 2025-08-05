@@ -174,10 +174,13 @@ export const WooCommercePermissionsFix: React.FC = () => {
               <AlertTriangle className="h-5 w-5 text-red-500" />
               <CardTitle className="text-sm">WooCommerce Permissions</CardTitle>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setIsVisible(false)}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setIsVisible(false);
+                clearErrors();
+              }}
               className="text-red-500 hover:text-red-700"
             >
               ×
