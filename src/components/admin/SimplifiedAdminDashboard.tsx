@@ -223,7 +223,7 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
                   <div className="border-t pt-6">
                     <h3 className="text-lg font-semibold mb-4">Test de Permisos API</h3>
                     <div className="relative">
-                      <WooCommercePermissionsFix />
+                      <WooCommercePermissionsFix forceVisible={true} embedded={true} />
                     </div>
                   </div>
                 </div>
