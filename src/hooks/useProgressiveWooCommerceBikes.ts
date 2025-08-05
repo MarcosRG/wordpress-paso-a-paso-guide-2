@@ -161,13 +161,11 @@ export const useProgressiveWooCommerceBikes = () => {
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unable to read error response');
-          console.error('❌ WooCommerce API Error Details:', {
-            status: response.status,
-            statusText: response.statusText,
-            url: response.url,
-            headers: Object.fromEntries(response.headers.entries()),
-            body: errorText.substring(0, 500)
-          });
+          console.error('❌ WooCommerce API Error Details:');
+          console.error('Status:', response.status);
+          console.error('Status Text:', response.statusText);
+          console.error('URL:', response.url);
+          console.error('Response Body:', errorText.substring(0, 500));
 
           // Handle authentication errors specifically
           if (response.status === 401 || response.status === 403) {
@@ -175,22 +173,28 @@ export const useProgressiveWooCommerceBikes = () => {
 
             // Parse error response for more specific details
             let errorDetails = '';
+            let userFriendlyMessage = '';
             try {
               const errorJson = JSON.parse(errorText);
               if (errorJson.code === 'woocommerce_rest_cannot_view') {
                 errorDetails = 'API key lacks "Read" permissions for products. ';
+                userFriendlyMessage = 'The WooCommerce API key does not have "Read" permissions. Please update the API key permissions to "Read" or "Read/Write" in your WooCommerce settings.';
               } else if (errorJson.code === 'woocommerce_rest_authentication_error') {
                 errorDetails = 'Invalid API credentials. ';
+                userFriendlyMessage = 'The WooCommerce API credentials are invalid. Please check your Consumer Key and Consumer Secret.';
+              } else {
+                userFriendlyMessage = `WooCommerce API Error: ${errorJson.message || 'Unknown error'}`;
               }
               errorDetails += `Error: ${errorJson.message || 'Unknown WooCommerce error'}`;
             } catch {
               errorDetails = errorText.substring(0, 200);
+              userFriendlyMessage = 'Unable to access WooCommerce API. Please check your API credentials and permissions.';
             }
 
             if (response.status === 401) {
               throw new Error(`WooCommerce Authentication Failed: Invalid credentials. ${errorDetails}`);
             } else {
-              throw new Error(`WooCommerce Access Forbidden: ${errorDetails}. Check API key permissions in WooCommerce > Settings > Advanced > REST API.`);
+              throw new Error(`WooCommerce Access Forbidden: ${userFriendlyMessage} ${errorDetails}`);
             }
           } else {
             throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
