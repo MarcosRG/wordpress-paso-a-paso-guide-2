@@ -274,7 +274,8 @@ function bikesul_procesar_seguro_en_orden_v2($item, $cart_item_key, $values, $or
             $price_per_unit = $insurance_price_per_bike_per_day;
 
             $item->set_quantity($insurance_quantity);
-            $item->set_price($price_per_unit);
+            // Remover set_price() que não existe na classe WC_Order_Item_Product
+            // Apenas usar set_total() e set_subtotal() que são os métodos corretos
             $item->set_total($total_insurance_price);
             $item->set_subtotal($total_insurance_price);
 
