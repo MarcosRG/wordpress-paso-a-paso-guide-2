@@ -174,8 +174,8 @@ export const WooCommercePermissionsFix: React.FC<WooCommercePermissionsFixProps>
   if (!forceVisible && (!isVisible || !shouldShowPermissionsFix)) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 w-96 max-h-[90vh] overflow-y-auto">
-      <Card className="border-red-200 bg-red-50">
+    <div className={embedded ? "w-full" : "fixed top-4 right-4 z-50 w-96 max-h-[90vh] overflow-y-auto"}>
+      <Card className={embedded ? "border-orange-200 bg-orange-50" : "border-red-200 bg-red-50"}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
