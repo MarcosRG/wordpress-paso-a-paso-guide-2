@@ -21,6 +21,7 @@ import {
   getPricePerDayFromACF,
   calculateTotalPriceACF,
 } from "@/services/woocommerceApi";
+import WooCommercePermissionsFix from "@/components/WooCommercePermissionsFix";
 
 export interface Bike {
   id: string;
