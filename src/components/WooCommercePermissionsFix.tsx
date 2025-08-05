@@ -17,6 +17,7 @@ import {
   Loader2
 } from 'lucide-react';
 import config from '@/config/unified';
+import { useWooCommerceErrorDetection } from '@/hooks/useWooCommerceErrorDetection';
 
 interface PermissionTestResult {
   endpoint: string;
