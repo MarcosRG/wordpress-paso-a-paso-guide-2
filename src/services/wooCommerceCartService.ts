@@ -326,13 +326,12 @@ export class WooCommerceCartService {
               const productId = insuranceProduct.id > 0 ? insuranceProduct.id :
                 (reservation.insurance.id === 'free' || reservation.insurance.id === 'basic') ? 21819 : 21815;
 
-              // Calcular cantidad total (bicicletas × días) para que aparezca correctamente
-              const totalQuantity = totalBikes * reservation.totalDays;
-
+              // CORREGIR: Usar cantidad 1 y precio total para mostrar correctamente en checkout
+              // El checkout mostrará: "Seguro Premium x 1 = €110" en lugar de "Seguro Premium x 22 = €5"
               lineItems.push({
                 product_id: productId,
-                quantity: totalQuantity, // Cantidad total: bicicletas × días
-                price: reservation.insurance.price, // Precio unitario por bicicleta por día
+                quantity: 1, // Cantidad fija 1
+                price: totalInsurancePrice, // Precio total calculado (€110)
                 meta_data: [
                   { key: "_insurance_type", value: reservation.insurance.id },
                   { key: "_insurance_name", value: reservation.insurance.name },
