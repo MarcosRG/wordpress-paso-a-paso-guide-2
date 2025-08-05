@@ -42,7 +42,7 @@ export const BikeSelection = ({
   reservation,
   setReservation,
 }: BikeSelectionProps) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("estrada");
   const queryClient = useQueryClient();
 
   // Hook para reparación automática del sistema
@@ -131,9 +131,6 @@ export const BikeSelection = ({
             return false;
           }
         }
-
-        // Filtrar por categoría seleccionada
-        if (selectedCategory === "all") return true;
 
         // Check if product has the selected category
         if (bike.wooCommerceData?.product?.categories) {
@@ -255,22 +252,32 @@ export const BikeSelection = ({
       <div>
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
         <div className="text-center mb-6">
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-4">
             {isFromCache ? `${t("loadingBikes")} (a actualizar...)` : t("loadingBikes")}
           </p>
-          {progressInfo && progressInfo.isProcessing && (
-            <div className="mt-4 space-y-2">
-              <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
+
+          {/* Barra de progreso mejorada - siempre visible cuando está cargando */}
+          <div className="mt-4 space-y-2">
+            <div className="w-full bg-gray-200 rounded-full h-3 max-w-md mx-auto overflow-hidden">
+              {progressInfo && progressInfo.isProcessing ? (
                 <div
-                  className="bg-red-600 h-2 rounded-full transition-all duration-500"
+                  className="bg-red-600 h-3 rounded-full transition-all duration-500"
                   style={{ width: `${progressInfo.progressPercentage}%` }}
                 ></div>
-              </div>
+              ) : (
+                <div className="bg-red-600 h-3 rounded-full animate-pulse w-1/2"></div>
+              )}
+            </div>
+            {progressInfo && progressInfo.isProcessing ? (
               <p className="text-sm text-muted-foreground">
                 {progressInfo.processingCount} de {progressInfo.totalProducts} produtos
               </p>
-            </div>
-          )}
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                A carregar bicicletas...
+              </p>
+            )}
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (

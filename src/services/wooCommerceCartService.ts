@@ -652,8 +652,8 @@ export class WooCommerceCartService {
           }),
         );
 
-        // Redirigir en la misma ventana para evitar confusión
-        window.location.href = checkoutUrl;
+        // Redirigir en nueva pestaña como antes
+        window.open(checkoutUrl, "_blank");
       }
     } catch (error) {
       console.error("❌ Error en proceso de checkout:", error);

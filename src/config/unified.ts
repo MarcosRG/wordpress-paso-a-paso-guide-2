@@ -66,7 +66,7 @@ export const AUTH_CONFIG = {
 // ==================== FEATURE FLAGS ====================
 export const FEATURE_FLAGS = {
   enableDebug: getOptionalEnv('VITE_ENABLE_DEBUG', 'false') === 'true',
-  enableMockData: getOptionalEnv('VITE_ENABLE_MOCK_DATA', 'false') === 'true',
+  enableMockData: false, // SIEMPRE DESHABILITADO - Solo datos reales
   enableAutoSync: getOptionalEnv('VITE_ENABLE_AUTO_SYNC', 'true') === 'true',
   enableRealTimeStock: getOptionalEnv('VITE_ENABLE_REAL_TIME_STOCK', 'true') === 'true',
 } as const;
