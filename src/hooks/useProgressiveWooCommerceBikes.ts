@@ -161,13 +161,11 @@ export const useProgressiveWooCommerceBikes = () => {
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unable to read error response');
-          console.error('❌ WooCommerce API Error Details:', {
-            status: response.status,
-            statusText: response.statusText,
-            url: response.url,
-            headers: Object.fromEntries(response.headers.entries()),
-            body: errorText.substring(0, 500)
-          });
+          console.error('❌ WooCommerce API Error Details:');
+          console.error('Status:', response.status);
+          console.error('Status Text:', response.statusText);
+          console.error('URL:', response.url);
+          console.error('Response Body:', errorText.substring(0, 500));
 
           // Handle authentication errors specifically
           if (response.status === 401 || response.status === 403) {
