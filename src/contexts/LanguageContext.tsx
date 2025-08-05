@@ -223,7 +223,7 @@ const translations = {
     noBikesAvailable: "No bikes available",
     tryAgain: "Try again",
     preparingCart: "Preparing cart and redirecting...",
-    redirectingCheckout: "Redirecting to WooCommerce checkout...",
+    redirectingCheckout: "Redirecting to checkout...",
     success: "Success",
     unknownError: "Unknown error",
     reservationError: "Problem processing reservation: {error}. Please try again.",
