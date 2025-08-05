@@ -107,8 +107,11 @@ export class WooCommerceCartService {
         : null;
 
       let totalPricePerBike = 0;
+      let calculatedPricePerDay = bike.pricePerDay; // Precio por día calculado correcto
+
       if (acfPricing && reservation.totalDays > 0) {
         // Usar ACF pricing
+        calculatedPricePerDay = getPricePerDayFromACF(reservation.totalDays, acfPricing);
         totalPricePerBike = calculateTotalPriceACF(
           reservation.totalDays,
           1,
@@ -119,18 +122,18 @@ export class WooCommerceCartService {
         const priceRanges = bike.wooCommerceData?.product
           ? extractDayBasedPricing(bike.wooCommerceData.product)
           : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
-        const pricePerDay =
+        calculatedPricePerDay =
           reservation.totalDays > 0
             ? getPriceForDays(priceRanges, reservation.totalDays)
             : bike.pricePerDay;
-        totalPricePerBike = pricePerDay * reservation.totalDays;
+        totalPricePerBike = calculatedPricePerDay * reservation.totalDays;
       }
 
       params.append(`bike_${index}_id`, bike.id);
       params.append(`bike_${index}_name`, bike.name);
       params.append(`bike_${index}_quantity`, bike.quantity.toString());
       params.append(`bike_${index}_size`, bike.size);
-      params.append(`bike_${index}_price_per_day`, bike.pricePerDay.toString());
+      params.append(`bike_${index}_price_per_day`, calculatedPricePerDay.toString()); // USAR PRECIO CALCULADO
       params.append(`bike_${index}_total_price`, totalPricePerBike.toString());
       params.append(`bike_${index}_days`, reservation.totalDays.toString());
 
