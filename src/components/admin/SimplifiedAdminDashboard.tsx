@@ -21,6 +21,7 @@ import { SystemDiagnostic } from '../SystemDiagnostic';
 import NeonDatabaseDiagnostic from './NeonDatabaseDiagnostic';
 import DatabaseConnectionDebug from './DatabaseConnectionDebug';
 import WooCommercePermissionsFix from '../WooCommercePermissionsFix';
+import { WooCommerceApiTest } from '../WooCommerceApiTest';
 
 interface SimplifiedAdminDashboardProps {
   onLogout: () => void;
