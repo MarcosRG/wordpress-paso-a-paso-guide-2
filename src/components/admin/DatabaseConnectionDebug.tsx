@@ -49,6 +49,37 @@ export const DatabaseConnectionDebug: React.FC = () => {
   // Hook para verificar estado Neon
   const neonStatus = useNeonDatabaseStatus();
 
+  // Función para extraer información de la base de datos
+  const extractDatabaseInfo = () => {
+    const connectionString = config.DATABASE.connectionString;
+    const projectId = config.DATABASE.projectId;
+    const branchId = config.DATABASE.branchId;
+
+    if (!connectionString) return null;
+
+    try {
+      // Parsear connection string de Neon
+      const url = new URL(connectionString);
+      return {
+        name: url.pathname.substring(1) || config.DATABASE.database, // Remove leading slash
+        host: url.hostname,
+        projectId: projectId,
+        branchId: branchId || 'main',
+        role: url.username || config.DATABASE.role,
+        connectionString: `${url.protocol}//${url.hostname}${url.pathname}`
+      };
+    } catch (error) {
+      return {
+        name: config.DATABASE.database,
+        host: 'Neon Database',
+        projectId: projectId,
+        branchId: branchId || 'main',
+        role: config.DATABASE.role,
+        connectionString: 'URL inválida'
+      };
+    }
+  };
+
   useEffect(() => {
     checkConnection();
     const interval = setInterval(checkConnection, 30000); // Check cada 30 segundos
