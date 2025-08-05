@@ -132,9 +132,6 @@ export const BikeSelection = ({
           }
         }
 
-        // Filtrar por categoría seleccionada
-        if (selectedCategory === "all") return true;
-
         // Check if product has the selected category
         if (bike.wooCommerceData?.product?.categories) {
           const hasCategory = bike.wooCommerceData.product.categories.some(
