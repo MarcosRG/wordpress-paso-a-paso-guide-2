@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BikeSelection } from "@/components/BikeSelection";
 import { DateTimeSelection } from "@/components/DateTimeSelection";
 import { InsuranceOptions } from "@/components/InsuranceOptions";
-import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
+import { CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
 
@@ -130,7 +130,7 @@ const Index = () => {
   });
 
   const handleNext = () => {
-    if (currentStep < 5) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -150,12 +150,7 @@ const Index = () => {
       case 3:
         return reservation.insurance !== undefined;
       case 4:
-        return (
-          customerData.firstName &&
-          customerData.lastName &&
-          customerData.email &&
-          customerData.phone
-        );
+        return true;
       default:
         return true;
     }
@@ -182,10 +177,22 @@ const Index = () => {
       );
 
       // Usar el nuevo servicio de carrito para redirigir al checkout
+      // CustomerData vacío - será completado en WooCommerce checkout
+      const emptyCustomerData = {
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        postalCode: "",
+        country: "Portugal",
+      };
+
       await wooCommerceCartService.redirectToCheckout(
         reservation.selectedBikes,
         reservation,
-        customerData,
+        emptyCustomerData,
       );
 
       // Mostrar sucesso
@@ -218,8 +225,6 @@ const Index = () => {
       case 3:
         return t("insurance");
       case 4:
-        return t("contactData");
-      case 5:
         return t("confirmReservation");
       default:
         return "";
@@ -255,7 +260,7 @@ const Index = () => {
         {/* Progress Indicator */}
         <div className="flex justify-center mb-8">
           <div className="flex items-center space-x-2">
-            {[1, 2, 3, 4, 5].map((step) => (
+            {[1, 2, 3, 4].map((step) => (
               <div key={step} className="flex items-center">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
@@ -269,7 +274,7 @@ const Index = () => {
                 <div className="ml-2 text-xs font-medium hidden sm:block">
                   {getStepTitle(step)}
                 </div>
-                {step < 5 && (
+                {step < 4 && (
                   <div
                     className={`ml-2 mr-2 w-4 h-0.5 ${step < currentStep ? "bg-red-600" : "bg-gray-300"}`}
                   ></div>
@@ -309,13 +314,6 @@ const Index = () => {
           )}
 
           {currentStep === 4 && (
-            <PurchaseForm
-              customerData={customerData}
-              onCustomerDataChange={setCustomerData}
-            />
-          )}
-
-          {currentStep === 5 && (
             <ReservationSummary reservation={reservation} />
           )}
         </Card>
@@ -332,7 +330,7 @@ const Index = () => {
             {t("previous")}
           </Button>
 
-          {currentStep < 5 ? (
+          {currentStep < 4 ? (
             <Button
               onClick={handleNext}
               disabled={!canProceed()}
