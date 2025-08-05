@@ -250,7 +250,36 @@ class Bikesul_Emergency_Price_Fix {
         if ($type === 'premium') {
             return 21815; // Seguro Premium Bikesul
         } else {
-            return 21819; // Seguro Básico Bikesul  
+            return 21819; // Seguro Básico Bikesul
+        }
+    }
+
+    /**
+     * Verifica e corrige produtos órfãos de seguro
+     */
+    private function check_orphaned_insurance_products() {
+        // IDs conhecidos de produtos de seguro
+        $insurance_product_ids = [21815, 21819];
+
+        foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
+            $product_id = $cart_item['product_id'];
+
+            // Se é produto de seguro mas não tem meta data de insurance
+            if (in_array($product_id, $insurance_product_ids) && !$this->is_insurance_item($cart_item)) {
+                error_log("BIKESUL EMERGENCY: Found orphaned insurance product {$product_id}, adding meta data");
+
+                // Tentar obter dados da URL se disponível
+                if (isset($_GET['insurance_price_per_bike_per_day'])) {
+                    $cart_item['insurance_price_per_bike_per_day'] = floatval($_GET['insurance_price_per_bike_per_day']);
+                    $cart_item['insurance_total_bikes'] = intval($_GET['insurance_total_bikes'] ?? 3);
+                    $cart_item['insurance_total_days'] = intval($_GET['insurance_total_days'] ?? 11);
+                    $cart_item['insurance_type'] = sanitize_text_field($_GET['insurance_type'] ?? 'premium');
+                    $cart_item['emergency_fix'] = true;
+
+                    // Atualizar carrinho
+                    WC()->cart->cart_contents[$cart_item_key] = $cart_item;
+                }
+            }
         }
     }
 }
