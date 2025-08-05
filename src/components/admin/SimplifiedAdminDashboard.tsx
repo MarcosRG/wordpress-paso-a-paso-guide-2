@@ -165,6 +165,11 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
             </Card>
           </TabsContent>
 
+          {/* WooCommerce API Test Tab */}
+          <TabsContent value="wooapi">
+            <WooCommerceApiTest />
+          </TabsContent>
+
           {/* Database Management Tab */}
           <TabsContent value="database">
             <div className="space-y-6">
