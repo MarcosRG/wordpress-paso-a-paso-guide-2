@@ -8,13 +8,13 @@ interface CategoryFilterProps {
 }
 
 const PREDEFINED_CATEGORIES = [
-  "btt",
-  "e-bike",
   "estrada",
-  "extras-alugueres",
   "gravel-alugueres",
-  "junior-alugueres",
+  "btt",
   "touring-alugueres",
+  "e-bike",
+  "junior-alugueres",
+  "extras-alugueres",
 ];
 
 export const CategoryFilter = ({
@@ -32,14 +32,6 @@ export const CategoryFilter = ({
     <div className="mb-6">
       <h3 className="text-lg font-semibold mb-3">{t("filterByCategory")}</h3>
       <div className="flex flex-wrap gap-2">
-        <Button
-          variant={selectedCategory === "all" ? "default" : "outline"}
-          onClick={() => onCategoryChange("all")}
-          size="sm"
-          className="bg-black text-white hover:bg-gray-800"
-        >
-          {t("all")}
-        </Button>
         {displayCategories.map((category) => (
           <Button
             key={category}
