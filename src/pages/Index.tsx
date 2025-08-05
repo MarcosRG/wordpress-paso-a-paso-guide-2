@@ -354,6 +354,9 @@ const Index = () => {
 
 
       </div>
+
+      {/* WooCommerce Permissions Fix - Aparece automáticamente si hay errores */}
+      <WooCommercePermissionsFix />
     </div>
   );
 };
