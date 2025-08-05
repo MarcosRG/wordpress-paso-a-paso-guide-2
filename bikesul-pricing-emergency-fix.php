@@ -44,6 +44,7 @@ class Bikesul_Emergency_Price_Fix {
         
         // Se carrinho tem items mas preços estão errados, forçar recálculo
         if (!WC()->cart->is_empty()) {
+            $this->check_orphaned_insurance_products();
             $this->force_price_recalculation();
         }
     }
