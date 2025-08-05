@@ -17,6 +17,7 @@ import {
   Activity
 } from 'lucide-react';
 import { useNeonDatabaseStatus } from '@/hooks/useNeonDatabase';
+import config from '@/config/unified';
 
 interface ConnectionStatus {
   isConnected: boolean;
