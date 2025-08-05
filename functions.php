@@ -616,11 +616,11 @@ function agregar_nota_con_metadatos_del_pedido($order_id) {
 
 
 // ===============================================
-// ✅ CARGA DE COMPONENTES BIKESUL - SOLO SAFE LOADER
+// ✅ CARGA DE COMPONENTES BIKESUL v2 - SISTEMA UNIFICADO
 // ===============================================
 
-// ✅ SAFE LOADER ACTIVO - Gestiona carga automática de todos los componentes
-require_once get_stylesheet_directory() . '/bikesul-safe-loader.php';
+// ✅ SAFE LOADER v2 ACTIVO - Sistema unificado de pricing e seguros
+require_once get_stylesheet_directory() . '/bikesul-safe-loader-v2.php';
 
 // ❌ CARGAS MANUALES COMENTADAS - Evita duplicados
 // require_once get_stylesheet_directory() . '/woocommerce-bikesul-pricing.php';
