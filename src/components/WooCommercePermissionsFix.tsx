@@ -162,7 +162,8 @@ export const WooCommercePermissionsFix: React.FC = () => {
   const hasFailures = testResults.some(test => test.status === 'failed');
   const allSuccess = testResults.length > 0 && testResults.every(test => test.status === 'success');
 
-  if (!isVisible) return null;
+  // Solo mostrar si hay errores detectados o está forzado a visible
+  if (!isVisible || !shouldShowPermissionsFix) return null;
 
   return (
     <div className="fixed top-4 right-4 z-50 w-96 max-h-[90vh] overflow-y-auto">
