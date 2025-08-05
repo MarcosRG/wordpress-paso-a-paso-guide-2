@@ -39,6 +39,7 @@ class Bikesul_Safe_Loader_v2 {
         
         // SISTEMA UNIFICADO - Carrega apenas o novo sistema
         $components = array(
+            'bikesul-pricing-emergency-fix.php' => 'Emergency Price Fix (HIGH PRIORITY)',
             'woocommerce-bikesul-pricing-v2-unified.php' => 'Unified Pricing System v2',
             'bikesul-checkout-debug.php' => 'Checkout Debug Tool',
             'woocommerce-bikesul-custom-fields-identifier.php' => 'Custom Fields Identifier',
