@@ -283,7 +283,7 @@ function bikesul_procesar_seguro_en_orden_v2($item, $cart_item_key, $values, $or
                 $item->add_meta_data('Precio por bici/día', '€' . number_format($insurance_price_per_bike_per_day, 2), true);
                 $item->add_meta_data('Total bicicletas', $insurance_total_bikes, true);
                 $item->add_meta_data('Total días', $insurance_total_days, true);
-                $item->add_meta_data('C��lculo', "€{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} bicis × {$insurance_total_days} días", true);
+                $item->add_meta_data('Cálculo', "€{$insurance_price_per_bike_per_day} × {$insurance_total_bikes} bicis × {$insurance_total_days} días", true);
             } else {
                 $item->add_meta_data('Tipo de seguro', 'Básico - Incluido sin costo', true);
                 $item->add_meta_data('Total bicicletas', $insurance_total_bikes, true);
@@ -340,10 +340,11 @@ function bikesul_ajustar_precio_seguro_carrito_v2($cart) {
             
             if ($price_per_bike_per_day >= 0 && $total_bikes > 0 && $total_days > 0) {
                 $total_price = $price_per_bike_per_day * $total_bikes * $total_days;
-                
-                // Establecer precio personalizado
+
+                // CORREGIR: Para que aparezca el precio total correcto en el carrito
+                // La cantidad del cart item debe ser 1 y el precio debe ser el total
                 $cart_item['data']->set_price($total_price);
-                
+
                 error_log("BIKESUL CARRITO SEGURO: €{$price_per_bike_per_day} × {$total_bikes} × {$total_days} = €{$total_price}");
             }
         }
