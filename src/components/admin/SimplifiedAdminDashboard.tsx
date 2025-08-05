@@ -19,6 +19,7 @@ import WooCommerceDiagnostic from '../WooCommerceDiagnostic';
 import EnvironmentValidation from './EnvironmentValidation';
 import { SystemDiagnostic } from '../SystemDiagnostic';
 import NeonDatabaseDiagnostic from './NeonDatabaseDiagnostic';
+import DatabaseConnectionDebug from './DatabaseConnectionDebug';
 
 interface SimplifiedAdminDashboardProps {
   onLogout: () => void;
