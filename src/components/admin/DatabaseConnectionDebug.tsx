@@ -25,6 +25,15 @@ interface ConnectionStatus {
   source: 'neon' | 'woocommerce' | 'cache' | 'fallback';
   error?: string;
   details?: string;
+  databaseInfo?: {
+    name: string;
+    host: string;
+    projectId?: string;
+    branchId?: string;
+    role?: string;
+    tables?: number;
+    connectionString?: string;
+  };
 }
 
 export const DatabaseConnectionDebug: React.FC = () => {
