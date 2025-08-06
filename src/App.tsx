@@ -20,7 +20,6 @@ import { networkRecoveryService } from "./services/networkRecovery";
 import { monitoringService } from "./services/monitoringService";
 import { testWooCommerceAPI } from "./utils/testWooCommerceAPI";
 import { runSystemDiagnostic, quickDiagnostic } from "./utils/systemDiagnostic";
-import { debugLog, systemDebugger } from "@/utils/systemDebugger";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
@@ -31,43 +30,23 @@ const App = () => {
 
   // Initialize monitoring services
   React.useEffect(() => {
-    // Inicializar novo sistema de debug
-    debugLog('info', '🚀 BiKeSul Tours App iniciado');
-    debugLog('info', `📍 Ambiente: ${import.meta.env.DEV ? 'Desenvolvimento' : 'Produção'}`);
-
     // Network recovery service deshabilitado para evitar conflictos con FullStory
     // pero sí iniciamos el monitoreo automático para detectar problemas
     try {
       monitoringService.startMonitoring(60000); // Check cada minuto
-      debugLog('info', '✅ Monitoreo automático iniciado');
+      console.log('✅ Monitoreo automático iniciado');
     } catch (error) {
-      debugLog('error', '❌ Error starting monitoring service', error);
+      console.error('❌ Error starting monitoring service:', error);
     }
 
     // Make test functions available globally for debugging
     (window as any).testWooAPI = testWooCommerceAPI;
     (window as any).runSystemDiagnostic = runSystemDiagnostic;
     (window as any).quickDiagnostic = quickDiagnostic;
-
-    // Adicionar novas funções de debug
-    (window as any).systemAnalysis = () => systemDebugger.analyzeSystemStatus();
-    (window as any).debugLogs = () => systemDebugger.getRecentLogs();
-
-    debugLog('info', '🧪 Debug functions available:');
+    console.log('🧪 Debug functions available:');
     console.log('   - testWooAPI() - Test WooCommerce API connectivity');
     console.log('   - runSystemDiagnostic() - Complete system diagnostic');
     console.log('   - quickDiagnostic() - Quick problem detection');
-    console.log('   - systemAnalysis() - Análise completa do sistema');
-    console.log('   - debugLogs() - Ver logs recentes do sistema');
-
-    // Análise inicial do sistema em desenvolvimento
-    if (import.meta.env.DEV) {
-      setTimeout(() => {
-        systemDebugger.analyzeSystemStatus().then(status => {
-          debugLog('info', '📊 Análise inicial do sistema completa', status);
-        });
-      }, 3000); // Delay para permitir inicialização completa
-    }
 
     // Cleanup on unmount
     return () => {
