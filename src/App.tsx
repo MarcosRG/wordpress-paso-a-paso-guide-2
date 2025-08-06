@@ -29,16 +29,20 @@ const App = () => {
 
   // Initialize services
   React.useEffect(() => {
-    // Inicializar serviço keep-alive do Render backend
-    try {
-      renderKeepAliveService.start();
-      console.log('✅ Serviço keep-alive iniciado');
-    } catch (error) {
-      console.error('❌ Erro iniciando serviço keep-alive:', error);
-    }
+    // Delay para evitar conflitos com outros serviços durante inicialização
+    const initTimer = setTimeout(() => {
+      try {
+        renderKeepAliveService.start();
+        console.log('✅ Serviço keep-alive iniciado com sucesso');
+      } catch (error) {
+        console.error('❌ Erro iniciando serviço keep-alive:', error);
+        // Não quebrar a aplicação se o keep-alive falhar
+      }
+    }, 2000); // 2 segundos de delay
 
     // Cleanup on unmount
     return () => {
+      clearTimeout(initTimer);
       try {
         renderKeepAliveService.stop();
       } catch (error) {
