@@ -2,14 +2,18 @@
   # Comando de instalación
   base = "."
 
-  # Comando de build - usar npm install en lugar de npm ci para asegurar devDependencies
-  command = "npm install && npm run build"
+  # Comando de build - asegurar que se instalen las devDependencies necesarias para Vite
+  command = "npm install --include=dev && npm run build"
 
   # Directorio donde se genera el build
   publish = "dist"
-  
+
   # Directorio de las serverless functions
   functions = "netlify/functions"
+
+# Environment variables for build process
+[build.environment]
+  NODE_ENV = "production"
 
 # Redirects para mapear rutas de API a serverless functions
 [[redirects]]
