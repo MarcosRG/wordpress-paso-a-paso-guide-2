@@ -1,5 +1,6 @@
 import { Bike } from "@/pages/Index";
 import { instantCache } from "./instantCacheService";
+import { fetchWithTimeout } from "../utils/fetchTimeout";
 
 const RENDER_BASE_URL = 'https://bikesul-backend.onrender.com';
 const WAKE_UP_TIMEOUT = 30000; // 30 segundos para wake-up
