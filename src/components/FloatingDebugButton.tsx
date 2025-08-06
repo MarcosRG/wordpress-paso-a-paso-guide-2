@@ -24,10 +24,10 @@ export const FloatingDebugButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Mostrar solo con parámetro específico para evitar confusión
-  const shouldShow =
-    (import.meta.env.DEV && window.location.search.includes('debug=admin')) ||
-    (localStorage.getItem('admin_access') === 'true' && window.location.search.includes('debug=admin'));
+  // Mostrar apenas em desenvolvimento ou para admins
+  const shouldShow = import.meta.env.DEV || 
+    localStorage.getItem('admin_access') === 'true' ||
+    window.location.search.includes('debug=true');
 
   if (!shouldShow) return null;
 
