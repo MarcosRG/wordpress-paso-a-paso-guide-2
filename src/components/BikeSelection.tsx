@@ -34,6 +34,7 @@ import {
   extractDayBasedPricing,
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
+import RenderBackendStatus from "./RenderBackendStatus";
 
 
 interface BikeSelectionProps {
