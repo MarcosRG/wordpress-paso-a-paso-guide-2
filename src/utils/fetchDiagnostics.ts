@@ -17,12 +17,21 @@ export class FetchDiagnostics {
 
   static async testBasicFetch(): Promise<boolean> {
     try {
-      // Teste simples com jsonplaceholder
-      const response = await fetch('https://jsonplaceholder.typicode.com/posts/1', {
-        method: 'GET',
-        signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined
-      });
-      
+      // Teste simples com jsonplaceholder usando fetchWithTimeout se disponível
+      let response: Response;
+
+      try {
+        const { fetchWithTimeout } = await import('./fetchTimeout');
+        response = await fetchWithTimeout('https://jsonplaceholder.typicode.com/posts/1', {
+          method: 'GET'
+        }, 5000);
+      } catch {
+        // Fallback para fetch normal se fetchWithTimeout não funcionar
+        response = await fetch('https://jsonplaceholder.typicode.com/posts/1', {
+          method: 'GET'
+        });
+      }
+
       return response.ok;
     } catch (error) {
       console.warn('⚠️ Teste básico de fetch falhou:', error);
