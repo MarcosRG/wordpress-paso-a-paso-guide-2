@@ -22,7 +22,7 @@ import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { isMCPAvailable } from "@/utils/mcpClient";
-import { Bike as BikeIcon, AlertCircle, RefreshCw, Download, Database } from "lucide-react";
+import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
 import SimpleBikeCard from "./SimpleBikeCard";
 import {
@@ -30,7 +30,6 @@ import {
   extractDayBasedPricing,
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useManualSync, useNeonStatus } from "@/hooks/useManualSync";
 
 
 interface BikeSelectionProps {
@@ -67,13 +66,8 @@ export const BikeSelection = ({
   const { data: categories = [], refetch: refetchCategories } =
     useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
 
-  // Hook para sincronização WooCommerce → Neon (original)
+  // Hook para sincronização WooCommerce → Neon
   const syncMutation = useNeonDatabaseSync();
-
-  // Nuevos hooks para sincronización manual
-  const manualSync = useManualSync();
-  const neonStatusQuery = useNeonStatus();
-
   const { language, setLanguage, t } = useLanguage();
 
   // Auto-sync si Neon está vacía
@@ -102,29 +96,19 @@ export const BikeSelection = ({
 
 
 
-  // Nueva función de sincronización manual mejorada
-  const handleManualSync = async () => {
-    try {
-      console.log("🚀 Iniciando sincronización manual WooCommerce → Neon...");
-      await manualSync.mutateAsync();
-
-      // Refrescar datos después de sincronización exitosa
-      await Promise.all([refetchBikes(), refetchCategories()]);
-    } catch (error) {
-      console.error("❌ Error en sincronización manual:", error);
-    }
-  };
-
-  // Función de refresh simple para datos locales
+  // Manual refresh function with smart data source selection
   const handleRefresh = async () => {
     try {
       if (useNeonDatabase) {
-        console.log("🔄 Refrescando datos desde Neon Database...");
+        // Neon disponível - fazer sync e refresh
+        console.log("🔄 Sincronizando WooCommerce → Neon Database...");
+        await syncMutation.mutateAsync();
         queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
         queryClient.invalidateQueries({ queryKey: ["neon-database-categories"] });
         queryClient.invalidateQueries({ queryKey: ["neon-database-status"] });
       } else {
-        console.log("🔄 Refrescando datos desde WooCommerce...");
+        // Neon não disponível - usar WooCommerce diretamente
+        console.log("🔄 Neon não disponível - refrescando desde WooCommerce...");
         queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
         queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
       }
@@ -132,7 +116,7 @@ export const BikeSelection = ({
       await Promise.all([refetchBikes(), refetchCategories()]);
       console.log("✅ Refresh completado");
     } catch (error) {
-      console.error("❌ Error en refresh:", error);
+      console.error("❌ Error en refresh manual:", error);
     }
   };
 
@@ -296,11 +280,7 @@ export const BikeSelection = ({
             </p>
           )}
           <div className="flex gap-2 justify-center">
-            <Button onClick={handleManualSync} disabled={manualSync.isPending}>
-              <Download className="h-4 w-4 mr-2" />
-              {manualSync.isPending ? "Sincronizando..." : "Sincronizar Neon"}
-            </Button>
-            <Button onClick={handleRefresh} variant="outline">
+            <Button onClick={handleRefresh}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Reintentar
             </Button>
@@ -323,16 +303,10 @@ export const BikeSelection = ({
         <h2 className="text-xl font-semibold mb-2">
           {t("loadingBikes")}
         </h2>
-        <div className="flex gap-2 justify-center mt-4">
-          <Button onClick={handleManualSync} disabled={manualSync.isPending}>
-            <Download className="h-4 w-4 mr-2" />
-            {manualSync.isPending ? "Sincronizando..." : "Sincronizar Datos"}
-          </Button>
-          <Button onClick={handleRefresh} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            {t("tryAgain")}
-          </Button>
-        </div>
+        <Button onClick={handleRefresh} className="mt-4">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          {t("tryAgain")}
+        </Button>
       </div>
     );
   }
@@ -344,36 +318,18 @@ export const BikeSelection = ({
         <div className="flex items-center gap-4">
           <SyncStatusIndicator showDetails={false} />
 
-          {/* Indicador de estado de Neon */}
-          <div className="flex items-center gap-2 text-sm">
-            <Database className="h-4 w-4" />
-            <span className={neonStatusQuery.data?.connected ? "text-green-600" : "text-orange-600"}>
-              Neon: {neonStatusQuery.data?.connected ? `${neonStatusQuery.data.count} productos` : "Desconectado"}
-            </span>
-          </div>
 
-          {/* Botón de sincronización manual */}
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleManualSync}
-            className="flex items-center gap-2"
-            disabled={manualSync.isPending}
-          >
-            <Download className={`h-4 w-4 ${manualSync.isPending ? 'animate-spin' : ''}`} />
-            {manualSync.isPending ? "Sincronizando..." : "Sincronizar"}
-          </Button>
 
-          {/* Botón de refresh normal */}
           <Button
             variant="outline"
             size="sm"
             onClick={handleRefresh}
             className="flex items-center gap-2"
-            disabled={isLoading}
+            disabled={syncMutation.isPending}
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Actualizar
+            <RefreshCw className={`h-4 w-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
+            {syncMutation.isPending ? "Atualizando..." : "Atualizar"}
+
           </Button>
         </div>
       </div>
