@@ -15,6 +15,7 @@ import { FloatingDebugButton } from "@/components/FloatingDebugButton";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
+import { useAutoSync } from "@/hooks/useAutoSync";
 
 import { networkRecoveryService } from "./services/networkRecovery";
 import "./wordpress-embed.css";
