@@ -353,24 +353,13 @@ const fetchWithRetry = async (
 
       // Add additional error handling for fetch
       let fetchPromise: Promise<Response>;
+      let abortController: AbortController | undefined;
 
       try {
-        // Use modern AbortSignal.timeout when available, fallback to AbortController
-        let signal: AbortSignal | undefined;
-
-        if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) {
-          signal = AbortSignal.timeout(timeout);
-        } else if (typeof AbortController !== 'undefined') {
-          const abortController = new AbortController();
-          setTimeout(() => {
-            try {
-              abortController.abort();
-            } catch (error) {
-              // Ignore abort errors during cleanup
-              console.warn('AbortController cleanup error:', error);
-            }
-          }, timeout);
-          signal = abortController.signal;
+        // Create abort controller for timeout if AbortSignal.timeout is not available
+        if (typeof AbortController !== 'undefined') {
+          abortController = new AbortController();
+          setTimeout(() => abortController?.abort(), timeout);
         }
 
         fetchPromise = fetch(url, {
@@ -379,14 +368,20 @@ const fetchWithRetry = async (
             ...apiHeaders,
             ...options.headers,
           },
-          signal,
+          // Use AbortSignal.timeout if available, otherwise use AbortController
+          signal: AbortSignal.timeout ? AbortSignal.timeout(timeout) : abortController?.signal,
         });
       } catch (fetchError) {
         // Handle immediate fetch errors (like invalid URL)
         throw new Error(`Fetch initialization failed: ${fetchError.message}`);
       }
 
-      const response = await fetchPromise;
+      const response = await Promise.race([
+        fetchPromise,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), timeout),
+        ),
+      ]);
 
       if (!response.ok) {
         // Handle HTTP errors differently from network errors
@@ -439,9 +434,7 @@ const fetchWithRetry = async (
         error.message === "Request timeout" ||
         error.message.includes("timeout") ||
         error.name === "AbortError" ||
-        error.name === "TimeoutError" ||
-        error.message.includes("aborted") ||
-        error.message.includes("signal timed out");
+        error.message.includes("aborted");
 
       const isCorsError =
         error.message.includes("CORS") ||
