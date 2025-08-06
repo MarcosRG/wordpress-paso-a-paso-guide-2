@@ -30,8 +30,26 @@ const App = () => {
 
   // Initialize services
   React.useEffect(() => {
+    // Diagnósticos em ambiente de desenvolvimento
+    if (import.meta.env.DEV) {
+      FetchDiagnostics.logEnvironmentInfo();
+
+      if (!FetchDiagnostics.checkFetchAvailability()) {
+        console.error('❌ Fetch não disponível - serviços de rede desabilitados');
+        return;
+      }
+    }
+
     // Delay para evitar conflitos com outros serviços durante inicialização
-    const initTimer = setTimeout(() => {
+    const initTimer = setTimeout(async () => {
+      // Teste básico de conectividade em desenvolvimento
+      if (import.meta.env.DEV) {
+        const fetchWorking = await FetchDiagnostics.testBasicFetch();
+        if (!fetchWorking) {
+          console.warn('⚠️ Problemas detectados com fetch - keep-alive pode falhar');
+        }
+      }
+
       try {
         renderKeepAliveService.start();
         console.log('✅ Serviço keep-alive iniciado com sucesso');
@@ -39,7 +57,7 @@ const App = () => {
         console.error('❌ Erro iniciando serviço keep-alive:', error);
         // Não quebrar a aplicação se o keep-alive falhar
       }
-    }, 2000); // 2 segundos de delay
+    }, 3000); // 3 segundos de delay para diagnostics
 
     // Cleanup on unmount
     return () => {
