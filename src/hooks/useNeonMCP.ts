@@ -27,16 +27,37 @@ interface NeonProduct {
 
 // Convertir produto de Neon a formato Bike
 const convertNeonToBike = (product: NeonProduct): Bike => {
+  console.log("🔄 Convertendo produto:", product);
+
+  // Parsing JSON fields if they're strings
+  let categories = product.categories;
+  let images = product.images;
+  let acfData = product.acf_data;
+
+  try {
+    if (typeof categories === 'string') {
+      categories = JSON.parse(categories);
+    }
+    if (typeof images === 'string') {
+      images = JSON.parse(images);
+    }
+    if (typeof acfData === 'string') {
+      acfData = JSON.parse(acfData);
+    }
+  } catch (e) {
+    console.warn("⚠️ Erro parsing JSON fields:", e);
+  }
+
   // Obter categoria principal
-  const subcategory = product.categories?.find((cat: any) => cat.slug !== "alugueres");
+  const subcategory = categories?.find((cat: any) => cat.slug !== "alugueres");
   const primaryCategory = subcategory ? subcategory.slug : "general";
 
   // Obter imagen principal
-  const mainImage = product.images && product.images.length > 0 
-    ? product.images[0].src 
+  const mainImage = images && images.length > 0
+    ? images[0].src
     : "/placeholder.svg";
 
-  return {
+  const result = {
     id: product.woocommerce_id.toString(),
     name: product.name,
     type: primaryCategory.toLowerCase(),
@@ -48,12 +69,15 @@ const convertNeonToBike = (product: NeonProduct): Bike => {
       product: {
         id: product.woocommerce_id,
         ...product,
-        acf: product.acf_data,
+        acf: acfData,
       },
       variations: [],
-      acfData: product.acf_data,
+      acfData: acfData,
     },
   };
+
+  console.log("✅ Produto convertido:", result);
+  return result;
 };
 
 // Hook principal - SEMPRE usar Neon, nunca fallback
@@ -67,25 +91,41 @@ export const useNeonMCPBikes = () => {
         console.log("🚀 Carregando produtos desde Neon MCP...");
 
         // Verificar se MCP está disponível
-        if (!isMCPAvailable()) {
+        const mcpAvailable = isMCPAvailable();
+        console.log("🔍 MCP Status Check:", {
+          available: mcpAvailable,
+          window: typeof window !== 'undefined',
+          windowKeys: typeof window !== 'undefined' ? Object.keys(window).filter(k => k.includes('mcp') || k.includes('neon') || k.includes('builder')).slice(0, 5) : []
+        });
+
+        if (!mcpAvailable) {
           const { debugMCPAvailability } = await import("@/utils/mcpClient");
           debugMCPAvailability();
-          console.warn("⚠️ MCP não disponível - verifique conexão MCP no admin");
+          console.warn("⚠️ MCP não disponível - conecte MCP Neon para usar esta funcionalidade");
+
+          // Mostrar toast informativo
+          if (typeof window !== 'undefined') {
+            console.log("📋 Para conectar MCP Neon: clique no botão 'MCP Servers' no topo da página");
+          }
+
           return [];
         }
 
         // Primeiro verificar se tabelas existem
+        console.log("🔍 Verificando se tabelas existem...");
         const tablesExist = await safeMCPCall('neon_run_sql', {
           params: {
             projectId: import.meta.env.VITE_NEON_PROJECT_ID || "noisy-mouse-34441036",
             sql: `
               SELECT EXISTS (
-                SELECT FROM information_schema.tables 
+                SELECT FROM information_schema.tables
                 WHERE table_name = 'products'
               ) as table_exists
             `
           }
         });
+
+        console.log("🔍 Resultado verificação tabelas:", tablesExist);
 
         if (!tablesExist?.rows?.[0]?.table_exists) {
           console.log("📊 Tabelas não existem, criando automaticamente...");
@@ -94,19 +134,26 @@ export const useNeonMCPBikes = () => {
         }
 
         // Obter produtos desde Neon
+        console.log("🔍 Consultando produtos na base de dados...");
         const result = await safeMCPCall('neon_run_sql', {
           params: {
             projectId: import.meta.env.VITE_NEON_PROJECT_ID || "noisy-mouse-34441036",
             sql: `
-              SELECT * FROM products 
-              WHERE status = 'publish' AND stock_quantity > 0 
+              SELECT * FROM products
+              WHERE status = 'publish' AND stock_quantity > 0
               ORDER BY name
             `
           }
         });
 
+        console.log("🔍 Resultado consulta produtos:", result);
         const products = result?.rows || [];
-        console.log(`✅ ${products.length} produtos obtidos desde Neon MCP`);
+        console.log(`📦 ${products.length} produtos obtidos desde Neon MCP`);
+
+        // Log sample products
+        if (products.length > 0) {
+          console.log("📦 Amostra produtos:", products.slice(0, 2));
+        }
 
         if (products.length === 0) {
           console.log("📭 Nenhum produto em Neon - necessário sincronizar primeiro");
@@ -114,9 +161,20 @@ export const useNeonMCPBikes = () => {
         }
 
         // Converter a formato Bike
-        const bikes: Bike[] = products.map(convertNeonToBike).filter(bike => bike.available > 0);
+        console.log("🔄 Convertendo produtos para formato Bike...");
+        const bikes: Bike[] = products.map((product, index) => {
+          console.log(`🔄 Convertendo produto ${index + 1}:`, product);
+          const converted = convertNeonToBike(product);
+          console.log(`✅ Produto convertido ${index + 1}:`, converted);
+          return converted;
+        }).filter(bike => {
+          const available = bike.available > 0;
+          console.log(`🔍 Bike ${bike.name} disponível: ${available} (stock: ${bike.available})`);
+          return available;
+        });
 
-        console.log(`✅ ${bikes.length} bicicletas disponíveis`);
+        console.log(`✅ ${bikes.length} bicicletas disponíveis após conversão e filtro`);
+        console.log("🚴 Bikes finais:", bikes);
         return bikes;
 
       } catch (error) {
@@ -192,6 +250,12 @@ export const useWooCommerceToNeonSync = () => {
   return useMutation({
     mutationFn: async (): Promise<number> => {
       console.log("🔄 Sync WooCommerce → Neon MCP...");
+
+      // Check if MCP is available
+      if (!isMCPAvailable()) {
+        console.warn("⚠️ MCP não disponível - sync cancelado");
+        throw new Error("MCP Neon não conectado. Por favor, conecte o servidor MCP Neon clicando no botão 'MCP Servers' antes de sincronizar.");
+      }
 
       // 1. Obter productos de WooCommerce
       const response = await fetch('/api/wc/v3/products?per_page=50&category=319&status=publish', {
