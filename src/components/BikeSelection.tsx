@@ -32,6 +32,7 @@ import {
   extractDayBasedPricing,
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
+import { WooCommerceLoadingBar } from "./WooCommerceLoadingBar";
 
 
 interface BikeSelectionProps {
@@ -236,18 +237,8 @@ export const BikeSelection = ({
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
-        <div className="text-center mb-6">
-          <p className="text-muted-foreground">Carregando bicicletas...</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-32 w-full mb-4" />
-                <Skeleton className="h-20 w-full" />
-              </CardContent>
-            </Card>
-          ))}
+        <div className="flex flex-col items-center justify-center py-12">
+          <WooCommerceLoadingBar isLoading={true} className="mb-8" />
         </div>
       </div>
     );
