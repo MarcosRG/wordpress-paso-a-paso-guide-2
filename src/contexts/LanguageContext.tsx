@@ -26,7 +26,7 @@ const translations = {
     junior: "Junior",
     extras: "Extras",
     availableSizes: "Tamanhos disponíveis",
-    available: "dispon��vel",
+    available: "disponível",
     availables: "disponíveis",
     selectionSummary: "Resumo da sua seleção",
     totalPerDay: "Total por dia",
@@ -63,7 +63,7 @@ const translations = {
     postalCode: "Código Postal",
     paymentInfo: "Informação de Pagamento",
     paymentNote:
-      "O pagamento será processado de forma segura através do WooCommerce.",
+      "O pagamento será processado de forma segura.",
     proceedToCheckout: "Prosseguir para o Checkout",
 
     // Buttons
@@ -102,7 +102,7 @@ const translations = {
     noBikesAvailable: "Não há bicicletas disponíveis",
     tryAgain: "Tente novamente",
     preparingCart: "A preparar carrinho e redirecionamento...",
-    redirectingCheckout: "A redirecionar para o checkout do WooCommerce...",
+    redirectingCheckout: "A redirecionar para o checkout...",
     success: "Sucesso",
     unknownError: "Erro desconhecido",
     reservationError: "Problema ao processar a reserva: {error}. Por favor, tente novamente.",
@@ -184,7 +184,7 @@ const translations = {
     city: "City",
     postalCode: "Postal Code",
     paymentInfo: "Payment Information",
-    paymentNote: "Payment will be processed securely through WooCommerce.",
+    paymentNote: "Payment will be processed securely.",
     proceedToCheckout: "Proceed to Checkout",
 
     // Buttons
@@ -223,7 +223,7 @@ const translations = {
     noBikesAvailable: "No bikes available",
     tryAgain: "Try again",
     preparingCart: "Preparing cart and redirecting...",
-    redirectingCheckout: "Redirecting to WooCommerce checkout...",
+    redirectingCheckout: "Redirecting to checkout...",
     success: "Success",
     unknownError: "Unknown error",
     reservationError: "Problem processing reservation: {error}. Please try again.",
