@@ -21,7 +21,6 @@ import { SystemDiagnostic } from '../SystemDiagnostic';
 import NeonDatabaseDiagnostic from './NeonDatabaseDiagnostic';
 import DatabaseConnectionDebug from './DatabaseConnectionDebug';
 import WooCommercePermissionsFix from '../WooCommercePermissionsFix';
-import { WooCommerceApiTest } from '../WooCommerceApiTest';
 
 interface SimplifiedAdminDashboardProps {
   onLogout: () => void;
@@ -142,7 +141,6 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
         <Tabs defaultValue="validation" className="space-y-6">
           <TabsList>
             <TabsTrigger value="validation">Validación Variables</TabsTrigger>
-            <TabsTrigger value="wooapi">Test API WooCommerce</TabsTrigger>
             <TabsTrigger value="database">Base de Dados Neon</TabsTrigger>
             <TabsTrigger value="connection">Debug Conexión BD</TabsTrigger>
             <TabsTrigger value="diagnostic">Diagnóstico WooCommerce</TabsTrigger>
@@ -163,11 +161,6 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
                 <EnvironmentValidation />
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* WooCommerce API Test Tab */}
-          <TabsContent value="wooapi">
-            <WooCommerceApiTest />
           </TabsContent>
 
           {/* Database Management Tab */}
