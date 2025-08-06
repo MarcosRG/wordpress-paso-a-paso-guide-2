@@ -14,7 +14,6 @@ import {
 import { adminAuthService } from '../../services/adminAuthService';
 import { SystemSettings } from './SystemSettings';
 import { VariableProductDebugger } from '../VariableProductDebugger';
-import { NeonDatabaseAdmin } from '../NeonDatabaseAdmin';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -154,17 +153,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="database" className="space-y-6">
+        <Tabs defaultValue="products" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="database">Base de Dados</TabsTrigger>
-            <TabsTrigger value="products">Debug Productos</TabsTrigger>
-            <TabsTrigger value="settings">Configuración</TabsTrigger>
+            <TabsTrigger value="products">Debug Produtos</TabsTrigger>
+            <TabsTrigger value="settings">Configuração</TabsTrigger>
           </TabsList>
-
-          {/* Database Management Tab */}
-          <TabsContent value="database">
-            <NeonDatabaseAdmin />
-          </TabsContent>
 
           {/* Product Debugger Tab */}
           <TabsContent value="products">
