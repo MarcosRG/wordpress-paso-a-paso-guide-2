@@ -43,6 +43,12 @@ export const useWooCommerceBikes = () => {
       } catch (backendError) {
         const backendErrorMsg = backendError instanceof Error ? backendError.message : String(backendError);
         console.warn("⚠️ Backend de Bikesul no disponible:", backendErrorMsg);
+
+        // Si es timeout, mostrar mensaje específico
+        if (backendErrorMsg.includes('timeout') || backendErrorMsg.includes('timed out')) {
+          console.warn("⏱️ El backend de Bikesul está tardando más de lo esperado (posible cold start)");
+        }
+
         console.log("🔄 Intentando WooCommerce como fallback...");
 
         try {
