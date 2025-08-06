@@ -136,14 +136,22 @@ const Index = () => {
   });
 
   const handleNext = () => {
-    if (currentStep < 5) {
+    // Skip step 4 (contact data) since checkout goes directly to WooCommerce
+    if (currentStep === 3) {
+      setCurrentStep(5); // Skip to confirmation
+    } else if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      // Skip step 4 when going back from step 5
+      if (currentStep === 5) {
+        setCurrentStep(3); // Go back to insurance
+      } else {
+        setCurrentStep(currentStep - 1);
+      }
     }
   };
 
@@ -155,13 +163,7 @@ const Index = () => {
         return reservation.selectedBikes.length > 0;
       case 3:
         return reservation.insurance !== undefined;
-      case 4:
-        return (
-          customerData.firstName &&
-          customerData.lastName &&
-          customerData.email &&
-          customerData.phone
-        );
+      // Step 4 removed - contact data collected in WooCommerce checkout
       default:
         return true;
     }
@@ -223,8 +225,7 @@ const Index = () => {
         return t("selectBikes");
       case 3:
         return t("insurance");
-      case 4:
-        return t("contactData");
+      // Step 4 (contactData) removed
       case 5:
         return t("confirmReservation");
       default:
@@ -256,7 +257,7 @@ const Index = () => {
         {/* Progress Indicator */}
         <div className="flex justify-center mb-8">
           <div className="flex items-center space-x-2">
-            {[1, 2, 3, 4, 5].map((step) => (
+            {[1, 2, 3, 5].map((step) => (
               <div key={step} className="flex items-center">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
@@ -309,12 +310,7 @@ const Index = () => {
             />
           )}
 
-          {currentStep === 4 && (
-            <PurchaseForm
-              customerData={customerData}
-              onCustomerDataChange={setCustomerData}
-            />
-          )}
+          {/* Step 4 (contact data) removed - handled in WooCommerce checkout */}
 
           {currentStep === 5 && (
             <ReservationSummary reservation={reservation} />
@@ -333,7 +329,7 @@ const Index = () => {
             {t("previous")}
           </Button>
 
-          {currentStep < 5 ? (
+          {currentStep < 5 && currentStep !== 4 ? (
             <Button
               onClick={handleNext}
               disabled={!canProceed()}
