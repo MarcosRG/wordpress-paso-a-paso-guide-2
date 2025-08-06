@@ -5,7 +5,8 @@ import { InsuranceOptions } from "@/components/InsuranceOptions";
 import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
-
+import { ConfigValidationTest } from "@/components/ConfigValidationTest";
+import { InitialSyncTrigger } from "@/components/InitialSyncTrigger";
 
 
 import { Card } from "@/components/ui/card";
@@ -229,6 +230,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-12">
       <div className="max-w-6xl mx-auto">
+        {/* Validación temporal de configuración unificada */}
+        <ConfigValidationTest />
+
+
+
 
 
         <div className="text-center mb-8">
@@ -344,7 +350,10 @@ const Index = () => {
           )}
         </div>
 
-
+        {/* Componente temporal para sincronización inicial */}
+        {import.meta.env.DEV && (
+          <InitialSyncTrigger />
+        )}
 
       </div>
     </div>
