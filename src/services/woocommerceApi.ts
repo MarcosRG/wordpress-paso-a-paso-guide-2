@@ -101,11 +101,6 @@ const CONSUMER_SECRET =
 // Validar que las credenciales estén configuradas
 if (!IS_API_DISABLED && (!CONSUMER_KEY || !CONSUMER_SECRET)) {
   console.error("❌ WooCommerce credentials not properly configured");
-  console.error("Variables encontradas:", {
-    CONSUMER_KEY: CONSUMER_KEY ? "✓ Configurada" : "❌ Falta",
-    CONSUMER_SECRET: CONSUMER_SECRET ? "✓ Configurada" : "❌ Falta",
-    API_BASE: WOOCOMMERCE_API_BASE
-  });
 }
 
 if (IS_API_DISABLED) {
@@ -939,9 +934,6 @@ export const wooCommerceApi = {
       );
 
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error(`HTTP 401: Credenciales de WooCommerce inválidas. Verificar CONSUMER_KEY y CONSUMER_SECRET.`);
-        }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 

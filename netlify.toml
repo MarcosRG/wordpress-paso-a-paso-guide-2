@@ -1,9 +1,28 @@
 [build]
-  # Comando de build con npm install primero
-  command = "npm install && npm run build"
-
+  # Comando de build
+  command = "npm run build"
+  
   # Directorio donde se genera el build
   publish = "dist"
+  
+  # Directorio de las serverless functions
+  functions = "netlify/functions"
+
+# Redirects para mapear rutas de API a serverless functions
+[[redirects]]
+  from = "/api/neon/products"
+  to = "/.netlify/functions/products"
+  status = 200
+
+[[redirects]]
+  from = "/api/neon/products/:id/variations"
+  to = "/.netlify/functions/variations"
+  status = 200
+
+[[redirects]]
+  from = "/api/neon/categories"
+  to = "/.netlify/functions/categories"
+  status = 200
 
 # Redirect para SPA routing (React Router)
 [[redirects]]
