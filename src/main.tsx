@@ -43,8 +43,4 @@ import "./services/wordpressSyncService";
 import { performanceTest } from "./utils/performanceTest";
 (window as any).performanceTest = performanceTest;
 
-// Import diagnostic for global access
-import { runSystemDiagnostic } from './utils/systemDiagnostic';
-(window as any).runSystemDiagnostic = runSystemDiagnostic;
-
 createRoot(document.getElementById("root")!).render(<App />);
