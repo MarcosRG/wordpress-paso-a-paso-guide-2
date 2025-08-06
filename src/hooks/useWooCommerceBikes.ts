@@ -19,16 +19,13 @@ export const useWooCommerceBikes = () => {
           throw new Error('WooCommerce configuration incomplete - check environment variables');
         }
 
-        // Use query parameters for WooCommerce authentication (more reliable than Basic Auth)
-        const authParams = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
-        const apiUrl = `${apiBase}/products?per_page=50&category=319&status=publish&${authParams}`;
-
-        console.log('🔗 WooCommerce API URL:', apiUrl.replace(/consumer_secret=[^&]+/, 'consumer_secret=***'));
+        console.log('🔗 WooCommerce API URL:', `${apiBase}/products?per_page=50&category=319&status=publish`);
         console.log('🔐 Consumer Key exists:', !!consumerKey);
         console.log('🔐 Consumer Secret exists:', !!consumerSecret);
 
-        const response = await cleanFetch(apiUrl, {
+        const response = await cleanFetch(`${apiBase}/products?per_page=50&category=319&status=publish`, {
           headers: {
+            'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'User-Agent': 'BikeSul-App/1.0'
@@ -197,12 +194,9 @@ export const useWooCommerceCategories = () => {
           ];
         }
 
-        // Use query parameters for WooCommerce authentication
-        const authParams = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
-        const categoriesUrl = `${apiBase}/products/categories?per_page=50&parent=319&${authParams}`;
-
-        const response = await cleanFetch(categoriesUrl, {
+        const response = await cleanFetch(`${apiBase}/products/categories?per_page=50&parent=319`, {
           headers: {
+            'Authorization': `Basic ${btoa(`${consumerKey}:${consumerSecret}`)}`,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },

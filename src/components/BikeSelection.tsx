@@ -19,7 +19,6 @@ import {
   useNeonDatabaseStatus,
 } from "@/hooks/useNeonDatabase";
 import { CategoryFilter } from "./CategoryFilter";
-import { MCPConnectionStatus } from "./MCPConnectionStatus";
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { isMCPAvailable } from "@/utils/mcpClient";

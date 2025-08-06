@@ -2,7 +2,6 @@
 // Sistema: WooCommerce API → Netlify Functions → Neon DB → Frontend
 import { cleanFetch } from "@/utils/cleanFetch";
 import { bikeCache, CACHE_KEYS } from '@/utils/bikeCache';
-import { developmentFunctionService } from './developmentFunctions';
 
 interface NeonProduct {
   id: number;
@@ -26,17 +25,17 @@ interface NeonProduct {
 
 class NeonDatabaseService {
   private baseUrl = '/netlify/functions';
-  private isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname.includes('d0c7198e0a50411d931307948caa2012');
+  private isDevelopment = import.meta.env.DEV;
 
   // Check if netlify functions are available
   private async checkNetlifyFunctionsAvailable(): Promise<boolean> {
     // In development, Netlify functions are not available
     if (this.isDevelopment) {
-      console.log('���� Development mode: Netlify functions not available');
+      console.log('🔧 Development mode: Netlify functions not available');
       return false;
     }
     try {
-      const response = await developmentFunctionService.callFunction('neon-products', {
+      const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
@@ -71,14 +70,20 @@ class NeonDatabaseService {
         return [];
       }
 
-      // Use development function service in development mode
-      const response = await developmentFunctionService.callFunction('neon-products', {
+      // Add timeout for faster fallback to WooCommerce
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+      const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-        }
+        },
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Neon API Error: ${response.status} ${response.statusText}`);
@@ -113,7 +118,7 @@ class NeonDatabaseService {
 
       // Verificar se a resposta tem o formato esperado
       if (data.connected && Array.isArray(data.products)) {
-        console.log(`��� ${data.products.length} produtos carregados do Neon`);
+        console.log(`✅ ${data.products.length} produtos carregados do Neon`);
         // Cache successful responses for 2 minutes
         bikeCache.set(CACHE_KEYS.NEON_PRODUCTS, data.products, 2 * 60 * 1000);
         return data.products;
@@ -145,17 +150,13 @@ class NeonDatabaseService {
 
       // In development, Netlify functions are not available
       if (this.isDevelopment) {
-        throw new Error('Sync não dispon��vel em desenvolvimento. Netlify functions só funcionam em produção.');
+        throw new Error('Sync não disponível em desenvolvimento. Netlify functions só funcionam em produção.');
       }
 
       // 1. Buscar produtos do WooCommerce
-      const consumerKey = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY;
-      const consumerSecret = import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET;
-      const authParams = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
-      const wooUrl = `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish&${authParams}`;
-
-      const wooResponse = await cleanFetch(wooUrl, {
+      const wooResponse = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
         headers: {
+          'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
           'Content-Type': 'application/json',
         },
       });
@@ -180,12 +181,15 @@ class NeonDatabaseService {
           // Se tem variações, buscar stocks
           if (product.type === 'variable' && product.variations && product.variations.length > 0) {
             try {
-              const variationsUrl = `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100&${authParams}`;
-              const variationsResponse = await cleanFetch(variationsUrl, {
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-              });
+              const variationsResponse = await cleanFetch(
+                `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100`,
+                {
+                  headers: {
+                    'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+                    'Content-Type': 'application/json',
+                  },
+                }
+              );
 
               if (variationsResponse.ok) {
                 productVariations = await variationsResponse.json();
@@ -221,7 +225,7 @@ class NeonDatabaseService {
       // 3. Enviar produtos para Neon através de função netlify
       console.log(`📤 Enviando ${processedProducts.length} produtos para Neon...`);
       
-      const syncResponse = await developmentFunctionService.callFunction('neon-sync', {
+      const syncResponse = await cleanFetch(`${this.baseUrl}/neon-sync`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -260,7 +264,7 @@ class NeonDatabaseService {
         };
       }
 
-      const response = await developmentFunctionService.callFunction('neon-products', {
+      const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
