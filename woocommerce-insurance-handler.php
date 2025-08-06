@@ -269,12 +269,13 @@ function bikesul_procesar_seguro_en_orden_v2($item, $cart_item_key, $values, $or
                 $item->set_name($new_product_name);
             }
 
-            // CORREGIR: Usar cantidad 1 y precio total para mostrar correctamente
-            // El checkout muestra: nombre_producto x cantidad = precio_unitario × cantidad
-            // Para mostrar €110 necesitamos: Seguro x 1 = €110
-            $item->set_quantity(1);
+            // RESTAURAR cantidad correcta: bicis × días (como funcionaba antes)
+            $insurance_quantity = $insurance_total_bikes * $insurance_total_days;
+            $price_per_unit = $insurance_price_per_bike_per_day;
 
-            // El precio total se establece directamente
+            $item->set_quantity($insurance_quantity);
+            // Remover set_price() que não existe na classe WC_Order_Item_Product
+            // Apenas usar set_total() e set_subtotal() que são os métodos corretos
             $item->set_total($total_insurance_price);
             $item->set_subtotal($total_insurance_price);
 
@@ -340,11 +341,10 @@ function bikesul_ajustar_precio_seguro_carrito_v2($cart) {
             
             if ($price_per_bike_per_day >= 0 && $total_bikes > 0 && $total_days > 0) {
                 $total_price = $price_per_bike_per_day * $total_bikes * $total_days;
-
-                // CORREGIR: Para que aparezca el precio total correcto en el carrito
-                // La cantidad del cart item debe ser 1 y el precio debe ser el total
+                
+                // Establecer precio personalizado
                 $cart_item['data']->set_price($total_price);
-
+                
                 error_log("BIKESUL CARRITO SEGURO: €{$price_per_bike_per_day} × {$total_bikes} × {$total_days} = €{$total_price}");
             }
         }

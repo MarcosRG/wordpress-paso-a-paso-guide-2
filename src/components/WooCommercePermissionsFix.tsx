@@ -196,13 +196,12 @@ export const WooCommercePermissionsFix: React.FC<WooCommercePermissionsFixProps>
           </div>
           <CardDescription>
             {lastError ? (
-              <>
-                <span>Detectados problemas de permisos en la API</span>
-                <br />
-                <span className="text-xs text-red-600 font-mono">
+              <div className="space-y-1">
+                <div>Detectados problemas de permisos en la API</div>
+                <div className="text-xs text-red-600 font-mono">
                   Último error: {lastError.message.substring(0, 100)}...
-                </span>
-              </>
+                </div>
+              </div>
             ) : (
               'Detectados problemas de permisos en la API'
             )}
