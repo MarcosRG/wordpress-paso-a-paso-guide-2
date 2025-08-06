@@ -47,6 +47,10 @@ export const useWooCommerceBikes = () => {
 
         try {
           // PASO 2: Fallback a WooCommerce API
+          if (DISABLE_WOOCOMMERCE_API) {
+            throw new Error("WooCommerce API deshabilitado por configuración");
+          }
+
           console.log("🔄 Iniciando carga de productos de WooCommerce...");
           products = await wooCommerceApi.getProducts();
           dataSource = "WooCommerce API";
