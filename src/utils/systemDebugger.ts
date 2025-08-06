@@ -7,6 +7,7 @@ export interface SystemStatus {
   timestamp: string;
   environment: 'development' | 'production';
   apis: {
+    mysql: 'available' | 'unavailable' | 'error';
     neon: 'available' | 'unavailable' | 'error';
     woocommerce: 'available' | 'unavailable' | 'error';
     mcp: 'available' | 'unavailable' | 'timeout';
@@ -64,7 +65,8 @@ export class SystemDebugger {
       timestamp: new Date().toISOString(),
       environment: import.meta.env.DEV ? 'development' : 'production',
       apis: {
-        neon: 'unavailable',
+        mysql: 'unavailable',
+        neon: 'unavailable', 
         woocommerce: 'unavailable',
         mcp: 'unavailable'
       },
@@ -97,15 +99,16 @@ export class SystemDebugger {
 
     // Analisar limitações de desenvolvimento
     if (status.environment === 'development') {
+      status.apis.mysql = 'unavailable';
       status.apis.neon = 'unavailable';
-
+      
       status.recommendations.push(
-        '🔧 Neon só funciona em produção (Netlify Functions)',
+        '🔧 MySQL e Neon só funcionam em produção (Netlify Functions)',
         '🚀 Para testar: deploy para Netlify ou usar produção',
         '💻 Para dev local melhor: instalar Netlify Dev CLI'
       );
 
-      this.log('warn', '⚠️ Ambiente de desenvolvimento: Neon indisponível');
+      this.log('warn', '⚠️ Ambiente de desenvolvimento: MySQL e Neon indisponíveis');
     }
 
     // Verificar se há problemas de MCP
@@ -141,12 +144,12 @@ export class SystemDebugger {
     this.log('info', '🧹 Logs limpos');
   }
 
-  // Método para ser chamado quando há erros do Neon
-  reportNeonDatabaseError(error: string) {
-    this.log('error', '🔥 Neon Database Error', {
+  // Método para ser chamado quando há erros do MySQL
+  reportMySQLError(error: string) {
+    this.log('error', '🔥 MySQL API Error 500', {
       error,
-      context: 'Problema de configuração ou conexão com Neon Database',
-      solution: 'Verificar variáveis de ambiente DATABASE_URL e NEON_PROJECT_ID no Netlify'
+      context: 'Provavelmente problema de configuração ou conexão com BD',
+      solution: 'Verificar variáveis de ambiente MySQL no Netlify'
     });
   }
 

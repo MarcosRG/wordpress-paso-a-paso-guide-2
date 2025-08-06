@@ -1,179 +1,154 @@
-const { neon } = require('@neondatabase/serverless');
+/**
+ * NETLIFY FUNCTION - DIAGNOSTIC
+ * Função para diagnosticar problemas de configuração
+ */
+
 const config = require('./_shared/config');
 
 exports.handler = async (event, context) => {
-  // Handle preflight OPTIONS
-  if (event.httpMethod === 'OPTIONS') {
-    return config.createResponse(200, '');
-  }
-
-  // Only accept GET
-  if (event.httpMethod !== 'GET') {
-    return config.createErrorResponse(new Error('Método não permitido'), 405);
-  }
-
-  const diagnostic = {
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'unknown',
-    netlifyContext: context.clientContext || null,
-    diagnostics: {
-      environment: {},
-      connectivity: {},
-      configuration: {}
-    },
-    summary: {
-      status: 'unknown',
-      errors: [],
-      warnings: [],
-      recommendations: []
-    }
-  };
-
   try {
-    // Check required environment variables
+    const diagnostic = {
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'unknown',
+      diagnostics: {
+        netlify_functions: true,
+        configuration: {},
+        environment_variables: {},
+        connectivity: {}
+      }
+    };
+
+    // Check Environment Variables
     const requiredVars = [
       'DATABASE_URL',
-      'NEON_PROJECT_ID',
+      'NEON_PROJECT_ID', 
       'WOOCOMMERCE_API_BASE',
       'WOOCOMMERCE_CONSUMER_KEY',
       'WOOCOMMERCE_CONSUMER_SECRET'
     ];
 
     const optionalVars = [
+      'MYSQL_HOST',
+      'MYSQL_DATABASE', 
+      'MYSQL_USERNAME',
+      'MYSQL_PASSWORD',
       'CRM_API_USERNAME',
-      'CRM_API_PASSWORD',
-      'NEON_BRANCH_ID'
+      'CRM_API_PASSWORD'
     ];
 
-    diagnostic.diagnostics.environment = {
-      required_vars_present: requiredVars.filter(v => !!process.env[v]),
-      required_vars_missing: requiredVars.filter(v => !process.env[v]),
-      optional_vars_present: optionalVars.filter(v => !!process.env[v])
-    };
+    // Check required variables
+    diagnostic.diagnostics.environment_variables.required = {};
+    requiredVars.forEach(varName => {
+      const value = process.env[varName];
+      diagnostic.diagnostics.environment_variables.required[varName] = {
+        configured: !!value,
+        masked_value: value ? `${value.substring(0, 10)}...` : null
+      };
+    });
+
+    // Check optional variables  
+    diagnostic.diagnostics.environment_variables.optional = {};
+    optionalVars.forEach(varName => {
+      const value = process.env[varName];
+      diagnostic.diagnostics.environment_variables.optional[varName] = {
+        configured: !!value,
+        masked_value: value ? `${value.substring(0, 10)}...` : null
+      };
+    });
+
+    // Configuration validation
+    try {
+      config.validateConfig();
+      diagnostic.diagnostics.configuration.status = 'valid';
+      diagnostic.diagnostics.configuration.message = 'All required configurations are present';
+    } catch (configError) {
+      diagnostic.diagnostics.configuration.status = 'invalid';
+      diagnostic.diagnostics.configuration.message = configError.message;
+      diagnostic.diagnostics.configuration.missing = configError.message.includes('faltantes') 
+        ? configError.message.split(': ')[1]?.split(', ') || []
+        : [];
+    }
 
     // Test Neon connectivity
     try {
-      if (process.env.DATABASE_URL && process.env.NEON_PROJECT_ID) {
+      if (process.env.DATABASE_URL) {
+        const { neon } = require('@neondatabase/serverless');
         const sql = neon(process.env.DATABASE_URL);
-        const testQuery = await sql`SELECT 1 as test_connection`;
-        
-        if (testQuery && testQuery[0]?.test_connection === 1) {
-          diagnostic.diagnostics.connectivity.neon = { 
-            status: 'connected', 
-            message: 'Neon database accessible',
-            project_id: process.env.NEON_PROJECT_ID 
-          };
-        } else {
-          diagnostic.diagnostics.connectivity.neon = { 
-            status: 'error', 
-            message: 'Neon query failed' 
-          };
-        }
+        await sql`SELECT 1 as test`;
+        diagnostic.diagnostics.connectivity.neon = { status: 'connected', message: 'Neon database accessible' };
       } else {
-        diagnostic.diagnostics.connectivity.neon = { 
-          status: 'not_configured', 
-          message: 'Neon variables not configured' 
-        };
+        diagnostic.diagnostics.connectivity.neon = { status: 'not_configured', message: 'DATABASE_URL not configured' };
       }
     } catch (neonError) {
       diagnostic.diagnostics.connectivity.neon = { 
         status: 'error', 
         message: neonError.message,
-        error: neonError.toString()
+        error_code: neonError.code 
       };
     }
 
-    // Test WooCommerce connectivity
+    // Test MySQL connectivity
     try {
-      if (process.env.WOOCOMMERCE_API_BASE && process.env.WOOCOMMERCE_CONSUMER_KEY && process.env.WOOCOMMERCE_CONSUMER_SECRET) {
-        const wooUrl = `${process.env.WOOCOMMERCE_API_BASE}/products?per_page=1`;
-        const auth = Buffer.from(`${process.env.WOOCOMMERCE_CONSUMER_KEY}:${process.env.WOOCOMMERCE_CONSUMER_SECRET}`).toString('base64');
-        
-        const wooResponse = await fetch(wooUrl, {
-          headers: { 
-            'Authorization': `Basic ${auth}`,
-            'User-Agent': 'BiKeSul-Diagnostic/1.0'
-          },
+      if (process.env.MYSQL_HOST && process.env.MYSQL_DATABASE && process.env.MYSQL_USERNAME && process.env.MYSQL_PASSWORD) {
+        const mysql = require('mysql2/promise');
+        const connection = await mysql.createConnection({
+          host: process.env.MYSQL_HOST,
+          port: parseInt(process.env.MYSQL_PORT || '3306'),
+          database: process.env.MYSQL_DATABASE,
+          user: process.env.MYSQL_USERNAME,
+          password: process.env.MYSQL_PASSWORD,
           timeout: 10000
         });
-
-        if (wooResponse.ok) {
-          diagnostic.diagnostics.connectivity.woocommerce = { 
-            status: 'connected', 
-            message: 'WooCommerce API accessible' 
-          };
-        } else {
-          diagnostic.diagnostics.connectivity.woocommerce = { 
-            status: 'error', 
-            message: `HTTP ${wooResponse.status}` 
-          };
-        }
+        await connection.execute('SELECT 1 as test');
+        await connection.end();
+        diagnostic.diagnostics.connectivity.mysql = { status: 'connected', message: 'MySQL database accessible' };
       } else {
-        diagnostic.diagnostics.connectivity.woocommerce = { 
-          status: 'not_configured', 
-          message: 'WooCommerce variables not configured' 
-        };
+        diagnostic.diagnostics.connectivity.mysql = { status: 'not_configured', message: 'MySQL variables not configured' };
       }
-    } catch (wooError) {
-      diagnostic.diagnostics.connectivity.woocommerce = { 
+    } catch (mysqlError) {
+      diagnostic.diagnostics.connectivity.mysql = { 
         status: 'error', 
-        message: wooError.message 
+        message: mysqlError.message,
+        error_code: mysqlError.code,
+        errno: mysqlError.errno 
       };
     }
 
-    // Determine overall status
+    // Summary
     const errors = [];
-    const warnings = [];
-
-    if (diagnostic.diagnostics.environment.required_vars_missing.length > 0) {
-      errors.push(`Missing required environment variables: ${diagnostic.diagnostics.environment.required_vars_missing.join(', ')}`);
+    if (diagnostic.diagnostics.configuration.status === 'invalid') {
+      errors.push('Configuration validation failed');
     }
     if (diagnostic.diagnostics.connectivity.neon?.status === 'error') {
       errors.push('Neon database connection failed');
     }
-    if (diagnostic.diagnostics.connectivity.woocommerce?.status === 'error') {
-      errors.push('WooCommerce API connection failed');
+    if (diagnostic.diagnostics.connectivity.mysql?.status === 'error') {
+      errors.push('MySQL database connection failed');
     }
 
-    if (diagnostic.diagnostics.connectivity.neon?.status === 'not_configured') {
-      warnings.push('Neon database not configured');
-    }
-    if (diagnostic.diagnostics.connectivity.woocommerce?.status === 'not_configured') {
-      warnings.push('WooCommerce API not configured');
-    }
+    diagnostic.summary = {
+      status: errors.length === 0 ? 'healthy' : 'issues_detected',
+      errors_count: errors.length,
+      errors: errors,
+      recommendations: []
+    };
 
-    diagnostic.summary.errors = errors;
-    diagnostic.summary.warnings = warnings;
-
-    // Generate recommendations
-    if (errors.length === 0 && warnings.length === 0) {
-      diagnostic.summary.status = 'healthy';
-      diagnostic.summary.recommendations.push('System is functioning properly');
-    } else if (errors.length === 0) {
-      diagnostic.summary.status = 'warning';
-      diagnostic.summary.recommendations.push('System is functional but has some missing optional configurations');
-    } else {
-      diagnostic.summary.status = 'error';
-      
-      if (diagnostic.diagnostics.environment.required_vars_missing.length > 0) {
-        diagnostic.summary.recommendations.push('Configure missing environment variables in Netlify Dashboard');
+    if (errors.length > 0) {
+      if (diagnostic.diagnostics.configuration.status === 'invalid') {
+        diagnostic.summary.recommendations.push('Configure missing environment variables in Netlify dashboard');
       }
       if (diagnostic.diagnostics.connectivity.neon?.status === 'error') {
         diagnostic.summary.recommendations.push('Check Neon database credentials and connectivity');
       }
-      if (diagnostic.diagnostics.connectivity.woocommerce?.status === 'error') {
-        diagnostic.summary.recommendations.push('Check WooCommerce API credentials and site accessibility');
+      if (diagnostic.diagnostics.connectivity.mysql?.status === 'error') {
+        diagnostic.summary.recommendations.push('Check MySQL database credentials and firewall settings');
       }
     }
 
-    console.log(`✅ Diagnostic completed - Status: ${diagnostic.summary.status}`);
     return config.createSuccessResponse(diagnostic);
 
   } catch (error) {
-    console.error('❌ Diagnostic failed:', error);
-    diagnostic.summary.status = 'error';
-    diagnostic.summary.errors.push(`Diagnostic execution failed: ${error.message}`);
-    
+    console.error('❌ Diagnostic function error:', error);
     return config.createErrorResponse(error);
   }
 };
