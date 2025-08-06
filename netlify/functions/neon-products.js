@@ -1,19 +1,30 @@
+// Endpoint optimizado para obtener productos desde Neon Database
 const { neon } = require('@neondatabase/serverless');
-const config = require('./_shared/config');
 
 exports.handler = async (event, context) => {
-  // Validate configuration
-  config.validateConfig();
+  // Configurar CORS
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Content-Type': 'application/json',
+  };
 
-  // Handle preflight OPTIONS
+  // Manejar preflight OPTIONS
   if (event.httpMethod === 'OPTIONS') {
-    return config.createResponse(200, '');
+    return { statusCode: 200, headers, body: '' };
   }
 
   try {
-    const sql = neon(config.DATABASE.connectionString);
+    // Obtener conexión a Neon
+    const connectionString = process.env.NEON_CONNECTION_STRING || process.env.VITE_NEON_CONNECTION_STRING;
+    if (!connectionString) {
+      throw new Error('NEON_CONNECTION_STRING no configurado');
+    }
 
-    // Handle different routes
+    const sql = neon(connectionString);
+
+    // Manejar diferentes rutas
     const path = event.path;
     const pathMatch = path.match(/\/\.netlify\/functions\/neon-products(?:\/(\d+))?(?:\/(.*))?/);
     
@@ -31,10 +42,18 @@ exports.handler = async (event, context) => {
             ORDER BY id ASC
           `;
 
-          return config.createSuccessResponse(variations || []);
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify(variations || []),
+          };
         } catch (variationsError) {
           console.log('Tabla product_variations no existe aún, devolviendo array vacío');
-          return config.createSuccessResponse([]);
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify([]),
+          };
         }
       }
 
@@ -48,17 +67,25 @@ exports.handler = async (event, context) => {
             LIMIT 1
           `;
 
-          return config.createSuccessResponse(product[0] || null);
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify(product[0] || null),
+          };
         } catch (error) {
-          return config.createErrorResponse(new Error('Produto não encontrado'), 404);
+          return {
+            statusCode: 404,
+            headers,
+            body: JSON.stringify({ error: 'Produto não encontrado' }),
+          };
         }
       }
     }
 
-    // GET /neon-products (all products)
+    // GET /neon-products (todos los productos)
     if (event.httpMethod === 'GET') {
       try {
-        // Query active products with stock
+        // Consultar productos activos con stock
         const products = await sql`
           SELECT 
             id,
@@ -90,14 +117,22 @@ exports.handler = async (event, context) => {
 
         console.log(`✅ Neon DB: ${products.length} produtos encontrados`);
 
-        return config.createSuccessResponse(products);
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify(products),
+        };
       } catch (tableError) {
         console.log('Tabla products vacía o no existe');
-        return config.createSuccessResponse([]);
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify([]),
+        };
       }
     }
 
-    // POST /neon-products (create/update product)
+    // POST /neon-products (crear/actualizar producto)
     if (event.httpMethod === 'POST') {
       const productData = JSON.parse(event.body);
       
@@ -141,18 +176,38 @@ exports.handler = async (event, context) => {
           RETURNING id
         `;
 
-        return config.createSuccessResponse({ success: true, id: result[0].id });
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ success: true, id: result[0].id }),
+        };
       } catch (error) {
         console.error('Error insertando/actualizando produto:', error);
-        return config.createErrorResponse(error);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: 'Error insertando produto', message: error.message }),
+        };
       }
     }
 
-    // Unsupported method
-    return config.createErrorResponse(new Error('Método no permitido'), 405);
+    // Método no soportado
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ error: 'Método no permitido' }),
+    };
 
   } catch (error) {
     console.error('Error en neon-products function:', error);
-    return config.createErrorResponse(error);
+    
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        error: 'Error consultando Neon Database',
+        message: error.message,
+      }),
+    };
   }
 };

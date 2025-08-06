@@ -1,6 +1,5 @@
 // Direct Neon service for development when netlify functions aren't available
 // This will work directly in the browser with the Neon serverless driver
-import config from '../config/unified';
 
 interface DirectNeonProduct {
   id: number;
@@ -26,7 +25,7 @@ class DirectNeonService {
   private connectionString: string;
   
   constructor() {
-    this.connectionString = config.DATABASE.connectionString;
+    this.connectionString = import.meta.env.VITE_NEON_CONNECTION_STRING || '';
   }
 
   // Check if direct Neon connection is possible
@@ -38,7 +37,7 @@ class DirectNeonService {
   async getProducts(): Promise<DirectNeonProduct[]> {
     try {
       if (!this.isAvailable()) {
-        throw new Error('DATABASE_URL não configurado');
+        throw new Error('VITE_NEON_CONNECTION_STRING não configurado');
       }
 
       console.log('🚀 Carregando produtos diretamente do Neon...');
@@ -64,7 +63,7 @@ class DirectNeonService {
     if (!this.isAvailable()) {
       return {
         connected: false,
-        message: 'DATABASE_URL não configurado',
+        message: 'VITE_NEON_CONNECTION_STRING não configurado',
         productsCount: 0
       };
     }
