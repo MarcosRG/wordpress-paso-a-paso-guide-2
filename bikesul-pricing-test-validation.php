@@ -38,8 +38,7 @@ class Bikesul_Pricing_Validator {
         $this->test_insurance_calculations();
         $this->test_url_parameter_processing();
         $this->test_cart_item_processing();
-        $this->test_woodmart_compatibility();
-
+        
         $this->generate_test_report();
     }
     
@@ -251,56 +250,7 @@ class Bikesul_Pricing_Validator {
         
         error_log("BIKESUL VALIDATOR: $test_name - " . ($result ? 'PASSED' : 'FAILED'));
     }
-
-    /**
-     * Teste 6: Compatibilidade WoodMart 8.2.7+
-     */
-    private function test_woodmart_compatibility() {
-        $test_name = "Compatibilidade WoodMart 8.2.7+";
-
-        $woodmart_active = function_exists('woodmart_get_theme_info');
-        $version_compatible = false;
-        $compatibility_hooks_active = true;
-        $theme_version = 'N/A';
-
-        if ($woodmart_active) {
-            $theme_version = woodmart_get_theme_info('Version');
-            $version_compatible = version_compare($theme_version, '8.2.7', '>=');
-
-            // Verificar se hooks de compatibilidade estão ativos
-            if ($version_compatible) {
-                $compatibility_hooks_active = (
-                    has_filter('woodmart_quantity_input_args', 'bikesul_override_quantity_validation') ||
-                    has_filter('woodmart_quantity_input_args', 'bikesul_emergency_override_quantity_validation')
-                ) &&
-                has_filter('woocommerce_cart_item_quantity', 'bikesul_validate_rental_quantity') &&
-                has_filter('woocommerce_get_price_html', 'bikesul_fix_woodmart_price_display');
-            }
-        }
-
-        $result = $woodmart_active && ($version_compatible ? $compatibility_hooks_active : true);
-
-        $this->test_results[$test_name] = array(
-            'passed' => $result,
-            'details' => array(
-                'woodmart_active' => $woodmart_active,
-                'theme_version' => $theme_version,
-                'version_compatible' => $version_compatible,
-                'compatibility_hooks_active' => $compatibility_hooks_active,
-                'required_hooks' => array(
-                    'quantity_validation' => has_filter('woodmart_quantity_input_args'),
-                    'cart_quantity_validation' => has_filter('woocommerce_cart_item_quantity', 'bikesul_validate_rental_quantity'),
-                    'price_display_fix' => has_filter('woocommerce_get_price_html', 'bikesul_fix_woodmart_price_display')
-                )
-            )
-        );
-
-        error_log("BIKESUL VALIDATOR: $test_name - " . ($result ? 'PASSED' : 'FAILED'));
-        if ($woodmart_active) {
-            error_log("BIKESUL VALIDATOR: WoodMart version {$theme_version} detected");
-        }
-    }
-
+    
     /**
      * Gera relatório de teste
      */
