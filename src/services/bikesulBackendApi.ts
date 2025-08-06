@@ -10,35 +10,51 @@ export class BikesulBackendApi {
   }
 
   async getProducts(): Promise<WooCommerceProduct[]> {
-    try {
-      console.log("🚀 Obteniendo productos desde backend de Bikesul...");
-      
-      const response = await fetch(`${this.baseUrl}/products`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Timeout de 45 segundos para backend en Render (puede ser lento en cold start)
-        signal: AbortSignal.timeout(45000),
-      });
+    const maxRetries = 2;
+    let lastError: Error;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🚀 Obteniendo productos desde backend de Bikesul (intento ${attempt}/${maxRetries})...`);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+        const response = await fetch(`${this.baseUrl}/products`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(`✅ Backend Bikesul: ${data.length} productos obtenidos (intento ${attempt})`);
+
+        return data;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        const errorMessage = lastError.message;
+
+        if (attempt < maxRetries) {
+          console.warn(`⚠️ Intento ${attempt} falló: ${errorMessage}. Reintentando en 2 segundos...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        } else {
+          console.error(`❌ Todos los intentos fallaron. Error final: ${errorMessage}`);
+        }
       }
-
-      const data = await response.json();
-      console.log(`✅ Backend Bikesul: ${data.length} productos obtenidos`);
-      
-      return data;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error("❌ Error obteniendo productos del backend Bikesul:", errorMessage);
-
-      // Crear error más descriptivo
-      const detailedError = new Error(`Backend Bikesul falló: ${errorMessage}`);
-      detailedError.name = 'BikesulBackendError';
-      throw detailedError;
     }
+
+    // Crear error más descriptivo después de todos los reintentos
+    const detailedError = new Error(`Backend Bikesul falló después de ${maxRetries} intentos: ${lastError!.message}`);
+    detailedError.name = 'BikesulBackendError';
+    throw detailedError;
   }
 
   async getProductVariations(productId: number): Promise<any[]> {
