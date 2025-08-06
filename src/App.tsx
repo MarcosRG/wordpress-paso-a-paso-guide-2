@@ -1,6 +1,6 @@
 import React from "react";
 
-// Debug: verificar que React est�� disponible
+// Debug: verificar que React está disponible
 if (!React) {
   console.error('❌ React is null or undefined!');
 }
@@ -17,8 +17,6 @@ import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
 
 import { networkRecoveryService } from "./services/networkRecovery";
-import { monitoringService } from "./services/monitoringService";
-import { testWooCommerceAPI } from "./utils/testWooCommerceAPI";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
@@ -27,30 +25,23 @@ const App = () => {
   // Check if running in WordPress iframe
   const isWordPressEmbed = window.location !== window.parent.location;
 
-  // Initialize monitoring services
+  // Initialize network recovery service (DESHABILITADO)
   React.useEffect(() => {
-    // Network recovery service deshabilitado para evitar conflictos con FullStory
-    // pero sí iniciamos el monitoreo automático para detectar problemas
-    try {
-      monitoringService.startMonitoring(60000); // Check cada minuto
-      console.log('✅ Monitoreo automático iniciado');
-    } catch (error) {
-      console.error('❌ Error starting monitoring service:', error);
-    }
+    // Deshabilitado para evitar fetch calls automáticos que causan conflictos con FullStory
+    // try {
+    //   networkRecoveryService.startMonitoring();
+    // } catch (error) {
+    //   console.error('Error starting network recovery service:', error);
+    // }
 
-    // Make test functions available globally for debugging
-    (window as any).testWooAPI = testWooCommerceAPI;
-    console.log('🧪 Debug functions available:');
-    console.log('   - testWooAPI() - Test WooCommerce API connectivity');
-
-    // Cleanup on unmount
-    return () => {
-      try {
-        monitoringService.stopMonitoring();
-      } catch (error) {
-        console.error('Error stopping monitoring service:', error);
-      }
-    };
+    // // Cleanup on unmount
+    // return () => {
+    //   try {
+    //     networkRecoveryService.stopMonitoring();
+    //   } catch (error) {
+    //     console.error('Error stopping network recovery service:', error);
+    //   }
+    // };
   }, []);
 
   return (
