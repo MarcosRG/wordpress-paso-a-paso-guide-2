@@ -11,14 +11,6 @@
   # Directorio de las serverless functions
   functions = "netlify/functions"
 
-[dev]
-  # Comando de desarrollo
-  command = "npm run dev:vite"
-  # Puerto del servidor de desarrollo
-  port = 8080
-  # Configurar functions en desarrollo
-  functions = "netlify/functions"
-
 # Environment variables for build process
 [build.environment]
   NODE_ENV = "production"
