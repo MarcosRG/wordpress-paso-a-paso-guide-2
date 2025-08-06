@@ -63,7 +63,7 @@ const translations = {
     postalCode: "Código Postal",
     paymentInfo: "Informação de Pagamento",
     paymentNote:
-      "O pagamento será processado de forma segura através do WooCommerce.",
+      "O pagamento será processado de forma segura.",
     proceedToCheckout: "Prosseguir para o Checkout",
 
     // Buttons
