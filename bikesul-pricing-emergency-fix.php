@@ -293,4 +293,77 @@ add_action('plugins_loaded', function() {
     }
 }, 5); // Prioridade muito alta
 
+// ===============================================
+// COMPATIBILIDADE WOODMART 8.2.7+
+// ===============================================
+add_action('wp_loaded', function() {
+    if (function_exists('woodmart_get_theme_info')) {
+        $version = woodmart_get_theme_info('Version');
+        if (version_compare($version, '8.2.7', '>=')) {
+            // Desabilitar quantity validation do WoodMart para produtos de aluguel
+            add_filter('woodmart_quantity_input_args', 'bikesul_emergency_override_quantity_validation', 15, 2);
+
+            // Hook adicional para corrigir preços após mudanças do WoodMart
+            add_action('woocommerce_after_calculate_totals', 'bikesul_emergency_post_calculation_fix', 20);
+
+            error_log("BIKESUL EMERGENCY: WoodMart {$version} compatibility hooks applied");
+        }
+    }
+});
+
+function bikesul_emergency_override_quantity_validation($args, $product) {
+    // Verificar se é produto de aluguel
+    if (bikesul_emergency_is_rental_product($product)) {
+        $args['min_value'] = 1;
+        $args['max_value'] = 99;
+        $args['step'] = 1;
+
+        error_log("BIKESUL EMERGENCY: Quantity validation overridden for product {$product->get_id()}");
+    }
+    return $args;
+}
+
+function bikesul_emergency_is_rental_product($product) {
+    if (!WC()->cart) return false;
+
+    $cart = WC()->cart->get_cart();
+    foreach ($cart as $cart_item) {
+        if ($cart_item['product_id'] == $product->get_id() &&
+            (isset($cart_item['rental_price_per_day']) ||
+             isset($cart_item['rental_days']) ||
+             isset($cart_item['emergency_fix']))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function bikesul_emergency_post_calculation_fix() {
+    // Fix adicional após cálculos do WooCommerce para garantir preços corretos
+    if (!WC()->cart) return;
+
+    foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
+        if (isset($cart_item['emergency_fix']) || isset($cart_item['rental_price_per_day'])) {
+            $expected_price = 0;
+
+            // Calcular preço esperado
+            if (isset($cart_item['rental_price_per_day']) && isset($cart_item['rental_days'])) {
+                $expected_price = $cart_item['rental_price_per_day'] * $cart_item['rental_days'];
+            } elseif (isset($cart_item['insurance_price_per_bike_per_day'])) {
+                $expected_price = $cart_item['insurance_price_per_bike_per_day'] *
+                                ($cart_item['insurance_total_bikes'] ?? 1) *
+                                ($cart_item['insurance_total_days'] ?? 1);
+            }
+
+            $current_price = $cart_item['data']->get_price();
+
+            // Se há discrepância, corrigir
+            if ($expected_price > 0 && abs($expected_price - $current_price) > 0.01) {
+                error_log("BIKESUL EMERGENCY POST-FIX: Correcting price from €{$current_price} to €{$expected_price}");
+                WC()->cart->cart_contents[$cart_item_key]['data']->set_price($expected_price);
+            }
+        }
+    }
+}
+
 ?>
