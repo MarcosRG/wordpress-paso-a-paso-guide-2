@@ -12,8 +12,10 @@ import { bikesulBackendApi } from "@/services/bikesulBackendApi";
 import { Bike } from "@/pages/Index";
 import { mockBikes, mockCategories } from "./useMockBikes";
 
-// Temporary flag to disable API calls when network is problematic
+// Temporary flags to disable API calls when network is problematic
 const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
+const DISABLE_BACKEND_API = import.meta.env.VITE_DISABLE_BACKEND === "true" || false;
+const DISABLE_WOOCOMMERCE_API = import.meta.env.VITE_DISABLE_WOO === "true" || false;
 
 export const useWooCommerceBikes = () => {
   return useQuery({
