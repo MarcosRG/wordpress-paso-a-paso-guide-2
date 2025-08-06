@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Bike } from "@/pages/Index";
 import { cleanFetch } from "@/utils/cleanFetch";
 import { recordApiSuccess, recordApiNetworkError, recordApiAuthError } from "@/services/connectivityMonitor";
-// Fallback data removed - only real WooCommerce data will be used
+import { fallbackBikes, fallbackCategories } from "@/data/fallbackBikes";
 import { WooCommerceErrorHandler } from "@/services/wooCommerceErrorHandler";
 
 // Hook fallback para carregar bikes do WooCommerce quando MCP não está disponível
@@ -71,23 +71,7 @@ export const useWooCommerceBikes = () => {
           throw new Error(errorResult.technicalMessage || errorResult.userMessage);
         }
 
-        // Safe JSON parsing for successful responses
-        let products;
-        try {
-          const responseText = await response.text();
-          if (!responseText.trim()) {
-            throw new Error('Empty response from WooCommerce API');
-          }
-
-          console.log('🔍 Raw WooCommerce response (first 1000 chars):', responseText.substring(0, 1000));
-
-          products = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error('❌ Failed to parse WooCommerce response as JSON:', parseError);
-          console.error('🔍 Response content (first 500 chars):', responseText?.substring(0, 500) || 'Unable to read response');
-          throw new Error(`Invalid JSON response from WooCommerce API: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`);
-        }
-
+        const products = await response.json();
         recordApiSuccess(); // Record successful API call
         console.log(`📦 ${products.length} produtos obtidos do WooCommerce`);
 
@@ -132,13 +116,7 @@ export const useWooCommerceBikes = () => {
                 );
 
                 if (variationsResponse.ok) {
-                  try {
-                    const variationsText = await variationsResponse.text();
-                    productVariations = JSON.parse(variationsText);
-                  } catch (parseError) {
-                    console.error(`❌ Failed to parse variations JSON for ${product.name}:`, parseError);
-                    productVariations = [];
-                  }
+                  productVariations = await variationsResponse.json();
 
                   // Calcular stock total das variações ativas
                   availableStock = productVariations
@@ -255,25 +233,16 @@ export const useWooCommerceCategories = () => {
         });
 
         if (!response.ok) {
-          const errorText = await response.text().catch(() => 'Unable to read error response');
-          throw new Error(`WooCommerce Categories API Error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}`);
+          return fallbackCategories;
         }
 
-        // Safe JSON parsing for categories
-        let categories;
-        try {
-          const responseText = await response.text();
-          categories = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error('❌ Failed to parse categories JSON:', parseError);
-          throw new Error(`Invalid categories JSON response: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`);
-        }
-
+        const categories = await response.json();
         return categories.map((cat: any) => cat.slug).filter((slug: string) => slug !== "alugueres");
 
       } catch (error) {
         console.error("❌ Erro carregando categorias:", error);
-        throw error;
+        // Retornar categorias padrão
+        return fallbackCategories;
       }
     },
     staleTime: 10 * 60 * 1000,

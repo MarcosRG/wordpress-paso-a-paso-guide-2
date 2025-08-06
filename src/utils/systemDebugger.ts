@@ -3,8 +3,6 @@
  * Para entender melhor os problemas do sistema
  */
 
-import { cleanFetch } from "./cleanFetch";
-
 export interface SystemStatus {
   timestamp: string;
   environment: 'development' | 'production';
@@ -77,7 +75,7 @@ export class SystemDebugger {
     // Testar WooCommerce
     try {
       this.log('info', '🧪 Testando WooCommerce API...');
-      const wooResponse = await cleanFetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=1`, {
+      const wooResponse = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=1`, {
         headers: {
           'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`
         }
