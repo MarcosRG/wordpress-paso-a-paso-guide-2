@@ -136,6 +136,20 @@ class RenderKeepAliveService {
     this.failureCount = 0;
     console.log('🔄 Contador de falhas do keep-alive resetado');
   }
+
+  reactivate(): void {
+    this.autoDisabled = false;
+    this.failureCount = 0;
+    console.log('🔄 Keep-alive reativado manualmente');
+
+    if (!this.isActive) {
+      this.start();
+    }
+  }
+
+  isAutoDisabled(): boolean {
+    return this.autoDisabled;
+  }
 }
 
 export const renderKeepAliveService = new RenderKeepAliveService();
