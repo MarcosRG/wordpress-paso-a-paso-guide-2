@@ -36,28 +36,8 @@
   to = "/.netlify/functions/neon-diagnostic"
   status = 200
 
-# Direct function access - AGREGAR ANTES DEL CATCH-ALL
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-  force = true
-
-# Redirects específicos para funciones Neon (acceso directo)
-[[redirects]]
-  from = "/api/neon/products*"
-  to = "/.netlify/functions/neon-products:splat"
-  status = 200
-
-[[redirects]]
-  from = "/api/neon/sync"
-  to = "/.netlify/functions/neon-sync"
-  status = 200
-
-[[redirects]]
-  from = "/api/neon/variations*"
-  to = "/.netlify/functions/neon-variations:splat"
-  status = 200
+# Direct function access - these should work without redirect
+# /.netlify/functions/* paths are automatically handled by Netlify
 
 # Redirect para SPA routing (React Router) - DEVE SER O ÚLTIMO
 [[redirects]]
