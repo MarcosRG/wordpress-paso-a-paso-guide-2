@@ -45,13 +45,12 @@ export const renderBackendService = {
         }
       }
 
-      const response = await fetch(`${RENDER_BASE_URL}/sync-products`, {
+      const response = await fetchWithTimeout(`${RENDER_BASE_URL}/sync-products`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        signal: AbortSignal.timeout(60000) // 60s timeout para sync
-      });
+        }
+      }, 60000); // 60s timeout para sync
 
       if (!response.ok) {
         throw new Error(`Sync error: ${response.status} ${response.statusText}`);
