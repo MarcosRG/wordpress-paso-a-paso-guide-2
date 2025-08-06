@@ -63,16 +63,16 @@ class RenderKeepAliveService {
       return;
     }
 
-    // Se tivemos muitas falhas, pausar temporariamente
+    // Se foi auto-desabilitado, não continuar
+    if (this.autoDisabled) {
+      return;
+    }
+
+    // Se tivemos muitas falhas, auto-desabilitar
     if (this.failureCount >= this.maxFailures) {
-      console.warn(`⚠️ Keep-alive pausado devido a ${this.maxFailures} falhas consecutivas`);
-      
-      // Reset counter após 5 minutos
-      setTimeout(() => {
-        this.failureCount = 0;
-        console.log('🔄 Keep-alive reativado após pausa');
-      }, 5 * 60 * 1000);
-      
+      console.warn(`⚠️ Keep-alive auto-desabilitado devido a ${this.maxFailures} falhas consecutivas`);
+      this.autoDisabled = true;
+      this.stop();
       return;
     }
 
