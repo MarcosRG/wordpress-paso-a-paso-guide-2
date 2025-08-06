@@ -39,10 +39,13 @@ class AdminAuthService {
     error?: string;
   }> {
     try {
+      console.log('🔐 Intentando login administrativo:', credentials.username);
+      
       // Validar credenciales
       const isValid = await this.validateCredentials(credentials);
       
       if (!isValid) {
+        console.warn('❌ Credenciales inválidas para:', credentials.username);
         return {
           success: false,
           error: 'Usuario o contraseña incorrectos'
@@ -61,13 +64,15 @@ class AdminAuthService {
       // Guardar sesión
       this.currentUser = user;
       this.saveSession(user);
-
+      
+      console.log('✅ Login exitoso para:', user.username);
       return {
         success: true,
         user
       };
       
     } catch (error) {
+      console.error('❌ Error en login administrativo:', error);
       return {
         success: false,
         error: 'Error interno del servidor'
@@ -77,6 +82,7 @@ class AdminAuthService {
   
   // Logout
   logout(): void {
+    console.log('🚪 Cerrando sesión administrativa');
     this.currentUser = null;
     this.clearSession();
   }
@@ -131,9 +137,12 @@ class AdminAuthService {
       }
       
       // En producción: actualizar en base de datos
+      console.log('🔐 Contraseña actualizada para:', this.currentUser.username);
+      
       return true;
       
     } catch (error) {
+      console.error('❌ Error cambiando contraseña:', error);
       return false;
     }
   }
@@ -165,7 +174,7 @@ class AdminAuthService {
       
       localStorage.setItem(this.sessionKey, JSON.stringify(sessionData));
     } catch (error) {
-      // Error silencioso
+      console.error('Error guardando sesión:', error);
     }
   }
   
@@ -184,8 +193,10 @@ class AdminAuthService {
       }
       
       this.currentUser = session.user;
-
+      console.log('🔄 Sesión administrativa restaurada:', session.user.username);
+      
     } catch (error) {
+      console.error('Error cargando sesión:', error);
       this.clearSession();
     }
   }
@@ -224,3 +235,12 @@ class AdminAuthService {
 
 // Exportar instancia singleton
 export const adminAuthService = new AdminAuthService();
+
+// Exponer al scope global para debugging
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
+  (window as any).adminAuthService = adminAuthService;
+  console.log('🔐 Admin Auth Service disponible en window.adminAuthService');
+  console.log('👤 Credenciales cargadas desde configuración unificada');
+  console.log('   Usuario:', config.ADMIN.username);
+  console.log('   Email:', config.ADMIN.email);
+}
