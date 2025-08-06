@@ -2,21 +2,8 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Fetch interceptor disabled - now using cleanFetch approach
-// import "./utils/fetchInterceptor";
-
-// Reset any connectivity issues on startup
-import "./utils/resetConnectivity";
-
-// Test cleanFetch functionality in development
-if (import.meta.env.DEV) {
-  import("./utils/testCleanFetch");
-}
-
-// Initialize MCP client
-import("./utils/mcpClient").then(({ initializeMCP }) => {
-  initializeMCP();
-});
+// Initialize fetch interceptor early to handle third-party script conflicts
+import "./utils/fetchInterceptor";
 
 // Initialize connectivity debugger in development
 if (import.meta.env.DEV) {
