@@ -939,6 +939,9 @@ export const wooCommerceApi = {
       );
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error(`HTTP 401: Credenciales de WooCommerce inválidas. Verificar CONSUMER_KEY y CONSUMER_SECRET.`);
+        }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
