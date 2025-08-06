@@ -8,6 +8,7 @@ import {
   extractACFPricing,
   ACFPricing,
 } from "@/services/woocommerceApi";
+import { bikesulBackendApi } from "@/services/bikesulBackendApi";
 import { Bike } from "@/pages/Index";
 import { mockBikes, mockCategories } from "./useMockBikes";
 
