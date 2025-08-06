@@ -15,10 +15,6 @@ import {
 import { adminAuthService } from '../../services/adminAuthService';
 import { SystemSettings } from './SystemSettings';
 import { NeonDatabaseAdmin } from '../NeonDatabaseAdmin';
-import WooCommerceDiagnostic from '../WooCommerceDiagnostic';
-import EnvironmentValidation from './EnvironmentValidation';
-import { SystemDiagnostic } from '../SystemDiagnostic';
-import NeonDatabaseDiagnostic from './NeonDatabaseDiagnostic';
 
 interface SimplifiedAdminDashboardProps {
   onLogout: () => void;
@@ -136,85 +132,23 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
         </div>
 
         {/* Simplified Tabs */}
-        <Tabs defaultValue="validation" className="space-y-6">
+        <Tabs defaultValue="database" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="validation">Validación Variables</TabsTrigger>
             <TabsTrigger value="database">Base de Dados Neon</TabsTrigger>
-            <TabsTrigger value="diagnostic">Diagnóstico WooCommerce</TabsTrigger>
-            <TabsTrigger value="system">Diagnóstico Sistema</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
 
-          {/* Environment Validation Tab */}
-          <TabsContent value="validation">
-            <Card>
-              <CardHeader>
-                <CardTitle>Validación de Variables de Entorno</CardTitle>
-                <CardDescription>
-                  Verificar configuración de todas las variables del sistema
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <EnvironmentValidation />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           {/* Database Management Tab */}
           <TabsContent value="database">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Diagnóstico Neon Database</CardTitle>
-                  <CardDescription>
-                    Test de conectividad y rendimiento de la base de datos
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <NeonDatabaseDiagnostic />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Gestión Base de Dados Neon</CardTitle>
-                  <CardDescription>
-                    Sistema migrado completamente a Neon PostgreSQL serverless
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <NeonDatabaseAdmin />
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* WooCommerce Diagnostic Tab */}
-          <TabsContent value="diagnostic">
             <Card>
               <CardHeader>
-                <CardTitle>Diagnóstico WooCommerce API</CardTitle>
+                <CardTitle>Gestión Base de Dados Neon</CardTitle>
                 <CardDescription>
-                  Teste de conectividade e autenticação com WooCommerce
+                  Sistema migrado completamente a Neon PostgreSQL serverless
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <WooCommerceDiagnostic />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* System Diagnostic Tab */}
-          <TabsContent value="system">
-            <Card>
-              <CardHeader>
-                <CardTitle>Diagnóstico Sistema Completo</CardTitle>
-                <CardDescription>
-                  Diagnóstico completo de conectividade e configuração do sistema
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SystemDiagnostic />
+                <NeonDatabaseAdmin />
               </CardContent>
             </Card>
           </TabsContent>
