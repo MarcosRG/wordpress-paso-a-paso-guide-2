@@ -105,14 +105,13 @@ export const renderBackendService = {
         }
       }
 
-      // 3. Realizar petición normal
-      const response = await fetch(`${RENDER_BASE_URL}/products`, {
+      // 3. Realizar petição normal
+      const response = await fetchWithTimeout(`${RENDER_BASE_URL}/products`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        signal: AbortSignal.timeout(15000) // 15s timeout
-      });
+        }
+      }, 15000); // 15s timeout
 
       if (!response.ok) {
         throw new Error(`Products fetch error: ${response.status} ${response.statusText}`);
