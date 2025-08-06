@@ -19,6 +19,7 @@ import RenderTest from "./pages/RenderTest";
 
 import { networkRecoveryService } from "./services/networkRecovery";
 import { renderKeepAliveService } from "./services/renderKeepAliveService";
+import { FetchDiagnostics } from "./utils/fetchDiagnostics";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
