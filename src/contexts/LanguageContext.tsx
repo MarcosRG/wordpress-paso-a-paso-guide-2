@@ -26,7 +26,7 @@ const translations = {
     junior: "Junior",
     extras: "Extras",
     availableSizes: "Tamanhos disponíveis",
-    available: "dispon��vel",
+    available: "disponível",
     availables: "disponíveis",
     selectionSummary: "Resumo da sua seleção",
     totalPerDay: "Total por dia",
