@@ -3,7 +3,6 @@
  * Herramienta para identificar problemas de configuración y conectividad
  */
 import config from '../config/unified';
-import { cleanFetch } from './cleanFetch';
 
 interface DiagnosticResult {
   category: string;
@@ -101,7 +100,7 @@ export class BikeSlSystemDiagnostic {
 
     for (const endpoint of functionEndpoints) {
       try {
-        const response = await cleanFetch(endpoint, {
+        const response = await fetch(endpoint, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -137,7 +136,7 @@ export class BikeSlSystemDiagnostic {
     console.log('🗄️ Testing Neon Database Connection...');
     
     try {
-      const response = await cleanFetch('/.netlify/functions/neon-diagnostic', {
+      const response = await fetch('/.netlify/functions/neon-diagnostic', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -181,7 +180,7 @@ export class BikeSlSystemDiagnostic {
       // Test simple connection
       const testUrl = `${baseUrl}/products?per_page=1&consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
       
-      const response = await cleanFetch(testUrl, {
+      const response = await fetch(testUrl, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -222,7 +221,7 @@ export class BikeSlSystemDiagnostic {
 
     try {
       // Test basic connectivity to CRM endpoint
-      const response = await cleanFetch(`${baseUrl}/wp-json/`, {
+      const response = await fetch(`${baseUrl}/wp-json/`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });

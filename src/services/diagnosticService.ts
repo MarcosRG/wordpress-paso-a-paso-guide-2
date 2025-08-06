@@ -6,7 +6,6 @@
 import { WOOCOMMERCE_CONFIG } from '@/config/unified';
 import { testCleanFetch } from '@/utils/testCleanFetch';
 import { testWooCommerceAPI } from '@/utils/testWooCommerceAPI';
-import { cleanFetch } from '@/utils/cleanFetch';
 
 interface DiagnosticResult {
   success: boolean;
@@ -46,7 +45,7 @@ class DiagnosticService {
     try {
       console.log('🔐 Probando autenticación WooCommerce...');
       
-      const response = await cleanFetch(`${this.baseUrl}/products?per_page=1`, {
+      const response = await fetch(`${this.baseUrl}/products?per_page=1`, {
         method: 'GET',
         headers: this.getAuthHeaders()
       });
@@ -98,7 +97,7 @@ class DiagnosticService {
     try {
       console.log('🚴 Probando productos de categoría ALUGUERES (319)...');
       
-      const response = await cleanFetch(`${this.baseUrl}/products?per_page=100&category=319&status=publish`, {
+      const response = await fetch(`${this.baseUrl}/products?per_page=100&category=319&status=publish`, {
         method: 'GET',
         headers: this.getAuthHeaders()
       });
@@ -145,7 +144,7 @@ class DiagnosticService {
     try {
       console.log('📁 Probando categorías...');
       
-      const response = await cleanFetch(`${this.baseUrl}/products/categories?per_page=50`, {
+      const response = await fetch(`${this.baseUrl}/products/categories?per_page=50`, {
         method: 'GET',
         headers: this.getAuthHeaders()
       });
@@ -194,7 +193,7 @@ class DiagnosticService {
       console.log('🔄 Probando variaciones de productos...');
       
       // Primero obtener un producto variable
-      const productsResponse = await cleanFetch(`${this.baseUrl}/products?per_page=5&category=319&type=variable`, {
+      const productsResponse = await fetch(`${this.baseUrl}/products?per_page=5&category=319&type=variable`, {
         method: 'GET',
         headers: this.getAuthHeaders()
       });
@@ -219,7 +218,7 @@ class DiagnosticService {
       }
 
       // Probar variaciones del primer producto variable
-      const variationsResponse = await cleanFetch(`${this.baseUrl}/products/${variableProduct.id}/variations?per_page=20`, {
+      const variationsResponse = await fetch(`${this.baseUrl}/products/${variableProduct.id}/variations?per_page=20`, {
         method: 'GET',
         headers: this.getAuthHeaders()
       });
