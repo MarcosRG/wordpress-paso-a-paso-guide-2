@@ -19,17 +19,11 @@ const getOptionalEnv = (key, fallback = '') => {
 
 // ==================== DATABASE CONFIG ====================
 const DATABASE_CONFIG = {
-  // Conexión directa (legacy)
   connectionString: getRequiredEnv('DATABASE_URL', process.env.NEON_CONNECTION_STRING),
   projectId: getRequiredEnv('NEON_PROJECT_ID'),
   branchId: getOptionalEnv('NEON_BRANCH_ID'),
   database: 'neondb',
   role: 'neondb_owner',
-
-  // OAuth + Data API (nuevo)
-  dataApiUrl: getOptionalEnv('NEON_DATA_API_URL'),
-  oauthToken: getOptionalEnv('NEON_OAUTH_TOKEN'),
-  useDataApi: getOptionalEnv('USE_NEON_DATA_API', 'false') === 'true',
 };
 
 // ==================== WOOCOMMERCE CONFIG ====================
@@ -121,16 +115,6 @@ const validateNeonConfig = () => {
   return true;
 };
 
-const validateNeonDataApiConfig = () => {
-  if (!process.env.NEON_DATA_API_URL) {
-    throw new Error('NEON_DATA_API_URL required for Data API operations');
-  }
-  if (!process.env.NEON_OAUTH_TOKEN) {
-    throw new Error('NEON_OAUTH_TOKEN required for Data API operations');
-  }
-  return true;
-};
-
 const validateWooCommerceConfig = () => {
   if (!process.env.WOOCOMMERCE_API_BASE) {
     throw new Error('WOOCOMMERCE_API_BASE required for WooCommerce operations');
@@ -206,7 +190,6 @@ module.exports = {
   CORS_HEADERS,
   validateConfig,
   validateNeonConfig,
-  validateNeonDataApiConfig,
   validateWooCommerceConfig,
   createResponse,
   createSuccessResponse,
