@@ -21,8 +21,8 @@ const getOptionalEnv = (key: string, fallback: string = ''): string => {
 
 // ==================== DATABASE CONFIG ====================
 export const DATABASE_CONFIG = {
-  // Use primary variable first, fallback to alternative
-  connectionString: getRequiredEnv('VITE_DATABASE_URL', getOptionalEnv('VITE_NEON_CONNECTION_STRING')),
+  // Una sola variable para conexión Neon (frontend usa VITE_)
+  connectionString: getRequiredEnv('VITE_DATABASE_URL'),
   projectId: getRequiredEnv('VITE_NEON_PROJECT_ID'),
   branchId: getOptionalEnv('VITE_NEON_BRANCH_ID'),
   database: 'neondb',
@@ -113,7 +113,7 @@ export const LOGGING_CONFIG = {
 export const validateConfig = () => {
   const errors: string[] = [];
 
-  if (!DATABASE_CONFIG.connectionString) errors.push('VITE_DATABASE_URL or VITE_NEON_CONNECTION_STRING');
+  if (!DATABASE_CONFIG.connectionString) errors.push('VITE_DATABASE_URL');
   if (!DATABASE_CONFIG.projectId) errors.push('VITE_NEON_PROJECT_ID');
   if (!WOOCOMMERCE_CONFIG.baseUrl) errors.push('VITE_WOOCOMMERCE_API_BASE');
   if (!WOOCOMMERCE_CONFIG.consumerKey) errors.push('VITE_WOOCOMMERCE_CONSUMER_KEY');

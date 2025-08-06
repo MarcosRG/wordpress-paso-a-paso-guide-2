@@ -28,11 +28,6 @@ class NeonDatabaseService {
 
   // Check if netlify functions are available
   private async checkNetlifyFunctionsAvailable(): Promise<boolean> {
-    // In development, Netlify functions are not available
-    if (this.isDevelopment) {
-      console.log('🔧 Development mode: Netlify functions not available');
-      return false;
-    }
     try {
       const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
@@ -56,10 +51,13 @@ class NeonDatabaseService {
     try {
       console.log('🚀 Carregando produtos desde Neon Database...');
 
-      // In development, Netlify functions are not available
+      // In development, check if netlify functions are available
       if (this.isDevelopment) {
-        console.warn('⚠️ Development mode: Using WooCommerce fallback (Netlify functions only work in production)');
-        return [];
+        const functionsAvailable = await this.checkNetlifyFunctionsAvailable();
+        if (!functionsAvailable) {
+          console.warn('⚠️ Netlify functions não disponíveis em desenvolvimento');
+          return [];
+        }
       }
 
       const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
@@ -108,9 +106,12 @@ class NeonDatabaseService {
     try {
       console.log('🔄 Iniciando sincronização WooCommerce → Neon...');
 
-      // In development, Netlify functions are not available
+      // Check if netlify functions are available in development
       if (this.isDevelopment) {
-        throw new Error('Sync não disponível em desenvolvimento. Netlify functions só funcionam em produção.');
+        const functionsAvailable = await this.checkNetlifyFunctionsAvailable();
+        if (!functionsAvailable) {
+          throw new Error('Netlify functions não disponíveis em desenvolvimento. Deploy necessário para funcionalidade completa.');
+        }
       }
 
       // 1. Buscar produtos do WooCommerce
@@ -215,13 +216,16 @@ class NeonDatabaseService {
   // Verificar status da base de dados
   async checkDatabaseStatus(): Promise<{ connected: boolean; message: string; productsCount: number }> {
     try {
-      // In development, Netlify functions are not available
+      // In development, check if netlify functions are available
       if (this.isDevelopment) {
-        return {
-          connected: false,
-          message: 'Development mode: Usando WooCommerce fallback (Netlify functions só funcionam em produção)',
-          productsCount: 0
-        };
+        const functionsAvailable = await this.checkNetlifyFunctionsAvailable();
+        if (!functionsAvailable) {
+          return {
+            connected: false,
+            message: 'Netlify functions não disponíveis em desenvolvimento',
+            productsCount: 0
+          };
+        }
       }
 
       const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
@@ -249,7 +253,7 @@ class NeonDatabaseService {
             productsCount: data.length
           };
         } else {
-          console.warn('��️ Formato de resposta inesperado:', data);
+          console.warn('⚠️ Formato de resposta inesperado:', data);
           return {
             connected: false,
             message: 'Formato de resposta inesperado da base de dados',
