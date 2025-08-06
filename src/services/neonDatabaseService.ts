@@ -1,7 +1,6 @@
 // Neon Database Service usando funciones netlify existentes
 // Sistema: WooCommerce API → Netlify Functions → Neon DB → Frontend
 import { cleanFetch } from "@/utils/cleanFetch";
-import { bikeCache, CACHE_KEYS } from '@/utils/bikeCache';
 
 interface NeonProduct {
   id: number;
@@ -55,13 +54,6 @@ class NeonDatabaseService {
   // Obter produtos da base de dados Neon
   async getProducts(): Promise<NeonProduct[]> {
     try {
-      // Check cache first
-      const cachedProducts = bikeCache.get<NeonProduct[]>(CACHE_KEYS.NEON_PRODUCTS);
-      if (cachedProducts) {
-        console.log(`✅ ${cachedProducts.length} produtos carregados do cache Neon`);
-        return cachedProducts;
-      }
-
       console.log('🚀 Carregando produtos desde Neon Database...');
 
       // In development, Netlify functions are not available
@@ -70,74 +62,42 @@ class NeonDatabaseService {
         return [];
       }
 
-      // Add timeout for faster fallback to WooCommerce
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
       const response = await cleanFetch(`${this.baseUrl}/neon-products`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-        },
-        signal: controller.signal
+        }
       });
-
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Neon API Error: ${response.status} ${response.statusText}`);
       }
 
       let data;
-      let responseText;
       try {
-        // First try to get the response as text to check what we received
-        responseText = await response.text();
-        data = JSON.parse(responseText);
+        data = await response.json();
       } catch (jsonError) {
-        console.error('❌ Raw response from Neon function:', responseText);
-
-        // Check for common configuration issues
-        if (responseText && (
-          responseText.includes('Missing script') ||
-          responseText.includes('npm error') ||
-          responseText.includes('Variables de entorno faltantes') ||
-          responseText.includes('service unavailable')
-        )) {
-          throw new Error('Neon database not configured - using WooCommerce fallback');
+        // Se não consegue parsear JSON, pode ser problema de configuração
+        const responseText = await response.text().catch(() => 'Resposta não legível');
+        if (responseText.includes('Missing script') || responseText.includes('npm error')) {
+          throw new Error('Netlify Functions não configuradas. Verifique variáveis de ambiente no painel do Netlify.');
         }
-
-        // If it's HTML, it means function deployment failed
-        if (responseText && responseText.trim().startsWith('<')) {
-          throw new Error('Netlify function deployment error - using WooCommerce fallback');
-        }
-
         throw new Error('Erro parsing JSON - netlify function não está executando corretamente');
       }
 
       // Verificar se a resposta tem o formato esperado
       if (data.connected && Array.isArray(data.products)) {
         console.log(`✅ ${data.products.length} produtos carregados do Neon`);
-        // Cache successful responses for 2 minutes
-        bikeCache.set(CACHE_KEYS.NEON_PRODUCTS, data.products, 2 * 60 * 1000);
         return data.products;
       } else if (Array.isArray(data)) {
         console.log(`�� ${data.length} produtos carregados do Neon`);
-        // Cache successful responses for 2 minutes
-        bikeCache.set(CACHE_KEYS.NEON_PRODUCTS, data, 2 * 60 * 1000);
         return data;
       } else {
         console.warn('⚠️ Formato de resposta inesperado:', data);
         return [];
       }
     } catch (error) {
-      // Handle timeout errors specifically
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.warn('⏱️ Neon database timeout - using WooCommerce fallback');
-        throw new Error('Neon database timeout - using WooCommerce fallback');
-      }
-
       console.error('❌ Erro carregando produtos do Neon:', error);
       throw error;
     }

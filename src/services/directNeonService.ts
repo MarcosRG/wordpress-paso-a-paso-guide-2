@@ -50,31 +50,12 @@ class DirectNeonService {
       });
 
       if (!response.ok) {
-        // Check if it's a configuration error (503)
-        if (response.status === 503) {
-          throw new Error('Neon database not configured - using WooCommerce fallback');
-        }
         throw new Error(`Erro da API Neon: ${response.status}`);
       }
 
-      const responseText = await response.text();
-
-      // Try to parse JSON
-      let products;
-      try {
-        products = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('❌ Erro parsing JSON response from Neon function:', responseText);
-        throw new Error('Erro parsing JSON - netlify function não está executando corretamente');
-      }
-
-      // Handle case where products is wrapped in an error response
-      if (products.error) {
-        throw new Error(products.error);
-      }
-
-      console.log(`✅ ${products.length || 0} produtos carregados do Neon`);
-      return products || [];
+      const products = await response.json();
+      console.log(`✅ ${products.length} produtos carregados do Neon`);
+      return products;
 
     } catch (error) {
       console.error('❌ Erro na conexão direta ao Neon:', error);
