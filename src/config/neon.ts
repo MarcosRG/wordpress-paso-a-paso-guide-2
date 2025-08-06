@@ -1,11 +1,8 @@
 // Configuración de Neon Database
 export const NEON_CONFIG = {
   connectionString:
-    import.meta.env.VITE_NETLIFY_DATABASE_URL ||
     import.meta.env.VITE_NEON_CONNECTION_STRING ||
     "postgresql://neondb_owner:npg_f5qU6FzxSZXJ@ep-silent-waterfall-aeyw6n39-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require",
-  unpooledConnectionString:
-    import.meta.env.VITE_NETLIFY_DATABASE_URL_UNPOOLED,
   projectId: import.meta.env.VITE_NEON_PROJECT_ID || "noisy-mouse-34441036",
   branchId: import.meta.env.VITE_NEON_BRANCH_ID || "br-hidden-rice-ae9w1ii3",
   database: "neondb",

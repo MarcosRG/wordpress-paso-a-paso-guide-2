@@ -2,8 +2,8 @@
   # Comando de instalación
   base = "."
 
-  # Comando de build - usar npm install en lugar de npm ci para asegurar devDependencies
-  command = "npm install && npm run build"
+  # Comando de build
+  command = "npm ci && npm run build"
 
   # Directorio donde se genera el build
   publish = "dist"
