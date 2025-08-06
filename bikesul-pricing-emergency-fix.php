@@ -183,12 +183,26 @@ class Bikesul_Emergency_Price_Fix {
     private function fix_bike_price(&$cart_item) {
         $price_per_day = floatval($cart_item['rental_price_per_day'] ?? 0);
         $days = intval($cart_item['rental_days'] ?? 0);
-        
+
         if ($price_per_day > 0 && $days > 0) {
             $total_per_unit = $price_per_day * $days;
-            $cart_item['data']->set_price($total_per_unit);
-            
-            error_log("BIKESUL EMERGENCY BIKE: Set price €{$price_per_day} × {$days} = €{$total_per_unit}");
+
+            // Validação adicional para WoodMart 8.2.7+
+            if ($total_per_unit > 0 && is_numeric($total_per_unit)) {
+                // Verificar se quantity validation do WoodMart pode interferir
+                if (function_exists('woodmart_get_theme_info')) {
+                    $theme_version = woodmart_get_theme_info('Version');
+                    if (version_compare($theme_version, '8.2.7', '>=')) {
+                        // Adicionar pequeno delay para evitar conflitos
+                        usleep(1000); // 1ms
+                    }
+                }
+
+                $cart_item['data']->set_price($total_per_unit);
+                error_log("BIKESUL EMERGENCY BIKE: Set price €{$price_per_day} × {$days} = €{$total_per_unit}");
+            } else {
+                error_log("BIKESUL EMERGENCY BIKE ERROR: Invalid price calculation");
+            }
         }
     }
     
