@@ -73,7 +73,7 @@ export const enableFetchInterceptor = () => {
               };
 
               xhr.onerror = () => reject(new Error('XHR request failed'));
-              xhr.ontimeout = () => reject(new Error('XHR request timeout'));
+              xhr.ontimeout = () => reject(new Error('Request timeout'));
 
               xhr.timeout = 30000; // 30 second timeout
               xhr.send(options.body as string);
@@ -133,8 +133,19 @@ export const isThirdPartyInterference = (error: Error): boolean => {
     error.stack?.includes('fullstory.com') ||
     error.stack?.includes('edge.fullstory.com') ||
     error.stack?.includes('fs.js') ||
-    (error.message.includes('Failed to fetch') && 
+    (error.message.includes('Failed to fetch') &&
      error.stack?.includes('eval at messageHandler'))
+  );
+};
+
+export const isTimeoutError = (error: Error): boolean => {
+  return (
+    error.message === "Request timeout" ||
+    error.message.includes("timeout") ||
+    error.message.includes("timed out") ||
+    error.message.includes("signal timed out") ||
+    error.name === "AbortError" ||
+    error.name === "TimeoutError"
   );
 };
 
