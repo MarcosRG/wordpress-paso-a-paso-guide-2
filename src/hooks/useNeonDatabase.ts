@@ -86,9 +86,14 @@ export const useNeonDatabaseBikes = () => {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
 
-        // Only report errors in production
-        if (!import.meta.env.DEV) {
-          systemDebugger.reportNeonError(errorMessage);
+        systemDebugger.reportNeonError(errorMessage);
+
+        // Check if it's a netlify function error
+        if (errorMessage.includes('netlify function') || errorMessage.includes('JSON válido') || errorMessage.includes('Netlify Functions')) {
+          debugLog('warn', 'ℹ️ Netlify functions não disponíveis - fallback ativo');
+        } else if (import.meta.env.DEV) {
+          debugLog('warn', 'ℹ️ Erro esperado em desenvolvimento - fallback ativo');
+        } else {
           debugLog('error', '❌ Erro inesperado Neon em produção', { error: errorMessage });
         }
 
@@ -166,7 +171,7 @@ export const useNeonDatabaseStatus = () => {
     },
     staleTime: 60 * 1000, // 1 minuto
     gcTime: 5 * 60 * 1000, // 5 minutos
-    retry: import.meta.env.DEV ? 0 : 1, // No retry in development
+    retry: 1,
   });
 };
 
@@ -214,9 +219,13 @@ export const useNeonDatabaseCategories = () => {
           "touring-alugueres",
         ];
       } catch (error) {
-        // Only show errors in production
-        if (!import.meta.env.DEV) {
-          console.error("❌ Erro carregando categorias do Neon:", error);
+        console.error("❌ Erro carregando categorias do Neon:", error);
+
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+
+        // Check if it's a netlify function error
+        if (errorMessage.includes('netlify function') || errorMessage.includes('JSON válido')) {
+          console.log("ℹ️ Netlify functions não disponíveis para categorias - usar padrão");
         }
 
         // Retornar categorias padrão
@@ -232,6 +241,5 @@ export const useNeonDatabaseCategories = () => {
       }
     },
     staleTime: 15 * 60 * 1000, // 15 minutos
-    retry: import.meta.env.DEV ? 0 : 1, // No retry in development
   });
 };
