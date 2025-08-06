@@ -25,9 +25,32 @@ export const useWooCommerceBikes = () => {
         return mockBikes;
       }
 
+      let products: WooCommerceProduct[] = [];
+      let dataSource = "";
+
       try {
-        console.log("Iniciando carga de productos de WooCommerce...");
-        const products = await wooCommerceApi.getProducts();
+        // PASO 1: Intentar obtener productos del backend de Bikesul primero
+        console.log("🚀 Intentando cargar productos desde backend de Bikesul...");
+        products = await bikesulBackendApi.getProducts();
+        dataSource = "Bikesul Backend";
+        console.log(`✅ Productos cargados desde ${dataSource}: ${products.length}`);
+      } catch (backendError) {
+        console.warn("⚠�� Backend de Bikesul no disponible, usando WooCommerce como fallback...");
+
+        try {
+          // PASO 2: Fallback a WooCommerce API
+          console.log("🔄 Iniciando carga de productos de WooCommerce...");
+          products = await wooCommerceApi.getProducts();
+          dataSource = "WooCommerce API";
+          console.log(`✅ Productos cargados desde ${dataSource}: ${products.length}`);
+        } catch (wooError) {
+          console.error("❌ Error en ambas fuentes de datos:", { backendError, wooError });
+          console.log("🔄 Usando datos de prueba como último fallback");
+          return mockBikes;
+        }
+      }
+
+      try {
         console.log(`✅ Productos cargados exitosamente: ${products.length}`);
 
         // Filtrar solo productos publicados con stock
