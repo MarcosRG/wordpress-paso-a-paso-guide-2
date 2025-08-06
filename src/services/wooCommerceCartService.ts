@@ -107,11 +107,8 @@ export class WooCommerceCartService {
         : null;
 
       let totalPricePerBike = 0;
-      let calculatedPricePerDay = bike.pricePerDay; // Precio por día calculado correcto
-
       if (acfPricing && reservation.totalDays > 0) {
         // Usar ACF pricing
-        calculatedPricePerDay = getPricePerDayFromACF(reservation.totalDays, acfPricing);
         totalPricePerBike = calculateTotalPriceACF(
           reservation.totalDays,
           1,
@@ -122,18 +119,18 @@ export class WooCommerceCartService {
         const priceRanges = bike.wooCommerceData?.product
           ? extractDayBasedPricing(bike.wooCommerceData.product)
           : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
-        calculatedPricePerDay =
+        const pricePerDay =
           reservation.totalDays > 0
             ? getPriceForDays(priceRanges, reservation.totalDays)
             : bike.pricePerDay;
-        totalPricePerBike = calculatedPricePerDay * reservation.totalDays;
+        totalPricePerBike = pricePerDay * reservation.totalDays;
       }
 
       params.append(`bike_${index}_id`, bike.id);
       params.append(`bike_${index}_name`, bike.name);
       params.append(`bike_${index}_quantity`, bike.quantity.toString());
       params.append(`bike_${index}_size`, bike.size);
-      params.append(`bike_${index}_price_per_day`, calculatedPricePerDay.toString()); // USAR PRECIO CALCULADO
+      params.append(`bike_${index}_price_per_day`, bike.pricePerDay.toString());
       params.append(`bike_${index}_total_price`, totalPricePerBike.toString());
       params.append(`bike_${index}_days`, reservation.totalDays.toString());
 
@@ -326,12 +323,13 @@ export class WooCommerceCartService {
               const productId = insuranceProduct.id > 0 ? insuranceProduct.id :
                 (reservation.insurance.id === 'free' || reservation.insurance.id === 'basic') ? 21819 : 21815;
 
-              // CORREGIR: Usar cantidad 1 y precio total para mostrar correctamente en checkout
-              // El checkout mostrará: "Seguro Premium x 1 = €110" en lugar de "Seguro Premium x 22 = €5"
+              // Calcular cantidad total (bicicletas × días) para que aparezca correctamente
+              const totalQuantity = totalBikes * reservation.totalDays;
+
               lineItems.push({
                 product_id: productId,
-                quantity: 1, // Cantidad fija 1
-                price: totalInsurancePrice, // Precio total calculado (€110)
+                quantity: totalQuantity, // Cantidad total: bicicletas × días
+                price: reservation.insurance.price, // Precio unitario por bicicleta por día
                 meta_data: [
                   { key: "_insurance_type", value: reservation.insurance.id },
                   { key: "_insurance_name", value: reservation.insurance.name },
