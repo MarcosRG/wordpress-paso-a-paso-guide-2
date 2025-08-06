@@ -80,7 +80,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                 <Input
                   id="username"
                   type="text"
-                  placeholder="admin_bikesul"
+                  placeholder="admin_bikesul_pt"
                   value={credentials.username}
                   onChange={(e) => handleInputChange('username', e.target.value)}
                   className="pl-10"
@@ -136,10 +136,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                 🔧 Credenciales de desarrollo:
               </p>
               <p className="text-xs text-yellow-700">
-                Usuario: <code className="bg-yellow-100 px-1 rounded">admin_bikesul</code>
+                Usuario: <code className="bg-yellow-100 px-1 rounded">admin_bikesul_pt</code>
               </p>
               <p className="text-xs text-yellow-700">
-                Contraseña: <code className="bg-yellow-100 px-1 rounded">BikeSul2024!Admin#Secure789</code>
+                Contraseña: <code className="bg-yellow-100 px-1 rounded">BikeSlPt2024!Adm#Res7</code>
               </p>
             </div>
           )}

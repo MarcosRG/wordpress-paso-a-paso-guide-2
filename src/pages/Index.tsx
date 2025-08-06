@@ -6,7 +6,6 @@ import { PurchaseForm, CustomerData } from "@/components/PurchaseForm";
 import { ReservationSummary } from "@/components/ReservationSummary";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { ConfigValidationTest } from "@/components/ConfigValidationTest";
-import { InitialSyncTrigger } from "@/components/InitialSyncTrigger";
 
 
 import { Card } from "@/components/ui/card";
@@ -350,10 +349,6 @@ const Index = () => {
           )}
         </div>
 
-        {/* Componente temporal para sincronización inicial */}
-        {import.meta.env.DEV && (
-          <InitialSyncTrigger />
-        )}
 
       </div>
     </div>
