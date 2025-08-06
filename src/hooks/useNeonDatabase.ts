@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bike } from "@/pages/Index";
 import { neonDatabaseService } from "@/services/neonDatabaseService";
 import { useToast } from "@/hooks/use-toast";
-import { debugLog, systemDebugger } from "@/utils/systemDebugger";
 
 // Convertir produto de Neon a formato Bike
 const convertNeonToBike = (product: any): Bike => {
@@ -63,7 +62,7 @@ export const useNeonDatabaseBikes = () => {
     queryKey: ["neon-database-bikes"],
     queryFn: async (): Promise<Bike[]> => {
       try {
-        debugLog('info', '🚀 Carregando produtos desde Neon Database...');
+        console.log("🚀 Carregando produtos desde Neon Database...");
 
         const products = await neonDatabaseService.getProducts();
 
@@ -77,24 +76,19 @@ export const useNeonDatabaseBikes = () => {
           .map(convertNeonToBike)
           .filter(bike => bike.available > 0);
 
-        debugLog('info', `✅ ${bikes.length} bicicletas carregadas (Neon DB)`, {
-          total: products.length,
-          available: bikes.length
-        });
+        console.log(`✅ ${bikes.length} bicicletas disponíveis (Neon DB)`);
         return bikes;
 
       } catch (error) {
+        console.error("❌ Erro carregando produtos do Neon:", error);
+
         const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
 
-        systemDebugger.reportNeonError(errorMessage);
-
         // Check if it's a netlify function error
-        if (errorMessage.includes('netlify function') || errorMessage.includes('JSON válido') || errorMessage.includes('Netlify Functions')) {
-          debugLog('warn', 'ℹ️ Netlify functions não disponíveis - fallback ativo');
+        if (errorMessage.includes('netlify function') || errorMessage.includes('JSON válido')) {
+          console.log("ℹ️ Netlify functions não disponíveis - usar fallback WooCommerce");
         } else if (import.meta.env.DEV) {
-          debugLog('warn', 'ℹ️ Erro esperado em desenvolvimento - fallback ativo');
-        } else {
-          debugLog('error', '❌ Erro inesperado Neon em produção', { error: errorMessage });
+          console.log("ℹ️ Erro esperado em desenvolvimento - usar fallback WooCommerce");
         }
 
         // Em caso de erro, retornar array vazio para trigger fallback

@@ -5,7 +5,6 @@
 
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import type { WooCommerceProduct } from '@/services/mysqlDirect';
-import { debugLog, systemDebugger } from '@/utils/systemDebugger';
 
 interface MySQLBikesResponse {
   products: WooCommerceProduct[];
@@ -40,7 +39,7 @@ export const useMySQLBikes = ({
   return useQuery({
     queryKey: ['mysql-bikes', category, limit, variations],
     queryFn: async (): Promise<MySQLBikesResponse> => {
-      debugLog('info', '🚀 Fetching bikes from MySQL API...');
+      console.log('🚀 Fetching bikes from MySQL API...');
       const startTime = Date.now();
       
       try {
@@ -55,7 +54,7 @@ export const useMySQLBikes = ({
         const isDev = import.meta.env.DEV;
 
         if (isDev) {
-          debugLog('warn', '⚠️ MySQL API não disponível em desenvolvimento - usando fallback');
+          // In development, skip MySQL and let fallback handle it
           throw new Error('MySQL API not available in development - using fallback');
         }
 
@@ -80,11 +79,8 @@ export const useMySQLBikes = ({
         const endTime = Date.now();
         const clientDuration = endTime - startTime;
 
-        debugLog('info', `✅ MySQL Bikes carregadas em ${clientDuration}ms`, {
-          server_duration: data.performance?.duration_ms,
-          client_duration: clientDuration,
-          bikes_count: data.products?.length || 0
-        });
+        console.log(`✅ MySQL Bikes loaded in ${clientDuration}ms (server: ${data.performance?.duration_ms}ms)`);
+        console.log(`📊 Found ${data.products?.length || 0} bikes from MySQL`);
 
         // Log de rendimiento
         if (data.performance) {
@@ -102,19 +98,11 @@ export const useMySQLBikes = ({
       } catch (error) {
         const endTime = Date.now();
         const duration = endTime - startTime;
-
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-        if (errorMessage.includes('500')) {
-          systemDebugger.reportMySQLError(`Error 500 após ${duration}ms: ${errorMessage}`);
-        } else if (errorMessage.includes('development')) {
-          debugLog('info', '📝 MySQL skip em desenvolvimento (esperado)');
-        } else {
-          debugLog('error', `❌ MySQL Bikes API falhou após ${duration}ms`, { error: errorMessage });
-        }
-
+        
+        console.error(`❌ MySQL Bikes API failed after ${duration}ms:`, error);
+        
         // Re-throw con contexto adicional
-        throw new Error(`MySQL Bikes API failed: ${errorMessage}`);
+        throw new Error(`MySQL Bikes API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     },
     enabled,
