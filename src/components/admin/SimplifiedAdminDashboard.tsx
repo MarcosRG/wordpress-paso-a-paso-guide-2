@@ -19,8 +19,6 @@ import WooCommerceDiagnostic from '../WooCommerceDiagnostic';
 import EnvironmentValidation from './EnvironmentValidation';
 import { SystemDiagnostic } from '../SystemDiagnostic';
 import NeonDatabaseDiagnostic from './NeonDatabaseDiagnostic';
-import DatabaseConnectionDebug from './DatabaseConnectionDebug';
-import WooCommercePermissionsFix from '../WooCommercePermissionsFix';
 
 interface SimplifiedAdminDashboardProps {
   onLogout: () => void;
@@ -142,7 +140,6 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
           <TabsList>
             <TabsTrigger value="validation">Validación Variables</TabsTrigger>
             <TabsTrigger value="database">Base de Dados Neon</TabsTrigger>
-            <TabsTrigger value="connection">Debug Conexión BD</TabsTrigger>
             <TabsTrigger value="diagnostic">Diagnóstico WooCommerce</TabsTrigger>
             <TabsTrigger value="system">Diagnóstico Sistema</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
@@ -192,21 +189,6 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
             </div>
           </TabsContent>
 
-          {/* Database Connection Debug Tab */}
-          <TabsContent value="connection">
-            <Card>
-              <CardHeader>
-                <CardTitle>Debug Conexión Base de Datos</CardTitle>
-                <CardDescription>
-                  Monitoreo en tiempo real del estado de conexión a todas las fuentes de datos
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DatabaseConnectionDebug />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           {/* WooCommerce Diagnostic Tab */}
           <TabsContent value="diagnostic">
             <Card>
@@ -217,16 +199,7 @@ export const SimplifiedAdminDashboard: React.FC<SimplifiedAdminDashboardProps> =
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <WooCommerceDiagnostic />
-
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-semibold mb-4">Test de Permisos API</h3>
-                    <div className="relative">
-                      <WooCommercePermissionsFix forceVisible={true} embedded={true} />
-                    </div>
-                  </div>
-                </div>
+                <WooCommerceDiagnostic />
               </CardContent>
             </Card>
           </TabsContent>

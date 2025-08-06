@@ -1,11 +1,10 @@
-import React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Bike } from "@/pages/Index";
 import { LocalBikeCache } from "@/services/localBikeCache";
 import { useNeonDatabaseBikes, useNeonDatabaseStatus } from "./useNeonDatabase";
 import { useProgressiveWooCommerceBikes } from "./useProgressiveWooCommerceBikes";
-// DATOS FALLBACK ELIMINADOS - Solo datos reales
+import { fallbackBikes, fallbackCategories } from "@/data/fallbackBikes";
 
 interface CachedBikesResult {
   data: Bike[] | undefined;
@@ -100,37 +99,15 @@ export const useCachedBikes = (): CachedBikesResult => {
     }
   };
 
-  // Datos finales - SOLO datos reales, no fallback
-  const finalData = cachedData?.bikes || activeQuery.data || [];
-  const finalCategories = cachedData?.categories || [];
-
+  // Datos finales - priorizar caché válido sobre loading
+  const finalData = cachedData?.bikes || activeQuery.data || fallbackBikes;
+  const finalCategories = cachedData?.categories || fallbackCategories;
+  
   // Loading solo si no hay caché y está cargando
   const isLoading = !cachedData && activeQuery.isLoading;
-
+  
   // Error solo si no hay caché y hay error
   const error = cachedData ? null : activeQuery.error;
-
-  // Logging mejorado para debug (solo en desarrollo)
-  React.useEffect(() => {
-    if (import.meta.env.DEV) {
-      const cacheIndicator = isFromCache ? `(caché, edad: ${Math.round((Date.now() - (LocalBikeCache.getCacheStats()?.lastUpdated || 0)) / 1000)}s)` : '(fresh)';
-      const bikeCount = finalData?.length || 0;
-
-      console.log(`🚴 ${bikeCount} bicicletas desde ${source} ${cacheIndicator}`);
-
-      if (bikeCount === 0 && !isLoading) {
-        console.warn('⚠️ SIN DATOS DE BICICLETAS - Verificar conexión a WooCommerce/BD');
-        console.log('📊 Estado debug:', {
-          neonReady: neonIsReady,
-          neonData: neonQuery.data?.length || 0,
-          wooData: progressiveQuery.data?.length || 0,
-          cachedData: cachedData?.bikes.length || 0,
-          isLoading,
-          error: error?.message
-        });
-      }
-    }
-  }, [finalData, source, isFromCache, isLoading, error]);
 
   const cacheStats = LocalBikeCache.getCacheStats();
 
