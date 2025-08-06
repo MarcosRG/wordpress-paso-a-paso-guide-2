@@ -241,9 +241,9 @@ export const BikeSelection = ({
     }
   };
 
-  // Obtener información de progreso siempre que cargue desde WooCommerce (con o sin caché)
+  // Obtener información de progreso solo si no hay caché y estamos cargando desde WooCommerce
   const progressiveFallbackQuery = useProgressiveWooCommerceBikes();
-  const progressInfo = dataSource === 'woocommerce' && progressiveFallbackQuery ? {
+  const progressInfo = dataSource === 'woocommerce' && !isFromCache && progressiveFallbackQuery ? {
     processingCount: progressiveFallbackQuery.processingCount,
     totalProducts: progressiveFallbackQuery.totalProducts,
     isProcessing: progressiveFallbackQuery.isProcessing,
