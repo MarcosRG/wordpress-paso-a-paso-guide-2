@@ -18,8 +18,8 @@ export class BikesulBackendApi {
         headers: {
           "Content-Type": "application/json",
         },
-        // Timeout de 15 segundos
-        signal: AbortSignal.timeout(15000),
+        // Timeout de 30 segundos para backend lento
+        signal: AbortSignal.timeout(30000),
       });
 
       if (!response.ok) {
@@ -63,7 +63,7 @@ export class BikesulBackendApi {
       return data;
     } catch (error) {
       console.warn(`⚠️ Error obteniendo variaciones del backend Bikesul para producto ${productId}:`, error);
-      // Devolver array vacío en caso de error
+      // Devolver array vac��o en caso de error
       return [];
     }
   }
