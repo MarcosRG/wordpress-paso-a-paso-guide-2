@@ -4,9 +4,33 @@ export const BIKESUL_BACKEND_URL = "https://bikesul-backend.onrender.com";
 
 export class BikesulBackendApi {
   private baseUrl: string;
+  private lastFailedAttempt: number = 0;
+  private failureCache: number = 0; // Tiempo de espera después de fallos
 
   constructor() {
     this.baseUrl = BIKESUL_BACKEND_URL;
+  }
+
+  private shouldSkipRequest(): boolean {
+    // Si ha fallado recientemente, esperar antes de reintentar
+    const now = Date.now();
+    if (this.failureCache > 0 && (now - this.lastFailedAttempt) < this.failureCache) {
+      const waitTime = Math.round((this.failureCache - (now - this.lastFailedAttempt)) / 1000);
+      console.log(`⏳ Esperando ${waitTime}s antes de reintentar backend de Bikesul...`);
+      return true;
+    }
+    return false;
+  }
+
+  private recordFailure(): void {
+    this.lastFailedAttempt = Date.now();
+    // Incrementar tiempo de espera exponencialmente (max 5 minutos)
+    this.failureCache = Math.min(this.failureCache * 2 || 30000, 300000);
+    console.log(`⚠️ Backend en cooldown por ${this.failureCache / 1000}s`);
+  }
+
+  private recordSuccess(): void {
+    this.failureCache = 0; // Resetear en caso de éxito
   }
 
   async getProducts(): Promise<WooCommerceProduct[]> {
