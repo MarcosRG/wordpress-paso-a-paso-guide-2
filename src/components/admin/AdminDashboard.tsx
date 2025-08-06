@@ -14,8 +14,6 @@ import {
 import { adminAuthService } from '../../services/adminAuthService';
 import { SystemSettings } from './SystemSettings';
 import { VariableProductDebugger } from '../VariableProductDebugger';
-import { NeonMCPSetup } from '../NeonMCPSetup';
-import { MCPDebugInfo } from '../MCPDebugInfo';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -155,33 +153,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="neon-mcp" className="space-y-6">
+        <Tabs defaultValue="products" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="neon-mcp">Neon MCP</TabsTrigger>
             <TabsTrigger value="products">Debug Productos</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
-
-          {/* Neon MCP Setup Tab */}
-          <TabsContent value="neon-mcp">
-            <div className="space-y-6">
-              {/* MCP Connection Debug */}
-              <MCPDebugInfo />
-
-              {/* Neon Setup */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Configuração Neon Database</CardTitle>
-                  <CardDescription>
-                    Configura e sincroniza a base de dados Neon para melhorar o rendimento
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <NeonMCPSetup />
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
 
           {/* Product Debugger Tab */}
           <TabsContent value="products">
