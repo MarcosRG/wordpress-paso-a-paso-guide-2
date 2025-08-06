@@ -16,7 +16,6 @@ import { SystemSettings } from './SystemSettings';
 import { VariableProductDebugger } from '../VariableProductDebugger';
 import { NeonDatabaseAdmin } from '../NeonDatabaseAdmin';
 import { NetlifyDiagnostic } from '../NetlifyDiagnostic';
-import { NetlifyFunctionTest } from '../NetlifyFunctionTest';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -160,7 +159,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <TabsList>
             <TabsTrigger value="database">Base de Dados</TabsTrigger>
             <TabsTrigger value="diagnostic">Diagnóstico Netlify</TabsTrigger>
-            <TabsTrigger value="functions">Test Functions</TabsTrigger>
             <TabsTrigger value="products">Debug Productos</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
@@ -173,11 +171,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           {/* Netlify Diagnostic Tab */}
           <TabsContent value="diagnostic">
             <NetlifyDiagnostic />
-          </TabsContent>
-
-          {/* Function Test Tab */}
-          <TabsContent value="functions">
-            <NetlifyFunctionTest />
           </TabsContent>
 
           {/* Product Debugger Tab */}
