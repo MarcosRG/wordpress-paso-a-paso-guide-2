@@ -120,7 +120,7 @@ const translations = {
     invalidEmail: "Formato de email inválido",
     invalidPhone: "Formato de telefone inválido",
     invalidName: "Apenas letras e espaços, máximo 50 caracteres",
-    invalidPostalCode: "Código postal deve ter formato XXXX-XXX",
+    invalidPostalCode: "C��digo postal deve ter formato XXXX-XXX",
 
     // Connectivity
     connectionProblems: "Com problemas",
@@ -184,7 +184,7 @@ const translations = {
     city: "City",
     postalCode: "Postal Code",
     paymentInfo: "Payment Information",
-    paymentNote: "Payment will be processed securely through WooCommerce.",
+    paymentNote: "Payment will be processed securely.",
     proceedToCheckout: "Proceed to Checkout",
 
     // Buttons
