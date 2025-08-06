@@ -15,6 +15,7 @@ import { ConnectivityAlert } from "@/components/ConnectivityAlert";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
+import RenderTest from "./pages/RenderTest";
 
 import { networkRecoveryService } from "./services/networkRecovery";
 import "./wordpress-embed.css";
