@@ -4,11 +4,6 @@
  * Versión 2.0 - Soluciona problemas de productos faltantes y cálculos incorrectos
  */
 
-// Verificar que WordPress está cargado
-if (!defined('ABSPATH')) {
-    exit; // Salir si WordPress no está cargado
-}
-
 // ===============================================
 // 1. CREAR PRODUCTOS DE SEGURO AUTOMÁTICAMENTE
 // ===============================================
@@ -392,10 +387,8 @@ function bikesul_get_insurance_products() {
 }
 
 // Add missing function for URL handling compatibility
-if (!function_exists('bikesul_encontrar_produto_seguro')) {
-    function bikesul_encontrar_produto_seguro($type) {
-        return bikesul_find_insurance_product($type);
-    }
+function bikesul_encontrar_produto_seguro($type) {
+    return bikesul_find_insurance_product($type);
 }
 
 error_log("BIKESUL: Insurance handler v2 loaded successfully");
