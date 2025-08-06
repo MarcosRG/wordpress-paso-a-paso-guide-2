@@ -44,6 +44,13 @@
   to = "/.netlify/functions/neon-diagnostic"
   status = 200
 
+# Direct function access - AGREGAR ANTES DEL CATCH-ALL
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
 # Redirects específicos para funciones Neon (acceso directo)
 [[redirects]]
   from = "/api/neon/products*"

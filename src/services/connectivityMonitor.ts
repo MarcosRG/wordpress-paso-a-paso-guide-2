@@ -77,16 +77,6 @@ class ConnectivityMonitor {
     }
   }
 
-  // Registrar un error de autenticación (no debe activar emergency stop)
-  recordAuthError(): void {
-    this.metrics.totalRequests++;
-    this.metrics.lastErrorTime = Date.now();
-    // NO incrementar consecutiveErrors para errores de auth
-
-    this.logMetrics("🔐 Error de autenticación");
-    console.warn("🔐 Authentication error detected - check API credentials");
-  }
-
   // Obtener métricas actuales
   getMetrics(): ConnectivityMetrics & {
     successRate: number;
@@ -225,7 +215,6 @@ export const recordApiSuccess = () => connectivityMonitor.recordSuccess();
 export const recordApiTimeout = () => connectivityMonitor.recordTimeout();
 export const recordApiNetworkError = (isThirdPartyConflict = false) =>
   connectivityMonitor.recordNetworkError(isThirdPartyConflict);
-export const recordApiAuthError = () => connectivityMonitor.recordAuthError();
 export const getConnectivityStatus = () => connectivityMonitor.getMetrics();
 export const generateConnectivityReport = () =>
   connectivityMonitor.generateStatusReport();

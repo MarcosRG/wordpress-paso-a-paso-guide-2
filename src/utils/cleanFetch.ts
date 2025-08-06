@@ -31,16 +31,6 @@ export const cleanFetch = async (
 
     const response = await originalFetch(input, init);
     console.log(`✅ cleanFetch: Success ${response.status} for:`, url);
-
-    // Handle HTTP errors (4xx, 5xx) that are not network issues
-    if (!response.ok) {
-      console.warn(`⚠️ HTTP Error ${response.status} for:`, url);
-
-      // Don't treat HTTP errors as network failures - return the response
-      // so the caller can handle specific status codes appropriately
-      return response;
-    }
-
     return response;
   } catch (error) {
     // If fetch fails and it's likely due to third-party interference, try alternatives
