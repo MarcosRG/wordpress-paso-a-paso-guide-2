@@ -66,6 +66,7 @@ export class BikesulBackendApi {
         const data = await response.json();
         console.log(`✅ Backend Bikesul: ${data.length} productos obtenidos (intento ${attempt})`);
 
+        this.recordSuccess(); // Resetear cache de fallos
         return data;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
