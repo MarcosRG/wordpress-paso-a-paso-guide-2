@@ -1,59 +1,17 @@
 [build]
-  # Comando de instalación
   base = "."
-
-  # Comando de build - asegurar que se instalen las devDependencies necesarias para Vite
   command = "npm install --include=dev && npm run build"
-
-  # Directorio donde se genera el build
   publish = "dist"
-
-  # Directorio de las serverless functions
-  functions = "netlify/functions"
 
 # Environment variables for build process
 [build.environment]
   NODE_ENV = "production"
-
-# Redirects para mapear rutas de API a serverless functions
-[[redirects]]
-  from = "/api/neon/products"
-  to = "/.netlify/functions/products"
-  status = 200
-
-[[redirects]]
-  from = "/api/neon/products/:id/variations"
-  to = "/.netlify/functions/variations"
-  status = 200
-
-[[redirects]]
-  from = "/api/neon/categories"
-  to = "/.netlify/functions/categories"
-  status = 200
-
-[[redirects]]
-  from = "/netlify/functions/neon-products"
-  to = "/.netlify/functions/neon-products"
-  status = 200
-
-[[redirects]]
-  from = "/netlify/functions/neon-sync"
-  to = "/.netlify/functions/neon-sync"
-  status = 200
 
 # Redirect para SPA routing (React Router)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Headers para CORS y seguridad
-[[headers]]
-  for = "/api/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
 
 # Variables de entorno para desarrollo
 [context.development.environment]
