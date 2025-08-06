@@ -29,6 +29,13 @@ export interface Bike {
   available: number;
   image: string;
   description: string;
+  renderData?: {
+    id: string;
+    status?: string;
+    sku?: string;
+    category?: string;
+    woocommerce_id?: number;
+  };
   wooCommerceData?: {
     product: Record<string, unknown>;
     variations?: Record<string, unknown>[];
