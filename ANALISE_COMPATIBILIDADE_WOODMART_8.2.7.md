@@ -219,10 +219,11 @@ private function test_woodmart_compatibility() {
 
 | Arquivo | Status | Ação Necessária |
 |---------|--------|-----------------|
-| `woocommerce-bikesul-pricing-v2-unified.php` | ⚠️ **PRECISA ATUALIZAÇÃO** | Adicionar compatibilidade WoodMart |
+| `woocommerce-bikesul-pricing-v2-unified.php` | ✅ **ATUALIZADO** | Compatibilidade WoodMart 8.2.7+ implementada |
 | `woocommerce-bikesul-pricing.php` | 🔄 **LEGACY** | Manter para compatibilidade |
-| `bikesul-pricing-emergency-fix.php` | ⚠️ **PRECISA ATUALIZAÇÃO** | Adicionar hooks de compatibilidade |
-| `bikesul-pricing-test-validation.php` | ⚠️ **PRECISA ATUALIZAÇÃO** | Adicionar teste de compatibilidade |
+| `bikesul-pricing-emergency-fix.php` | ✅ **ATUALIZADO** | Hooks de compatibilidade implementados |
+| `bikesul-pricing-test-validation.php` | ✅ **ATUALIZADO** | Teste de compatibilidade implementado |
+| `bikesul-woodmart-compatibility-monitor.php` | ✅ **NOVO** | Monitor automático criado |
 | `woocommerce-insurance-handler.php` | ✅ **OK** | Funcional, monitorar |
 
 ## Conclusão
