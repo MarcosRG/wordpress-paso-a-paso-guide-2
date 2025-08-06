@@ -78,53 +78,23 @@ const CORS_HEADERS = {
 // ==================== VALIDATION ====================
 const validateConfig = () => {
   const errors = [];
-  const warnings = [];
 
   // Check each required variable directly from process.env
   if (!process.env.DATABASE_URL && !process.env.NEON_CONNECTION_STRING) {
     errors.push('DATABASE_URL or NEON_CONNECTION_STRING');
   }
   if (!process.env.NEON_PROJECT_ID) errors.push('NEON_PROJECT_ID');
-  if (!process.env.WOOCOMMERCE_API_BASE) warnings.push('WOOCOMMERCE_API_BASE');
-  if (!process.env.WOOCOMMERCE_CONSUMER_KEY) warnings.push('WOOCOMMERCE_CONSUMER_KEY');
-  if (!process.env.WOOCOMMERCE_CONSUMER_SECRET) warnings.push('WOOCOMMERCE_CONSUMER_SECRET');
-
-  // Log warnings for non-critical missing vars
-  if (warnings.length > 0) {
-    console.warn(`⚠️ Variables opcionales faltantes: ${warnings.join(', ')}. WooCommerce fallback no estará disponible.`);
-  }
+  if (!process.env.WOOCOMMERCE_API_BASE) errors.push('WOOCOMMERCE_API_BASE');
+  if (!process.env.WOOCOMMERCE_CONSUMER_KEY) errors.push('WOOCOMMERCE_CONSUMER_KEY');
+  if (!process.env.WOOCOMMERCE_CONSUMER_SECRET) errors.push('WOOCOMMERCE_CONSUMER_SECRET');
 
   if (errors.length > 0) {
-    const errorMsg = `Variables críticas faltantes en Netlify: ${errors.join(', ')}. Configure estas variables en Netlify Dashboard > Site Settings > Environment Variables`;
+    const errorMsg = `Variables de entorno faltantes en Netlify: ${errors.join(', ')}. Configure estas variables en Netlify Dashboard > Site Settings > Environment Variables`;
     console.error('❌', errorMsg);
     throw new Error(errorMsg);
   }
 
   console.log('✅ Configuración Netlify validada correctamente');
-  return true;
-};
-
-// ==================== PARTIAL VALIDATION ====================
-const validateNeonConfig = () => {
-  if (!process.env.DATABASE_URL && !process.env.NEON_CONNECTION_STRING) {
-    throw new Error('DATABASE_URL or NEON_CONNECTION_STRING required for Neon operations');
-  }
-  if (!process.env.NEON_PROJECT_ID) {
-    throw new Error('NEON_PROJECT_ID required for Neon operations');
-  }
-  return true;
-};
-
-const validateWooCommerceConfig = () => {
-  if (!process.env.WOOCOMMERCE_API_BASE) {
-    throw new Error('WOOCOMMERCE_API_BASE required for WooCommerce operations');
-  }
-  if (!process.env.WOOCOMMERCE_CONSUMER_KEY) {
-    throw new Error('WOOCOMMERCE_CONSUMER_KEY required for WooCommerce operations');
-  }
-  if (!process.env.WOOCOMMERCE_CONSUMER_SECRET) {
-    throw new Error('WOOCOMMERCE_CONSUMER_SECRET required for WooCommerce operations');
-  }
   return true;
 };
 
@@ -136,33 +106,10 @@ const createResponse = (statusCode, data, headers = {}) => ({
 });
 
 const createSuccessResponse = (data) => createResponse(200, data);
-
-const createErrorResponse = (error, statusCode = 500) => {
-  const errorMessage = error?.message || error || 'Error interno';
-  console.error(`❌ Function Error (${statusCode}):`, errorMessage);
-
-  return createResponse(statusCode, {
-    error: errorMessage,
-    timestamp: new Date().toISOString(),
-    service: 'netlify-functions'
-  });
-};
-
-// Enhanced error responses for specific scenarios
-const createConfigErrorResponse = () => createErrorResponse(
-  new Error('Service unavailable - missing environment variables. Please configure DATABASE_URL, NEON_PROJECT_ID in Netlify Dashboard.'),
-  503
-);
-
-const createNeonErrorResponse = (error) => createErrorResponse(
-  new Error(`Neon database error: ${error?.message || error}`),
-  503
-);
-
-const createWooCommerceErrorResponse = (error) => createErrorResponse(
-  new Error(`WooCommerce API error: ${error?.message || error}`),
-  502
-);
+const createErrorResponse = (error, statusCode = 500) => createResponse(statusCode, { 
+  error: error.message || 'Error interno', 
+  timestamp: new Date().toISOString() 
+});
 
 // ==================== EXPORTS ====================
 module.exports = {
@@ -174,14 +121,9 @@ module.exports = {
   LOGGING: LOGGING_CONFIG,
   CORS_HEADERS,
   validateConfig,
-  validateNeonConfig,
-  validateWooCommerceConfig,
   createResponse,
   createSuccessResponse,
   createErrorResponse,
-  createConfigErrorResponse,
-  createNeonErrorResponse,
-  createWooCommerceErrorResponse,
   getRequiredEnv,
   getOptionalEnv,
 };
