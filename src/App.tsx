@@ -12,6 +12,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ConnectivityAlert } from "@/components/ConnectivityAlert";
 import { FloatingDebugButton } from "@/components/FloatingDebugButton";
+import { MCPConnectionBanner } from "@/components/MCPConnectionBanner";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
@@ -54,6 +55,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <ConnectivityAlert />
+            <MCPConnectionBanner />
             <FloatingDebugButton />
             <BrowserRouter>
               <Routes>
