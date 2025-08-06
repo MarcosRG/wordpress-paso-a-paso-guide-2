@@ -8,11 +8,14 @@ import {
   extractACFPricing,
   ACFPricing,
 } from "@/services/woocommerceApi";
+import { bikesulBackendApi } from "@/services/bikesulBackendApi";
 import { Bike } from "@/pages/Index";
 import { mockBikes, mockCategories } from "./useMockBikes";
 
-// Temporary flag to disable API calls when network is problematic
+// Temporary flags to disable API calls when network is problematic
 const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
+const DISABLE_BACKEND_API = import.meta.env.VITE_DISABLE_BACKEND === "true" || false;
+const DISABLE_WOOCOMMERCE_API = import.meta.env.VITE_DISABLE_WOO === "true" || false;
 
 export const useWooCommerceBikes = () => {
   return useQuery({
@@ -24,11 +27,51 @@ export const useWooCommerceBikes = () => {
         return mockBikes;
       }
 
-      try {
-        console.log("Iniciando carga de productos de WooCommerce...");
-        const products = await wooCommerceApi.getProducts();
-        console.log(`✅ Productos cargados exitosamente: ${products.length}`);
+      let products: WooCommerceProduct[] = [];
+      let dataSource = "";
 
+      try {
+        // PASO 1: Intentar obtener productos del backend de Bikesul primero
+        if (DISABLE_BACKEND_API) {
+          throw new Error("Backend API deshabilitado por configuración");
+        }
+
+        console.log("🚀 Intentando cargar productos desde backend de Bikesul...");
+        products = await bikesulBackendApi.getProducts();
+        dataSource = "Bikesul Backend";
+        console.log(`✅ Productos cargados desde ${dataSource}: ${products.length}`);
+      } catch (backendError) {
+        const backendErrorMsg = backendError instanceof Error ? backendError.message : String(backendError);
+        console.warn("⚠️ Backend de Bikesul no disponible:", backendErrorMsg);
+
+        // Si es timeout, mostrar mensaje específico
+        if (backendErrorMsg.includes('timeout') || backendErrorMsg.includes('timed out')) {
+          console.warn("⏱️ El backend de Bikesul está tardando más de lo esperado (posible cold start)");
+        }
+
+        console.log("🔄 Intentando WooCommerce como fallback...");
+
+        try {
+          // PASO 2: Fallback a WooCommerce API
+          if (DISABLE_WOOCOMMERCE_API) {
+            throw new Error("WooCommerce API deshabilitado por configuración");
+          }
+
+          console.log("🔄 Iniciando carga de productos de WooCommerce...");
+          products = await wooCommerceApi.getProducts();
+          dataSource = "WooCommerce API";
+          console.log(`✅ Productos cargados desde ${dataSource}: ${products.length}`);
+        } catch (wooError) {
+          const wooErrorMsg = wooError instanceof Error ? wooError.message : String(wooError);
+          console.error("❌ Error en ambas fuentes de datos:");
+          console.error(`  - Backend Bikesul: ${backendErrorMsg}`);
+          console.error(`  - WooCommerce: ${wooErrorMsg}`);
+          console.log("🔄 Usando datos de prueba como último fallback");
+          return mockBikes;
+        }
+      }
+
+      try {
         // Filtrar solo productos publicados con stock
         const validProducts = products.filter((product: WooCommerceProduct) => {
           return (
@@ -38,7 +81,7 @@ export const useWooCommerceBikes = () => {
         });
 
         console.log(
-          `Productos válidos después del filtro: ${validProducts.length} de ${products.length}`,
+          `📊 ${dataSource}: Productos válidos después del filtro: ${validProducts.length} de ${products.length}`,
         );
 
         // Convertir productos de WooCommerce a nuestro formato de Bike
@@ -52,23 +95,29 @@ export const useWooCommerceBikes = () => {
             let variations: WooCommerceVariation[] = [];
             let acfData: Record<string, unknown> | null = null;
 
-            // Try to get ACF data from WordPress API (non-blocking)
+            // Try to get ACF data (use same source as products)
             try {
-              acfData = await wooCommerceApi.getProductWithACF(product.id);
+              if (dataSource === "Bikesul Backend") {
+                acfData = await bikesulBackendApi.getProductWithACF(product.id);
+              } else {
+                acfData = await wooCommerceApi.getProductWithACF(product.id);
+              }
             } catch (error) {
               acfData = null; // Silently fail, ACF data is optional
             }
 
             if (product.type === "variable") {
-              // Obtener variaciones del producto variable
+              // Obtener variaciones del producto variable (usar misma fuente)
               try {
-                variations = await wooCommerceApi.getProductVariations(
-                  product.id,
-                );
+                if (dataSource === "Bikesul Backend") {
+                  variations = await bikesulBackendApi.getProductVariations(product.id);
+                } else {
+                  variations = await wooCommerceApi.getProductVariations(product.id);
+                }
                 if (!variations) variations = [];
               } catch (error) {
                 console.warn(
-                  `🔄 Fallback: Error al cargar variaciones para producto ${product.id}`,
+                  `🔄 ${dataSource}: Error al cargar variaciones para producto ${product.id}`,
                 );
                 variations = [];
               }
@@ -157,13 +206,12 @@ export const useWooCommerceBikes = () => {
         }
 
         console.log(
-          `✅ Conversión completada: ${bikes.length} bicicletas disponibles`,
+          `✅ Conversión completada desde ${dataSource}: ${bikes.length} bicicletas disponibles`,
         );
         return bikes;
       } catch (error) {
-        console.error("❌ Error al cargar productos de WooCommerce:", error);
-        console.log("🔄 Usando datos de prueba como fallback");
-        // Si falla la conexión con WooCommerce, usar datos de prueba
+        console.error(`❌ Error al procesar productos desde ${dataSource}:`, error);
+        console.log("🔄 Usando datos de prueba como último fallback");
         return mockBikes;
       }
     },
