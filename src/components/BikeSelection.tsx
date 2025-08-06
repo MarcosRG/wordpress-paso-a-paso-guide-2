@@ -121,7 +121,17 @@ export const BikeSelection = ({
         // Check if product has the selected category (WooCommerce)
         if (bike.wooCommerceData?.product?.categories) {
           const hasCategory = bike.wooCommerceData.product.categories.some(
-            (category) => category.slug === selectedCategory,
+            (category) => {
+              // Exact match
+              if (category.slug === selectedCategory) return true;
+              // Match with "-alugueres" suffix (e.g., gravel-alugueres matches gravel)
+              if (category.slug === `${selectedCategory}-alugueres`) return true;
+              // Match if category slug contains the selected category
+              if (category.slug?.includes(selectedCategory)) return true;
+              // Match by name as well
+              if (category.name?.toLowerCase().includes(selectedCategory.toLowerCase())) return true;
+              return false;
+            }
           );
 
           if (hasCategory) {
