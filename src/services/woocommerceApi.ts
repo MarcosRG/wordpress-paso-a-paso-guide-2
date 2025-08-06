@@ -101,6 +101,11 @@ const CONSUMER_SECRET =
 // Validar que las credenciales estén configuradas
 if (!IS_API_DISABLED && (!CONSUMER_KEY || !CONSUMER_SECRET)) {
   console.error("❌ WooCommerce credentials not properly configured");
+  console.error("Variables encontradas:", {
+    CONSUMER_KEY: CONSUMER_KEY ? "✓ Configurada" : "❌ Falta",
+    CONSUMER_SECRET: CONSUMER_SECRET ? "✓ Configurada" : "❌ Falta",
+    API_BASE: WOOCOMMERCE_API_BASE
+  });
 }
 
 if (IS_API_DISABLED) {
