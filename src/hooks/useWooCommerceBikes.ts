@@ -35,7 +35,7 @@ export const useWooCommerceBikes = () => {
         dataSource = "Bikesul Backend";
         console.log(`✅ Productos cargados desde ${dataSource}: ${products.length}`);
       } catch (backendError) {
-        console.warn("⚠�� Backend de Bikesul no disponible, usando WooCommerce como fallback...");
+        console.warn("⚠️ Backend de Bikesul no disponible, usando WooCommerce como fallback...");
 
         try {
           // PASO 2: Fallback a WooCommerce API
@@ -51,8 +51,6 @@ export const useWooCommerceBikes = () => {
       }
 
       try {
-        console.log(`✅ Productos cargados exitosamente: ${products.length}`);
-
         // Filtrar solo productos publicados con stock
         const validProducts = products.filter((product: WooCommerceProduct) => {
           return (
@@ -62,7 +60,7 @@ export const useWooCommerceBikes = () => {
         });
 
         console.log(
-          `Productos válidos después del filtro: ${validProducts.length} de ${products.length}`,
+          `📊 ${dataSource}: Productos válidos después del filtro: ${validProducts.length} de ${products.length}`,
         );
 
         // Convertir productos de WooCommerce a nuestro formato de Bike
