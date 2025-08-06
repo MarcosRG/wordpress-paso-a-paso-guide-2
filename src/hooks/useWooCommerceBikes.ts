@@ -32,6 +32,10 @@ export const useWooCommerceBikes = () => {
 
       try {
         // PASO 1: Intentar obtener productos del backend de Bikesul primero
+        if (DISABLE_BACKEND_API) {
+          throw new Error("Backend API deshabilitado por configuración");
+        }
+
         console.log("🚀 Intentando cargar productos desde backend de Bikesul...");
         products = await bikesulBackendApi.getProducts();
         dataSource = "Bikesul Backend";
