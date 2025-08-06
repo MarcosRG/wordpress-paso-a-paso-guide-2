@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from '../utils/fetchTimeout';
+
 class RenderKeepAliveService {
   private intervalId: NodeJS.Timeout | null = null;
   private isActive = false;
@@ -138,7 +140,7 @@ class RenderKeepAliveService {
 
   resetFailures(): void {
     this.failureCount = 0;
-    console.log('🔄 Contador de falhas do keep-alive resetado');
+    console.log('��� Contador de falhas do keep-alive resetado');
   }
 }
 
