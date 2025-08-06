@@ -6,3 +6,7 @@ export const neonHttpService = {
   cacheProducts: () => Promise.resolve(),
   cacheVariations: () => Promise.resolve(),
 };
+
+// Exports faltantes para compatibilidad
+export const convertToNeonProduct = (product: any) => product;
+export const convertToNeonVariation = (variation: any) => variation;
