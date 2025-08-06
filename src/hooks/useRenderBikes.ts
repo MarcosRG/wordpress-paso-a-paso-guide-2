@@ -2,48 +2,83 @@ import { useQuery } from "@tanstack/react-query";
 import { Bike } from "@/pages/Index";
 import { renderBackendService } from "@/services/renderBackendService";
 import { wooCommerceApi } from "@/services/woocommerceApi";
+import { instantCache } from "@/services/instantCacheService";
 
-// Hook principal que usa Render primeiro, depois WooCommerce como fallback
+// Hook principal optimizado: Cache → Render → WooCommerce
 export const useRenderBikes = () => {
   return useQuery({
-    queryKey: ["render-bikes-with-fallback"],
+    queryKey: ["render-bikes-optimized"],
     queryFn: async (): Promise<Bike[]> => {
       try {
-        console.log("🚀 Tentando carregar produtos desde Render backend...");
-        
-        // Verificar se o backend Render está disponível
-        const isRenderHealthy = await renderBackendService.checkHealth();
-        
-        if (!isRenderHealthy) {
-          console.warn("⚠️ Render backend não disponível, usando WooCommerce como fallback");
-          return await fallbackToWooCommerce();
-        }
+        // ESTRATEGIA OPTIMIZADA:
+        // 1. Cache instantáneo (0ms respuesta)
+        // 2. Render backend con auto-wake
+        // 3. WooCommerce como último recurso
 
-        // Tentar carregar produtos do Render
-        try {
-          const renderBikes = await renderBackendService.getProducts();
-          
-          if (renderBikes.length === 0) {
-            console.warn("⚠️ Nenhum produto encontrado no Render, usando WooCommerce como fallback");
-            return await fallbackToWooCommerce();
+        console.log("⚡ Iniciando carga optimizada de productos...");
+
+        // 1. Intentar cache instantáneo primero
+        const cachedData = await instantCache.getCachedProducts();
+        if (cachedData && cachedData.length > 0) {
+          console.log(`🚀 ${cachedData.length} productos desde cache instantáneo`);
+
+          // Si los datos son muy antiguos (>10 min), refrescar en background
+          if (!instantCache.hasRecentData()) {
+            console.log("🔄 Datos antiguos, refrescando en background...");
+            setTimeout(() => {
+              renderBackendService.getProducts().catch(error => {
+                console.warn('⚠️ Background refresh falló:', error);
+              });
+            }, 500);
           }
 
-          console.log(`✅ ${renderBikes.length} produtos carregados do Render backend`);
-          return renderBikes;
-        } catch (renderError) {
-          console.warn("⚠️ Erro no Render backend, usando WooCommerce como fallback:", renderError);
-          return await fallbackToWooCommerce();
+          return cachedData;
         }
 
+        console.log("📡 Cache vacío, intentando Render backend...");
+
+        // 2. Intentar Render backend (ya incluye auto-wake y cache)
+        try {
+          const renderBikes = await renderBackendService.getProducts();
+
+          if (renderBikes.length > 0) {
+            console.log(`✅ ${renderBikes.length} productos cargados desde Render`);
+            return renderBikes;
+          }
+        } catch (renderError) {
+          console.warn("⚠️ Error en Render backend:", renderError);
+        }
+
+        console.log("🔄 Fallback a WooCommerce API...");
+
+        // 3. Último recurso: WooCommerce directo
+        const wooProducts = await fallbackToWooCommerce();
+
+        // Guardar en cache para próximas consultas
+        if (wooProducts.length > 0) {
+          await instantCache.cacheProducts(wooProducts, 15 * 60 * 1000); // 15 min
+          await instantCache.cacheFallbackData(wooProducts, 45 * 60 * 1000); // 45 min
+        }
+
+        return wooProducts;
+
       } catch (error) {
-        console.error("❌ Erro crítico carregando produtos:", error);
+        console.error("❌ Error crítico en carga optimizada:", error);
+
+        // Último intento: cualquier cache disponible
+        const emergencyCache = await instantCache.getCachedFallbackData();
+        if (emergencyCache && emergencyCache.length > 0) {
+          console.log(`🆘 Usando cache de emergencia: ${emergencyCache.length} productos`);
+          return emergencyCache;
+        }
+
         throw error;
       }
     },
-    staleTime: 3 * 60 * 1000, // 3 minutos
-    gcTime: 8 * 60 * 1000, // 8 minutos
-    retry: 2,
-    retryDelay: 1500,
+    staleTime: 2 * 60 * 1000, // 2 minutos (reducido ya que tenemos cache)
+    gcTime: 15 * 60 * 1000, // 15 minutos
+    retry: 1, // Reducido ya que tenemos fallbacks internos
+    retryDelay: 2000,
   });
 };
 
@@ -150,13 +185,21 @@ export const useRenderBike = (id: string) => {
 // Função auxiliar para fallback ao WooCommerce
 async function fallbackToWooCommerce(): Promise<Bike[]> {
   try {
-    console.log("🔄 Executando fallback para WooCommerce...");
-    
+    console.log("🔄 Executando fallback otimizado para WooCommerce...");
+
+    // Verificar si hay cache de WooCommerce reciente
+    const fallbackCache = await instantCache.getCachedFallbackData();
+    if (fallbackCache && fallbackCache.length > 0) {
+      console.log(`⚡ Usando cache de WooCommerce: ${fallbackCache.length} productos`);
+      return fallbackCache;
+    }
+
+    console.log("📡 Cargando desde WooCommerce API...");
     const products = await wooCommerceApi.getProducts();
-    
+
     // Converter produtos WooCommerce para formato Bike
     const bikes: Bike[] = [];
-    
+
     for (const product of products) {
       if (product.status !== 'publish') continue;
 
@@ -176,7 +219,7 @@ async function fallbackToWooCommerce(): Promise<Bike[]> {
       if (product.type === 'variable' && product.variations && product.variations.length > 0) {
         try {
           productVariations = await wooCommerceApi.getProductVariations(product.id);
-          
+
           // Calcular stock total das variações ativas
           availableStock = productVariations
             .filter((variation: any) =>
@@ -210,7 +253,7 @@ async function fallbackToWooCommerce(): Promise<Bike[]> {
         });
       }
     }
-    
+
     console.log(`✅ ${bikes.length} bicicletas convertidas do WooCommerce (fallback)`);
     return bikes;
   } catch (error) {

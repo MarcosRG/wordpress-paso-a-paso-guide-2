@@ -218,7 +218,7 @@ export const wooCommerceCircuitBreaker = new CircuitBreaker({
 });
 
 export const wooCommerceRateLimiter = new RateLimiter(
-  15, // 15 requests
+  60, // 60 requests (optimizado de 15)
   60000, // por minuto
 );
 
