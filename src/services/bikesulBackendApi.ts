@@ -18,8 +18,8 @@ export class BikesulBackendApi {
         headers: {
           "Content-Type": "application/json",
         },
-        // Timeout de 30 segundos para backend lento
-        signal: AbortSignal.timeout(30000),
+        // Timeout de 45 segundos para backend en Render (puede ser lento en cold start)
+        signal: AbortSignal.timeout(45000),
       });
 
       if (!response.ok) {
