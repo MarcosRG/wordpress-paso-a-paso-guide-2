@@ -35,6 +35,7 @@ import {
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
 import RenderBackendStatus from "./RenderBackendStatus";
+import { MCPConnectionStatus } from "./MCPConnectionStatus";
 
 
 interface BikeSelectionProps {
