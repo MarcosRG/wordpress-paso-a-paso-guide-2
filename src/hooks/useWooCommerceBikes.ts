@@ -1,215 +1,166 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  wooCommerceApi,
-  WooCommerceProduct,
-  WooCommerceVariation,
-  WOOCOMMERCE_API_BASE,
-  apiHeaders,
-  extractACFPricing,
-  ACFPricing,
-} from "@/services/woocommerceApi";
 import { Bike } from "@/pages/Index";
-import { mockBikes, mockCategories } from "./useMockBikes";
 
-// Temporary flag to disable API calls when network is problematic
-const DISABLE_API_CALLS = import.meta.env.VITE_DISABLE_API === "true" || false;
-
+// Hook fallback para carregar bikes do WooCommerce quando MCP não está disponível
 export const useWooCommerceBikes = () => {
   return useQuery({
-    queryKey: ["woocommerce-bikes"],
+    queryKey: ["woocommerce-bikes-fallback"],
     queryFn: async (): Promise<Bike[]> => {
-      // If API calls are disabled, return mock data
-      if (DISABLE_API_CALLS) {
-        console.info("API calls disabled, returning mock bike data");
-        return mockBikes;
-      }
-
       try {
-        console.log("Iniciando carga de productos de WooCommerce...");
-        const products = await wooCommerceApi.getProducts();
-        console.log(`✅ Productos cargados exitosamente: ${products.length}`);
+        console.log("🚀 Carregando produtos desde WooCommerce (fallback)...");
 
-        // Filtrar solo productos publicados con stock
-        const validProducts = products.filter((product: WooCommerceProduct) => {
-          return (
-            product.status === "publish" &&
-            (product.stock_status === "instock" || product.stock_quantity > 0)
-          );
+        const response = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products?per_page=50&category=319&status=publish`, {
+          headers: {
+            'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+            'Content-Type': 'application/json',
+          },
         });
 
-        console.log(
-          `Productos válidos después del filtro: ${validProducts.length} de ${products.length}`,
-        );
+        if (!response.ok) {
+          throw new Error(`WooCommerce API Error: ${response.status} ${response.statusText}`);
+        }
 
-        // Convertir productos de WooCommerce a nuestro formato de Bike
+        const products = await response.json();
+        console.log(`📦 ${products.length} produtos obtidos do WooCommerce`);
+
+        // Converter produtos WooCommerce para formato Bike com variações
         const bikes: Bike[] = [];
 
-        // Process products sequentially to avoid overwhelming the API
-        for (const product of validProducts) {
+        for (const product of products) {
+          if (product.status !== 'publish') continue;
+
           try {
-            let totalStock = 0;
-            let basePrice = 0;
-            let variations: WooCommerceVariation[] = [];
-            let acfData: Record<string, unknown> | null = null;
-
-            // Try to get ACF data from WordPress API (non-blocking)
-            try {
-              acfData = await wooCommerceApi.getProductWithACF(product.id);
-            } catch (error) {
-              acfData = null; // Silently fail, ACF data is optional
-            }
-
-            if (product.type === "variable") {
-              // Obtener variaciones del producto variable
-              try {
-                variations = await wooCommerceApi.getProductVariations(
-                  product.id,
-                );
-                if (!variations) variations = [];
-              } catch (error) {
-                console.warn(
-                  `🔄 Fallback: Error al cargar variaciones para producto ${product.id}`,
-                );
-                variations = [];
-              }
-
-              if (variations.length > 0) {
-                // Calcular stock total usando SOLO stock nativo de WooCommerce
-                totalStock = 0;
-                for (const variation of variations) {
-                  const variationStock = variation.stock_quantity || 0;
-                  totalStock += variationStock;
-
-                  console.log(
-                    `✅ Producto ${product.id}, Variación ${variation.id}: Stock WooCommerce=${variationStock}`,
-                  );
-                }
-
-                // Obtener el precio base (primera variación disponible)
-                const availableVariation = variations.find(
-                  (v) => v.stock_quantity > 0,
-                );
-                basePrice = availableVariation
-                  ? parseFloat(
-                      availableVariation.price ||
-                        availableVariation.regular_price ||
-                        "0",
-                    )
-                  : parseFloat(
-                      variations[0]?.price ||
-                        variations[0]?.regular_price ||
-                        "0",
-                    );
-              } else {
-                // Fallback si no hay variaciones disponibles - usar stock nativo
-                totalStock = product.stock_quantity || 0;
-                basePrice = parseFloat(
-                  product.price || product.regular_price || "0",
-                );
-              }
-            } else {
-              // Producto simple - usar stock nativo de WooCommerce
-              totalStock = product.stock_quantity || 0;
-              basePrice = parseFloat(
-                product.price || product.regular_price || "0",
-              );
-            }
-
-            // Obtener categoría principal del producto (excluyendo ALUGUERES)
-            const subcategory = product.categories.find(
-              (cat) => cat.slug !== "alugueres",
-            );
+            // Obter categoria principal (excluindo "alugueres")
+            const subcategory = product.categories?.find((cat: any) => cat.slug !== "alugueres");
             const primaryCategory = subcategory ? subcategory.slug : "general";
 
-            // Merge ACF data into product if available
-            let enhancedProduct = product;
-            if (acfData && acfData.acf) {
-              enhancedProduct = {
-                ...product,
-                acf: acfData.acf,
-              };
+            // Obter imagem principal
+            const mainImage = product.images && product.images.length > 0
+              ? product.images[0].src
+              : "/placeholder.svg";
+
+            let availableStock = 0;
+            let productVariations: any[] = [];
+
+            // Se o produto tem variações, buscar as variações
+            if (product.type === 'variable' && product.variations && product.variations.length > 0) {
+              console.log(`🔍 Carregando variações para ${product.name}...`);
+
+              try {
+                const variationsResponse = await fetch(
+                  `${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/${product.id}/variations?per_page=100`,
+                  {
+                    headers: {
+                      'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+                      'Content-Type': 'application/json',
+                    },
+                  }
+                );
+
+                if (variationsResponse.ok) {
+                  productVariations = await variationsResponse.json();
+
+                  // Calcular stock total das variações ativas
+                  availableStock = productVariations
+                    .filter((variation: any) =>
+                      variation.status === 'publish' &&
+                      variation.stock_status === 'instock' &&
+                      variation.stock_quantity > 0
+                    )
+                    .reduce((total: number, variation: any) => total + (variation.stock_quantity || 0), 0);
+
+                  console.log(`📊 ${product.name}: ${productVariations.length} variações, stock total: ${availableStock}`);
+                } else {
+                  console.warn(`⚠️ Não foi possível carregar variações para ${product.name}`);
+                }
+              } catch (variationError) {
+                console.error(`❌ Erro carregando variações para ${product.name}:`, variationError);
+              }
+            } else {
+              // Produto simples - usar stock direto
+              availableStock = product.stock_quantity || 0;
+              console.log(`📊 ${product.name} (simples): stock ${availableStock}`);
             }
 
-            const bike: Bike = {
-              id: product.id.toString(),
-              name: product.name,
-              type: primaryCategory.toLowerCase(),
-              pricePerDay: basePrice,
-              available: totalStock,
-              image:
-                product.images.length > 0
-                  ? product.images[0].src
-                  : "/placeholder.svg",
-              description:
-                product.short_description || product.description || "",
-              wooCommerceData: {
-                product: enhancedProduct,
-                variations,
-                acfData,
-              },
-            };
-
-            bikes.push(bike);
-          } catch (error) {
-            console.warn(`⚠️ Error procesando producto ${product.id}:`, error);
-            // Continue with next product instead of failing completely
+            // Só adicionar se tem stock disponível
+            if (availableStock > 0) {
+              bikes.push({
+                id: product.id.toString(),
+                name: product.name,
+                type: primaryCategory.toLowerCase(),
+                pricePerDay: parseFloat(product.price) || parseFloat(product.regular_price) || 0,
+                available: availableStock,
+                image: mainImage,
+                description: product.short_description || product.description || "",
+                wooCommerceData: {
+                  product: product,
+                  variations: productVariations,
+                  acfData: product.acf || {},
+                },
+              });
+            }
+          } catch (productError) {
+            console.error(`❌ Erro processando produto ${product.name}:`, productError);
           }
         }
 
-        console.log(
-          `✅ Conversión completada: ${bikes.length} bicicletas disponibles`,
-        );
+        console.log(`✅ ${bikes.length} bicicletas convertidas com stocks reais (WooCommerce)`);
         return bikes;
+
       } catch (error) {
-        console.error("❌ Error al cargar productos de WooCommerce:", error);
-        console.log("🔄 Usando datos de prueba como fallback");
-        // Si falla la conexión con WooCommerce, usar datos de prueba
-        return mockBikes;
+        console.error("❌ Erro carregando produtos do WooCommerce:", error);
+        throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos (previously cacheTime)
-    throwOnError: false, // Don't throw errors to prevent console spam
-    retry: (failureCount, error) => {
-      // Don't retry on timeout or network errors
-      if (
-        error instanceof Error &&
-        (error.message.includes("fetch") ||
-          error.message.includes("Failed to fetch") ||
-          error.message === "Request timeout")
-      ) {
-        return false; // No retries for network/timeout errors
-      }
-      return failureCount < 2; // Only 2 retries for other errors
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 5 * 60 * 1000, // 5 minutos (mais tempo já que carrega variações)
+    gcTime: 10 * 60 * 1000, // 10 minutos
+    retry: 1, // Menos retries já que faz muitas chamadas
+    retryDelay: 2000,
   });
 };
 
-// Hook to get ALUGUERES subcategories
+// Hook de categorias fallback
 export const useWooCommerceCategories = () => {
   return useQuery({
-    queryKey: ["woocommerce-categories"],
+    queryKey: ["woocommerce-categories-fallback"],
     queryFn: async (): Promise<string[]> => {
-      // Return predefined subcategories from ALUGUERES
-      return [
-        "btt",
-        "e-bike",
-        "estrada",
-        "extras-alugueres",
-        "gravel-alugueres",
-        "junior-alugueres",
-        "touring-alugueres",
-      ];
-    },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-  });
-};
+      try {
+        const response = await fetch(`${import.meta.env.VITE_WOOCOMMERCE_API_BASE}/products/categories?per_page=50&parent=319`, {
+          headers: {
+            'Authorization': `Basic ${btoa(`${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_KEY}:${import.meta.env.VITE_WOOCOMMERCE_CONSUMER_SECRET}`)}`,
+            'Content-Type': 'application/json',
+          },
+        });
 
-export const useProductVariations = (productId: number) => {
-  return useQuery({
-    queryKey: ["product-variations", productId],
-    queryFn: () => wooCommerceApi.getProductVariations(productId),
-    enabled: !!productId,
+        if (!response.ok) {
+          return [
+            "btt",
+            "e-bike", 
+            "estrada",
+            "extras-alugueres",
+            "gravel-alugueres",
+            "junior-alugueres",
+            "touring-alugueres",
+          ];
+        }
+
+        const categories = await response.json();
+        return categories.map((cat: any) => cat.slug).filter((slug: string) => slug !== "alugueres");
+
+      } catch (error) {
+        console.error("❌ Erro carregando categorias:", error);
+        // Retornar categorias padrão
+        return [
+          "btt",
+          "e-bike", 
+          "estrada",
+          "extras-alugueres",
+          "gravel-alugueres",
+          "junior-alugueres",
+          "touring-alugueres",
+        ];
+      }
+    },
+    staleTime: 10 * 60 * 1000,
   });
 };
