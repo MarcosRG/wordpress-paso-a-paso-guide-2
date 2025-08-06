@@ -133,8 +133,19 @@ export const isThirdPartyInterference = (error: Error): boolean => {
     error.stack?.includes('fullstory.com') ||
     error.stack?.includes('edge.fullstory.com') ||
     error.stack?.includes('fs.js') ||
-    (error.message.includes('Failed to fetch') && 
+    (error.message.includes('Failed to fetch') &&
      error.stack?.includes('eval at messageHandler'))
+  );
+};
+
+export const isTimeoutError = (error: Error): boolean => {
+  return (
+    error.message === "Request timeout" ||
+    error.message.includes("timeout") ||
+    error.message.includes("timed out") ||
+    error.message.includes("signal timed out") ||
+    error.name === "AbortError" ||
+    error.name === "TimeoutError"
   );
 };
 
