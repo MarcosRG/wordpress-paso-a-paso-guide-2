@@ -35,7 +35,9 @@ export const useWooCommerceBikes = () => {
         dataSource = "Bikesul Backend";
         console.log(`✅ Productos cargados desde ${dataSource}: ${products.length}`);
       } catch (backendError) {
-        console.warn("⚠️ Backend de Bikesul no disponible, usando WooCommerce como fallback...");
+        const backendErrorMsg = backendError instanceof Error ? backendError.message : String(backendError);
+        console.warn("⚠️ Backend de Bikesul no disponible:", backendErrorMsg);
+        console.log("🔄 Intentando WooCommerce como fallback...");
 
         try {
           // PASO 2: Fallback a WooCommerce API
@@ -44,7 +46,10 @@ export const useWooCommerceBikes = () => {
           dataSource = "WooCommerce API";
           console.log(`✅ Productos cargados desde ${dataSource}: ${products.length}`);
         } catch (wooError) {
-          console.error("❌ Error en ambas fuentes de datos:", { backendError, wooError });
+          const wooErrorMsg = wooError instanceof Error ? wooError.message : String(wooError);
+          console.error("❌ Error en ambas fuentes de datos:");
+          console.error(`  - Backend Bikesul: ${backendErrorMsg}`);
+          console.error(`  - WooCommerce: ${wooErrorMsg}`);
           console.log("🔄 Usando datos de prueba como último fallback");
           return mockBikes;
         }
