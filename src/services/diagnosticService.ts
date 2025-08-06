@@ -97,7 +97,7 @@ class DiagnosticService {
     try {
       console.log('🚴 Probando productos de categoría ALUGUERES (319)...');
       
-      const response = await fetch(`${this.baseUrl}/products?per_page=100&category=319&status=publish`, {
+      const response = await fetch(`${this.baseUrl}/products?per_page=10&category=319&status=publish`, {
         method: 'GET',
         headers: this.getAuthHeaders()
       });
