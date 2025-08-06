@@ -38,7 +38,8 @@ class Bikesul_Pricing_Validator {
         $this->test_insurance_calculations();
         $this->test_url_parameter_processing();
         $this->test_cart_item_processing();
-        
+        $this->test_woodmart_compatibility();
+
         $this->generate_test_report();
     }
     
