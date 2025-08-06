@@ -31,8 +31,13 @@ export class BikesulBackendApi {
       
       return data;
     } catch (error) {
-      console.error("❌ Error obteniendo productos del backend Bikesul:", error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("❌ Error obteniendo productos del backend Bikesul:", errorMessage);
+
+      // Crear error más descriptivo
+      const detailedError = new Error(`Backend Bikesul falló: ${errorMessage}`);
+      detailedError.name = 'BikesulBackendError';
+      throw detailedError;
     }
   }
 
@@ -63,7 +68,7 @@ export class BikesulBackendApi {
       return data;
     } catch (error) {
       console.warn(`⚠️ Error obteniendo variaciones del backend Bikesul para producto ${productId}:`, error);
-      // Devolver array vac��o en caso de error
+      // Devolver array vacío en caso de error
       return [];
     }
   }
