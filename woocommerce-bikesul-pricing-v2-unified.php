@@ -113,20 +113,34 @@ class Bikesul_Unified_Pricing_System {
     private function calculate_bike_pricing(&$cart_item) {
         $rental_price_per_day = $this->get_rental_price_per_day($cart_item);
         $rental_days = $this->get_rental_days($cart_item);
-        
+
         if ($rental_price_per_day > 0 && $rental_days > 0) {
             // CÁLCULO CORRETO: preço_por_dia × dias
             // A quantidade já é tratada automaticamente pelo WooCommerce
             $total_price_per_unit = $rental_price_per_day * $rental_days;
-            
-            // Estabelecer preço unitário (WooCommerce multiplica pela quantidade automaticamente)
-            $cart_item['data']->set_price($total_price_per_unit);
-            
-            // Adicionar meta data informativa
-            $cart_item['data']->add_meta_data('Precio por día', '€' . number_format($rental_price_per_day, 2));
-            $cart_item['data']->add_meta_data('Días de alquiler', $rental_days);
-            
-            error_log("BIKESUL BIKE: €{$rental_price_per_day} × {$rental_days} días = €{$total_price_per_unit} por unidad");
+
+            // Validação adicional para compatibilidade WoodMart 8.2.7+
+            if ($total_price_per_unit > 0 && is_numeric($total_price_per_unit)) {
+                // Verificar compatibilidade com WoodMart quantity validation
+                if (function_exists('woodmart_get_theme_info')) {
+                    $theme_version = woodmart_get_theme_info('Version');
+                    if (version_compare($theme_version, '8.2.7', '>=')) {
+                        // Log para debug de compatibilidade
+                        error_log("BIKESUL UNIFIED: WoodMart {$theme_version} compatibility - Setting price {$total_price_per_unit}");
+                    }
+                }
+
+                // Estabelecer preço unitário (WooCommerce multiplica pela quantidade automaticamente)
+                $cart_item['data']->set_price($total_price_per_unit);
+
+                // Adicionar meta data informativa
+                $cart_item['data']->add_meta_data('Precio por día', '€' . number_format($rental_price_per_day, 2));
+                $cart_item['data']->add_meta_data('Días de alquiler', $rental_days);
+
+                error_log("BIKESUL BIKE: €{$rental_price_per_day} × {$rental_days} días = €{$total_price_per_unit} por unidad");
+            } else {
+                error_log("BIKESUL BIKE ERROR: Invalid price calculation - {$total_price_per_unit}");
+            }
         }
     }
     
