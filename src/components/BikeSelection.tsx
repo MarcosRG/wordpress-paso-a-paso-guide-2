@@ -23,9 +23,7 @@ import {
   useRenderSync,
 } from "@/hooks/useRenderBikes";
 import { CategoryFilter } from "./CategoryFilter";
-import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { isMCPAvailable } from "@/utils/mcpClient";
 import { Bike as BikeIcon, AlertCircle, RefreshCw } from "lucide-react";
 import BikeCard from "./BikeCard";
 import SimpleBikeCard from "./SimpleBikeCard";
@@ -34,8 +32,7 @@ import {
   extractDayBasedPricing,
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
-import RenderBackendStatus from "./RenderBackendStatus";
-import { MCPConnectionStatus } from "./MCPConnectionStatus";
+import { WooCommerceLoadingBar } from "./WooCommerceLoadingBar";
 
 
 interface BikeSelectionProps {
@@ -77,12 +74,6 @@ export const BikeSelection = ({
   const syncMutation = useNeonDatabaseSync();
   const { language, setLanguage, t } = useLanguage();
 
-  // Simple logging for admin purposes only
-  React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🚴 ${bikes?.length || 0} bicicletas carregadas (Render Backend com fallback automático)`);
-    }
-  }, [bikes]);
 
 
 
@@ -246,18 +237,8 @@ export const BikeSelection = ({
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">{t("selectBikes")}</h2>
-        <div className="text-center mb-6">
-          <p className="text-muted-foreground">Carregando bicicletas...</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-32 w-full mb-4" />
-                <Skeleton className="h-20 w-full" />
-              </CardContent>
-            </Card>
-          ))}
+        <div className="flex flex-col items-center justify-center py-12">
+          <WooCommerceLoadingBar isLoading={true} className="mb-8" />
         </div>
       </div>
     );
@@ -265,33 +246,18 @@ export const BikeSelection = ({
 
   if (error) {
     return (
-      <div className="space-y-6">
-        {/* Show MCP connection status if not available */}
-        {!isMCPAvailable() && <MCPConnectionStatus />}
-
-        <div className="text-center py-8">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">
-            Error al cargar las bicicletas
-          </h2>
-          {!isMCPAvailable() && (
-            <p className="text-gray-600 mb-4">
-              Este erro pode estar relacionado com a conexão MCP Neon em falta.
-            </p>
-          )}
-          <div className="flex gap-2 justify-center">
-            <Button onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Reintentar
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => console.error("Error details:", error)}
-            >
-              Ver Error
-            </Button>
-          </div>
-        </div>
+      <div className="text-center py-8">
+        <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-semibold mb-2">
+          Erro ao carregar bicicletas
+        </h2>
+        <p className="text-gray-600 mb-4">
+          Por favor, tente novamente ou contacte o suporte se o problema persistir.
+        </p>
+        <Button onClick={handleRefresh} className="bg-red-600 hover:bg-red-700 text-white">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Tentar Novamente
+        </Button>
       </div>
     );
   }
@@ -315,29 +281,8 @@ export const BikeSelection = ({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">{t("selectBikes")}</h2>
-        <div className="flex items-center gap-4">
-          <SyncStatusIndicator showDetails={false} />
-
-
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            className="flex items-center gap-2"
-            disabled={syncMutation.isPending}
-          >
-            <RefreshCw className={`h-4 w-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
-            {syncMutation.isPending ? "Atualizando..." : "Atualizar"}
-
-          </Button>
-        </div>
       </div>
 
-      {/* Render Backend Status */}
-      <div className="mb-6">
-        <RenderBackendStatus onRefresh={handleRefresh} />
-      </div>
 
       <CategoryFilter
         categories={categories}

@@ -18,6 +18,8 @@ import AdminPanel from "./pages/AdminPanel";
 import RenderTest from "./pages/RenderTest";
 
 import { networkRecoveryService } from "./services/networkRecovery";
+import { renderKeepAliveService } from "./services/renderKeepAliveService";
+import { FetchDiagnostics } from "./utils/fetchDiagnostics";
 import "./wordpress-embed.css";
 
 const queryClient = new QueryClient();
@@ -26,23 +28,46 @@ const App = () => {
   // Check if running in WordPress iframe
   const isWordPressEmbed = window.location !== window.parent.location;
 
-  // Initialize network recovery service (DESHABILITADO)
+  // Initialize services
   React.useEffect(() => {
-    // Deshabilitado para evitar fetch calls automáticos que causan conflictos con FullStory
-    // try {
-    //   networkRecoveryService.startMonitoring();
-    // } catch (error) {
-    //   console.error('Error starting network recovery service:', error);
-    // }
+    // Diagnósticos em ambiente de desenvolvimento
+    if (import.meta.env.DEV) {
+      FetchDiagnostics.logEnvironmentInfo();
 
-    // // Cleanup on unmount
-    // return () => {
-    //   try {
-    //     networkRecoveryService.stopMonitoring();
-    //   } catch (error) {
-    //     console.error('Error stopping network recovery service:', error);
-    //   }
-    // };
+      if (!FetchDiagnostics.checkFetchAvailability()) {
+        console.error('❌ Fetch não disponível - serviços de rede desabilitados');
+        return;
+      }
+    }
+
+    // Delay para evitar conflitos com outros serviços durante inicialização
+    const initTimer = setTimeout(async () => {
+      // Teste básico de conectividade em desenvolvimento
+      if (import.meta.env.DEV) {
+        const fetchWorking = await FetchDiagnostics.testBasicFetch();
+        if (!fetchWorking) {
+          console.warn('⚠️ Problemas detectados com fetch - keep-alive pode falhar');
+        }
+      }
+
+      try {
+        renderKeepAliveService.start();
+        console.log('✅ Serviço keep-alive iniciado com sucesso');
+      } catch (error) {
+        console.error('❌ Erro iniciando serviço keep-alive:', error);
+        // Não quebrar a aplicação se o keep-alive falhar
+      }
+    }, 3000); // 3 segundos de delay para diagnostics
+
+    // Cleanup on unmount
+    return () => {
+      clearTimeout(initTimer);
+      try {
+        renderKeepAliveService.stop();
+      } catch (error) {
+        console.error('❌ Erro parando serviço keep-alive:', error);
+      }
+    };
   }, []);
 
   return (

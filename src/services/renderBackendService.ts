@@ -1,5 +1,6 @@
 import { Bike } from "@/pages/Index";
 import { instantCache } from "./instantCacheService";
+import { fetchWithTimeout } from "../utils/fetchTimeout";
 
 const RENDER_BASE_URL = 'https://bikesul-backend.onrender.com';
 const WAKE_UP_TIMEOUT = 30000; // 30 segundos para wake-up
@@ -44,13 +45,12 @@ export const renderBackendService = {
         }
       }
 
-      const response = await fetch(`${RENDER_BASE_URL}/sync-products`, {
+      const response = await fetchWithTimeout(`${RENDER_BASE_URL}/sync-products`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        signal: AbortSignal.timeout(60000) // 60s timeout para sync
-      });
+        }
+      }, 60000); // 60s timeout para sync
 
       if (!response.ok) {
         throw new Error(`Sync error: ${response.status} ${response.statusText}`);
@@ -105,14 +105,13 @@ export const renderBackendService = {
         }
       }
 
-      // 3. Realizar petición normal
-      const response = await fetch(`${RENDER_BASE_URL}/products`, {
+      // 3. Realizar petição normal
+      const response = await fetchWithTimeout(`${RENDER_BASE_URL}/products`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        signal: AbortSignal.timeout(15000) // 15s timeout
-      });
+        }
+      }, 15000); // 15s timeout
 
       if (!response.ok) {
         throw new Error(`Products fetch error: ${response.status} ${response.statusText}`);
