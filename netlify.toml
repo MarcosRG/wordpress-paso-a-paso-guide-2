@@ -24,16 +24,6 @@
   to = "/.netlify/functions/categories"
   status = 200
 
-[[redirects]]
-  from = "/netlify/functions/neon-products"
-  to = "/.netlify/functions/neon-products"
-  status = 200
-
-[[redirects]]
-  from = "/netlify/functions/neon-sync"
-  to = "/.netlify/functions/neon-sync"
-  status = 200
-
 # Redirect para SPA routing (React Router)
 [[redirects]]
   from = "/*"
