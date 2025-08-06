@@ -26,6 +26,13 @@ const App = () => {
   // Check if running in WordPress iframe
   const isWordPressEmbed = window.location !== window.parent.location;
 
+  // Initialize auto-sync service (sincronización silenciosa cada 20 minutos)
+  useAutoSync({
+    intervalMinutes: 20,
+    enabled: true,
+    enablePageVisibility: true,
+  });
+
   // Initialize network recovery service (DESHABILITADO)
   React.useEffect(() => {
     // Deshabilitado para evitar fetch calls automáticos que causan conflictos con FullStory
