@@ -21,8 +21,6 @@ import {
   getPricePerDayFromACF,
   calculateTotalPriceACF,
 } from "@/services/woocommerceApi";
-import WooCommercePermissionsFix from "@/components/WooCommercePermissionsFix";
-import DataSourceDebugInfo from "@/components/DataSourceDebugInfo";
 
 export interface Bike {
   id: string;
@@ -355,12 +353,6 @@ const Index = () => {
 
 
       </div>
-
-      {/* WooCommerce Permissions Fix - Aparece automáticamente si hay errores */}
-      <WooCommercePermissionsFix />
-
-      {/* Debug Info - Solo en desarrollo */}
-      <DataSourceDebugInfo compact={true} />
     </div>
   );
 };
