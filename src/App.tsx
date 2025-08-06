@@ -15,6 +15,7 @@ import { ConnectivityAlert } from "@/components/ConnectivityAlert";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
+import RenderTest from "./pages/RenderTest";
 
 import { networkRecoveryService } from "./services/networkRecovery";
 import "./wordpress-embed.css";
@@ -58,6 +59,7 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/render-test" element={<RenderTest />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

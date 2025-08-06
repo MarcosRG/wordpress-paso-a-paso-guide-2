@@ -18,6 +18,10 @@ import {
   useNeonDatabaseCategories,
   useNeonDatabaseStatus,
 } from "@/hooks/useNeonDatabase";
+import {
+  useRenderBikes,
+  useRenderSync,
+} from "@/hooks/useRenderBikes";
 import { CategoryFilter } from "./CategoryFilter";
 import SyncStatusIndicator from "./SyncStatusIndicator";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -30,6 +34,8 @@ import {
   extractDayBasedPricing,
 } from "@/services/woocommerceApi";
 import { useQueryClient } from "@tanstack/react-query";
+import RenderBackendStatus from "./RenderBackendStatus";
+import { MCPConnectionStatus } from "./MCPConnectionStatus";
 
 
 interface BikeSelectionProps {
@@ -44,7 +50,11 @@ export const BikeSelection = ({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const queryClient = useQueryClient();
 
-  // Usar Neon Database como primary, WooCommerce como fallback
+  // Usar Render Backend como primary, com fallback automático para WooCommerce
+  const renderQuery = useRenderBikes();
+  const renderSyncMutation = useRenderSync();
+
+  // Manter queries do Neon como backup secundário
   const neonQuery = useNeonDatabaseBikes();
   const neonCategoriesQuery = useNeonDatabaseCategories();
   const neonStatus = useNeonDatabaseStatus();
@@ -52,22 +62,16 @@ export const BikeSelection = ({
   const fallbackQuery = useWooCommerceBikes();
   const fallbackCategoriesQuery = useWooCommerceCategories();
 
-  // Determinar se deve usar Neon ou fallback
-  // Usar Neon apenas se conectado E sem erros críticos (como netlify functions unavailable)
-  const useNeonDatabase = neonStatus.data?.connected === true &&
-                           !neonQuery.error &&
-                           neonQuery.data !== undefined;
-
-  // Seleccionar la fuente de datos
+  // Usar Render como fonte principal
   const {
     data: bikes,
     isLoading,
     error,
     refetch: refetchBikes,
-  } = useNeonDatabase ? neonQuery : fallbackQuery;
+  } = renderQuery;
 
-  const { data: categories = [], refetch: refetchCategories } =
-    useNeonDatabase ? neonCategoriesQuery : fallbackCategoriesQuery;
+  // Para categorias, usar as do WooCommerce (já que Render pode não ter todas)
+  const { data: categories = [], refetch: refetchCategories } = fallbackCategoriesQuery;
 
   // Hook para sincronização WooCommerce → Neon
   const syncMutation = useNeonDatabaseSync();
@@ -76,28 +80,27 @@ export const BikeSelection = ({
   // Simple logging for admin purposes only
   React.useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🚴 ${bikes?.length || 0} bicicletas carregadas (${useNeonDatabase ? 'Neon DB' : 'WooCommerce'})`);
+      console.log(`🚴 ${bikes?.length || 0} bicicletas carregadas (Render Backend com fallback automático)`);
     }
-  }, [bikes, useNeonDatabase]);
+  }, [bikes]);
 
 
 
-  // Manual refresh function with smart data source selection
+  // Manual refresh function with Render backend sync
   const handleRefresh = async () => {
     try {
-      if (useNeonDatabase) {
-        // Neon disponível - fazer sync e refresh
-        console.log("🔄 Sincronizando WooCommerce → Neon Database...");
-        await syncMutation.mutateAsync();
-        queryClient.invalidateQueries({ queryKey: ["neon-database-bikes"] });
-        queryClient.invalidateQueries({ queryKey: ["neon-database-categories"] });
-        queryClient.invalidateQueries({ queryKey: ["neon-database-status"] });
-      } else {
-        // Neon não disponível - usar WooCommerce diretamente
-        console.log("🔄 Neon não disponível - refrescando desde WooCommerce...");
-        queryClient.invalidateQueries({ queryKey: ["woocommerce-bikes-fallback"] });
-        queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
+      // Primeiro sincronizar produtos no backend Render
+      console.log("🔄 Sincronizando produtos no Render backend...");
+      try {
+        await renderSyncMutation.refetch();
+        console.log("✅ Sincronização Render completada");
+      } catch (syncError) {
+        console.warn("⚠️ Erro na sincronização Render, continuando com refresh:", syncError);
       }
+
+      // Invalidar caches e recarregar dados
+      queryClient.invalidateQueries({ queryKey: ["render-bikes-with-fallback"] });
+      queryClient.invalidateQueries({ queryKey: ["woocommerce-categories-fallback"] });
 
       await Promise.all([refetchBikes(), refetchCategories()]);
       console.log("✅ Refresh completado");
@@ -119,10 +122,16 @@ export const BikeSelection = ({
           }
         }
 
+        // Excluir também pelos dados do Render se disponível
+        if (bike.renderData?.category &&
+            (bike.renderData.category === "seguro" || bike.renderData.category === "insurance")) {
+          return false;
+        }
+
         // Filtrar por categoría seleccionada
         if (selectedCategory === "all") return true;
 
-        // Check if product has the selected category
+        // Check if product has the selected category (WooCommerce)
         if (bike.wooCommerceData?.product?.categories) {
           const hasCategory = bike.wooCommerceData.product.categories.some(
             (category) => category.slug === selectedCategory,
@@ -131,6 +140,11 @@ export const BikeSelection = ({
           if (hasCategory) {
             return true;
           }
+        }
+
+        // Check category in Render data
+        if (bike.renderData?.category === selectedCategory) {
+          return true;
         }
 
         // Fallback to bike type
@@ -320,7 +334,10 @@ export const BikeSelection = ({
         </div>
       </div>
 
-
+      {/* Render Backend Status */}
+      <div className="mb-6">
+        <RenderBackendStatus onRefresh={handleRefresh} />
+      </div>
 
       <CategoryFilter
         categories={categories}
