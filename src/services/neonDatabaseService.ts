@@ -33,12 +33,18 @@ class NeonDatabaseService {
         headers: { 'Accept': 'application/json' }
       });
 
-      // Check if response is actually JSON and not the raw JS file
+      // Check if response is actually JSON and not a static file
       const contentType = response.headers.get('content-type');
       const isJson = contentType && contentType.includes('application/json');
 
       if (!isJson) {
-        console.warn('⚠️ Netlify function retornando JS ao invés de JSON - não disponível');
+        console.warn('⚠️ Netlify functions retornando HTML/JS - funcionalidade não disponível');
+        return false;
+      }
+
+      // For development, always return false to use fallbacks
+      if (this.isDevelopment) {
+        console.warn('⚠️ Desenvolvimento: Netlify functions desabilitadas - usando fallbacks');
         return false;
       }
 
@@ -207,7 +213,7 @@ class NeonDatabaseService {
       }
 
       const syncResult = await syncResponse.json();
-      console.log(`✅ Sincronização concluída:`, syncResult);
+      console.log(`�� Sincronização concluída:`, syncResult);
       
       return processedProducts.length;
 
