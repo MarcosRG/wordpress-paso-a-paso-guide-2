@@ -46,16 +46,18 @@ export class BikesulBackendApi {
       try {
         console.log(`🚀 Obteniendo productos desde backend de Bikesul (intento ${attempt}/${maxRetries})...`);
 
-        // Use modern AbortSignal.timeout for cleaner timeout handling
-        const signal = AbortSignal.timeout ? AbortSignal.timeout(45000) : undefined;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 45000);
 
         const response = await fetch(`${this.baseUrl}/products`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-          signal,
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -69,17 +71,6 @@ export class BikesulBackendApi {
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
         const errorMessage = lastError.message;
-
-        // Handle timeout errors specifically
-        const isTimeoutError = errorMessage.includes('timeout') ||
-                              errorMessage.includes('timed out') ||
-                              errorMessage.includes('signal timed out') ||
-                              lastError.name === 'AbortError' ||
-                              lastError.name === 'TimeoutError';
-
-        if (isTimeoutError) {
-          console.warn("⏱️ El backend de Bikesul está tardando más de lo esperado (posible cold start)");
-        }
 
         if (attempt < maxRetries) {
           console.warn(`⚠️ Intento ${attempt} falló: ${errorMessage}. Reintentando en 2 segundos...`);
