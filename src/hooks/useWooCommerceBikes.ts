@@ -185,13 +185,12 @@ export const useWooCommerceBikes = () => {
         }
 
         console.log(
-          `✅ Conversión completada: ${bikes.length} bicicletas disponibles`,
+          `✅ Conversión completada desde ${dataSource}: ${bikes.length} bicicletas disponibles`,
         );
         return bikes;
       } catch (error) {
-        console.error("❌ Error al cargar productos de WooCommerce:", error);
-        console.log("🔄 Usando datos de prueba como fallback");
-        // Si falla la conexión con WooCommerce, usar datos de prueba
+        console.error(`❌ Error al procesar productos desde ${dataSource}:`, error);
+        console.log("🔄 Usando datos de prueba como último fallback");
         return mockBikes;
       }
     },
