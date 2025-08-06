@@ -77,23 +77,16 @@ class RenderKeepAliveService {
 
     try {
       console.log('📡 Keep-alive ping para Render backend...');
-      
-      // Criar controller para timeout manual
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-      const response = await fetch('https://bikesul-backend.onrender.com/sync-products', {
+      const response = await fetchWithTimeout('https://bikesul-backend.onrender.com/sync-products', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'User-Agent': 'BikeselKeepAlive/1.0',
         },
-        signal: controller.signal,
         mode: 'cors', // Explícito para CORS
         cache: 'no-cache'
-      });
-
-      clearTimeout(timeoutId);
+      }, 25000); // 25 segundos timeout
 
       if (response.ok) {
         // Reset failure count em sucesso
@@ -140,7 +133,7 @@ class RenderKeepAliveService {
 
   resetFailures(): void {
     this.failureCount = 0;
-    console.log('��� Contador de falhas do keep-alive resetado');
+    console.log('🔄 Contador de falhas do keep-alive resetado');
   }
 }
 
