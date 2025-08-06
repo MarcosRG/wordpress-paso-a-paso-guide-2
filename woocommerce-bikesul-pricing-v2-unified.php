@@ -498,13 +498,87 @@ add_action('plugins_loaded', function() {
     }
 }, 20); // Prioridade alta para carregar após outros plugins
 
-// Compatibilidade com theme WoodMart 8.2.7
+// Compatibilidade com theme WoodMart 8.2.7+
 add_action('after_setup_theme', function() {
-    // Ensure theme compatibility
+    // Verificar compatibilidade WoodMart
     if (function_exists('woodmart_get_theme_info')) {
         $theme_version = woodmart_get_theme_info('Version');
+
+        // Para versões 8.2.7+, adicionar hooks de compatibilidade
+        if (version_compare($theme_version, '8.2.7', '>=')) {
+            // Adicionar hooks de compatibilidade
+            add_filter('woocommerce_cart_item_quantity', 'bikesul_validate_rental_quantity', 10, 3);
+            add_filter('woocommerce_get_price_html', 'bikesul_fix_woodmart_price_display', 20, 2);
+
+            // Desabilitar quantity validation do WoodMart para produtos de aluguel
+            add_filter('woodmart_quantity_input_args', 'bikesul_override_quantity_validation', 10, 2);
+
+            error_log("BIKESUL UNIFIED: WoodMart {$theme_version} compatibility hooks applied");
+        }
+
         error_log("BIKESUL UNIFIED: Theme WoodMart version {$theme_version} detected");
     }
 }, 15);
+
+/**
+ * Validar quantidade para produtos de aluguel (compatibilidade WoodMart 8.2.7+)
+ */
+function bikesul_validate_rental_quantity($quantity, $cart_item_key, $cart_item) {
+    // Validar quantidade para produtos de aluguel
+    if (isset($cart_item['rental_days']) && $cart_item['rental_days'] > 0) {
+        // Forçar quantidade mínima de 1 para produtos de aluguel
+        $validated_quantity = max(1, intval($quantity));
+
+        if ($validated_quantity !== $quantity) {
+            error_log("BIKESUL UNIFIED: Quantity validation applied - Original: {$quantity}, Validated: {$validated_quantity}");
+        }
+
+        return $validated_quantity;
+    }
+    return $quantity;
+}
+
+/**
+ * Corrigir exibição de preços no WoodMart 8.2.7+
+ */
+function bikesul_fix_woodmart_price_display($price, $product) {
+    // Verificar se é produto no carrinho com dados de aluguel
+    if ((is_cart() || is_checkout()) && WC()->cart) {
+        $cart = WC()->cart->get_cart();
+        foreach ($cart as $cart_item) {
+            if ($cart_item['product_id'] == $product->get_id() &&
+                isset($cart_item['rental_price_per_day']) &&
+                isset($cart_item['rental_days'])) {
+                // Forçar exibição de preço calculado
+                $calculated_price = $cart_item['rental_price_per_day'] * $cart_item['rental_days'];
+                return wc_price($calculated_price);
+            }
+        }
+    }
+    return $price;
+}
+
+/**
+ * Override WoodMart quantity validation para produtos de aluguel
+ */
+function bikesul_override_quantity_validation($args, $product) {
+    // Verificar se é produto de aluguel no carrinho
+    if (WC()->cart) {
+        $cart = WC()->cart->get_cart();
+        foreach ($cart as $cart_item) {
+            if ($cart_item['product_id'] == $product->get_id() &&
+                (isset($cart_item['rental_price_per_day']) || isset($cart_item['rental_days']))) {
+                // Configurar limites para produtos de aluguel
+                $args['min_value'] = 1;
+                $args['max_value'] = 99;
+                $args['step'] = 1;
+
+                error_log("BIKESUL UNIFIED: Quantity validation overridden for rental product {$product->get_id()}");
+                break;
+            }
+        }
+    }
+    return $args;
+}
 
 ?>
