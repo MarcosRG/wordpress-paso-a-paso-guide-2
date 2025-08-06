@@ -42,7 +42,7 @@ export const useAutoSync = (config: AutoSyncConfig = {}) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: AbortSignal.timeout(45000), // 45 segundos timeout para sync
+        signal: AbortSignal.timeout(60000), // 60 segundos timeout para sync (más tiempo para cold starts)
       });
 
       if (!response.ok) {
