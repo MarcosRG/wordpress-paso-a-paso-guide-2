@@ -59,17 +59,6 @@
   to = "/.netlify/functions/neon-variations:splat"
   status = 200
 
-# Redirects para funciones MySQL ultra-rápidas
-[[redirects]]
-  from = "/api/mysql/bikes*"
-  to = "/.netlify/functions/mysql-bikes:splat"
-  status = 200
-
-[[redirects]]
-  from = "/api/mysql/test"
-  to = "/.netlify/functions/mysql-test"
-  status = 200
-
 # Redirect para SPA routing (React Router) - DEVE SER O ÚLTIMO
 [[redirects]]
   from = "/*"
