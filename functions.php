@@ -695,7 +695,4 @@ function get_custom_stock( $data ) {
     return $response;
 }
 
-// BIKESUL: Fix para problema del carrito vacío en checkout
-require_once get_template_directory() . '/bikesul-checkout-cart-fix.php';
-
 ?>
