@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import config from '../config/unified';
 
 export const ApiTest = () => {
   const [testResult, setTestResult] = useState<string>("");
@@ -12,9 +11,9 @@ export const ApiTest = () => {
     setTestResult("Testing API connection...");
 
     try {
-      const API_BASE = config.WOOCOMMERCE.baseUrl;
-      const CONSUMER_KEY = config.WOOCOMMERCE.consumerKey;
-      const CONSUMER_SECRET = config.WOOCOMMERCE.consumerSecret;
+      const API_BASE = "https://bikesultoursgest.com/wp-json/wc/v3";
+      const CONSUMER_KEY = "ck_d702f875c82d5973562a62579cfa284db06e3a87";
+      const CONSUMER_SECRET = "cs_7a50a1dc2589e84b4ebc1d4407b3cd5b1a7b2b71";
 
       const auth = btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`);
       const headers = {
