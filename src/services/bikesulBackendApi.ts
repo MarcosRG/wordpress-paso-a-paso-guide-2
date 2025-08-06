@@ -34,6 +34,11 @@ export class BikesulBackendApi {
   }
 
   async getProducts(): Promise<WooCommerceProduct[]> {
+    // Verificar si debemos saltar esta petición por fallos recientes
+    if (this.shouldSkipRequest()) {
+      throw new Error("Backend en cooldown después de fallos recientes");
+    }
+
     const maxRetries = 2;
     let lastError: Error;
 
