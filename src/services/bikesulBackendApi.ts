@@ -81,6 +81,9 @@ export class BikesulBackendApi {
       }
     }
 
+    // Registrar fallo para activar cooldown
+    this.recordFailure();
+
     // Crear error más descriptivo después de todos los reintentos
     const detailedError = new Error(`Backend Bikesul falló después de ${maxRetries} intentos: ${lastError!.message}`);
     detailedError.name = 'BikesulBackendError';
@@ -141,7 +144,7 @@ export class BikesulBackendApi {
       }
 
       const data = await response.json();
-      console.log(`✅ Backend Bikesul: Datos ACF obtenidos para producto ${productId}`);
+      console.log(`�� Backend Bikesul: Datos ACF obtenidos para producto ${productId}`);
       
       return data;
     } catch (error) {
