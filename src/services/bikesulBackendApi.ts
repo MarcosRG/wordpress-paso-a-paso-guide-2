@@ -46,18 +46,16 @@ export class BikesulBackendApi {
       try {
         console.log(`🚀 Obteniendo productos desde backend de Bikesul (intento ${attempt}/${maxRetries})...`);
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 45000);
+        // Use modern AbortSignal.timeout for cleaner timeout handling
+        const signal = AbortSignal.timeout ? AbortSignal.timeout(45000) : undefined;
 
         const response = await fetch(`${this.baseUrl}/products`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-          signal: controller.signal,
+          signal,
         });
-
-        clearTimeout(timeoutId);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
