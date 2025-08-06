@@ -333,7 +333,10 @@ export const BikeSelection = ({
         </div>
       </div>
 
-
+      {/* Render Backend Status */}
+      <div className="mb-6">
+        <RenderBackendStatus onRefresh={handleRefresh} />
+      </div>
 
       <CategoryFilter
         categories={categories}
