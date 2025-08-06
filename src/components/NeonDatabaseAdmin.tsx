@@ -8,15 +8,14 @@ import {
   useNeonDatabaseStatus,
   useNeonDatabaseSync,
 } from "@/hooks/useNeonDatabase";
-import {
-  Database,
-  RefreshCw,
-  CheckCircle,
-  AlertCircle,
+import { 
+  Database, 
+  RefreshCw, 
+  CheckCircle, 
+  AlertCircle, 
   Loader2,
   Zap
 } from "lucide-react";
-import { NetlifySetupHelp } from "./NetlifySetupHelp";
 
 export const NeonDatabaseAdmin: React.FC = () => {
   const { toast } = useToast();
@@ -115,19 +114,12 @@ export const NeonDatabaseAdmin: React.FC = () => {
 
         {/* Connection Error */}
         {status && !status.connected && (
-          <>
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {status.message || "Não foi possível conectar à base de dados Neon"}
-              </AlertDescription>
-            </Alert>
-
-            {/* Show setup help when error involves environment variables */}
-            {(status.message?.includes('ambiente') || status.message?.includes('configuradas')) && (
-              <NetlifySetupHelp />
-            )}
-          </>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {status.message || "Não foi possível conectar à base de dados Neon"}
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Success State */}

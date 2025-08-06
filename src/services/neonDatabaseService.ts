@@ -78,7 +78,7 @@ class NeonDatabaseService {
       // Check if response is JSON before parsing
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Netlify Functions não configuradas. Verifique variáveis de ambiente no painel do Netlify.');
+        throw new Error('Resposta não é JSON válido - netlify function retornando arquivo JS');
       }
 
       let data;
@@ -244,26 +244,21 @@ class NeonDatabaseService {
         // Check content type before parsing
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('Variáveis de ambiente não configuradas no Netlify. Configure NEON_CONNECTION_STRING no painel do Netlify.');
+          throw new Error('Resposta não é JSON válido - netlify function não disponível');
         }
 
         const data = await response.json();
 
         // Verificar se a resposta tem o formato esperado
-        if (Array.isArray(data)) {
+        if (Array.isArray(data.products)) {
+          console.log(`✅ ${data.products.length} produtos carregados do Neon`);
+          return data.products;
+        } else if (Array.isArray(data)) {
           console.log(`✅ ${data.length} produtos carregados do Neon`);
-          return {
-            connected: true,
-            message: `${data.length} produtos carregados da base de dados`,
-            productsCount: data.length
-          };
+          return data;
         } else {
           console.warn('⚠️ Formato de resposta inesperado:', data);
-          return {
-            connected: false,
-            message: 'Formato de resposta inesperado da base de dados',
-            productsCount: 0
-          };
+          return [];
         }
       } else {
         throw new Error(`Neon API Error: ${response.status} ${response.statusText}`);
