@@ -74,23 +74,29 @@ export const useWooCommerceBikes = () => {
             let variations: WooCommerceVariation[] = [];
             let acfData: Record<string, unknown> | null = null;
 
-            // Try to get ACF data from WordPress API (non-blocking)
+            // Try to get ACF data (use same source as products)
             try {
-              acfData = await wooCommerceApi.getProductWithACF(product.id);
+              if (dataSource === "Bikesul Backend") {
+                acfData = await bikesulBackendApi.getProductWithACF(product.id);
+              } else {
+                acfData = await wooCommerceApi.getProductWithACF(product.id);
+              }
             } catch (error) {
               acfData = null; // Silently fail, ACF data is optional
             }
 
             if (product.type === "variable") {
-              // Obtener variaciones del producto variable
+              // Obtener variaciones del producto variable (usar misma fuente)
               try {
-                variations = await wooCommerceApi.getProductVariations(
-                  product.id,
-                );
+                if (dataSource === "Bikesul Backend") {
+                  variations = await bikesulBackendApi.getProductVariations(product.id);
+                } else {
+                  variations = await wooCommerceApi.getProductVariations(product.id);
+                }
                 if (!variations) variations = [];
               } catch (error) {
                 console.warn(
-                  `🔄 Fallback: Error al cargar variaciones para producto ${product.id}`,
+                  `🔄 ${dataSource}: Error al cargar variaciones para producto ${product.id}`,
                 );
                 variations = [];
               }
