@@ -12,7 +12,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ConnectivityAlert } from "@/components/ConnectivityAlert";
 import { FloatingDebugButton } from "@/components/FloatingDebugButton";
-import { AutoSyncProvider } from "@/components/AutoSyncProvider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
@@ -50,23 +49,21 @@ const App = () => {
       className={`bike-rental-app ${isWordPressEmbed ? "wordpress-embed" : ""}`}
     >
       <QueryClientProvider client={queryClient}>
-        <AutoSyncProvider>
-          <LanguageProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <ConnectivityAlert />
-              <FloatingDebugButton />
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/admin" element={<AdminPanel />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
-          </LanguageProvider>
-        </AutoSyncProvider>
+        <LanguageProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <ConnectivityAlert />
+            <FloatingDebugButton />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </LanguageProvider>
       </QueryClientProvider>
     </div>
   );
