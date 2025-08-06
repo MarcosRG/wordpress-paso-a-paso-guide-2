@@ -4,57 +4,46 @@ import { renderBackendService } from "@/services/renderBackendService";
 import { wooCommerceApi } from "@/services/woocommerceApi";
 import { instantCache } from "@/services/instantCacheService";
 
-// Hook principal optimizado: Cache → Render → WooCommerce
+// Hook principal: Render → Cache → WooCommerce
 export const useRenderBikes = () => {
   return useQuery({
-    queryKey: ["render-bikes-optimized"],
+    queryKey: ["render-bikes-primary"],
     queryFn: async (): Promise<Bike[]> => {
       try {
-        // ESTRATEGIA OPTIMIZADA:
-        // 1. Cache instantáneo (0ms respuesta)
-        // 2. Render backend con auto-wake
+        // NOVA ESTRATÉGIA:
+        // 1. Render backend (prioridade principal)
+        // 2. Cache como backup
         // 3. WooCommerce como último recurso
 
-        console.log("⚡ Iniciando carga optimizada de productos...");
+        console.log("🚀 Carregando produtos desde Render Database...");
 
-        // 1. Intentar cache instantáneo primero
-        const cachedData = await instantCache.getCachedProducts();
-        if (cachedData && cachedData.length > 0) {
-          console.log(`🚀 ${cachedData.length} productos desde cache instantáneo`);
-
-          // Si los datos son muy antiguos (>10 min), refrescar en background
-          if (!instantCache.hasRecentData()) {
-            console.log("🔄 Datos antiguos, refrescando en background...");
-            setTimeout(() => {
-              renderBackendService.getProducts().catch(error => {
-                console.warn('⚠️ Background refresh falló:', error);
-              });
-            }, 500);
-          }
-
-          return cachedData;
-        }
-
-        console.log("📡 Cache vacío, intentando Render backend...");
-
-        // 2. Intentar Render backend (ya incluye auto-wake y cache)
+        // 1. Tentar Render backend primeiro
         try {
           const renderBikes = await renderBackendService.getProducts();
 
           if (renderBikes.length > 0) {
-            console.log(`✅ ${renderBikes.length} productos cargados desde Render`);
+            console.log(`✅ ${renderBikes.length} produtos carregados desde Render backend`);
             return renderBikes;
           }
         } catch (renderError) {
-          console.warn("⚠️ Error en Render backend:", renderError);
+          console.warn("⚠️ Render backend não disponível:", renderError);
         }
 
-        console.log("🔄 Fallback a WooCommerce API...");
+        console.log("📦 Tentando cache local...");
 
-        // 3. Último recurso: WooCommerce directo
+        // 2. Se Render falhar, tentar cache
+        const cachedData = await instantCache.getCachedProducts();
+        if (cachedData && cachedData.length > 0) {
+          console.log(`🔄 ${cachedData.length} produtos desde cache local`);
+          return cachedData;
+        }
+
+        console.log("🔄 Carregando produtos desde WooCommerce (fallback)...");
+
+        // 3. Último recurso: WooCommerce direto
         const wooProducts = await fallbackToWooCommerce();
 
-        // Guardar en cache para próximas consultas
+        // Guardar em cache para próximas consultas
         if (wooProducts.length > 0) {
           await instantCache.cacheProducts(wooProducts, 15 * 60 * 1000); // 15 min
           await instantCache.cacheFallbackData(wooProducts, 45 * 60 * 1000); // 45 min
@@ -63,21 +52,21 @@ export const useRenderBikes = () => {
         return wooProducts;
 
       } catch (error) {
-        console.error("❌ Error crítico en carga optimizada:", error);
+        console.error("❌ Erro carregando produtos:", error);
 
-        // Último intento: cualquier cache disponible
+        // Último intento: cache de emergência
         const emergencyCache = await instantCache.getCachedFallbackData();
         if (emergencyCache && emergencyCache.length > 0) {
-          console.log(`🆘 Usando cache de emergencia: ${emergencyCache.length} productos`);
+          console.log(`🆘 Usando cache de emergência: ${emergencyCache.length} produtos`);
           return emergencyCache;
         }
 
         throw error;
       }
     },
-    staleTime: 2 * 60 * 1000, // 2 minutos (reducido ya que tenemos cache)
+    staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 15 * 60 * 1000, // 15 minutos
-    retry: 1, // Reducido ya que tenemos fallbacks internos
+    retry: 1,
     retryDelay: 2000,
   });
 };
@@ -185,16 +174,7 @@ export const useRenderBike = (id: string) => {
 // Função auxiliar para fallback ao WooCommerce
 async function fallbackToWooCommerce(): Promise<Bike[]> {
   try {
-    console.log("🔄 Executando fallback otimizado para WooCommerce...");
-
-    // Verificar si hay cache de WooCommerce reciente
-    const fallbackCache = await instantCache.getCachedFallbackData();
-    if (fallbackCache && fallbackCache.length > 0) {
-      console.log(`⚡ Usando cache de WooCommerce: ${fallbackCache.length} productos`);
-      return fallbackCache;
-    }
-
-    console.log("📡 Cargando desde WooCommerce API...");
+    console.log("📡 Carregando desde WooCommerce API...");
     const products = await wooCommerceApi.getProducts();
 
     // Converter produtos WooCommerce para formato Bike
