@@ -12,10 +12,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ConnectivityAlert } from "@/components/ConnectivityAlert";
 import { FloatingDebugButton } from "@/components/FloatingDebugButton";
+import { AutoSyncProvider } from "@/components/AutoSyncProvider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
-import { useAutoSync } from "@/hooks/useAutoSync";
 
 import { networkRecoveryService } from "./services/networkRecovery";
 import "./wordpress-embed.css";
