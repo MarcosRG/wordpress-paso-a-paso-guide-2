@@ -73,7 +73,7 @@ export const enableFetchInterceptor = () => {
               };
 
               xhr.onerror = () => reject(new Error('XHR request failed'));
-              xhr.ontimeout = () => reject(new Error('XHR request timeout'));
+              xhr.ontimeout = () => reject(new Error('Request timeout'));
 
               xhr.timeout = 30000; // 30 second timeout
               xhr.send(options.body as string);
