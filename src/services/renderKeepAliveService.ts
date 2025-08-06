@@ -5,6 +5,7 @@ class RenderKeepAliveService {
   private isActive = false;
   private failureCount = 0;
   private maxFailures = 5;
+  private autoDisabled = false;
   
   // Intervalo de 30 segundos como especificado
   private readonly KEEP_ALIVE_INTERVAL = 30 * 1000; // 30 segundos
