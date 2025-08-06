@@ -70,6 +70,17 @@ export class BikesulBackendApi {
         lastError = error instanceof Error ? error : new Error(String(error));
         const errorMessage = lastError.message;
 
+        // Handle timeout errors specifically
+        const isTimeoutError = errorMessage.includes('timeout') ||
+                              errorMessage.includes('timed out') ||
+                              errorMessage.includes('signal timed out') ||
+                              lastError.name === 'AbortError' ||
+                              lastError.name === 'TimeoutError';
+
+        if (isTimeoutError) {
+          console.warn("⏱️ El backend de Bikesul está tardando más de lo esperado (posible cold start)");
+        }
+
         if (attempt < maxRetries) {
           console.warn(`⚠️ Intento ${attempt} falló: ${errorMessage}. Reintentando en 2 segundos...`);
           await new Promise(resolve => setTimeout(resolve, 2000));
