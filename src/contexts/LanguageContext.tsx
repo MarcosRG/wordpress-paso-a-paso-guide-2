@@ -102,7 +102,7 @@ const translations = {
     noBikesAvailable: "Não há bicicletas disponíveis",
     tryAgain: "Tente novamente",
     preparingCart: "A preparar carrinho e redirecionamento...",
-    redirectingCheckout: "A redirecionar para o checkout do WooCommerce...",
+    redirectingCheckout: "A redirecionar para o checkout...",
     success: "Sucesso",
     unknownError: "Erro desconhecido",
     reservationError: "Problema ao processar a reserva: {error}. Por favor, tente novamente.",
