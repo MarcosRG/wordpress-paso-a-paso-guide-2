@@ -161,21 +161,32 @@ export class WooCommerceCartService {
       }
     });
 
-    // Agregar datos del seguro si está presente
-    if (reservation.insurance && reservation.insurance.price > 0) {
+    // ✅ USAR CORRECT PRICING SERVICE PARA SEGURO
+    if (reservation.insurance) {
       const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
-      const totalInsurancePrice =
-        reservation.insurance.price * totalBikes * reservation.totalDays;
 
-      params.append("insurance_type", reservation.insurance.id);
-      params.append("insurance_name", reservation.insurance.name);
-      params.append(
-        "insurance_price_per_bike_per_day",
-        reservation.insurance.price.toString(),
+      const correctInsurance = correctPricingService.calculateCorrectInsurance(
+        reservation.insurance.id as 'basic' | 'premium',
+        reservation.insurance.price,
+        totalBikes,
+        reservation.totalDays
       );
-      params.append("insurance_total_bikes", totalBikes.toString());
-      params.append("insurance_total_days", reservation.totalDays.toString());
-      params.append("insurance_total_price", totalInsurancePrice.toString());
+
+      if (correctInsurance) {
+        params.append("insurance_type", correctInsurance.insurance_type);
+        params.append("insurance_name", correctInsurance.display_name);
+        params.append("insurance_price_per_bike_per_day", correctInsurance.price_per_bike_per_day.toString());
+        params.append("insurance_total_bikes", correctInsurance.total_bikes.toString());
+        params.append("insurance_total_days", correctInsurance.total_days.toString());
+        params.append("insurance_total_price", correctInsurance.calculated_insurance_total.toString());
+
+        console.log(`🛡️ Enviando seguro:`);
+        console.log(`  - Tipo: ${correctInsurance.insurance_type}`);
+        console.log(`  - Precio/bici/día: €${correctInsurance.price_per_bike_per_day}`);
+        console.log(`  - Total: €${correctInsurance.calculated_insurance_total}`);
+        console.log(`  - Bicis: ${correctInsurance.total_bikes}`);
+        console.log(`  - Días: ${correctInsurance.total_days}`);
+      }
     }
 
     // Construir URL completa
