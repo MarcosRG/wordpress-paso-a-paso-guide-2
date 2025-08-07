@@ -339,47 +339,10 @@ function bikesul_show_cart_item_info($item_data, $cart_item) {
 }
 
 // ===============================================
-// 6. BUSCAR PRODUCTO DE SEGURO
+// 6. BUSCAR PRODUCTO DE SEGURO - DELEGADO A INSURANCE HANDLER
 // ===============================================
-function bikesul_find_insurance_product($insurance_type = 'premium') {
-    
-    // IDs conocidos de productos de seguro
-    $known_insurance_ids = array(
-        'premium' => array(18814, 21820), // IDs posibles para seguro premium
-        'basic' => array(21819, 18815),   // IDs posibles para seguro básico
-    );
-    
-    $ids_to_check = $known_insurance_ids[$insurance_type] ?? $known_insurance_ids['premium'];
-    
-    foreach ($ids_to_check as $product_id) {
-        $product = wc_get_product($product_id);
-        if ($product && ($product->get_status() === 'publish' || $product->get_status() === 'private')) {
-            error_log("✅ BIKESUL: Producto de seguro encontrado - ID: {$product_id}");
-            return $product_id;
-        }
-    }
-    
-    // Busqueda por nombre como fallback
-    $search_terms = ($insurance_type === 'premium') 
-        ? array('seguro premium', 'premium bikesul', 'bikesul premium')
-        : array('seguro basic', 'seguro basico', 'responsabilidad civil', 'basic insurance');
-    
-    foreach ($search_terms as $term) {
-        $products = wc_get_products(array(
-            'search' => $term,
-            'limit' => 5,
-            'status' => array('publish', 'private')
-        ));
-        
-        if (!empty($products)) {
-            error_log("✅ BIKESUL: Producto de seguro encontrado por búsqueda: {$products[0]->get_id()}");
-            return $products[0]->get_id();
-        }
-    }
-    
-    error_log("❌ BIKESUL: No se encontró producto de seguro para tipo: {$insurance_type}");
-    return null;
-}
+// NOTA: La función bikesul_find_insurance_product() está definida en
+// woocommerce-insurance-handler.php para evitar duplicación
 
 // ===============================================
 // 7. DEBUGGING (solo en desarrollo)
