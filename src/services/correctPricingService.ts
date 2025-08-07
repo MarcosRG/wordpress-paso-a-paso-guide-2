@@ -83,10 +83,19 @@ export class CorrectPricingService {
       const calculatedTotal = correctPricePerDay * totalDays * bike.quantity;
 
       console.log(`💰 PRICING CORRECTO para ${bike.name}:`);
-      console.log(`   Precio/día: €${correctPricePerDay}`);
+      console.log(`   Precio base: €${bike.pricePerDay}`);
+      console.log(`   Precio correcto/día: €${correctPricePerDay}`);
       console.log(`   Días: ${totalDays}`);
       console.log(`   Cantidad: ${bike.quantity}`);
       console.log(`   Total: €${calculatedTotal} (${correctPricePerDay} × ${totalDays} × ${bike.quantity})`);
+
+      // ⚠️ DEBUGGING: Verificar si hay discrepancia
+      if (Math.abs(correctPricePerDay - bike.pricePerDay) > 0.01) {
+        console.warn(`⚠️ DISCREPANCIA DETECTADA para ${bike.name}:`);
+        console.warn(`   App muestra: €${bike.pricePerDay}/día`);
+        console.warn(`   Precio real aplicado: €${correctPricePerDay}/día`);
+        console.warn(`   Diferencia: €${Math.abs(correctPricePerDay - bike.pricePerDay)}`);
+      }
 
       // 3. Buscar variación si es necesario
       let variationId: number | undefined;

@@ -8,6 +8,7 @@ import {
   getPriceForDays,
 } from "@/services/woocommerceApi";
 import { fixedInsuranceProductService } from "@/services/insuranceProductService.fixed";
+import { correctPricingService } from "@/services/correctPricingService";
 
 export interface WooCommerceCartItem {
   product_id: number;
@@ -99,40 +100,38 @@ export class WooCommerceCartService {
       params.append("insurance_total_price", totalInsurancePrice.toString());
     }
 
-    // Agregar información de productos como parámetros para que puedan ser procesados por el checkout
-    bikes.forEach((bike, index) => {
-      // Calcular precio correcto basado en ACF pricing y días totales
-      const acfPricing = bike.wooCommerceData?.product
-        ? extractACFPricing(bike.wooCommerceData.product)
-        : null;
+    // ✅ USAR CORRECT PRICING SERVICE PARA CALCULAR PRECIOS CORRECTOS
+    const correctBikePricing = correctPricingService.calculateCorrectBikePricing(
+      bikes,
+      reservation.totalDays
+    );
 
-      let totalPricePerBike = 0;
-      if (acfPricing && reservation.totalDays > 0) {
-        // Usar ACF pricing
-        totalPricePerBike = calculateTotalPriceACF(
-          reservation.totalDays,
-          1,
-          acfPricing,
-        );
-      } else {
-        // Usar pricing estándar
-        const priceRanges = bike.wooCommerceData?.product
-          ? extractDayBasedPricing(bike.wooCommerceData.product)
-          : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
-        const pricePerDay =
-          reservation.totalDays > 0
-            ? getPriceForDays(priceRanges, reservation.totalDays)
-            : bike.pricePerDay;
-        totalPricePerBike = pricePerDay * reservation.totalDays;
+    bikes.forEach((bike, index) => {
+      const correctPricing = correctBikePricing.find(pricing =>
+        parseInt(bike.id) === pricing.product_id
+      );
+
+      if (!correctPricing) {
+        console.error(`❌ No se encontró pricing correcto para bike ${bike.id}`);
+        return;
       }
 
       params.append(`bike_${index}_id`, bike.id);
       params.append(`bike_${index}_name`, bike.name);
       params.append(`bike_${index}_quantity`, bike.quantity.toString());
       params.append(`bike_${index}_size`, bike.size);
-      params.append(`bike_${index}_price_per_day`, bike.pricePerDay.toString());
-      params.append(`bike_${index}_total_price`, totalPricePerBike.toString());
+
+      // ✅ USAR PRECIOS CALCULADOS CORRECTAMENTE POR EL SERVICIO
+      params.append(`bike_${index}_price_per_day`, correctPricing.custom_price_per_day.toString());
+      params.append(`bike_${index}_total_price`, correctPricing.calculated_total.toString());
       params.append(`bike_${index}_days`, reservation.totalDays.toString());
+
+      console.log(`🚲 Enviando bike ${index}:`);
+      console.log(`  - ID: ${bike.id}`);
+      console.log(`  - Precio/día: €${correctPricing.custom_price_per_day}`);
+      console.log(`  - Total: €${correctPricing.calculated_total}`);
+      console.log(`  - Días: ${reservation.totalDays}`);
+      console.log(`  - Cantidad: ${bike.quantity}`);
 
       // Si hay variación, incluirla
       if (
@@ -162,21 +161,32 @@ export class WooCommerceCartService {
       }
     });
 
-    // Agregar datos del seguro si está presente
-    if (reservation.insurance && reservation.insurance.price > 0) {
+    // ✅ USAR CORRECT PRICING SERVICE PARA SEGURO
+    if (reservation.insurance) {
       const totalBikes = bikes.reduce((sum, bike) => sum + bike.quantity, 0);
-      const totalInsurancePrice =
-        reservation.insurance.price * totalBikes * reservation.totalDays;
 
-      params.append("insurance_type", reservation.insurance.id);
-      params.append("insurance_name", reservation.insurance.name);
-      params.append(
-        "insurance_price_per_bike_per_day",
-        reservation.insurance.price.toString(),
+      const correctInsurance = correctPricingService.calculateCorrectInsurance(
+        reservation.insurance.id as 'basic' | 'premium',
+        reservation.insurance.price,
+        totalBikes,
+        reservation.totalDays
       );
-      params.append("insurance_total_bikes", totalBikes.toString());
-      params.append("insurance_total_days", reservation.totalDays.toString());
-      params.append("insurance_total_price", totalInsurancePrice.toString());
+
+      if (correctInsurance) {
+        params.append("insurance_type", correctInsurance.insurance_type);
+        params.append("insurance_name", correctInsurance.display_name);
+        params.append("insurance_price_per_bike_per_day", correctInsurance.price_per_bike_per_day.toString());
+        params.append("insurance_total_bikes", correctInsurance.total_bikes.toString());
+        params.append("insurance_total_days", correctInsurance.total_days.toString());
+        params.append("insurance_total_price", correctInsurance.calculated_insurance_total.toString());
+
+        console.log(`🛡️ Enviando seguro:`);
+        console.log(`  - Tipo: ${correctInsurance.insurance_type}`);
+        console.log(`  - Precio/bici/día: €${correctInsurance.price_per_bike_per_day}`);
+        console.log(`  - Total: €${correctInsurance.calculated_insurance_total}`);
+        console.log(`  - Bicis: ${correctInsurance.total_bikes}`);
+        console.log(`  - Días: ${correctInsurance.total_days}`);
+      }
     }
 
     // Construir URL completa
