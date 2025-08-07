@@ -227,9 +227,19 @@ function bikesul_add_visible_metadata($item, $cart_item_key, $values, $order) {
         $item->add_meta_data('Precio por día', '€' . number_format($custom_price_per_day, 2), true);
         $item->add_meta_data('Días de alquiler', $rental_days, true);
         $item->add_meta_data('Cálculo', "€{$custom_price_per_day} × {$rental_days} días × {$quantity} = €" . number_format($total_calculated, 2), true);
-        
+
         if (isset($values['bike_size'])) {
             $item->add_meta_data('Talla', $values['bike_size'], true);
+        }
+
+        // ✅ AGREGAR FECHAS VISIBLES
+        if (isset($values['rental_start_date'])) {
+            $start_date = date('d/m/Y', strtotime($values['rental_start_date']));
+            $item->add_meta_data('Fecha inicio', $start_date, true);
+        }
+        if (isset($values['rental_end_date'])) {
+            $end_date = date('d/m/Y', strtotime($values['rental_end_date']));
+            $item->add_meta_data('Fecha fin', $end_date, true);
         }
         
         // Metadatos internos
@@ -255,6 +265,16 @@ function bikesul_add_visible_metadata($item, $cart_item_key, $values, $order) {
         } else {
             $item->add_meta_data('Tipo', 'Seguro básico incluido', true);
             $item->add_meta_data('Cobertura', "{$total_bikes} bicicletas por {$total_days} días", true);
+        }
+
+        // ✅ AGREGAR FECHAS PARA SEGURO
+        if (isset($values['rental_start_date'])) {
+            $start_date = date('d/m/Y', strtotime($values['rental_start_date']));
+            $item->add_meta_data('Fecha inicio', $start_date, true);
+        }
+        if (isset($values['rental_end_date'])) {
+            $end_date = date('d/m/Y', strtotime($values['rental_end_date']));
+            $item->add_meta_data('Fecha fin', $end_date, true);
         }
         
         // Metadatos internos
@@ -302,6 +322,22 @@ function bikesul_show_cart_item_info($item_data, $cart_item) {
             'key' => 'Cálculo',
             'value' => "€{$custom_price_per_day} × {$rental_days} días = €" . number_format($total_per_unit, 2) . " por bici"
         );
+
+        // ✅ MOSTRAR FECHAS EN CARRITO PARA BICIS
+        if (isset($cart_item['rental_start_date'])) {
+            $start_date = date('d/m/Y', strtotime($cart_item['rental_start_date']));
+            $item_data[] = array(
+                'key' => 'Fecha inicio',
+                'value' => $start_date
+            );
+        }
+        if (isset($cart_item['rental_end_date'])) {
+            $end_date = date('d/m/Y', strtotime($cart_item['rental_end_date']));
+            $item_data[] = array(
+                'key' => 'Fecha fin',
+                'value' => $end_date
+            );
+        }
     }
     
     // ✅ MOSTRAR INFO DE SEGURO
