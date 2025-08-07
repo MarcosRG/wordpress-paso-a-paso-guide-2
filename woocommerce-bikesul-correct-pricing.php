@@ -1,21 +1,26 @@
 <?php
 /**
  * 🎯 BIKESUL CORRECT PRICING HANDLER V2.0
- * 
+ *
  * SOLUCIÓN DEFINITIVA para corregir inconsistencias de precios entre
  * la aplicación React y el checkout final de WooCommerce.
- * 
+ *
  * PROBLEMAS RESUELTOS:
  * ✅ 1. Respeta precios personalizados por día enviados desde la app
- * ✅ 2. Calcula correctamente el seguro: €5 × bicis × días = €45 
+ * ✅ 2. Calcula correctamente el seguro: €5 × bicis × días = €45
  * ✅ 3. Acepta precios variables dinámicos
  * ✅ 4. Evita sobrescribir precios con valores por defecto de WooCommerce
- * 
+ *
+ * DEPENDENCIAS:
+ * ⚠️ REQUIERE: woocommerce-insurance-handler.php debe cargarse ANTES
+ *
  * INSTALACIÓN:
- * 1. Incluir en functions.php: require_once('woocommerce-bikesul-correct-pricing.php');
+ * 1. Incluir en functions.php DESPUÉS del insurance-handler:
+ *    require_once('woocommerce-insurance-handler.php');
+ *    require_once('woocommerce-bikesul-correct-pricing.php');
  * 2. O copiar todo el contenido al final del functions.php
- * 
- * @version 2.0
+ *
+ * @version 2.0.1
  * @author Bikesul - Solucionador de precios
  */
 
@@ -339,47 +344,11 @@ function bikesul_show_cart_item_info($item_data, $cart_item) {
 }
 
 // ===============================================
-// 6. BUSCAR PRODUCTO DE SEGURO
+// 6. BUSCAR PRODUCTO DE SEGURO - DELEGADO A INSURANCE HANDLER
 // ===============================================
-function bikesul_find_insurance_product($insurance_type = 'premium') {
-    
-    // IDs conocidos de productos de seguro
-    $known_insurance_ids = array(
-        'premium' => array(18814, 21820), // IDs posibles para seguro premium
-        'basic' => array(21819, 18815),   // IDs posibles para seguro básico
-    );
-    
-    $ids_to_check = $known_insurance_ids[$insurance_type] ?? $known_insurance_ids['premium'];
-    
-    foreach ($ids_to_check as $product_id) {
-        $product = wc_get_product($product_id);
-        if ($product && ($product->get_status() === 'publish' || $product->get_status() === 'private')) {
-            error_log("✅ BIKESUL: Producto de seguro encontrado - ID: {$product_id}");
-            return $product_id;
-        }
-    }
-    
-    // Busqueda por nombre como fallback
-    $search_terms = ($insurance_type === 'premium') 
-        ? array('seguro premium', 'premium bikesul', 'bikesul premium')
-        : array('seguro basic', 'seguro basico', 'responsabilidad civil', 'basic insurance');
-    
-    foreach ($search_terms as $term) {
-        $products = wc_get_products(array(
-            'search' => $term,
-            'limit' => 5,
-            'status' => array('publish', 'private')
-        ));
-        
-        if (!empty($products)) {
-            error_log("✅ BIKESUL: Producto de seguro encontrado por búsqueda: {$products[0]->get_id()}");
-            return $products[0]->get_id();
-        }
-    }
-    
-    error_log("❌ BIKESUL: No se encontró producto de seguro para tipo: {$insurance_type}");
-    return null;
-}
+// NOTA: La función bikesul_find_insurance_product() está definida en
+// woocommerce-insurance-handler.php para evitar duplicación.
+// IMPORTANTE: woocommerce-insurance-handler.php debe cargarse ANTES que este archivo
 
 // ===============================================
 // 7. DEBUGGING (solo en desarrollo)
