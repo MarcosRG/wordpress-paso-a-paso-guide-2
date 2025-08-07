@@ -1,21 +1,26 @@
 <?php
 /**
  * 🎯 BIKESUL CORRECT PRICING HANDLER V2.0
- * 
+ *
  * SOLUCIÓN DEFINITIVA para corregir inconsistencias de precios entre
  * la aplicación React y el checkout final de WooCommerce.
- * 
+ *
  * PROBLEMAS RESUELTOS:
  * ✅ 1. Respeta precios personalizados por día enviados desde la app
- * ✅ 2. Calcula correctamente el seguro: €5 × bicis × días = €45 
+ * ✅ 2. Calcula correctamente el seguro: €5 × bicis × días = €45
  * ✅ 3. Acepta precios variables dinámicos
  * ✅ 4. Evita sobrescribir precios con valores por defecto de WooCommerce
- * 
+ *
+ * DEPENDENCIAS:
+ * ⚠️ REQUIERE: woocommerce-insurance-handler.php debe cargarse ANTES
+ *
  * INSTALACIÓN:
- * 1. Incluir en functions.php: require_once('woocommerce-bikesul-correct-pricing.php');
+ * 1. Incluir en functions.php DESPUÉS del insurance-handler:
+ *    require_once('woocommerce-insurance-handler.php');
+ *    require_once('woocommerce-bikesul-correct-pricing.php');
  * 2. O copiar todo el contenido al final del functions.php
- * 
- * @version 2.0
+ *
+ * @version 2.0.1
  * @author Bikesul - Solucionador de precios
  */
 
