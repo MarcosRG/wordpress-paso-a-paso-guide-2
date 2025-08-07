@@ -342,7 +342,8 @@ function bikesul_show_cart_item_info($item_data, $cart_item) {
 // 6. BUSCAR PRODUCTO DE SEGURO - DELEGADO A INSURANCE HANDLER
 // ===============================================
 // NOTA: La función bikesul_find_insurance_product() está definida en
-// woocommerce-insurance-handler.php para evitar duplicación
+// woocommerce-insurance-handler.php para evitar duplicación.
+// IMPORTANTE: woocommerce-insurance-handler.php debe cargarse ANTES que este archivo
 
 // ===============================================
 // 7. DEBUGGING (solo en desarrollo)
