@@ -368,10 +368,26 @@ function bikesul_show_cart_item_info($item_data, $cart_item) {
                 'key' => 'Tipo',
                 'value' => 'Seguro básico incluido'
             );
-            
+
             $item_data[] = array(
                 'key' => 'Cobertura',
                 'value' => "{$total_bikes} bicicletas por {$total_days} días"
+            );
+        }
+
+        // ✅ MOSTRAR FECHAS EN CARRITO PARA SEGURO
+        if (isset($cart_item['rental_start_date'])) {
+            $start_date = date('d/m/Y', strtotime($cart_item['rental_start_date']));
+            $item_data[] = array(
+                'key' => 'Fecha inicio',
+                'value' => $start_date
+            );
+        }
+        if (isset($cart_item['rental_end_date'])) {
+            $end_date = date('d/m/Y', strtotime($cart_item['rental_end_date']));
+            $item_data[] = array(
+                'key' => 'Fecha fin',
+                'value' => $end_date
             );
         }
     }
