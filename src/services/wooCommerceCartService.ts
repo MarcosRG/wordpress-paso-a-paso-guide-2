@@ -8,6 +8,7 @@ import {
   getPriceForDays,
 } from "@/services/woocommerceApi";
 import { fixedInsuranceProductService } from "@/services/insuranceProductService.fixed";
+import { correctPricingService } from "@/services/correctPricingService";
 
 export interface WooCommerceCartItem {
   product_id: number;
