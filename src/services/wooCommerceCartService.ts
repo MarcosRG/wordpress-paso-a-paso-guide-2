@@ -130,8 +130,22 @@ export class WooCommerceCartService {
       params.append(`bike_${index}_name`, bike.name);
       params.append(`bike_${index}_quantity`, bike.quantity.toString());
       params.append(`bike_${index}_size`, bike.size);
-      params.append(`bike_${index}_price_per_day`, bike.pricePerDay.toString());
-      params.append(`bike_${index}_total_price`, totalPricePerBike.toString());
+      // ✅ ENVIAR PRECIO PERSONALIZADO POR DÍA CORRECTO (no el precio base)
+      const correctPricePerDay = acfPricing && reservation.totalDays > 0
+        ? getPricePerDayFromACF(reservation.totalDays, acfPricing)
+        : (() => {
+            const priceRanges = bike.wooCommerceData?.product
+              ? extractDayBasedPricing(bike.wooCommerceData.product)
+              : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
+            return reservation.totalDays > 0
+              ? getPriceForDays(priceRanges, reservation.totalDays)
+              : bike.pricePerDay;
+          })();
+
+      const correctTotalPrice = correctPricePerDay * reservation.totalDays * bike.quantity;
+
+      params.append(`bike_${index}_price_per_day`, correctPricePerDay.toString());
+      params.append(`bike_${index}_total_price`, correctTotalPrice.toString());
       params.append(`bike_${index}_days`, reservation.totalDays.toString());
 
       // Si hay variación, incluirla
