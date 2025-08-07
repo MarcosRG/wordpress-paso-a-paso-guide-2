@@ -100,31 +100,20 @@ export class WooCommerceCartService {
       params.append("insurance_total_price", totalInsurancePrice.toString());
     }
 
-    // Agregar información de productos como parámetros para que puedan ser procesados por el checkout
-    bikes.forEach((bike, index) => {
-      // Calcular precio correcto basado en ACF pricing y días totales
-      const acfPricing = bike.wooCommerceData?.product
-        ? extractACFPricing(bike.wooCommerceData.product)
-        : null;
+    // ✅ USAR CORRECT PRICING SERVICE PARA CALCULAR PRECIOS CORRECTOS
+    const correctBikePricing = correctPricingService.calculateCorrectBikePricing(
+      bikes,
+      reservation.totalDays
+    );
 
-      let totalPricePerBike = 0;
-      if (acfPricing && reservation.totalDays > 0) {
-        // Usar ACF pricing
-        totalPricePerBike = calculateTotalPriceACF(
-          reservation.totalDays,
-          1,
-          acfPricing,
-        );
-      } else {
-        // Usar pricing estándar
-        const priceRanges = bike.wooCommerceData?.product
-          ? extractDayBasedPricing(bike.wooCommerceData.product)
-          : [{ minDays: 1, maxDays: 999, pricePerDay: bike.pricePerDay }];
-        const pricePerDay =
-          reservation.totalDays > 0
-            ? getPriceForDays(priceRanges, reservation.totalDays)
-            : bike.pricePerDay;
-        totalPricePerBike = pricePerDay * reservation.totalDays;
+    bikes.forEach((bike, index) => {
+      const correctPricing = correctBikePricing.find(pricing =>
+        parseInt(bike.id) === pricing.product_id
+      );
+
+      if (!correctPricing) {
+        console.error(`❌ No se encontró pricing correcto para bike ${bike.id}`);
+        return;
       }
 
       params.append(`bike_${index}_id`, bike.id);
